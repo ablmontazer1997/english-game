@@ -1,0 +1,260 @@
+/* Match Blitz — faithful port of pipeline/games.html "#mb" screen.
+   Light Fredoka theme, white cards, teal/gold accents, combo burst,
+   timer fill gradient, shake-on-wrong, connect lines. All selectors are
+   scoped under .matchblitz so nothing leaks into the app. */
+
+.matchblitz {
+  width: 100%;
+  height: 100%;
+  font-family: 'Fredoka', system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(#EDEFFB, #F7F6FD);
+  color: #2E2A63;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.matchblitz *,
+.matchblitz *::before,
+.matchblitz *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.mb-app {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- top bar ---- */
+.mb-top {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px 4px;
+  gap: 12px;
+  position: relative;
+}
+.mb-back {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 12px rgba(91, 83, 160, .18);
+  font-size: 22px;
+  color: #6A46CC;
+  font-weight: 700;
+  pointer-events: none;
+}
+.mb-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 26px;
+  color: #2E2A63;
+  pointer-events: none;
+}
+
+/* ---- combo burst ---- */
+.mb-combo {
+  height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.mb-burst {
+  position: absolute;
+  width: 280px;
+  height: 104px;
+  background: radial-gradient(ellipse at center, rgba(255, 190, 60, .55), rgba(255, 190, 60, 0) 62%);
+}
+.mb-rays {
+  position: absolute;
+  width: 230px;
+  height: 104px;
+}
+.mb-combo-txt {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  z-index: 2;
+}
+.mb-c1 {
+  font-weight: 700;
+  font-size: 40px;
+  color: #fff;
+  text-shadow: 0 0 8px #E9820E, 0 2px 0 #E9820E;
+  letter-spacing: 1px;
+}
+.mb-c2 {
+  font-weight: 700;
+  font-size: 44px;
+  color: #FFC01E;
+  text-shadow: 0 2px 3px #8a4b00;
+}
+.mb-combo.bump {
+  animation: mb-bump .35s;
+}
+@keyframes mb-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ---- timer bar ---- */
+.mb-tbar {
+  margin: 2px 14px 0;
+  height: 48px;
+  border-radius: 24px;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(91, 83, 160, .14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mb-fill {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  bottom: 5px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #16A79A, #45C86A, #EEC71F, #F39120);
+  transition: width .3s linear;
+}
+.mb-tt {
+  position: relative;
+  font-weight: 700;
+  color: #fff;
+  font-size: 19px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  z-index: 2;
+}
+
+/* ---- board ---- */
+.mb-board {
+  position: relative;
+  margin: 16px 14px 18px;
+  flex: 1;
+  touch-action: none;
+}
+.mb-row {
+  position: relative;
+  height: 120px;
+  margin-bottom: 14px;
+}
+/* all cards WHITE so color never hints the answer; focus stays on the words */
+.mb-card {
+  position: absolute;
+  top: 0;
+  width: 44%;
+  height: 120px;
+  border-radius: 22px;
+  background: #fff;
+  border: 2px solid #E7E9F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 12px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #2E2A63;
+  font-size: clamp(15px, 5.4vw, 32px);
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(91, 83, 160, .16);
+  transition: transform .12s, box-shadow .18s, border-color .18s, opacity .3s;
+  overflow: hidden;
+  word-break: break-word;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mb-card-L { left: 0; }
+.mb-card-R { right: 0; }
+.mb-card.sel {
+  transform: scale(1.04);
+  border-color: #16A79A;
+  box-shadow: 0 0 0 3px rgba(22, 167, 154, .28), 0 10px 24px rgba(22, 167, 154, .28);
+}
+.mb-card.hot {
+  transform: scale(1.06);
+  border-color: #16A79A;
+  box-shadow: 0 0 0 4px rgba(22, 167, 154, .45), 0 12px 28px rgba(22, 167, 154, .32);
+}
+.mb-card.matched {
+  border-color: #16A79A;
+  background: #F3FCFA;
+  color: #12897E;
+  cursor: default;
+}
+.mb-card.wrong {
+  animation: mb-shk .4s;
+  border-color: #E1483D;
+}
+@keyframes mb-shk {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+.mb-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* ---- feedback pill ---- */
+.mb-fb {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -6px);
+  z-index: 20;
+  background: #fff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+  opacity: 0;
+  transition: .2s;
+  pointer-events: none;
+}
+.mb-fb.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.mb-fb.ok { color: #16A79A; }
+.mb-fb.bad { color: #E1483D; }
+
+/* ---- empty state ---- */
+.mb-wait {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fredoka', system-ui, sans-serif;
+  font-weight: 700;
+  color: #2E2A63;
+}

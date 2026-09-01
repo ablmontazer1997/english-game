@@ -1,0 +1,319 @@
+.map-screen { padding-top: 0; background: transparent; }   /* backdrop shows through */
+.map-canvas { position: relative; width: 100%; }
+
+/* illustrated night-sky backdrop (static, path scrolls over it) */
+.map-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-position: center top; background-size: cover; background-repeat: no-repeat;
+}
+/* top & bottom fades so HUD and nav stay legible over the art */
+.map-bg-fade {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(7,13,36,.6) 0%, rgba(7,13,36,.12) 16%, transparent 40%,
+    transparent 62%, rgba(7,13,36,.55) 86%, rgba(7,13,36,.9) 100%);
+}
+.moon { display: none; }                        /* the art already has a moon */
+
+/* non-scrolling overlay pinned to the frame (banner + world tag) */
+.map-overlay { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+.map-overlay > * { pointer-events: auto; }
+
+.moon {
+  position: absolute; top: 46px; inset-inline-start: 14%; width: 54px; height: 54px; border-radius: 999px;
+  background: radial-gradient(circle at 62% 38%, #fff 0 40%, #cfe0ff 60%, transparent 72%);
+  box-shadow: -12px 0 0 -4px var(--night-0), 0 0 40px rgba(207,224,255,.5); opacity: .85;
+}
+
+/* portal at the summit */
+.portal-top { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 2; }
+.portal-crown { color: var(--gold); filter: drop-shadow(0 0 10px rgba(245,196,81,.6)); margin-bottom: -6px; }
+.portal-ring {
+  width: 92px; height: 108px; border-radius: 50%; display: grid; place-items: center; color: var(--amethyst-soft);
+  background: radial-gradient(ellipse at center, rgba(154,107,255,.5), rgba(87,200,255,.18) 55%, transparent 72%);
+  box-shadow: var(--glow-amethyst); animation: portalpulse 3.4s ease-in-out infinite;
+}
+@keyframes portalpulse { 0%,100% { transform: scale(1); filter: hue-rotate(0) } 50% { transform: scale(1.05); filter: hue-rotate(20deg) } }
+.portal-label { margin-top: 6px; font-family: var(--game); font-weight: 800; font-size: 13px; color: var(--ink);
+  background: rgba(12,20,64,.8); border: 1px solid var(--line-strong); padding: 4px 12px; border-radius: 999px; }
+
+/* the winding path */
+.path-svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.path-line { fill: none; stroke: rgba(245,196,81,.16); stroke-width: 16; stroke-linecap: round; stroke-linejoin: round; }
+.path-dots { fill: none; stroke: rgba(245,196,81,.7); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 0.1 14; }
+
+/* nodes */
+.node-wrap { position: absolute; transform: translate(-50%, -50%); z-index: 3; display: flex; flex-direction: column; align-items: center; }
+.node {
+  width: 58px; height: 58px; border-radius: 999px; display: grid; place-items: center; position: relative;
+  transition: transform var(--dur) var(--ease-magic); font-family: var(--game); font-weight: 800;
+}
+.node:active:not(:disabled) { transform: scale(.9); }
+
+.node-done {
+  color: var(--night-0);
+  background: radial-gradient(circle at 50% 32%, #ffe08a, var(--gold) 70%, var(--gold-deep));
+  border: 3px solid #fff3cf; box-shadow: var(--glow-gold), inset 0 -4px 8px rgba(140,90,20,.5);
+}
+.done-num { font-size: 20px; }
+
+.node-current {
+  color: #fff; background: transparent; border: none; animation: bob 2.4s ease-in-out infinite;
+}
+.cur-diamond {
+  width: 52px; height: 52px; display: grid; place-items: center; font-size: 22px; color: #071022; font-weight: 800;
+  background: linear-gradient(160deg, #a8e6ff, var(--cyan)); border: 3px solid #d9f4ff;
+  transform: rotate(45deg); border-radius: 14px; box-shadow: var(--glow-cyan);
+}
+.cur-diamond { }
+.node-current .cur-diamond > * { transform: rotate(-45deg); }
+.cur-label { margin-top: 8px; font-size: 11px; font-weight: 800; color: var(--cyan);
+  background: rgba(12,20,64,.85); border: 1px solid rgba(87,200,255,.4); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+@keyframes bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+
+.node-locked {
+  color: var(--ink-faint);
+  background: radial-gradient(circle at 50% 34%, #2b3a72, #1a2350 72%);
+  border: 3px solid rgba(154,171,255,.18); box-shadow: inset 0 -3px 6px rgba(0,0,0,.4); opacity: .92;
+}
+.node-locked:disabled { cursor: default; }
+
+.boss-flag { position: absolute; top: -12px; inset-inline-end: -8px; color: var(--gold); filter: drop-shadow(0 0 6px rgba(245,196,81,.7)); }
+.kind-treasure.node-done { background: radial-gradient(circle at 50% 32%, #d9b6ff, var(--amethyst) 72%); border-color: #ead9ff; }
+
+.node-stars { display: flex; gap: 1px; margin-top: 5px; }
+.node-stars .on { color: var(--gold); filter: drop-shadow(0 0 3px rgba(245,196,81,.8)); }
+.node-stars .off { color: rgba(154,171,255,.22); }
+
+.node-world { position: absolute; top: -30px; font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: .06em;
+  color: var(--amethyst-soft); background: rgba(12,20,64,.7); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+
+/* daily banner (floats over the map, below HUD) */
+.daily-banner {
+  position: absolute; top: calc(var(--hud-h) + var(--safe-top) + 10px); inset-inline-start: 12px; inset-inline-end: 12px; z-index: 20;
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  background: linear-gradient(160deg, rgba(29,42,116,.92), rgba(12,20,64,.92));
+  border: 1px solid var(--line-strong); border-radius: var(--r-md); box-shadow: var(--shadow);
+}
+.daily-scroll { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #ffb27a;
+  background: rgba(255,140,80,.14); border: 1px solid rgba(255,140,80,.3); flex: none; }
+.daily-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.daily-txt b { font-size: 13px; } .daily-txt span { font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.daily-bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; margin-top: 3px; }
+.daily-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), #ffe08a); border-radius: 999px; }
+.daily-reward { color: var(--amethyst-soft); flex: none; }
+
+.world-tag {
+  position: absolute; top: calc(var(--hud-h) + var(--safe-top) + 68px); inset-inline-end: 12px; z-index: 15;
+  font-family: var(--display); font-weight: 700; font-size: 11px; color: var(--ink-soft);
+  background: rgba(7,13,36,.6); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line);
+}
+.world-tag span { color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) { .portal-ring, .node-current { animation: none } }
+
+/* ===== real-art overrides: token nodes, portal image, floating islands ===== */
+
+/* neutralize the old CSS-circle node styling */
+.node, .node-done, .node-current, .node-locked {
+  width: auto; height: auto; border: none; background: none; box-shadow: none;
+  border-radius: 0; display: block; position: relative;
+}
+.node { transition: transform var(--dur) var(--ease-magic); }
+.node:active:not(:disabled) { transform: scale(.9); }
+
+.node-token { width: 74px; height: auto; display: block; filter: drop-shadow(0 7px 10px rgba(0,0,0,.55)); }
+.node-center {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+  font-family: var(--game); font-weight: 800; font-size: 21px; color: #fdf3d8;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 10px rgba(245,196,81,.4); pointer-events: none;
+}
+.node-done .node-token { animation: none; }
+.node-locked .node-token { filter: grayscale(.8) brightness(.5) drop-shadow(0 6px 9px rgba(0,0,0,.55)); }
+.node-locked .node-center { color: var(--ink-faint); }
+.node-current { animation: bob 2.5s ease-in-out infinite; }
+.node-current .node-token { filter: drop-shadow(0 0 16px rgba(87,200,255,.85)) drop-shadow(0 7px 10px rgba(0,0,0,.55)); }
+.node-current .node-center { color: #eaffff; text-shadow: 0 0 12px rgba(87,200,255,.9); }
+.cur-diamond, .done-num { display: none; }         /* legacy, unused */
+
+.boss-flag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); inset-inline-end: auto;
+  color: var(--gold); filter: drop-shadow(0 0 7px rgba(245,196,81,.8)); }
+
+/* portal image at the summit */
+.portal-ring { display: none; }
+.portal-top { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 2; }
+.portal-img { width: 132px; height: auto; filter: drop-shadow(0 0 26px rgba(154,107,255,.6)); }
+@keyframes portalfloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-7px) } }
+.portal-crown { color: var(--gold); filter: drop-shadow(0 0 10px rgba(245,196,81,.7)); margin-bottom: 2px; z-index: 3; }
+
+/* floating islands */
+.isle {
+  position: absolute; transform: translateX(-50%);
+  animation: bob-isle var(--dur, 7s) ease-in-out infinite; will-change: transform;
+  z-index: 1; filter: drop-shadow(0 12px 18px rgba(0,0,0,.45)); pointer-events: none; user-select: none;
+}
+.isle.far { z-index: 0; opacity: .8; filter: drop-shadow(0 8px 12px rgba(0,0,0,.4)); }
+@keyframes bob-isle { 0%,100% { transform: translate(-50%, 0) } 50% { transform: translate(-50%, var(--amp, 8px)) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .isle, .portal-img, .node-current { animation: none; }
+}
+
+/* ===== living portal vortex + current-node rising halo ===== */
+.portal-frame { position: relative; width: 132px; }
+.portal-frame .portal-img { position: relative; z-index: 1; }
+/* rotating swirls blended onto the vortex opening (image is 935x1190; opening is centered) */
+.portal-swirl {
+  position: absolute; z-index: 2; left: 50%; top: 41%;
+  width: 82px; height: 104px; transform: translate(-50%, -50%);
+  border-radius: 50%; pointer-events: none; mix-blend-mode: screen; filter: blur(3px); opacity: .55;
+  background: conic-gradient(from 0deg,
+    rgba(87,200,255,.0), rgba(87,200,255,.9), rgba(154,107,255,.2),
+    rgba(197,120,255,.9), rgba(87,200,255,.15), rgba(87,200,255,.0));
+  animation: swirl 7s linear infinite, hueshift 9s ease-in-out infinite;
+}
+.portal-swirl.s2 { width: 60px; height: 78px; opacity: .5; filter: blur(2px);
+  animation: swirl-rev 5s linear infinite, hueshift 7s ease-in-out infinite; }
+@keyframes swirl { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes swirl-rev { to { transform: translate(-50%, -50%) rotate(-360deg); } }
+@keyframes hueshift { 0%,100% { filter: blur(3px) hue-rotate(0deg); } 50% { filter: blur(3px) hue-rotate(50deg); } }
+
+/* blue light halo rising bottom -> top on the current stage (where the player stands) */
+.node-current .node-token { position: relative; z-index: 1; }
+.node-rise {
+  position: absolute; z-index: 2; left: 50%; bottom: 8px; transform: translateX(-50%);
+  width: 58px; height: 66px; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
+  background: linear-gradient(0deg, rgba(87,200,255,.9), rgba(120,220,255,.35) 45%, rgba(87,200,255,0) 72%);
+  animation: node-rise 1.9s ease-in-out infinite; filter: blur(1px);
+}
+@keyframes node-rise {
+  0%   { transform: translate(-50%, 18px) scaleY(.55); opacity: 0; }
+  25%  { opacity: .95; }
+  100% { transform: translate(-50%, -20px) scaleY(1.25); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .portal-swirl, .node-rise { animation: none; opacity: .4; } }
+
+/* ===== single-screen stage layout (no scroll) + stone road ===== */
+.map-screen.full { position: absolute; inset: 0; overflow: hidden; padding: 0; }
+.map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* layered cobblestone road */
+.road-edge { fill: none; stroke: #263127; stroke-width: 40; stroke-linecap: round; stroke-linejoin: round; opacity: .92; }
+.road-fill { fill: none; stroke: #6f7790; stroke-width: 31; stroke-linecap: round; stroke-linejoin: round; }
+.road-top  { fill: none; stroke: #9aa0b8; stroke-width: 20; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+.road-dots { fill: none; stroke: #ffe08a; stroke-width: 4; stroke-dasharray: 0.1 11; stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(245,196,81,.9)); }
+
+/* portal placed by percent — center on its point */
+.portal-top { transform: translate(-50%, -50%); }
+
+/* nodes a touch smaller so a full stage fits one screen */
+.node-token { width: 62px; }
+.node-center { font-size: 18px; }
+
+/* stage pager */
+.stage-pager {
+  position: absolute; z-index: 22; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--nav-h) + var(--safe-bottom) + 8px);
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(7,13,36,.62); border: 1px solid var(--line-strong); border-radius: var(--r-pill);
+  padding: 5px 8px;
+}
+.stage-pager span { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); min-width: 34px; text-align: center; }
+.stage-pager button {
+  width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; font-size: 18px; line-height: 1;
+  color: var(--gold); background: rgba(245,196,81,.1); border: 1px solid rgba(245,196,81,.28);
+}
+.stage-pager button:disabled { opacity: .35; color: var(--ink-faint); background: none; border-color: var(--line); }
+.stage-pager button:active:not(:disabled) { transform: scale(.9); }
+
+/* stronger number contrast on the stone token center */
+.node-center {
+  color: #fff; font-weight: 900;
+  text-shadow: 0 1px 2px rgba(0,0,0,.85), 0 0 5px rgba(0,0,0,.7), 0 0 2px rgba(0,0,0,.9);
+}
+.node-done .node-center, .node-current .node-center { color: #fff; }
+
+/* ===== path as a chunky floating stone island (extruded) ===== */
+.road-under2 { fill: none; stroke: #141826; stroke-width: 40; stroke-linecap: round; stroke-linejoin: round; }
+.road-under  { fill: none; stroke: #232a40; stroke-width: 43; stroke-linecap: round; stroke-linejoin: round; }
+.road-moss   { fill: none; stroke: #3e5140; stroke-width: 45; stroke-linecap: round; stroke-linejoin: round; }
+.road-stone  { fill: none; stroke: #767e97; stroke-width: 33; stroke-linecap: round; stroke-linejoin: round; }
+.road-shine  { fill: none; stroke: #a3aac1; stroke-width: 20; stroke-linecap: round; stroke-linejoin: round; opacity: .5; }
+.road-dots   { fill: none; stroke: #ffe08a; stroke-width: 4; stroke-dasharray: 0.1 11; stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(245,196,81,.9)); }
+
+/* ---- illustrated floating stone PATH (replaces the coded SVG road) ---- */
+.path-svg { display: none !important; }
+.path-island {
+  position: absolute; left: 44%; top: 57.5%; transform: translate(-50%, -50%);
+  height: 62%; aspect-ratio: 827 / 1682; max-width: 104%;
+  z-index: 1; pointer-events: none;
+}
+.path-sprite {
+  width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: drop-shadow(0 24px 34px rgba(4,8,30,.6)) drop-shadow(0 0 30px rgba(87,200,255,.14));
+  -webkit-user-drag: none;
+}
+/* nodes + portal live inside the island so they scale with the path */
+.path-island .node-wrap,
+.path-island .portal-top { position: absolute; pointer-events: auto; }
+
+/* ---- Final Gate = full illustrated gate-on-island asset ---- */
+.portal-frame { position: relative; width: 154px; }
+.portal-img {
+  width: 154px !important; height: auto; display: block;
+  filter: drop-shadow(0 14px 20px rgba(4,8,30,.6)) drop-shadow(0 0 26px rgba(154,107,255,.5));
+  /* gate stays static — no float */
+}
+/* animated vortex overlay, aligned to the baked swirl (upper-center of the art) */
+.portal-vortex {
+  position: absolute; left: 50%; top: 33%; width: 46%; aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+  mix-blend-mode: screen; opacity: .8;
+  background:
+    conic-gradient(from 0deg, transparent 0deg, rgba(87,200,255,.55) 70deg,
+      transparent 150deg, rgba(154,107,255,.6) 230deg, transparent 320deg),
+    radial-gradient(circle, rgba(255,255,255,.35) 0 8%, transparent 40%);
+  animation: vortex-spin 6s linear infinite;
+}
+@keyframes vortex-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .portal-vortex, .portal-img { animation: none; } }
+
+/* ---- compact chrome so it never covers the gate / node 1 ---- */
+.daily-banner {
+  inset-inline-end: auto; width: 200px; padding: 8px 10px; gap: 8px;
+}
+.daily-banner .daily-txt span { display: none; }   /* drop the subtitle line -> shorter */
+.daily-banner b { font-size: 12px; }
+.daily-banner .daily-scroll { width: 30px; height: 30px; }
+.daily-banner .daily-reward { transform: scale(.85); }
+
+/* pager to the bottom-right corner (bottom-centre is where node 1 lands) */
+.stage-pager { left: auto; right: 12px; transform: none; }
+
+/* keep the world tag off the gate — tuck it under the daily pill on the left */
+.world-tag { inset-inline-start: 12px; inset-inline-end: auto; top: calc(var(--hud-h) + var(--safe-top) + 62px); }
+
+/* ---- layering inside the path island: gate behind, path middle, nodes front ---- */
+/* portal-top keeps z-index:auto (no trapping stacking context); the path lifts above it */
+.path-island .path-sprite { position: relative; z-index: 2; }  /* path over gate */
+.path-island .node-wrap { z-index: 3; }               /* nodes over path */
+
+/* ---- isometric tilt: lay each node disc flat on the path's ground plane ---- */
+/* the path art is a 3/4 top-down view; discs must foreshorten to sit on it.
+   we tilt the token image back, but keep the number billboarded (upright). */
+.node-token {
+  transform: perspective(320px) rotateX(46deg);
+  transform-origin: center 58%;
+}
+.node-locked .node-token, .node-done .node-token { transform: perspective(320px) rotateX(46deg); }
+/* number/lock stays upright and nudged onto the disc's visual centre */
+.node-center { top: 34%; }
+
+/* gate decoupled: sits BEHIND the path island (which is z-index:1) */
+.portal-top { z-index: 0; }
+
+/* live gate vortex wrapper (canvas overlays the arch opening) */
+.gate-wrap { position: relative; display: block; }
+.gate-wrap .portal-img { display: block; }

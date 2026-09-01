@@ -1,0 +1,20 @@
+/* Hand-painted UI-kit buttons. The whole art is the button (gem-framed pill),
+   drawn as a 100%×100% background with the label centered on top. Use on wide
+   CTA-style pills (native art aspect ≈ 2.7:1). */
+.btn-img {
+  border: 0; background: transparent no-repeat center / 100% 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 54px; padding: 4px 30px;
+  font-family: var(--game); font-weight: 900; font-size: 16px; letter-spacing: .2px;
+  box-shadow: none;
+  transition: transform var(--dur) var(--ease-magic), filter var(--dur);
+}
+.btn-img:active { transform: scale(.94); }
+.btn-img:disabled { opacity: .62; filter: saturate(.7) brightness(.92); }
+.btn-img.gold { background-image: url('../assets/ui/buttons/btn_gold.png'); color: #5a3d00; text-shadow: 0 1px 0 rgba(255, 255, 255, .5); }
+.btn-img.amethyst { background-image: url('../assets/ui/buttons/btn_amethyst.png'); color: #fff; text-shadow: 0 2px 4px rgba(30, 0, 60, .6); }
+.btn-img.cyan { background-image: url('../assets/ui/buttons/btn_cyan.png'); color: #06263a; text-shadow: 0 1px 0 rgba(255, 255, 255, .45); }
+/* pressed art on :active for the tactile "push" (optional variants) */
+.btn-img.gold:active { background-image: url('../assets/ui/buttons/btn_gold_pressed.png'); }
+.btn-img.amethyst:active { background-image: url('../assets/ui/buttons/btn_amethyst_pressed.png'); }
+.btn-img.cyan:active { background-image: url('../assets/ui/buttons/btn_cyan_pressed.png'); }

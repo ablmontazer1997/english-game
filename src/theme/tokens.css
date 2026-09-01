@@ -1,0 +1,56 @@
+/* Runecast design tokens — magical night identity (single committed theme). */
+:root {
+  /* surfaces */
+  --night-0: #070d24;   /* deepest sky / app ground */
+  --night-1: #0c1440;   /* panel base */
+  --night-2: #141d5a;   /* raised panel */
+  --night-3: #1d2a74;   /* border / hover */
+
+  /* ink */
+  --ink: #eaf0ff;
+  --ink-soft: #a9b6e6;
+  --ink-faint: #6b78ad;
+
+  /* accents */
+  --gold: #f5c451;
+  --gold-deep: #c8963a;
+  --amethyst: #9a6bff;
+  --amethyst-soft: #c3a5ff;
+  --cyan: #57c8ff;
+  --rose: #ff5d6c;
+  --potion: #b062ff;
+  --emerald: #43d6a0;
+
+  /* lines & shadows */
+  --line: rgba(154, 171, 255, 0.14);
+  --line-strong: rgba(154, 171, 255, 0.28);
+  --shadow: 0 18px 50px -20px rgba(0, 0, 0, 0.8);
+  --shadow-sm: 0 8px 22px -12px rgba(0, 0, 0, 0.7);
+  --glow-gold: 0 0 26px rgba(245, 196, 81, 0.45);
+  --glow-cyan: 0 0 26px rgba(87, 200, 255, 0.5);
+  --glow-amethyst: 0 0 30px rgba(154, 107, 255, 0.5);
+
+  --card: linear-gradient(160deg, rgba(29, 42, 116, 0.55), rgba(12, 20, 64, 0.75));
+
+  /* typography */
+  --sans: 'Nunito', system-ui, -apple-system, sans-serif;      /* UI text */
+  --display: 'Cinzel', serif;                                   /* magical titles */
+  --game: 'Baloo 2', 'Nunito', sans-serif;                     /* rounded in-game text */
+  --mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* spacing scale */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px;
+
+  /* radii */
+  --r-sm: 10px; --r-md: 16px; --r-lg: 22px; --r-pill: 999px;
+
+  /* layout */
+  --hud-h: 60px;
+  --nav-h: 108px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* motion */
+  --ease-magic: cubic-bezier(0.34, 1.56, 0.64, 1); /* back.out-like */
+  --dur: 320ms;
+}

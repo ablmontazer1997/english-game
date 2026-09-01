@@ -1,0 +1,69 @@
+@import './tokens.css';
+@import './buttons.css';
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--night-0);
+  overflow: hidden;                 /* app owns its own scroll regions */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button { font-family: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 6px; }
+a { color: var(--cyan); text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+
+/* starry ground shared by screens */
+.sky {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(1000px 620px at 82% -8%, rgba(154,107,255,.22), transparent 60%),
+    radial-gradient(760px 520px at 8% 12%, rgba(87,200,255,.14), transparent 55%),
+    linear-gradient(180deg, #070d24 0%, #0a1236 45%, #070d24 100%);
+}
+.sky::after {
+  content: ""; position: absolute; inset: 0; opacity: .55;
+  background-image:
+    radial-gradient(1.4px 1.4px at 20% 30%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 70% 18%, #cfe0ff, transparent),
+    radial-gradient(1.2px 1.2px at 42% 66%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 85% 58%, #e6d6ff, transparent),
+    radial-gradient(1.6px 1.6px at 55% 42%, #fff, transparent),
+    radial-gradient(1.1px 1.1px at 15% 84%, #bcd, transparent),
+    radial-gradient(1.3px 1.3px at 90% 86%, #fff, transparent);
+  background-repeat: no-repeat;
+}
+
+/* app frame — phone-sized, centered on desktop */
+.app-frame {
+  position: relative;
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--night-0);
+  box-shadow: 0 0 80px -20px rgba(0,0,0,.9);
+}
+
+.screen {
+  position: absolute; inset: 0;
+  padding-top: calc(var(--hud-h) + var(--safe-top));
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom));
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.screen.full { padding: 0; }   /* immersive mini-game host */
+
+.reveal { animation: reveal var(--dur) var(--ease-magic) both; }
+@keyframes reveal { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+.pop { animation: pop 280ms var(--ease-magic) both; }
+@keyframes pop { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .pop { animation: none; }
+  * { scroll-behavior: auto !important; }
+}

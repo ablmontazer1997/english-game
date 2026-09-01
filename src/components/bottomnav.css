@@ -1,0 +1,38 @@
+/* Ornate hand-painted tab bar: the gold gem-framed frame art is the background,
+   the tabs sit on the blue interior. (frame.png = admin-provided, 2172x724 ~3:1) */
+.bnav {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 30;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  /* the frame occupies the nav-h band; safe-bottom is empty space beneath it */
+  background: url('../assets/nav/frame.png') no-repeat center top / 100% var(--nav-h);
+  /* push the tab row into the blue interior of the frame */
+  padding: calc(var(--nav-h) * 0.13) 7% calc(var(--nav-h) * 0.13 + var(--safe-bottom));
+  display: flex; gap: 2px;
+  filter: drop-shadow(0 -6px 20px rgba(0, 0, 0, .45));
+}
+
+.bnav-item {
+  position: relative;
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  color: var(--ink-soft);
+  transition: color var(--dur);
+}
+/* soft glow halo behind the active tab (sits on the blue interior) */
+.bnav-item.active::before {
+  content: ''; position: absolute; inset: -6px 2px; border-radius: 16px;
+  background: radial-gradient(80% 90% at 50% 40%, rgba(120, 200, 255, .38), transparent 72%);
+}
+.bnav-item .bnav-ic { position: relative; z-index: 1; display: grid; place-items: center;
+  transition: transform var(--dur) var(--ease-magic); }
+.bnav-lbl { position: relative; z-index: 1; margin-top: -4px; font-size: 10.5px; font-weight: 800;
+  letter-spacing: .02em; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+.bnav-item.active { color: #fff; }
+.bnav-item.active .bnav-ic { transform: translateY(-2px) scale(1.08); }
+.bnav-item:not(.active):active { color: #fff; }
+.dot { position: absolute; top: -2px; inset-inline-end: -3px; width: 8px; height: 8px; border-radius: 999px;
+  background: var(--rose); box-shadow: 0 0 8px var(--rose); border: 1.5px solid var(--night-0); }
+
+/* real PNG icons: dim inactive, glow active */
+.bnav-item .bnav-ic img { transition: filter var(--dur), opacity var(--dur); }
+.bnav-item:not(.active) .bnav-ic img { opacity: .82; filter: saturate(.95) brightness(.92); }
+.bnav-item.active .bnav-ic img { filter: drop-shadow(0 4px 12px rgba(120, 200, 255, .6)); }
