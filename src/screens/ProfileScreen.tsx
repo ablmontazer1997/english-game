@@ -7,6 +7,9 @@ import statStreak from '../assets/ui/profile/stat_streak.webp'
 import statStars from '../assets/ui/profile/stat_stars.webp'
 import statStages from '../assets/ui/profile/stat_stages.webp'
 import statLeague from '../assets/ui/profile/stat_league.webp'
+import btnOpenCyan from '../assets/ui/profile/btn_open_cyan.webp'
+import btnOpenGold from '../assets/ui/profile/btn_open_gold.webp'
+import btnCustomize from '../assets/ui/profile/btn_customize.webp'
 import './screens.css'
 import './screens2.css'
 
@@ -49,21 +52,21 @@ export function ProfileScreen({ onBuy, onCustomize }: { onBuy: (c: CurrencyId) =
 
         <div className="rc-sec"><span className="rc-sec-t">Backpack & Character</span></div>
         <div className="rc-crow">
-          <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name="chest_closed" size={38} /></div></div>
+          <ImgIcon name="chest_closed" size={54} className="pf-row-ic" />
           <div className="rc-crow-main"><b>Backpack</b><p>Boosters, potions and crystals</p></div>
-          <button className="btn-img cyan rc-crow-btn">Open</button>
+          <button className="pf-rowbtn" aria-label="Open"><img src={btnOpenCyan} alt="Open" draggable={false} /></button>
         </div>
         <div className="rc-crow">
-          <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name="badge" size={38} /></div></div>
+          <ImgIcon name="badge" size={54} className="pf-row-ic" />
           <div className="rc-crow-main"><b>Character Creator</b><p>Hair, robe, hat, staff and color</p></div>
-          <button className="btn-img amethyst rc-crow-btn" onClick={onCustomize}>Customize</button>
+          <button className="pf-rowbtn" aria-label="Customize" onClick={onCustomize}><img src={btnCustomize} alt="Customize" draggable={false} /></button>
         </div>
 
         <div className="rc-sec"><span className="rc-sec-t">Shop</span></div>
         <div className="rc-crow">
-          <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name="gem" size={38} /></div></div>
+          <ImgIcon name="gem" size={54} className="pf-row-ic" />
           <div className="rc-crow-main"><b>Gem Shop</b><p>Cosmetics, Moon Pass, boosters</p></div>
-          <button className="btn-img gold rc-crow-btn" onClick={() => onBuy('gems')}>Open</button>
+          <button className="pf-rowbtn" aria-label="Open" onClick={() => onBuy('gems')}><img src={btnOpenGold} alt="Open" draggable={false} /></button>
         </div>
       </div>
     </div>

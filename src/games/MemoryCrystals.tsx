@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
+import sceneBg from '../assets/memory_bg.webp'
+import backPurple from '../assets/ui/memcards/card_back_purple.webp'
+import backTeal from '../assets/ui/memcards/card_back_teal.webp'
+import frontPurple from '../assets/ui/memcards/card_front_purple.webp'
+import frontTeal from '../assets/ui/memcards/card_front_teal.webp'
 import './memorycrystals.css'
+
+// two decorative card themes, alternated by grid position (not by pair)
+const THEMES = [
+  { back: backPurple, front: frontPurple, ink: '#5a2d82' },
+  { back: backTeal, front: frontTeal, ink: '#0e6a6a' },
+]
 
 const MAX_PAIRS = 6
 const FLIP_BACK_MS = 800
@@ -120,7 +131,7 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
   const cols = deck.length <= 8 ? 3 : 4
 
   return (
-    <div className="mc-root">
+    <div className="mc-root" style={{ backgroundImage: `url(${sceneBg})` }}>
       <div className="mc-topbar">
         <div className="mc-stat">
           <span className="mc-stat-num">{matched.size}</span>
@@ -143,10 +154,11 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
         style={{ '--mc-cols': String(cols) } as CSSProperties}
         aria-label="Memory crystals"
       >
-        {deck.map((card) => {
+        {deck.map((card, idx) => {
           const isMatched = matched.has(card.pairId)
           const isUp = isMatched || flipped.includes(card.key)
           const isWrong = wrong.includes(card.key)
+          const theme = THEMES[idx % THEMES.length]
           const cls =
             'mc-card' +
             (isUp ? ' is-up' : '') +
@@ -162,22 +174,13 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
               onClick={() => onTap(card)}
             >
               <span className="mc-inner">
-                <span className="mc-back" aria-hidden={isUp}>
-                  <svg viewBox="0 0 24 24" className="mc-rune" aria-hidden="true">
-                    <path
-                      d="M12 2l3.5 5.2L21 9l-4 4.4L18 20l-6-3-6 3 1-6.6L3 9l5.5-1.8z"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
+                <span className="mc-back" aria-hidden={isUp} style={{ backgroundImage: `url(${theme.back})` }} />
                 <span
                   className={'mc-front' + (card.face === 'front' ? ' is-word' : ' is-meaning')}
                   aria-hidden={!isUp}
+                  style={{ backgroundImage: `url(${theme.front})`, color: theme.ink }}
                 >
-                  {card.face === 'front' ? <span dir="ltr">{card.text}</span> : card.text}
+                  <span className="mc-label" dir={card.face === 'front' ? 'ltr' : 'auto'}>{card.text}</span>
                 </span>
               </span>
             </button>

@@ -71,5 +71,7 @@
   display: flex; flex-direction: column; min-height: 0;
 }
 .game-host > * { flex: 1; min-height: 0; }
+/* full-bleed games paint edge-to-edge; the game itself pads its content in */
+.game-host.bleed { padding: 0; }
 .game-wait { display: grid; place-items: center; color: var(--ink-faint); font-size: 28px; }
 .play-mg { color: var(--ink-soft); font-weight: 700; font-size: 13px; letter-spacing: .02em; }

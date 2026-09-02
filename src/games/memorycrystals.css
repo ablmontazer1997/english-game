@@ -7,8 +7,13 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 8px 4px;
   box-sizing: border-box;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* full-bleed: bg fills the whole screen, content padded clear of the top HUD */
+  padding: calc(52px + var(--safe-top, 0px)) 12px calc(14px + var(--safe-bottom, 0px));
+  overflow: hidden;
 }
 
 .mc-wait {
@@ -89,9 +94,9 @@
   padding: 0;
   background: transparent;
   cursor: pointer;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 381 / 683;
   min-height: 0;
-  perspective: 600px;
+  perspective: 700px;
   -webkit-tap-highlight-color: transparent;
 }
 .mc-card:disabled {
@@ -108,76 +113,52 @@
   transform: rotateY(180deg);
 }
 
-/* both faces */
+/* both faces — the whole face is the kit card art (transparent PNG) */
 .mc-back,
 .mc-front {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  border-radius: var(--r-md, 16px);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   box-sizing: border-box;
   overflow: hidden;
   text-align: center;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
 }
 
-/* face-down: glowing crystal back */
-.mc-back {
-  background: linear-gradient(160deg, rgba(29, 42, 116, 0.7), rgba(12, 20, 64, 0.85));
-  border: 1px solid var(--line-strong, rgba(154, 171, 255, 0.28));
-  color: var(--amethyst-soft, #b79bff);
-  box-shadow: inset 0 0 22px rgba(154, 107, 255, 0.16);
-}
+/* face-down: the crystal card back (image via inline style) */
 .mc-card:not(:disabled):active .mc-back {
-  filter: brightness(1.15);
-}
-.mc-rune {
-  width: 46%;
-  height: 46%;
-  filter: drop-shadow(0 0 6px rgba(154, 107, 255, 0.55));
-  opacity: 0.9;
+  filter: brightness(1.1) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
 }
 
-/* face-up: revealed word / meaning */
+/* face-up: the light card art + the word centred in its clear zone */
 .mc-front {
   transform: rotateY(180deg);
-  padding: 6px;
-  background: var(--card, linear-gradient(160deg, rgba(29, 42, 116, 0.55), rgba(12, 20, 64, 0.75)));
-  border: 1px solid var(--line-strong, rgba(154, 171, 255, 0.28));
-  color: var(--ink, #eaf0ff);
   font-family: var(--game, sans-serif);
-  font-weight: 700;
-  font-size: clamp(11px, 3.4vw, 16px);
-  line-height: 1.2;
+  font-weight: 800;
+  line-height: 1.1;
   overflow-wrap: anywhere;
 }
-.mc-front.is-word {
-  color: var(--cyan, #57c8ff);
-}
-.mc-front.is-meaning {
-  color: var(--ink, #eaf0ff);
+.mc-label {
+  display: block; max-width: 78%;
+  /* the card art has a moon at top and clouds at the bottom; sit the word in the
+     clear middle band, a touch above centre */
+  margin-bottom: 12%;
+  font-size: clamp(11px, 3.3vw, 17px);
+  letter-spacing: .3px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
 }
 
 /* matched: gold lock glow */
-.mc-card.is-matched .mc-front {
-  border-color: var(--gold, #f5c451);
-  color: var(--gold, #f5c451);
-  box-shadow: var(--glow-gold, 0 0 26px rgba(245, 196, 81, 0.45));
-  background: linear-gradient(160deg, rgba(245, 196, 81, 0.16), rgba(12, 20, 64, 0.7));
-}
-.mc-card.is-matched .mc-front.is-word {
-  color: var(--gold, #f5c451);
-}
+.mc-card.is-matched .mc-front { filter: drop-shadow(0 0 14px rgba(245, 196, 81, 0.85)); }
 
 /* wrong flash */
-.mc-card.is-wrong .mc-front {
-  border-color: var(--rose, #ff5d6c);
-  color: var(--rose, #ff5d6c);
-  box-shadow: 0 0 18px rgba(255, 93, 108, 0.4);
-  animation: mc-shake 0.36s ease;
-}
+.mc-card.is-wrong .mc-front { animation: mc-shake 0.36s ease; }
 
 @keyframes mc-shake {
   0%, 100% { transform: rotateY(180deg) translateX(0); }

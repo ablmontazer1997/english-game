@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { MiniGameProps } from './types'
 import gateImg from '../assets/gate.webp'
+import sceneBg from '../assets/gapgate_bg.webp'
 import './gapgate.css'
 
 const ADVANCE_OK_MS = 720 // pause after a correct answer (let the gate open)
@@ -133,7 +134,7 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
   const blankLen = Math.max(item.front.length, 3)
 
   return (
-    <div className={`gg ${shake ? 'gg-shake' : ''}`}>
+    <div className={`gg ${shake ? 'gg-shake' : ''}`} style={{ backgroundImage: `url(${sceneBg})` }}>
       <div className="gg-hud">
         <span className="gg-progress">
           {idx + 1}/{items.length}

@@ -56,9 +56,11 @@
 /* --- a list row built on the row_tile pill art --- */
 .rc-crow {
   display: flex; align-items: center; gap: 14px;
-  padding: 12px 26px; margin-bottom: 13px; min-height: 92px;
-  border: 9px solid transparent;
-  border-image: url(../assets/ui/frames/row_tile.webp) 27 88 30 88 fill / 9px 30px 10px 30px;
+  padding: 12px 30px; margin-bottom: 13px; box-sizing: border-box;
+  /* aspect locked to the art (2130x655) so the panel only scales uniformly,
+     never stretched on one axis — no pixel distortion. */
+  aspect-ratio: 3.2519;
+  background: url(../assets/ui/panels/row_panel.webp) no-repeat center / 100% 100%;
 }
 .rc-crow-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
 .rc-crow-main b { font-size: 15px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
@@ -108,7 +110,7 @@
   display: flex; align-items: center; gap: 12px; min-height: 56px;
   padding: 8px 26px; margin-bottom: 10px; border-radius: 30px;
   border: 9px solid transparent;
-  border-image: url(../assets/ui/frames/row_tile.webp) 27 88 30 88 fill / 9px 30px 10px 30px;
+  border-image: url(../assets/ui/panels/panel_03.webp) 18 62 21 62 fill / 9px 26px 10px 26px;
 }
 .rc-lrow.promote { box-shadow: 0 0 15px 1px rgba(67, 214, 160, .55); }
 .rc-lrow.demote { box-shadow: 0 0 15px 1px rgba(255, 93, 108, .5); }
@@ -142,3 +144,10 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(0, 0, 0, 0.5);
 }
 .pf-stat-l { margin-top: 2px; font-size: 11px; font-weight: 700; color: #ffd873; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+
+/* profile rows: icon directly on the row + admin-provided image buttons */
+.pf-row-ic { flex: none; width: 54px; height: 54px; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5)); }
+.pf-rowbtn { flex: none; background: none; border: 0; padding: 0; cursor: pointer; height: 52px; display: grid; place-items: center;
+  transition: transform var(--dur, 320ms) ease; }
+.pf-rowbtn img { height: 52px; width: auto; display: block; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45)); }
+.pf-rowbtn:active { transform: scale(0.93); }

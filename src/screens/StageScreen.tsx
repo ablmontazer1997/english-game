@@ -1,12 +1,15 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { HeartIcon, StarIcon, CoinIcon, BoltIcon } from '../components/Icon'
+import { ImgIcon } from '../components/ImgIcon'
 import type { Stage, SrsItem, StageResult } from '../types/game'
 import { gameFor } from '../games/registry'
 import type { MiniGameOutcome } from '../games/types'
 import './stage.css'
 
 type Phase = 'gate' | 'intro' | 'play' | 'result'
+// mini-games that paint a full-bleed background paint edge-to-edge (no host padding)
+const FULL_BLEED = new Set(['gap-gate', 'memory-crystals'])
 const MG_LABEL: Record<string, string> = {
   'boss-battle': 'Boss Battle', 'match-blitz': 'Match Blitz', 'bubble-pop': 'Bubble Pop',
   'rune-type': 'Rune Type', 'memory-crystals': 'Memory Crystals', 'gap-gate': 'Gap Gate',
@@ -98,10 +101,10 @@ export function StageScreen({ stage, onExit, onNeedHearts }: { stage: Stage; onE
       <div className="sky" />
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="play-top">
-        <div className="play-hearts"><HeartIcon size={18} /><b>{hearts}</b></div>
+        <div className="play-hearts"><ImgIcon name="heart" size={22} /><b>{hearts}</b></div>
         <span className="play-mg">{MG_LABEL[stage.miniGame] ?? stage.miniGame}</span>
       </div>
-      <div className="game-host">
+      <div className={`game-host${FULL_BLEED.has(stage.miniGame) ? ' bleed' : ''}`}>
         {items.length
           ? <Suspense fallback={<div className="game-wait">…</div>}><Game items={items} onFinish={handleFinish} /></Suspense>
           : <div className="game-wait">…</div>}
