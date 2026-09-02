@@ -17,7 +17,7 @@ export function BottomNav({ tab, onChange, badge }: { tab: Tab; onChange: (t: Ta
     <nav className="bnav" aria-label="Main navigation">
       {TABS.map(({ id, label, icon }) => (
         <button key={id} className={`bnav-item${tab === id ? ' active' : ''}`} onClick={() => onChange(id)} aria-current={tab === id}>
-          <span className="bnav-ic"><ImgIcon name={icon} size={52} />{badge?.[id] && <i className="dot" />}</span>
+          <span className="bnav-ic"><ImgIcon name={icon} size={78} />{badge?.[id] && <i className="dot" />}</span>
           <span className="bnav-lbl">{label}</span>
         </button>
       ))}

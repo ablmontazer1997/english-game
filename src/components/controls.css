@@ -1,0 +1,10 @@
+.rc-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 9px 2px; background: none; border: 0;
+  color: var(--ink-soft); font-family: var(--sans); font-size: 14px; font-weight: 700;
+}
+.rc-row + .rc-row { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.rc-label { text-align: start; }
+.rc-toggle { width: 58px; height: auto; flex: none; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+.rc-check { width: 30px; height: 30px; flex: none; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+.rc-row:active .rc-toggle, .rc-row:active .rc-check { transform: scale(0.92); }

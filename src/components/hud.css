@@ -38,27 +38,34 @@
   font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.85); letter-spacing: .3px;
 }
 
-/* heart / potion / coin chips on a blue gold-edged bar */
-.hud-chips {
-  flex: none; display: flex; align-items: center; gap: 2px;
-  padding: 3px 4px; border-radius: var(--r-pill);
-  background: linear-gradient(180deg, rgba(20,29,90,.95), rgba(10,16,52,.98));
-  border: 1.5px solid rgba(200,150,58,.55);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 3px 10px rgba(0,0,0,.45);
+/* heart / potion / coin — each its OWN navy pill (separate rectangles) */
+.hud-chips { flex: none; display: flex; align-items: center; gap: 7px; }
+.chip {
+  position: relative; display: flex; align-items: center; gap: 4px; height: 26px; flex: none;
+  padding: 0 3px 0 18px;            /* left space so the icon overhangs the pill's left edge */
+  border-radius: 999px;
+  background: linear-gradient(180deg, #38447a, #1f2851);
+  border: 1.5px solid rgba(120,150,230,.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 7px rgba(0,0,0,.45);
 }
-.chip { display: flex; align-items: center; gap: 3px; height: 30px; padding: 0 2px 0 4px; flex: none; }
-.chip + .chip { border-inline-start: 1px solid rgba(154,171,255,.14); padding-inline-start: 6px; }
-.chip-ic { flex: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+/* icon sits large, centered ON the pill's left outline (half overhanging) */
+.chip-ic { flex: none; margin-inline-start: -21px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.55)); }
 .chip b { font-family: var(--mono); font-size: 12px; font-weight: 800; min-width: 14px; text-align: center;
   color: #eaf0ff; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+/* right = bigger navy-blue + button */
 .chip-plus {
-  width: 19px; height: 19px; border-radius: 999px; display: grid; place-items: center; color: var(--night-0); flex: none;
-  background: linear-gradient(160deg, #7fd0ff, var(--cyan)); box-shadow: 0 2px 6px rgba(87,200,255,.5), inset 0 1px 0 rgba(255,255,255,.4);
-  border: 1px solid rgba(255,255,255,.25);
+  width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; color: #fff; flex: none;
+  background: linear-gradient(180deg, #4f8ce8, #2f62c6);
+  box-shadow: 0 2px 6px rgba(30,60,140,.55), inset 0 1px 0 rgba(255,255,255,.35);
+  border: 1px solid rgba(150,185,255,.5);
 }
 .chip-plus:active { transform: scale(.9); }
 
 @media (max-width: 380px) {
-  .chip b { font-size: 11px; } .chip { padding-inline: 2px; } .chip + .chip { padding-inline-start: 4px; }
-  .hud-chips { gap: 0; }
+  .hud-chips { gap: 5px; } .chip b { font-size: 11px; }
 }
+
+/* settings gear — visible entry point to the Settings modal */
+.hud-gear { flex: none; background: none; border: 0; padding: 0; display: grid; place-items: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.45)); }
+.hud-gear:active { transform: scale(.9); }

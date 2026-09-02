@@ -3,6 +3,7 @@ import { useGame } from './services/ServiceProvider'
 import { HUD } from './components/HUD'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { Sheet } from './components/Sheet'
+import { Toggle, Checkbox } from './components/Controls'
 import { MapScreen } from './screens/MapScreen'
 import { QuestsScreen } from './screens/QuestsScreen'
 import { LeagueScreen } from './screens/LeagueScreen'
@@ -93,13 +94,21 @@ function Loader() {
 }
 
 function SettingsBody() {
+  const load = (k: string, d: boolean) => { try { const v = localStorage.getItem('rc.set.' + k); return v == null ? d : v === '1' } catch { return d } }
+  const save = (k: string, v: boolean) => { try { localStorage.setItem('rc.set.' + k, v ? '1' : '0') } catch {} }
+  const [sound, setSound] = useState(() => load('sound', true))
+  const [music, setMusic] = useState(() => load('music', true))
+  const [motion, setMotion] = useState(() => load('motion', false))
+  const set = (k: string, sv: (v: boolean) => void) => (v: boolean) => { sv(v); save(k, v) }
   const reset = () => { try { localStorage.removeItem('runecast.save.v1') } catch {} location.reload() }
   return (
-    <div style={{ color: 'var(--ink-soft)', fontSize: 14, lineHeight: 2 }}>
-      <p style={{ marginTop: 0 }}>Frontend preview. Data is local and for testing (mock layer, ready to connect to a backend).</p>
+    <div style={{ color: 'var(--ink-soft)' }}>
+      <Toggle label="Sound effects" on={sound} onChange={set('sound', setSound)} />
+      <Toggle label="Music" on={music} onChange={set('music', setMusic)} />
+      <Checkbox label="Reduce motion" on={motion} onChange={set('motion', setMotion)} />
       <button onClick={reset} style={{
-        marginTop: 8, padding: '11px 16px', borderRadius: 'var(--r-md)', width: '100%',
-        background: 'rgba(255,93,108,.12)', border: '1px solid rgba(255,93,108,.35)', color: '#ffd0d5', fontWeight: 700,
+        marginTop: 16, padding: '10px 14px', borderRadius: 'var(--r-md)', width: '100%',
+        background: 'rgba(255,93,108,.12)', border: '1px solid rgba(255,93,108,.35)', color: '#ffd0d5', fontWeight: 700, fontSize: 13,
       }}>Reset test progress</button>
     </div>
   )

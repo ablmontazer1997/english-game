@@ -40,7 +40,7 @@ const islandUrls = Object.entries(
 const ISLE_SLOTS = [
   // left flank
   { x: 14, y: 26, w: 88, far: false }, { x: 12, y: 48, w: 70, far: true },
-  { x: 15, y: 69, w: 90, far: false }, { x: 13, y: 88, w: 68, far: true },
+  { x: 22, y: 69, w: 90, far: false }, { x: 26, y: 88, w: 68, far: true },
   // right flank
   { x: 86, y: 32, w: 86, far: false }, { x: 88, y: 54, w: 72, far: true },
   { x: 85, y: 75, w: 90, far: false }, { x: 87, y: 90, w: 66, far: true },
@@ -104,7 +104,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
         {/* floating islands — decoration behind the path, all on one screen */}
         {isles.map((s, i) => (
           <img key={i} className={`isle${s.far ? ' far' : ''}`} src={s.url} alt="" draggable={false}
-            style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.w,
+            style={{ left: `${s.x}%`, top: `calc(${s.y}% - ${s.x < 50 ? 80 : 0}px)`, width: s.w * 2,
               // @ts-expect-error css var
               '--amp': `${s.amp}px`, animationDuration: `${s.dur}s`, animationDelay: `${s.delay}s` }} />
         ))}

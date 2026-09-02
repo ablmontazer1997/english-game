@@ -32,6 +32,10 @@ export function HUD({ onBuy, onSettings }: { onBuy: (c: CurrencyId) => void; onS
         <Chip icon="potion" value={fmt(currencies.potion)} onBuy={() => onBuy('potion')} />
         <Chip icon="coin" value={fmt(currencies.coins)} onBuy={() => onBuy('coins')} />
       </div>
+
+      <button className="hud-gear" aria-label="Settings" onClick={onSettings}>
+        <ImgIcon name="ib_settings" size={38} />
+      </button>
     </div>
   )
 }
@@ -39,9 +43,9 @@ export function HUD({ onBuy, onSettings }: { onBuy: (c: CurrencyId) => void; onS
 function Chip({ icon, value, onBuy }: { icon: IconName; value: string; onBuy: () => void }) {
   return (
     <div className="chip">
-      <ImgIcon name={icon} size={26} className="chip-ic" />
+      <ImgIcon name={icon} size={30} className="chip-ic" />
       <b>{value}</b>
-      <button className="chip-plus" aria-label="Buy" onClick={onBuy}><PlusIcon size={12} /></button>
+      <button className="chip-plus" aria-label="Buy" onClick={onBuy}><PlusIcon size={14} /></button>
     </div>
   )
 }

@@ -1,0 +1,122 @@
+/* Rebuilt Quests + Shop screens to match the admin-approved page mockups,
+   using our real UI-kit assets (banner ribbon, row_tile pill, currency icons,
+   image bars, gem-framed buttons) instead of slicing the flat AI render. */
+
+/* --- ornate scroll banner used as the page title (ribbon art) --- */
+.rc-banner {
+  position: relative; width: min(94vw, 420px); margin: 0 auto 6px;
+  aspect-ratio: 2028 / 916;
+  background: url(../assets/ui/frames/banner_ribbon.png) center / 100% 100% no-repeat;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; box-sizing: border-box; padding: 0 18% 4%;
+}
+.rc-banner h1 {
+  margin: 0; font-family: var(--display, var(--sans)); font-weight: 900;
+  font-size: clamp(24px, 8vw, 32px); line-height: 1; color: #fff; letter-spacing: .01em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .55), 0 0 20px rgba(130, 185, 255, .38);
+}
+.rc-banner p { margin: 5px 0 0; font-size: 12.5px; color: #e3e9ff; text-shadow: 0 1px 3px rgba(0, 0, 0, .65); }
+
+/* --- glowing section header with flanking rules + gem accents --- */
+.rc-sec {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin: 18px 0 12px;
+}
+.rc-sec::before, .rc-sec::after {
+  content: ""; height: 2px; width: clamp(28px, 12vw, 60px); border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(120, 210, 255, .8));
+}
+.rc-sec::after { transform: scaleX(-1); }
+.rc-sec-t {
+  position: relative; padding: 0 22px;
+  font-family: var(--game, var(--sans)); font-weight: 900; letter-spacing: .16em;
+  text-transform: uppercase; font-size: 14.5px; color: #8fe3ff;
+  text-shadow: 0 0 12px rgba(87, 200, 255, .75), 0 1px 2px rgba(0, 0, 0, .6);
+}
+.rc-sec-t::before, .rc-sec-t::after {
+  content: "◆"; position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 10px; color: #7fdcff; text-shadow: 0 0 6px rgba(120, 220, 255, .9);
+}
+.rc-sec-t::before { left: 2px; } .rc-sec-t::after { right: 2px; }
+
+/* --- round gold-framed medallion holding a row icon --- */
+.rc-medallion {
+  width: 66px; height: 66px; border-radius: 50%; flex: none; box-sizing: border-box;
+  padding: 5px;
+  background: conic-gradient(from 210deg, #8a5e12, #ffe9a8, #f5c451, #8a5e12, #ffe08a, #c98f1e, #8a5e12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(0, 0, 0, .25);
+}
+.rc-medallion-in {
+  width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 34%, #26398a, #0b1440 82%);
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, .6), inset 0 0 0 2px rgba(255, 220, 150, .16);
+  color: #ffd479;
+}
+
+/* --- a list row built on the row_tile pill art --- */
+.rc-crow {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 26px; margin-bottom: 13px; min-height: 92px;
+  border: 9px solid transparent;
+  border-image: url(../assets/ui/frames/row_tile.png) 27 88 30 88 fill / 9px 30px 10px 30px;
+}
+.rc-crow-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.rc-crow-main b { font-size: 15px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.rc-crow-main p { margin: 1px 0 0; font-size: 12px; color: #b9c4ee; }
+
+.rc-reward { display: flex; align-items: center; gap: 15px; font-family: var(--mono); font-size: 13px; color: #ffe1a6; }
+.rc-reward span { display: inline-flex; align-items: center; gap: 4px; }
+
+/* --- gold progress bar with the count centered inside --- */
+.rc-prog { position: relative; width: 100%; }
+.rc-prog-txt {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 800; color: #5a3d00;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .4);
+}
+
+/* --- right-side action button in a row --- */
+.rc-crow-btn { flex: none; min-width: 116px; min-height: 50px; font-size: 15px; padding: 4px 16px; }
+.rc-crow-btn .rc-tick { margin-left: 4px; }
+
+/* --- shop featured hero card on the modal/card frame --- */
+.rc-hero {
+  display: flex; align-items: center; gap: 12px; margin: 2px 0 10px; padding: 16px 20px;
+  border: 12px solid transparent;
+  border-image: url(../assets/ui/frames/card_panel.png) 60 60 70 60 fill / 16px 16px 18px 16px;
+}
+.rc-hero-art { flex: none; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .5)); }
+.rc-hero-main { flex: 1; min-width: 0; }
+.rc-hero-main b { font-family: var(--display, var(--sans)); font-size: 20px; color: #ffd873; text-shadow: 0 2px 4px rgba(0, 0, 0, .5); }
+.rc-hero-main p { margin: 4px 0 10px; font-size: 12.5px; color: #eaf0ff; }
+.rc-hero-cta { min-width: 120px; }
+
+/* price pill: gem + number on a gold button */
+.rc-price { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* --- weekly league: tier badge + leaderboard rows --- */
+.rc-tier { display: flex; flex-direction: column; align-items: center; margin: 2px 0 6px; }
+.rc-tier-badge { filter: drop-shadow(0 6px 16px rgba(0, 0, 0, .5)); }
+.rc-tier-name {
+  min-height: 46px; line-height: 46px; padding: 0 46px; margin-top: -10px;
+  font-family: var(--display, var(--sans)); font-weight: 900; font-size: 18px; color: #ffe6a3;
+  background: url(../assets/ui/frames/banner_pill.png) center / 100% 100% no-repeat;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, .55);
+}
+
+.rc-lrow {
+  display: flex; align-items: center; gap: 12px; min-height: 56px;
+  padding: 8px 26px; margin-bottom: 10px; border-radius: 30px;
+  border: 9px solid transparent;
+  border-image: url(../assets/ui/frames/row_tile.png) 27 88 30 88 fill / 9px 30px 10px 30px;
+}
+.rc-lrow.promote { box-shadow: 0 0 15px 1px rgba(67, 214, 160, .55); }
+.rc-lrow.demote { box-shadow: 0 0 15px 1px rgba(255, 93, 108, .5); }
+.rc-lrow.me { box-shadow: 0 0 18px 2px rgba(87, 200, 255, .8); }
+.rc-lrank { width: 32px; text-align: center; flex: none; font-family: var(--mono); font-weight: 800; font-size: 18px; color: #ffce54; }
+.rc-lrow.promote .rc-lrank { color: #5fe3a6; }
+.rc-lrow.demote .rc-lrank { color: #ff8189; }
+.rc-lname { flex: 1; min-width: 0; text-align: center; font-weight: 800; font-size: 15px; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+.rc-lrow.me .rc-lname { color: #8fe3ff; }
+.rc-llp { flex: none; font-family: var(--mono); font-weight: 800; font-size: 14px; color: #ffce54; }
+.rc-llp small { font-size: 11px; opacity: .85; margin-left: 2px; }

@@ -1,36 +1,51 @@
+import type { ReactNode } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { CoinIcon, GemIcon, PotionIcon, ChestIcon, FlameIcon } from '../components/Icon'
+import { FlameIcon } from '../components/Icon'
+import { ImgIcon } from '../components/ImgIcon'
+import { Bar } from '../components/Bar'
 import type { Quest, Reward } from '../types/game'
 import './screens.css'
+import './screens2.css'
+
+// Varied medallion icon per quest so the list reads like the mockup, chosen
+// stably from the quest's position rather than random.
+const ICONS: ((s: number) => ReactNode)[] = [
+  (s) => <FlameIcon size={s} />,
+  (s) => <ImgIcon name="gem" size={s} />,
+  (s) => <ImgIcon name="potion" size={s} />,
+  (s) => <ImgIcon name="chest_closed" size={s} />,
+  (s) => <ImgIcon name="badge" size={s} />,
+]
 
 function RewardView({ r }: { r: Reward }) {
   return (
-    <span className="reward-chip">
-      {r.coins != null && <><CoinIcon size={14} />{r.coins}</>}
-      {r.gems != null && <><GemIcon size={14} />{r.gems}</>}
-      {r.potion != null && <><PotionIcon size={14} />{r.potion}</>}
-      {r.chest != null && <><ChestIcon size={14} />Chest</>}
-    </span>
+    <div className="rc-reward">
+      {r.coins != null && <span><ImgIcon name="coin" size={18} />{r.coins}</span>}
+      {r.gems != null && <span><ImgIcon name="gem" size={18} />{r.gems}</span>}
+      {r.potion != null && <span><ImgIcon name="potion" size={18} />{r.potion}</span>}
+      {r.chest != null && <span><ImgIcon name="chest_closed" size={18} />Chest</span>}
+    </div>
   )
 }
 
-function QuestTile({ q, onClaim }: { q: Quest; onClaim: (id: string) => void }) {
+function QuestCard({ q, i, onClaim }: { q: Quest; i: number; onClaim: (id: string) => void }) {
   const pct = Math.min(100, (q.progress / q.target) * 100)
   const ready = q.progress >= q.target && !q.done
   return (
-    <div className="tile">
-      <div className="tile-ic"><FlameIcon size={20} /></div>
-      <div className="tile-main">
+    <div className="rc-crow">
+      <div className="rc-medallion"><div className="rc-medallion-in">{ICONS[i % ICONS.length](34)}</div></div>
+      <div className="rc-crow-main">
         <b>{q.title}</b>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-          <RewardView r={q.reward} />
-          <span style={{ fontSize: 11, color: 'var(--ink-faint)', fontFamily: 'var(--mono)' }}>{Math.min(q.progress, q.target)}/{q.target}</span>
+        <RewardView r={q.reward} />
+        <div className="rc-prog">
+          <Bar value={pct} tone="gold" />
+          <span className="rc-prog-txt">{Math.min(q.progress, q.target)}/{q.target}</span>
         </div>
-        <div className="tile-bar"><i style={{ width: pct + '%' }} /></div>
       </div>
-      <button className={`btn ${q.done ? 'btn-ghost' : ready ? 'btn-claim' : 'btn-ghost'}`}
+      <button
+        className={`btn-img ${ready ? 'green' : 'grey'} rc-crow-btn`}
         disabled={!ready} onClick={() => onClaim(q.id)}>
-        {q.done ? 'Claimed' : ready ? 'Claim' : 'In progress'}
+        {q.done ? <>Claimed<span className="rc-tick">✓</span></> : ready ? 'Claim' : 'In progress'}
       </button>
     </div>
   )
@@ -43,12 +58,11 @@ export function QuestsScreen() {
   return (
     <div className="screen">
       <div className="page reveal">
-        <h1 className="page-title">Quests</h1>
-        <p className="page-sub">Complete missions and earn rewards.</p>
-        <div className="section-label">Daily</div>
-        {daily.map((q) => <QuestTile key={q.id} q={q} onClaim={claimQuest} />)}
-        <div className="section-label">Weekly</div>
-        {weekly.map((q) => <QuestTile key={q.id} q={q} onClaim={claimQuest} />)}
+        <div className="rc-banner"><h1>Quests</h1><p>Complete missions and earn rewards.</p></div>
+        <div className="rc-sec"><span className="rc-sec-t">Daily</span></div>
+        {daily.map((q, i) => <QuestCard key={q.id} q={q} i={i} onClaim={claimQuest} />)}
+        <div className="rc-sec"><span className="rc-sec-t">Weekly</span></div>
+        {weekly.map((q, i) => <QuestCard key={q.id} q={q} i={i + daily.length} onClaim={claimQuest} />)}
       </div>
     </div>
   )

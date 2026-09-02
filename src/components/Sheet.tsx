@@ -14,9 +14,8 @@ export function Sheet({ open, title, onClose, children }: { open: boolean; title
   return (
     <div className="sheet-scrim" onClick={onClose}>
       <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-grab" />
-        <button className="sheet-close" aria-label="Close" onClick={onClose}><ImgIcon name="ib_close" size={38} /></button>
-        {title && <h2 className="sheet-title">{title}</h2>}
+        <button className="sheet-close" aria-label="Close" onClick={onClose}><ImgIcon name="ib_close" size={34} /></button>
+        {title && <div className="sheet-title">{title}</div>}
         <div className="sheet-body">{children}</div>
       </div>
     </div>

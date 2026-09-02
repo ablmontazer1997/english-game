@@ -1,26 +1,40 @@
 .sheet-scrim {
   position: absolute; inset: 0; z-index: 60;
   background: rgba(4, 7, 20, 0.66); backdrop-filter: blur(3px);
-  display: flex; align-items: flex-end;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
   animation: fade 200ms ease both;
 }
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+/* ornate framed modal — the gold/crystal frame art is the whole background */
 .sheet {
-  width: 100%; max-height: 82%;
-  background: linear-gradient(180deg, var(--night-2), var(--night-1));
-  border-top-left-radius: 26px; border-top-right-radius: 26px;
-  border-top: 1px solid var(--line-strong);
-  box-shadow: 0 -20px 60px -10px rgba(0,0,0,.7);
-  padding: 8px 18px calc(20px + var(--safe-bottom));
-  display: flex; flex-direction: column;
-  animation: slideup 300ms var(--ease-magic) both;
+  position: relative;
+  width: min(92vw, 370px);
+  aspect-ratio: 1284 / 1136;
+  max-height: 88%;
+  background: url(../assets/ui/frames/modal.png) center / 100% 100% no-repeat;
+  animation: pop 300ms var(--ease-magic) both;
 }
-@keyframes slideup { from { transform: translateY(100%) } to { transform: none } }
-.sheet-grab { width: 42px; height: 5px; border-radius: 999px; background: var(--line-strong); margin: 4px auto 10px; }
-.sheet-close { position: absolute; top: 10px; right: 12px; width: 38px; height: 38px; padding: 0;
-  background: none; border: 0; display: grid; place-items: center; z-index: 2; }
+@keyframes pop { from { transform: scale(0.85); opacity: 0 } to { transform: none; opacity: 1 } }
+
+/* title sits inside the top ribbon banner of the frame */
+.sheet-title {
+  position: absolute; top: 8.5%; left: 22%; right: 22%; height: 10%;
+  display: grid; place-items: center; text-align: center;
+  font-family: var(--display, var(--sans)); font-weight: 900; font-size: 18px; letter-spacing: .02em;
+  color: #fff; text-shadow: 0 2px 5px rgba(0, 0, 0, .55); pointer-events: none;
+}
+
+/* content lives in the inner blue field */
+.sheet-body {
+  position: absolute; top: 24%; left: 9.5%; right: 9.5%; bottom: 8%;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+
+.sheet-close {
+  position: absolute; top: -2%; right: -2%; width: 40px; height: 40px; padding: 0;
+  background: none; border: 0; display: grid; place-items: center; z-index: 2;
+}
 .sheet-close:active { transform: scale(.9); }
-.sheet { position: relative; }
-.sheet-title { font-family: var(--sans); font-weight: 900; font-size: 19px; margin: 0 0 14px; }
-.sheet-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
 @media (prefers-reduced-motion: reduce) { .sheet, .sheet-scrim { animation: none } }
