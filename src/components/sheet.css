@@ -12,7 +12,7 @@
   width: min(92vw, 370px);
   aspect-ratio: 1284 / 1136;
   max-height: 88%;
-  background: url(../assets/ui/frames/modal.png) center / 100% 100% no-repeat;
+  background: url(../assets/ui/frames/modal.webp) center / 100% 100% no-repeat;
   animation: pop 300ms var(--ease-magic) both;
 }
 @keyframes pop { from { transform: scale(0.85); opacity: 0 } to { transform: none; opacity: 1 } }

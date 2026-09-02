@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { MiniGameProps } from './types'
+import gateImg from '../assets/gate.webp'
 import './gapgate.css'
 
 const ADVANCE_OK_MS = 720 // pause after a correct answer (let the gate open)
@@ -144,32 +145,34 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
         )}
       </div>
 
-      <div className={`gg-gate ${opened ? 'is-open' : ''}`} key={item.id}>
-        <span className="gg-shimmer" aria-hidden />
-        <div className="gg-gate-inner">
-          <p className="gg-clue">
-            Spell for "<span className="gg-mean">{item.back}</span>"
-          </p>
+      <div className={`gg-portal ${opened ? 'is-open' : ''}`} key={item.id}>
+        <img className="gg-portal-img" src={gateImg} alt="" draggable={false} />
+        <span className="gg-portal-glow" aria-hidden />
+      </div>
 
-          <div className="gg-blank" dir="ltr">
-            {filledWord ? (
-              <span
-                className={`gg-fill ${chosen?.correct ? 'ok' : 'was'}`}
-                key={filledWord}
-              >
-                {filledWord}
-              </span>
-            ) : (
-              <span className="gg-marks" aria-hidden>
-                {Array.from({ length: blankLen }).map((_, i) => (
-                  <i key={i} />
-                ))}
-              </span>
-            )}
-          </div>
+      <div className="gg-tablet">
+        <p className="gg-clue">
+          Spell for <span className="gg-mean">{item.back}</span>
+        </p>
 
-          <span className="gg-hint">Pick the right word to open the gate</span>
+        <div className="gg-blank" dir="ltr">
+          {filledWord ? (
+            <span
+              className={`gg-fill ${chosen?.correct ? 'ok' : 'was'}`}
+              key={filledWord}
+            >
+              {filledWord}
+            </span>
+          ) : (
+            <span className="gg-marks" aria-hidden>
+              {Array.from({ length: blankLen }).map((_, i) => (
+                <i key={i} />
+              ))}
+            </span>
+          )}
         </div>
+
+        <span className="gg-hint">Pick the word to open the gate</span>
       </div>
 
       <div className="gg-options">

@@ -2,7 +2,7 @@ import { useGame } from '../services/ServiceProvider'
 import { PlusIcon } from './Icon'
 import { ImgIcon, type IconName } from './ImgIcon'
 import { Bar } from './Bar'
-import mage from '../assets/character/body/mage_m.png'
+import mage from '../assets/character/body/mage_m.webp'
 import type { CurrencyId } from '../types/game'
 import './hud.css'
 

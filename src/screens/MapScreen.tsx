@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { StarIcon, LockIcon, CrownIcon, ChestIcon, FlameIcon } from '../components/Icon'
 import type { Stage, World } from '../types/game'
-import mapBg from '../assets/map-bg.png'
-import nodeImg from '../assets/node.png'
-import pathImg from '../assets/path.png'
+import mapBg from '../assets/map-bg.webp'
+import nodeImg from '../assets/node.webp'
+import pathImg from '../assets/path.webp'
 import { GateVortex } from '../components/GateVortex'
 import './map.css'
 
@@ -32,8 +32,8 @@ const PORTAL_POINT = { x: 62, y: 24 }
 
 // island sprites (skip isl_00 — the merged left column)
 const islandUrls = Object.entries(
-  import.meta.glob('../assets/islands/*.png', { eager: true, import: 'default' }),
-).filter(([p]) => !p.endsWith('isl_00.png')).sort().map(([, u]) => u as string)
+  import.meta.glob('../assets/islands/*.webp', { eager: true, import: 'default' }),
+).filter(([p]) => !p.endsWith('isl_00.webp')).sort().map(([, u]) => u as string)
 
 // island decoration slots (percent of the frame), spread on BOTH sides and kept
 // fully INSIDE the frame (no bleeding off the edges).

@@ -6,7 +6,7 @@
 .rc-banner {
   position: relative; width: min(94vw, 420px); margin: 0 auto 6px;
   aspect-ratio: 2028 / 916;
-  background: url(../assets/ui/frames/banner_ribbon.png) center / 100% 100% no-repeat;
+  background: url(../assets/ui/frames/banner_ribbon.webp) center / 100% 100% no-repeat;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; box-sizing: border-box; padding: 0 18% 4%;
 }
@@ -58,7 +58,7 @@
   display: flex; align-items: center; gap: 14px;
   padding: 12px 26px; margin-bottom: 13px; min-height: 92px;
   border: 9px solid transparent;
-  border-image: url(../assets/ui/frames/row_tile.png) 27 88 30 88 fill / 9px 30px 10px 30px;
+  border-image: url(../assets/ui/frames/row_tile.webp) 27 88 30 88 fill / 9px 30px 10px 30px;
 }
 .rc-crow-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
 .rc-crow-main b { font-size: 15px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
@@ -83,7 +83,7 @@
 .rc-hero {
   display: flex; align-items: center; gap: 12px; margin: 2px 0 10px; padding: 16px 20px;
   border: 12px solid transparent;
-  border-image: url(../assets/ui/frames/card_panel.png) 60 60 70 60 fill / 16px 16px 18px 16px;
+  border-image: url(../assets/ui/frames/card_panel.webp) 60 60 70 60 fill / 16px 16px 18px 16px;
 }
 .rc-hero-art { flex: none; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .5)); }
 .rc-hero-main { flex: 1; min-width: 0; }
@@ -100,7 +100,7 @@
 .rc-tier-name {
   min-height: 46px; line-height: 46px; padding: 0 46px; margin-top: -10px;
   font-family: var(--display, var(--sans)); font-weight: 900; font-size: 18px; color: #ffe6a3;
-  background: url(../assets/ui/frames/banner_pill.png) center / 100% 100% no-repeat;
+  background: url(../assets/ui/frames/banner_pill.webp) center / 100% 100% no-repeat;
   text-shadow: 0 2px 4px rgba(0, 0, 0, .55);
 }
 
@@ -108,7 +108,7 @@
   display: flex; align-items: center; gap: 12px; min-height: 56px;
   padding: 8px 26px; margin-bottom: 10px; border-radius: 30px;
   border: 9px solid transparent;
-  border-image: url(../assets/ui/frames/row_tile.png) 27 88 30 88 fill / 9px 30px 10px 30px;
+  border-image: url(../assets/ui/frames/row_tile.webp) 27 88 30 88 fill / 9px 30px 10px 30px;
 }
 .rc-lrow.promote { box-shadow: 0 0 15px 1px rgba(67, 214, 160, .55); }
 .rc-lrow.demote { box-shadow: 0 0 15px 1px rgba(255, 93, 108, .5); }
@@ -120,3 +120,25 @@
 .rc-lrow.me .rc-lname { color: #8fe3ff; }
 .rc-llp { flex: none; font-family: var(--mono); font-weight: 800; font-size: 14px; color: #ffce54; }
 .rc-llp small { font-size: 11px; opacity: .85; margin-left: 2px; }
+
+/* --- profile: avatar hero + stat cards (sliced from the kit sheet) --- */
+.pf-hero { display: flex; align-items: center; gap: 14px; margin: 4px 0 14px; }
+.pf-avatar { width: 92px; height: 92px; flex: none; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5)); }
+.pf-id { flex: 1; min-width: 0; }
+.pf-name {
+  margin: 0; font-family: var(--display, var(--sans)); font-weight: 900; font-size: clamp(22px, 7vw, 30px);
+  line-height: 1; color: #fff; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.55);
+}
+.pf-sub { margin: 4px 0 0; font-size: 13px; font-weight: 800; color: #ffd873; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.pf-divider { display: block; width: 100%; max-width: 300px; margin: 6px 0 0; }
+
+.pf-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 4px; }
+.pf-stat { display: flex; flex-direction: column; align-items: center; }
+.pf-stat-card { position: relative; width: 100%; }
+.pf-stat-card img { display: block; width: 100%; height: auto; }
+.pf-stat-v {
+  position: absolute; left: 0; right: 0; bottom: 12%; text-align: center;
+  font-family: var(--display, var(--sans)); font-weight: 900; font-size: clamp(15px, 5vw, 20px); color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), 0 0 8px rgba(0, 0, 0, 0.5);
+}
+.pf-stat-l { margin-top: 2px; font-size: 11px; font-weight: 700; color: #ffd873; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }

@@ -61,7 +61,7 @@ export function CharacterScreen({ onClose }: { onClose: () => void }) {
           <div className="char-empty">
             <div className="char-empty-orb" />
             <p>Add a base mage body to bring this to life.</p>
-            <small>src/assets/character/body/*.png</small>
+            <small>src/assets/character/body/*.webp</small>
           </div>
         ) : (
           <LayeredAvatar config={config} className="char-avatar" />

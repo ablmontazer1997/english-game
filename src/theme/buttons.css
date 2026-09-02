@@ -11,15 +11,15 @@
 }
 .btn-img:active { transform: scale(.94); }
 .btn-img:disabled { opacity: .62; filter: saturate(.7) brightness(.92); }
-.btn-img.gold { background-image: url('../assets/ui/buttons/btn_gold.png'); color: #5a3d00; text-shadow: 0 1px 0 rgba(255, 255, 255, .5); }
-.btn-img.amethyst { background-image: url('../assets/ui/buttons/btn_amethyst.png'); color: #fff; text-shadow: 0 2px 4px rgba(30, 0, 60, .6); }
-.btn-img.cyan { background-image: url('../assets/ui/buttons/btn_cyan.png'); color: #06263a; text-shadow: 0 1px 0 rgba(255, 255, 255, .45); }
-.btn-img.green { background-image: url('../assets/ui/buttons/btn_green.png'); color: #06340f; text-shadow: 0 1px 0 rgba(255, 255, 255, .4); }
-.btn-img.grey { background-image: url('../assets/ui/buttons/btn_grey.png'); color: #3b3b46; text-shadow: 0 1px 0 rgba(255, 255, 255, .35); }
+.btn-img.gold { background-image: url('../assets/ui/buttons/btn_gold.webp'); color: #5a3d00; text-shadow: 0 1px 0 rgba(255, 255, 255, .5); }
+.btn-img.amethyst { background-image: url('../assets/ui/buttons/btn_amethyst.webp'); color: #fff; text-shadow: 0 2px 4px rgba(30, 0, 60, .6); }
+.btn-img.cyan { background-image: url('../assets/ui/buttons/btn_cyan.webp'); color: #06263a; text-shadow: 0 1px 0 rgba(255, 255, 255, .45); }
+.btn-img.green { background-image: url('../assets/ui/buttons/btn_green.webp'); color: #06340f; text-shadow: 0 1px 0 rgba(255, 255, 255, .4); }
+.btn-img.grey { background-image: url('../assets/ui/buttons/btn_grey.webp'); color: #3b3b46; text-shadow: 0 1px 0 rgba(255, 255, 255, .35); }
 /* pressed art on :active for the tactile "push" (optional variants) */
-.btn-img.gold:active { background-image: url('../assets/ui/buttons/btn_gold_pressed.png'); }
-.btn-img.amethyst:active { background-image: url('../assets/ui/buttons/btn_amethyst_pressed.png'); }
-.btn-img.cyan:active { background-image: url('../assets/ui/buttons/btn_cyan_pressed.png'); }
-.btn-img.green:active { background-image: url('../assets/ui/buttons/btn_green_pressed.png'); }
+.btn-img.gold:active { background-image: url('../assets/ui/buttons/btn_gold_pressed.webp'); }
+.btn-img.amethyst:active { background-image: url('../assets/ui/buttons/btn_amethyst_pressed.webp'); }
+.btn-img.cyan:active { background-image: url('../assets/ui/buttons/btn_cyan_pressed.webp'); }
+.btn-img.green:active { background-image: url('../assets/ui/buttons/btn_green_pressed.webp'); }
 /* grey = inert/disabled state: no pressed art, no grey-out (already muted) */
 .btn-img.grey:disabled { opacity: 1; filter: none; }

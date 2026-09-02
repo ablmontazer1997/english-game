@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import gateImg from '../assets/gate.png'
+import gateImg from '../assets/gate.webp'
 
-// gate.png natural size + the arch-opening vortex geometry (in natural pixels)
+// gate.webp natural size + the arch-opening vortex geometry (in natural pixels)
 const NAT_W = 493
 const RGN = { x: 150, y: 65, w: 194, h: 246 }      // region rect around the opening
 const V = { cx: 246, cy: 187, rx: 96, ry: 122 }    // vortex ellipse

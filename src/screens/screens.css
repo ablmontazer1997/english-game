@@ -3,7 +3,7 @@
   display: block; text-align: center; color: #fff; font-family: var(--sans); font-weight: 900;
   font-size: 21px; letter-spacing: .01em; margin: 6px auto 10px; max-width: 320px;
   min-height: 58px; line-height: 58px; padding: 0 64px; box-sizing: border-box;
-  background: url(../assets/ui/frames/banner_pill.png) center / 100% 100% no-repeat;
+  background: url(../assets/ui/frames/banner_pill.webp) center / 100% 100% no-repeat;
   text-shadow: 0 2px 5px rgba(0, 0, 0, .6);
 }
 .page-sub { color: var(--ink-faint); font-size: 13px; margin: 0 0 16px; text-align: center; }
@@ -13,7 +13,7 @@
   display: flex; align-items: center; gap: 12px; padding: 12px 32px; margin-bottom: 12px;
   background: none; box-shadow: none;
   border: 9px solid transparent;
-  border-image: url(../assets/ui/frames/row_tile.png) 27 88 30 88 fill / 9px 30px 10px 30px;
+  border-image: url(../assets/ui/frames/row_tile.webp) 27 88 30 88 fill / 9px 30px 10px 30px;
 }
 .tile-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none;
   background: rgba(154,107,255,.12); border: 1px solid var(--line); color: var(--amethyst-soft); }

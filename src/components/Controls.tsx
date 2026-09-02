@@ -1,7 +1,7 @@
-import toggleOn from '../assets/ui/controls/toggle_on.png'
-import toggleOff from '../assets/ui/controls/toggle_off.png'
-import checkOn from '../assets/ui/controls/check_on.png'
-import checkOff from '../assets/ui/controls/check_off.png'
+import toggleOn from '../assets/ui/controls/toggle_on.webp'
+import toggleOff from '../assets/ui/controls/toggle_off.webp'
+import checkOn from '../assets/ui/controls/check_on.webp'
+import checkOff from '../assets/ui/controls/check_off.webp'
 import './controls.css'
 
 export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {

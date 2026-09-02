@@ -1,9 +1,9 @@
 import { SLOTS, type SlotId, type WardrobeItem } from '../types/character'
 
 // Eagerly import every character asset. Files are grouped by slot folder:
-//   src/assets/character/<slot>/<id>.png
+//   src/assets/character/<slot>/<id>.webp
 // Drop new PNGs into those folders and they appear automatically.
-const files = import.meta.glob('../assets/character/*/*.png', {
+const files = import.meta.glob('../assets/character/*/*.webp', {
   eager: true, import: 'default',
 }) as Record<string, string>
 
@@ -20,7 +20,7 @@ export const WARDROBE: Record<SlotId, WardrobeItem[]> = Object.fromEntries(
 for (const [path, url] of Object.entries(files)) {
   const slot = slotOf(path)
   if (!slot) continue
-  const id = path.split('/').pop()!.replace(/\.png$/, '')
+  const id = path.split('/').pop()!.replace(/\.webp$/, '')
   WARDROBE[slot].push({ id, slot, url, thumb: url })
 }
 for (const slot of Object.keys(WARDROBE) as SlotId[]) {

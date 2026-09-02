@@ -1,9 +1,26 @@
-import type { ReactNode } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { FlameIcon, StarIcon, LeagueIcon, BoltIcon } from '../components/Icon'
 import { ImgIcon } from '../components/ImgIcon'
 import type { CurrencyId } from '../types/game'
+import avatarHero from '../assets/ui/profile/avatar_hero.webp'
+import divider from '../assets/ui/profile/divider.webp'
+import statStreak from '../assets/ui/profile/stat_streak.webp'
+import statStars from '../assets/ui/profile/stat_stars.webp'
+import statStages from '../assets/ui/profile/stat_stages.webp'
+import statLeague from '../assets/ui/profile/stat_league.webp'
 import './screens.css'
+import './screens2.css'
+
+function StatCard({ img, v, l }: { img: string; v: React.ReactNode; l: string }) {
+  return (
+    <div className="pf-stat">
+      <div className="pf-stat-card">
+        <img src={img} alt="" draggable={false} />
+        <b className="pf-stat-v">{v}</b>
+      </div>
+      <span className="pf-stat-l">{l}</span>
+    </div>
+  )
+}
 
 export function ProfileScreen({ onBuy, onCustomize }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void }) {
   const { profile, worlds } = useGame()
@@ -14,44 +31,41 @@ export function ProfileScreen({ onBuy, onCustomize }: { onBuy: (c: CurrencyId) =
   return (
     <div className="screen">
       <div className="page reveal">
-        {/* avatar hero */}
-        <div className="avatar-hero">
-          <div className="avatar-orb"><span className="avatar-glyph">🐺</span></div>
-          <div>
-            <h1 className="page-title" style={{ margin: 0 }}>{profile.name}</h1>
-            <p className="page-sub" style={{ margin: '2px 0 0' }}>Level {profile.level} · Apprentice Mage</p>
+        <div className="pf-hero">
+          <img className="pf-avatar" src={avatarHero} alt="" draggable={false} />
+          <div className="pf-id">
+            <h1 className="pf-name">{profile.name}</h1>
+            <p className="pf-sub">Level {profile.level} · Apprentice Mage</p>
+            <img className="pf-divider" src={divider} alt="" draggable={false} />
           </div>
         </div>
 
-        <div className="stat-grid">
-          <Stat icon={<FlameIcon size={20} />} v={profile.streak} l="Day Streak" tint="#ffb27a" />
-          <Stat icon={<StarIcon size={20} />} v={totalStars} l="Stars" tint="var(--gold)" />
-          <Stat icon={<BoltIcon size={20} />} v={done} l="Stages" tint="var(--cyan)" />
-          <Stat icon={<LeagueIcon size={20} />} v={profile.leagueTier} l="League" tint="var(--amethyst-soft)" />
+        <div className="pf-stats">
+          <StatCard img={statStreak} v={profile.streak} l="Day Streak" />
+          <StatCard img={statStars} v={totalStars} l="Stars" />
+          <StatCard img={statStages} v={done} l="Stages" />
+          <StatCard img={statLeague} v={profile.leagueTier} l="League" />
         </div>
 
-        <div className="section-label">Backpack & Character</div>
-        <div className="tile"><div className="tile-ic tile-ic-img"><ImgIcon name="chest_closed" size={38} /></div>
-          <div className="tile-main"><b>Backpack</b><p>Boosters, potions and crystals</p></div>
-          <button className="btn btn-ghost">Open</button></div>
-        <div className="tile"><div className="tile-ic tile-ic-img"><ImgIcon name="badge" size={38} /></div>
-          <div className="tile-main"><b>Character Creator</b><p>Hair, robe, hat, staff and color</p></div>
-          <button className="btn btn-ghost" onClick={onCustomize}>Customize</button></div>
+        <div className="rc-sec"><span className="rc-sec-t">Backpack & Character</span></div>
+        <div className="rc-crow">
+          <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name="chest_closed" size={38} /></div></div>
+          <div className="rc-crow-main"><b>Backpack</b><p>Boosters, potions and crystals</p></div>
+          <button className="btn-img cyan rc-crow-btn">Open</button>
+        </div>
+        <div className="rc-crow">
+          <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name="badge" size={38} /></div></div>
+          <div className="rc-crow-main"><b>Character Creator</b><p>Hair, robe, hat, staff and color</p></div>
+          <button className="btn-img amethyst rc-crow-btn" onClick={onCustomize}>Customize</button>
+        </div>
 
-        <div className="section-label">Shop</div>
-        <div className="tile"><div className="tile-ic tile-ic-img"><ImgIcon name="gem" size={38} /></div>
-          <div className="tile-main"><b>Gem Shop</b><p>Cosmetics, Moon Pass, boosters</p></div>
-          <button className="btn btn-gold" onClick={() => onBuy('gems')}>Open</button></div>
+        <div className="rc-sec"><span className="rc-sec-t">Shop</span></div>
+        <div className="rc-crow">
+          <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name="gem" size={38} /></div></div>
+          <div className="rc-crow-main"><b>Gem Shop</b><p>Cosmetics, Moon Pass, boosters</p></div>
+          <button className="btn-img gold rc-crow-btn" onClick={() => onBuy('gems')}>Open</button>
+        </div>
       </div>
-    </div>
-  )
-}
-
-function Stat({ icon, v, l, tint }: { icon: ReactNode; v: ReactNode; l: string; tint: string }) {
-  return (
-    <div className="stat">
-      <span className="stat-ic" style={{ color: tint }}>{icon}</span>
-      <b>{v}</b><span>{l}</span>
     </div>
   )
 }

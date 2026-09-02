@@ -1,8 +1,8 @@
-import track from '../assets/ui/bars/bar_track.png'
-import fill_gold from '../assets/ui/bars/fill_gold.png'
-import fill_green from '../assets/ui/bars/fill_green.png'
-import fill_red from '../assets/ui/bars/fill_red.png'
-import fill_cyan from '../assets/ui/bars/fill_cyan.png'
+import track from '../assets/ui/bars/bar_track.webp'
+import fill_gold from '../assets/ui/bars/fill_gold.webp'
+import fill_green from '../assets/ui/bars/fill_green.webp'
+import fill_red from '../assets/ui/bars/fill_red.webp'
+import fill_cyan from '../assets/ui/bars/fill_cyan.webp'
 import './bar.css'
 
 const FILL = { gold: fill_gold, green: fill_green, red: fill_red, cyan: fill_cyan }

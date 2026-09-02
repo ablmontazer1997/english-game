@@ -1,10 +1,10 @@
 /* Ornate hand-painted tab bar: the gold gem-framed frame art is the background,
-   the tabs sit on the blue interior. (frame.png = admin-provided, 2172x724 ~3:1) */
+   the tabs sit on the blue interior. (frame.webp = admin-provided, 2172x724 ~3:1) */
 .bnav {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 30;
   height: calc(var(--nav-h) + var(--safe-bottom));
   /* the frame occupies the nav-h band; safe-bottom is empty space beneath it */
-  background: url('../assets/nav/frame.png') no-repeat center top / 100% var(--nav-h);
+  background: url('../assets/nav/frame.webp') no-repeat center top / 100% var(--nav-h);
   /* push the tab row into the blue interior of the frame */
   padding: calc(var(--nav-h) * 0.13) 7% calc(var(--nav-h) * 0.13 + var(--safe-bottom));
   display: flex; gap: 2px;
