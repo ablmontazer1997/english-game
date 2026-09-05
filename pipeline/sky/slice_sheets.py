@@ -16,6 +16,7 @@ SHEETS = {
  "a_cards":  ["card_daily", "dropdown", "widget_chest", "btn_side"],
  "a_world":  ["island", "waterfall", "cloud", "balloon"],
  "a_ground": ["path_seg", "bush", "rocks", "flowers"],
+ "a_side":   ["ic_mail", "ic_events", "ic_friends"],
 }
 os.makedirs("assets", exist_ok=True)
 index = {}

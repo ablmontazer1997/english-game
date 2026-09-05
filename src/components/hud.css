@@ -1,71 +1,72 @@
-/* Top HUD — matches the reference: circular mage avatar + level badge, a gold
-   XP bar with x/y text, and heart / potion / coin chips with + buttons. */
+/* Top status bar — avatar, currency pills, settings; traced from the reference. */
+
 .hud {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 30;
-  min-height: calc(var(--hud-h) + var(--safe-top));
-  padding: calc(var(--safe-top) + 8px) 8px 8px;
-  display: flex; align-items: center; gap: 8px;
-  background: linear-gradient(180deg, rgba(7,13,36,.92), rgba(7,13,36,.28) 78%, transparent);
+  position: absolute; left: 0; right: 0; top: 0; z-index: 6;
+  height: calc(var(--hud-h) + var(--safe-top));
+  padding: calc(var(--safe-top) + 6px) 8px 0;
+  display: flex; align-items: center; gap: 6px;
+  pointer-events: none;
 }
+.hud > * { pointer-events: auto; }
 
-.hud-left { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0; }
-
-/* circular gold-ringed avatar with a level badge */
+/* ---- avatar ---- */
 .hud-avatar {
-  position: relative; flex: none; width: 46px; height: 46px; border-radius: 50%;
-  padding: 0; background: radial-gradient(circle at 50% 35%, #2a3b8c, #0c1440);
-  border: 2px solid var(--gold);
-  box-shadow: 0 0 0 1px rgba(122,83,0,.6), 0 3px 10px rgba(0,0,0,.5), inset 0 0 12px rgba(0,0,0,.5);
+  position: relative; flex: 0 0 auto; width: 43px; height: 43px;
+  border-radius: 50%; padding: 0;
+  background: linear-gradient(180deg, #fff, #e8eefc);
+  box-shadow: 0 3px 10px rgba(20, 60, 110, .28), inset 0 0 0 3px #fff;
   overflow: visible;
 }
-.hud-avatar-img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%;
-  object-fit: cover; object-position: 50% 12%; }
+.hud-avatar-img {
+  width: 100%; height: 100%; border-radius: 50%;
+  object-fit: cover; object-position: 50% 12%;
+}
 .hud-avatar-lvl {
-  position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%);
-  min-width: 20px; height: 18px; padding: 0 4px; border-radius: 999px;
-  display: grid; place-items: center; z-index: 2;
-  font-size: 11px; font-weight: 900; color: #5a3d00;
-  background: linear-gradient(180deg, #ffe08a, var(--gold)); border: 1.5px solid #c8963a;
-  box-shadow: 0 2px 5px rgba(0,0,0,.5); text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
+  min-width: 22px; height: 19px; padding: 0 5px;
+  display: grid; place-items: center;
+  border-radius: 99px; border: 2px solid #fff;
+  background: linear-gradient(180deg, #ffb443, #f6903c);
+  color: #fff; font-size: 11px; font-weight: 800; line-height: 1;
+  box-shadow: 0 2px 5px rgba(120, 60, 0, .3);
 }
 
-/* XP bar with centered x/y text */
-.hud-xp { position: relative; flex: 1; min-width: 56px; max-width: 190px; display: grid; }
-.hud-xp .rc-bar { width: 100%; }
-.hud-xp-txt {
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-family: var(--mono); font-size: 10px; font-weight: 700; color: #fff;
-  font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.85); letter-spacing: .3px;
+/* ---- currency pills ---- */
+.hud-pills { flex: 1 1 auto; display: flex; align-items: center; gap: 3px; min-width: 0; }
+
+.pill {
+  position: relative; flex: 1 1 0; min-width: 0; height: 30px;
+  display: block;
+  filter: drop-shadow(0 3px 7px rgba(20, 60, 110, .20));
+}
+.pill-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: fill; display: block;
+}
+.pill-ic {
+  position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  width: 20px; height: 20px;
+}
+.pill-val {
+  position: absolute; left: 21px; right: 21px; top: 50%; transform: translateY(-50%);
+  font-size: 9.5px; font-weight: 800; color: #4a4f68;
+  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pill.wide { flex: 1.5 1 0; }
+
+/* the painted pill already has a green “+” disc at its right end; this is the hit area */
+.pill-plus {
+  position: absolute; right: 0; top: 0; width: 30px; height: 100%;
+  border-radius: 99px; background: transparent; padding: 0;
 }
 
-/* heart / potion / coin — each its OWN navy pill (separate rectangles) */
-.hud-chips { flex: none; display: flex; align-items: center; gap: 7px; }
-.chip {
-  position: relative; display: flex; align-items: center; gap: 4px; height: 26px; flex: none;
-  padding: 0 3px 0 18px;            /* left space so the icon overhangs the pill's left edge */
-  border-radius: 999px;
-  background: linear-gradient(180deg, #38447a, #1f2851);
-  border: 1.5px solid rgba(120,150,230,.5);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 7px rgba(0,0,0,.45);
+/* ---- settings ---- */
+.hud-gear {
+  flex: 0 0 auto; width: 37px; height: 37px; padding: 0;
+  filter: drop-shadow(0 3px 8px rgba(20, 60, 110, .24));
 }
-/* icon sits large, centered ON the pill's left outline (half overhanging) */
-.chip-ic { flex: none; margin-inline-start: -21px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.55)); }
-.chip b { font-family: var(--mono); font-size: 12px; font-weight: 800; min-width: 14px; text-align: center;
-  color: #eaf0ff; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
-/* right = bigger navy-blue + button */
-.chip-plus {
-  width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; color: #fff; flex: none;
-  background: linear-gradient(180deg, #4f8ce8, #2f62c6);
-  box-shadow: 0 2px 6px rgba(30,60,140,.55), inset 0 1px 0 rgba(255,255,255,.35);
-  border: 1px solid rgba(150,185,255,.5);
-}
-.chip-plus:active { transform: scale(.9); }
 
 @media (max-width: 380px) {
-  .hud-chips { gap: 5px; } .chip b { font-size: 11px; }
+  .pill-val { font-size: 9.5px; left: 23px; right: 23px; }
+  .pill-ic { width: 19px; height: 19px; }
 }
-
-/* settings gear — visible entry point to the Settings modal */
-.hud-gear { flex: none; background: none; border: 0; padding: 0; display: grid; place-items: center;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,.45)); }
-.hud-gear:active { transform: scale(.9); }

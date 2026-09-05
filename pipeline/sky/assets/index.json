@@ -222,5 +222,26 @@
    333,
    336
   ]
+ },
+ "ic_mail": {
+  "sheet": "a_side",
+  "size": [
+   343,
+   298
+  ]
+ },
+ "ic_events": {
+  "sheet": "a_side",
+  "size": [
+   343,
+   351
+  ]
+ },
+ "ic_friends": {
+  "sheet": "a_side",
+  "size": [
+   373,
+   309
+  ]
  }
 }
