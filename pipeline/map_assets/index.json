@@ -1,0 +1,223 @@
+{
+ "cottage": {
+  "sheet": "b1_buildings",
+  "box": [
+   116,
+   124,
+   651,
+   689
+  ],
+  "size": [
+   535,
+   565
+  ]
+ },
+ "cart": {
+  "sheet": "b1_buildings",
+  "box": [
+   901,
+   124,
+   1368,
+   710
+  ],
+  "size": [
+   467,
+   586
+  ]
+ },
+ "signpost": {
+  "sheet": "b1_buildings",
+  "box": [
+   1553,
+   214,
+   1841,
+   650
+  ],
+  "size": [
+   288,
+   436
+  ]
+ },
+ "tree_round": {
+  "sheet": "b2_trees",
+  "box": [
+   31,
+   50,
+   725,
+   823
+  ],
+  "size": [
+   694,
+   773
+  ]
+ },
+ "tree_pine": {
+  "sheet": "b2_trees",
+  "box": [
+   823,
+   129,
+   1256,
+   818
+  ],
+  "size": [
+   433,
+   689
+  ]
+ },
+ "bush": {
+  "sheet": "b2_trees",
+  "box": [
+   1381,
+   493,
+   1782,
+   813
+  ],
+  "size": [
+   401,
+   320
+  ]
+ },
+ "fence": {
+  "sheet": "b3_ground",
+  "box": [
+   130,
+   187,
+   504,
+   542
+  ],
+  "size": [
+   374,
+   355
+  ]
+ },
+ "rocks": {
+  "sheet": "b3_ground",
+  "box": [
+   623,
+   244,
+   1033,
+   525
+  ],
+  "size": [
+   410,
+   281
+  ]
+ },
+ "flowers_yellow": {
+  "sheet": "b3_ground",
+  "box": [
+   1171,
+   187,
+   1493,
+   529
+  ],
+  "size": [
+   322,
+   342
+  ]
+ },
+ "flowers_bluepink": {
+  "sheet": "b3_ground",
+  "box": [
+   1688,
+   219,
+   2017,
+   535
+  ],
+  "size": [
+   329,
+   316
+  ]
+ },
+ "block_plateau": {
+  "sheet": "b4_terrain",
+  "box": [
+   31,
+   161,
+   629,
+   667
+  ],
+  "size": [
+   598,
+   506
+  ]
+ },
+ "block_river": {
+  "sheet": "b4_terrain",
+  "box": [
+   653,
+   168,
+   1275,
+   691
+  ],
+  "size": [
+   622,
+   523
+  ]
+ },
+ "island_small": {
+  "sheet": "b4_terrain",
+  "box": [
+   1361,
+   239,
+   1758,
+   597
+  ],
+  "size": [
+   397,
+   358
+  ]
+ },
+ "token_gold": {
+  "sheet": "b5_tokens",
+  "box": [
+   44,
+   142,
+   506,
+   550
+  ],
+  "size": [
+   462,
+   408
+  ]
+ },
+ "token_blue": {
+  "sheet": "b5_tokens",
+  "box": [
+   588,
+   140,
+   1049,
+   550
+  ],
+  "size": [
+   461,
+   410
+  ]
+ },
+ "token_locked": {
+  "sheet": "b5_tokens",
+  "box": [
+   1124,
+   152,
+   1588,
+   531
+  ],
+  "size": [
+   464,
+   379
+  ]
+ },
+ "cloud": {
+  "sheet": "b5_tokens",
+  "box": [
+   1646,
+   186,
+   2136,
+   512
+  ],
+  "size": [
+   490,
+   326
+  ]
+ }
+}
