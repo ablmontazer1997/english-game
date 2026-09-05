@@ -1,0 +1,226 @@
+{
+ "token_open": {
+  "sheet": "a_tokens",
+  "size": [
+   535,
+   422
+  ]
+ },
+ "token_locked": {
+  "sheet": "a_tokens",
+  "size": [
+   531,
+   415
+  ]
+ },
+ "pill_current": {
+  "sheet": "a_tokens",
+  "size": [
+   447,
+   210
+  ]
+ },
+ "portal": {
+  "sheet": "a_portal",
+  "size": [
+   746,
+   853
+  ]
+ },
+ "steps": {
+  "sheet": "a_portal",
+  "size": [
+   836,
+   444
+  ]
+ },
+ "tree_pink": {
+  "sheet": "a_nature",
+  "size": [
+   470,
+   473
+  ]
+ },
+ "tree_purple": {
+  "sheet": "a_nature",
+  "size": [
+   474,
+   472
+  ]
+ },
+ "crystal_blue": {
+  "sheet": "a_nature",
+  "size": [
+   297,
+   422
+  ]
+ },
+ "crystal_pink": {
+  "sheet": "a_nature",
+  "size": [
+   295,
+   416
+  ]
+ },
+ "pill": {
+  "sheet": "a_ui",
+  "size": [
+   428,
+   182
+  ]
+ },
+ "ic_energy": {
+  "sheet": "a_ui",
+  "size": [
+   176,
+   236
+  ]
+ },
+ "ic_heart": {
+  "sheet": "a_ui",
+  "size": [
+   211,
+   203
+  ]
+ },
+ "ic_gem": {
+  "sheet": "a_ui",
+  "size": [
+   192,
+   229
+  ]
+ },
+ "ic_coin": {
+  "sheet": "a_ui",
+  "size": [
+   209,
+   211
+  ]
+ },
+ "btn_gear": {
+  "sheet": "a_ui",
+  "size": [
+   222,
+   236
+  ]
+ },
+ "nav_home": {
+  "sheet": "a_nav",
+  "size": [
+   359,
+   341
+  ]
+ },
+ "nav_quests": {
+  "sheet": "a_nav",
+  "size": [
+   304,
+   335
+  ]
+ },
+ "nav_shop": {
+  "sheet": "a_nav",
+  "size": [
+   352,
+   335
+  ]
+ },
+ "nav_league": {
+  "sheet": "a_nav",
+  "size": [
+   340,
+   343
+  ]
+ },
+ "nav_profile": {
+  "sheet": "a_nav",
+  "size": [
+   333,
+   334
+  ]
+ },
+ "card_daily": {
+  "sheet": "a_cards",
+  "size": [
+   703,
+   214
+  ]
+ },
+ "dropdown": {
+  "sheet": "a_cards",
+  "size": [
+   504,
+   157
+  ]
+ },
+ "widget_chest": {
+  "sheet": "a_cards",
+  "size": [
+   467,
+   214
+  ]
+ },
+ "btn_side": {
+  "sheet": "a_cards",
+  "size": [
+   214,
+   220
+  ]
+ },
+ "island": {
+  "sheet": "a_world",
+  "size": [
+   474,
+   472
+  ]
+ },
+ "waterfall": {
+  "sheet": "a_world",
+  "size": [
+   256,
+   576
+  ]
+ },
+ "cloud": {
+  "sheet": "a_world",
+  "size": [
+   453,
+   330
+  ]
+ },
+ "balloon": {
+  "sheet": "a_world",
+  "size": [
+   327,
+   519
+  ]
+ },
+ "path_seg": {
+  "sheet": "a_ground",
+  "size": [
+   519,
+   417
+  ]
+ },
+ "bush": {
+  "sheet": "a_ground",
+  "size": [
+   353,
+   344
+  ]
+ },
+ "rocks": {
+  "sheet": "a_ground",
+  "size": [
+   366,
+   344
+  ]
+ },
+ "flowers": {
+  "sheet": "a_ground",
+  "size": [
+   333,
+   336
+  ]
+ }
+}
