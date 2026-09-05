@@ -1,0 +1,269 @@
+{
+ "canvas": [
+  1080,
+  2340
+ ],
+ "camera_tilt": 50,
+ "samples": 96,
+ "slabs": [
+  {
+   "box": [
+    2,
+    2,
+    98,
+    98
+   ],
+   "z": [
+    -1.4,
+    0.0
+   ],
+   "bevel": 0.5
+  },
+  {
+   "box": [
+    30,
+    74,
+    86,
+    98
+   ],
+   "z": [
+    0.0,
+    0.9
+   ],
+   "bevel": 0.4
+  }
+ ],
+ "road": [
+  [
+   50,
+   3
+  ],
+  [
+   32,
+   18
+  ],
+  [
+   66,
+   33
+  ],
+  [
+   36,
+   50
+  ],
+  [
+   64,
+   66
+  ],
+  [
+   46,
+   80
+  ],
+  [
+   58,
+   90
+  ]
+ ],
+ "road_z": 0.0,
+ "road_width": 16,
+ "dot_spacing": 5.5,
+ "nodes": [
+  {
+   "t": 0.06,
+   "asset": "token_gold",
+   "h": 15
+  },
+  {
+   "t": 0.22,
+   "asset": "token_blue",
+   "h": 12
+  },
+  {
+   "t": 0.38,
+   "asset": "token_blue",
+   "h": 12
+  },
+  {
+   "t": 0.54,
+   "asset": "token_locked",
+   "h": 12
+  },
+  {
+   "t": 0.7,
+   "asset": "token_locked",
+   "h": 12
+  },
+  {
+   "t": 0.85,
+   "asset": "token_locked",
+   "h": 12
+  }
+ ],
+ "props": [
+  {
+   "asset": "cottage",
+   "x": 60,
+   "y": 92,
+   "h": 34,
+   "z": 0.9
+  },
+  {
+   "asset": "fence",
+   "x": 44,
+   "y": 88,
+   "h": 8,
+   "z": 0.9,
+   "rot": 10
+  },
+  {
+   "asset": "fence",
+   "x": 78,
+   "y": 86,
+   "h": 8,
+   "z": 0.9,
+   "rot": -10
+  },
+  {
+   "asset": "tree_round",
+   "x": 40,
+   "y": 94,
+   "h": 27,
+   "z": 0.9
+  },
+  {
+   "asset": "tree_pine",
+   "x": 82,
+   "y": 94,
+   "h": 26,
+   "z": 0.9
+  },
+  {
+   "asset": "tree_pine",
+   "x": 88,
+   "y": 76,
+   "h": 26
+  },
+  {
+   "asset": "tree_round",
+   "x": 14,
+   "y": 72,
+   "h": 29
+  },
+  {
+   "asset": "tree_round",
+   "x": 88,
+   "y": 52,
+   "h": 29
+  },
+  {
+   "asset": "tree_pine",
+   "x": 80,
+   "y": 44,
+   "h": 24
+  },
+  {
+   "asset": "tree_round",
+   "x": 10,
+   "y": 8,
+   "h": 26
+  },
+  {
+   "asset": "tree_pine",
+   "x": 90,
+   "y": 10,
+   "h": 22
+  },
+  {
+   "asset": "cart",
+   "x": 82,
+   "y": 26,
+   "h": 22,
+   "rot": -20
+  },
+  {
+   "asset": "signpost",
+   "x": 12,
+   "y": 40,
+   "h": 19
+  },
+  {
+   "asset": "fence",
+   "x": 8,
+   "y": 30,
+   "h": 8,
+   "rot": 8
+  },
+  {
+   "asset": "fence",
+   "x": 74,
+   "y": 58,
+   "h": 8,
+   "rot": -15
+  },
+  {
+   "asset": "rocks",
+   "x": 22,
+   "y": 44,
+   "h": 8
+  },
+  {
+   "asset": "rocks",
+   "x": 68,
+   "y": 8,
+   "h": 7
+  },
+  {
+   "asset": "bush",
+   "x": 28,
+   "y": 22,
+   "h": 8
+  },
+  {
+   "asset": "bush",
+   "x": 70,
+   "y": 74,
+   "h": 8
+  },
+  {
+   "asset": "bush",
+   "x": 24,
+   "y": 66,
+   "h": 8
+  },
+  {
+   "asset": "flowers_yellow",
+   "x": 30,
+   "y": 32,
+   "h": 7
+  },
+  {
+   "asset": "flowers_yellow",
+   "x": 20,
+   "y": 12,
+   "h": 7
+  },
+  {
+   "asset": "flowers_bluepink",
+   "x": 66,
+   "y": 48,
+   "h": 7
+  },
+  {
+   "asset": "flowers_bluepink",
+   "x": 36,
+   "y": 60,
+   "h": 7
+  },
+  {
+   "asset": "flowers_yellow",
+   "x": 72,
+   "y": 36,
+   "h": 7
+  }
+ ],
+ "render_layers": [
+  "full",
+  "terrain",
+  "props",
+  "nodes"
+ ]
+}
