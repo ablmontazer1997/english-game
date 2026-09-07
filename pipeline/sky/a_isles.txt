@@ -1,0 +1,8 @@
+A single row of separate elements on a flat solid MEDIUM GREY background (RGB 128 128 128), completely uniform, no gradient, no ground plane, no cast shadows on the background. Using the attached screenshot as the exact art-direction reference: the same glossy 3D game art, the same bright grass, pale rock, violet, gold and mint palette, the same soft lighting, the same slightly elevated three-quarter view. Evenly spaced with generous empty space between them so none touch or overlap. NO TEXT anywhere.
+
+Five SEPARATE small floating sky islands, each one a chunk of pale rock with a rounded grassy top and a rugged rocky underside tapering to a point, exactly like the little islands scattered around the reference screenshot. Left to right:
+1. A small island with a tall thin waterfall pouring off its edge and falling away below it.
+2. A small island carrying one pink blossom tree and a few flowers.
+3. A bare rocky island with a rounded grass cap and a couple of stones.
+4. A tiny distant island, simple and smooth.
+5. A wider low island with a cluster of violet and blue crystals growing on it.

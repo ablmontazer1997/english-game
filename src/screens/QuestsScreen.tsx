@@ -1,68 +1,68 @@
-import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { FlameIcon } from '../components/Icon'
-import { ImgIcon } from '../components/ImgIcon'
-import { Bar } from '../components/Bar'
-import type { Quest, Reward } from '../types/game'
-import './screens.css'
-import './screens2.css'
+import { Panel, Art, art, PAGE_BG, type ArtName } from '../components/PageArt'
+import questIcon from '../assets/sky/nav2_quests.png'
+import type { Quest } from '../types/game'
+import './pages.css'
 
-// Varied medallion icon per quest so the list reads like the mockup, chosen
-// stably from the quest's position rather than random.
-const ICONS: ((s: number) => ReactNode)[] = [
-  (s) => <FlameIcon size={s} />,
-  (s) => <ImgIcon name="gem" size={s} />,
-  (s) => <ImgIcon name="potion" size={s} />,
-  (s) => <ImgIcon name="chest_closed" size={s} />,
-  (s) => <ImgIcon name="badge" size={s} />,
-]
+const QUEST_ICONS: ArtName[] = ['qi_star', 'qi_potion', 'qi_crystal', 'qi_chest', 'qi_flame']
 
-function RewardView({ r }: { r: Reward }) {
-  return (
-    <div className="rc-reward">
-      {r.coins != null && <span><ImgIcon name="coin" size={18} />{r.coins}</span>}
-      {r.gems != null && <span><ImgIcon name="gem" size={18} />{r.gems}</span>}
-      {r.potion != null && <span><ImgIcon name="potion" size={18} />{r.potion}</span>}
-      {r.chest != null && <span><ImgIcon name="chest_closed" size={18} />Chest</span>}
-    </div>
-  )
+function resetIn(period: 'daily' | 'weekly') {
+  const now = new Date()
+  const end = new Date(now)
+  end.setHours(24, 0, 0, 0)
+  if (period === 'weekly') end.setDate(end.getDate() + ((7 - now.getDay()) % 7))
+  const ms = end.getTime() - now.getTime()
+  const h = Math.floor(ms / 36e5)
+  return h >= 24 ? `${Math.floor(h / 24)}d ${h % 24}h` : `${h}h ${Math.floor((ms % 36e5) / 6e4)}m`
 }
 
-function QuestCard({ q, i, onClaim }: { q: Quest; i: number; onClaim: (id: string) => void }) {
+function QuestRow({ q, i, onClaim }: { q: Quest; i: number; onClaim: (id: string) => void }) {
   const pct = Math.min(100, (q.progress / q.target) * 100)
   const ready = q.progress >= q.target && !q.done
   return (
-    <div className="rc-crow">
-      <div className="rc-medallion"><div className="rc-medallion-in">{ICONS[i % ICONS.length](34)}</div></div>
-      <div className="rc-crow-main">
-        <b>{q.title}</b>
-        <RewardView r={q.reward} />
-        <div className="rc-prog">
-          <Bar value={pct} tone="gold" />
-          <span className="rc-prog-txt">{Math.min(q.progress, q.target)}/{q.target}</span>
+    <Panel name="pnl_card4" inner="q-row" style={ready ? { filter: "drop-shadow(0 5px 12px rgba(20,60,110,.18)) drop-shadow(0 0 9px rgba(255,210,110,.95))" } : undefined}>
+      <Art name={QUEST_ICONS[i % QUEST_ICONS.length]} className="q-ic" />
+      <div className="q-main">
+        <div className="q-title">{q.title}</div>
+        <div className="q-prog">
+          <div className="bar"><i style={{ width: `${pct}%` }} /></div>
+          <b>{Math.min(q.progress, q.target)}/{q.target}</b>
         </div>
       </div>
-      <button
-        className={`btn-img ${ready ? 'green' : 'grey'} rc-crow-btn`}
-        disabled={!ready} onClick={() => onClaim(q.id)}>
-        {q.done ? <>Claimed<span className="rc-tick">✓</span></> : ready ? 'Claim' : 'In progress'}
-      </button>
-    </div>
+      {ready
+        ? <Panel name="btn_gold" className="q-cta" onClick={() => onClaim(q.id)}>Claim</Panel>
+        : <img className="q-reward" src={art(q.done ? 'chest_open' : 'qi_chest')} alt="" draggable={false} />}
+    </Panel>
   )
 }
 
 export function QuestsScreen() {
   const { quests, claimQuest } = useGame()
-  const daily = quests.filter((q) => q.period === 'daily')
-  const weekly = quests.filter((q) => q.period === 'weekly')
+  const [period, setPeriod] = useState<'daily' | 'weekly'>('daily')
+  const list = quests.filter((q) => q.period === period)
+
   return (
-    <div className="screen">
-      <div className="page reveal">
-        <div className="rc-banner"><h1>Quests</h1><p>Complete missions and earn rewards.</p></div>
-        <div className="rc-sec"><span className="rc-sec-t">Daily</span></div>
-        {daily.map((q, i) => <QuestCard key={q.id} q={q} i={i} onClaim={claimQuest} />)}
-        <div className="rc-sec"><span className="rc-sec-t">Weekly</span></div>
-        {weekly.map((q, i) => <QuestCard key={q.id} q={q} i={i + daily.length} onClaim={claimQuest} />)}
+    <div className="screen pg">
+      <img className="pg-bg" src={PAGE_BG.quests} alt="" draggable={false} />
+      <div className="pg-scroll">
+        <Panel name="pnl_card4" className="reveal" inner="pg-title">
+          <img src={questIcon} alt="" draggable={false} style={{ width: 52, height: 'auto' }} />
+          <span className="pg-title-t">Quests</span>
+          <Panel name="chip_violet" className="pg-chip">{resetIn(period)}</Panel>
+        </Panel>
+
+        <div className="seg reveal" style={{ ['--seg-track' as string]: `url(${art('pnl_row6')})` }}>
+          <span className="seg-pill" style={{
+            backgroundImage: `url(${art('pnl_pill32')})`,
+            left: period === 'daily' ? '1.5%' : '51.5%',
+          }} />
+          <button className={period === 'daily' ? 'on' : ''} onClick={() => setPeriod('daily')}>Daily</button>
+          <button className={period === 'weekly' ? 'on' : ''} onClick={() => setPeriod('weekly')}>Weekly</button>
+        </div>
+
+        {list.map((q, i) => <QuestRow key={q.id} q={q} i={i} onClaim={claimQuest} />)}
+        {!list.length && <div className="pg-h">No {period} quests right now</div>}
       </div>
     </div>
   )

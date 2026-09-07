@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { MiniGameProps } from './types'
-import gateImg from '../assets/gate.webp'
-import sceneBg from '../assets/gapgate_bg.webp'
+import gateImg from '../assets/sky/portal.png'
+import sceneBg from '../assets/gapgate_sky.webp'
 import './gapgate.css'
 
 const ADVANCE_OK_MS = 720 // pause after a correct answer (let the gate open)

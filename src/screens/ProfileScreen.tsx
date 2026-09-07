@@ -1,73 +1,51 @@
 import { useGame } from '../services/ServiceProvider'
-import { ImgIcon } from '../components/ImgIcon'
+import { Panel, Art, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import type { CurrencyId } from '../types/game'
-import avatarHero from '../assets/ui/profile/avatar_hero.webp'
-import divider from '../assets/ui/profile/divider.webp'
-import statStreak from '../assets/ui/profile/stat_streak.webp'
-import statStars from '../assets/ui/profile/stat_stars.webp'
-import statStages from '../assets/ui/profile/stat_stages.webp'
-import statLeague from '../assets/ui/profile/stat_league.webp'
-import btnOpenCyan from '../assets/ui/profile/btn_open_cyan.webp'
-import btnOpenGold from '../assets/ui/profile/btn_open_gold.webp'
-import btnCustomize from '../assets/ui/profile/btn_customize.webp'
-import './screens.css'
-import './screens2.css'
+import mage from '../assets/character/body/mage_m.webp'
+import './pages.css'
 
-function StatCard({ img, v, l }: { img: string; v: React.ReactNode; l: string }) {
-  return (
-    <div className="pf-stat">
-      <div className="pf-stat-card">
-        <img src={img} alt="" draggable={false} />
-        <b className="pf-stat-v">{v}</b>
-      </div>
-      <span className="pf-stat-l">{l}</span>
-    </div>
-  )
-}
+const BADGES: ArtName[] = ['badge_1', 'badge_2', 'badge_3', 'badge_lock1', 'badge_lock2']
 
-export function ProfileScreen({ onBuy, onCustomize }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void }) {
-  const { profile, worlds } = useGame()
-  if (!profile) return <div className="screen" />
-  const totalStars = worlds.reduce((a, w) => a + w.stages.reduce((b, s) => b + s.stars, 0), 0)
-  const done = worlds.reduce((a, w) => a + w.stages.filter((s) => s.status === 'done').length, 0)
+export function ProfileScreen({ onCustomize }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void }) {
+  const { profile, worlds, currencies } = useGame()
+  if (!profile) return <div className="screen pg" />
+  const stars = worlds.reduce((a, w) => a + w.stages.reduce((b, s) => b + s.stars, 0), 0)
 
   return (
-    <div className="screen">
-      <div className="page reveal">
-        <div className="pf-hero">
-          <img className="pf-avatar" src={avatarHero} alt="" draggable={false} />
-          <div className="pf-id">
-            <h1 className="pf-name">{profile.name}</h1>
-            <p className="pf-sub">Level {profile.level} · Apprentice Mage</p>
-            <img className="pf-divider" src={divider} alt="" draggable={false} />
-          </div>
+    <div className="screen pg">
+      <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
+      <div className="pg-scroll">
+        <div className="pf-stage reveal">
+          <img className="pf-char" src={mage} alt="" draggable={false} />
+          <Art name="podium" className="pf-podium" />
+          <Panel name="btn_edit" className="pf-edit" onClick={onCustomize}>Edit</Panel>
         </div>
+
+        <Panel name="pnl_card4" inner="pf-name">
+          <span className="pf-name-t">{profile.name}<i className="pf-lvl">{profile.level}</i></span>
+        </Panel>
 
         <div className="pf-stats">
-          <StatCard img={statStreak} v={profile.streak} l="Day Streak" />
-          <StatCard img={statStars} v={totalStars} l="Stars" />
-          <StatCard img={statStages} v={done} l="Stages" />
-          <StatCard img={statLeague} v={profile.leagueTier} l="League" />
+          <Panel name="card_stat" inner="pf-stat">
+            <img src={art('qi_flame')} alt="" draggable={false} />
+            <b>{profile.streak}</b><span>Streak</span>
+          </Panel>
+          <Panel name="card_stat" inner="pf-stat">
+            <img src={art('qi_star')} alt="" draggable={false} />
+            <b>{stars}</b><span>Stars</span>
+          </Panel>
+          <Panel name="card_stat" inner="pf-stat">
+            <img src={art('gem_s')} alt="" draggable={false} />
+            <b>{currencies?.gems ?? 0}</b><span>Gems</span>
+          </Panel>
         </div>
 
-        <div className="rc-sec"><span className="rc-sec-t">Backpack & Character</span></div>
-        <div className="rc-crow">
-          <ImgIcon name="chest_closed" size={54} className="pf-row-ic" />
-          <div className="rc-crow-main"><b>Backpack</b><p>Boosters, potions and crystals</p></div>
-          <button className="pf-rowbtn" aria-label="Open"><img src={btnOpenCyan} alt="Open" draggable={false} /></button>
-        </div>
-        <div className="rc-crow">
-          <ImgIcon name="badge" size={54} className="pf-row-ic" />
-          <div className="rc-crow-main"><b>Character Creator</b><p>Hair, robe, hat, staff and color</p></div>
-          <button className="pf-rowbtn" aria-label="Customize" onClick={onCustomize}><img src={btnCustomize} alt="Customize" draggable={false} /></button>
-        </div>
-
-        <div className="rc-sec"><span className="rc-sec-t">Shop</span></div>
-        <div className="rc-crow">
-          <ImgIcon name="gem" size={54} className="pf-row-ic" />
-          <div className="rc-crow-main"><b>Gem Shop</b><p>Cosmetics, Moon Pass, boosters</p></div>
-          <button className="pf-rowbtn" aria-label="Open" onClick={() => onBuy('gems')}><img src={btnOpenGold} alt="Open" draggable={false} /></button>
-        </div>
+        <Panel name="panel_wide" inner="pf-ach">
+          <span className="pf-ach-t">Achievements</span>
+          <div className="pf-ach-row">
+            {BADGES.map((b) => <img key={b} src={art(b)} alt="" draggable={false} />)}
+          </div>
+        </Panel>
       </div>
     </div>
   )

@@ -1,0 +1,5 @@
+Use the FIRST attached image as the EXACT style, palette and art-direction reference: a magical floating sky-island world (Whispering Forest) at dusk, soft blue-to-teal sky, warm painterly island art, gold-and-amethyst magical theme.
+
+Design a clean full BACKGROUND SCENE for a game "stage" overlay (a lobby and a victory screen will be drawn on top of it), portrait phone 1024x1536, filling the whole frame. A serene sky-island vista: distant floating islands with pink-blossom trees and small waterfalls, a soft aurora and glowing motes, a gentle sky gradient. 
+
+CRITICAL: keep the whole MIDDLE two-thirds of the frame very calm, soft and low-contrast (a smooth airy gradient) so bright UI panels, cards and buttons placed on top stay perfectly readable. Put all detail only along the top edge and the bottom edge. No text, no numbers, no UI, no panels, no buttons, no characters. Just the painted background scene.

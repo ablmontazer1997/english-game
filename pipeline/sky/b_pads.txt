@@ -1,0 +1,8 @@
+A single row of THREE separate mobile-game elements on a flat solid MEDIUM GREY background (RGB 128 128 128), completely uniform, no gradient, no ground plane, no cast shadows on the background. Rendered as premium glossy 3D game art matching a magical floating sky kingdom: soft studio lighting from the upper left, smooth polished materials, crisp specular highlights, a slightly elevated three-quarter front view looking down at about 35 degrees.
+
+Left to right, evenly spaced, with generous empty space between them so none touch or overlap:
+1. A circular level pad built from three stacked round discs of decreasing size, like a small podium. The bottom and middle discs have polished GOLD rims with a warm bevel; the flat top disc is smooth cream ivory. The gold rim is completely plain and EMPTY: absolutely no stars, no gems, no numbers, no letters, no symbols, no engraving of any kind anywhere on it. The top surface is completely blank cream, nothing on it at all.
+2. One single gold star on its own: a chunky five-pointed star, glossy warm gold with an orange-amber bevelled edge and a bright highlight, seen from the front.
+3. One single closed padlock on its own: a chunky rounded dark slate-grey padlock body with a white keyhole and a darker grey shackle, glossy plastic material, seen from the front.
+
+No text, no letters, no numbers anywhere in the image.

@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
-import sceneBg from '../assets/memory_bg.webp'
-import backPurple from '../assets/ui/memcards/card_back_purple.webp'
-import backTeal from '../assets/ui/memcards/card_back_teal.webp'
-import frontPurple from '../assets/ui/memcards/card_front_purple.webp'
-import frontTeal from '../assets/ui/memcards/card_front_teal.webp'
+import sceneBg from '../assets/pages/bg_profile.webp'
+import cardBack from '../assets/games/tarot_back.png'
+import cardFront from '../assets/games/tarot_front.png'
 import './memorycrystals.css'
 
-// two decorative card themes, alternated by grid position (not by pair)
-const THEMES = [
-  { back: backPurple, front: frontPurple, ink: '#5a2d82' },
-  { back: backTeal, front: frontTeal, ink: '#0e6a6a' },
-]
+// one unified magical card (new design system): decorated back, parchment face
+const CARD_INK = '#42285f'
 
 const MAX_PAIRS = 6
 const FLIP_BACK_MS = 800
@@ -154,11 +149,10 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
         style={{ '--mc-cols': String(cols) } as CSSProperties}
         aria-label="Memory crystals"
       >
-        {deck.map((card, idx) => {
+        {deck.map((card) => {
           const isMatched = matched.has(card.pairId)
           const isUp = isMatched || flipped.includes(card.key)
           const isWrong = wrong.includes(card.key)
-          const theme = THEMES[idx % THEMES.length]
           const cls =
             'mc-card' +
             (isUp ? ' is-up' : '') +
@@ -174,11 +168,11 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
               onClick={() => onTap(card)}
             >
               <span className="mc-inner">
-                <span className="mc-back" aria-hidden={isUp} style={{ backgroundImage: `url(${theme.back})` }} />
+                <span className="mc-back" aria-hidden={isUp} style={{ backgroundImage: `url(${cardBack})` }} />
                 <span
                   className={'mc-front' + (card.face === 'front' ? ' is-word' : ' is-meaning')}
                   aria-hidden={!isUp}
-                  style={{ backgroundImage: `url(${theme.front})`, color: theme.ink }}
+                  style={{ backgroundImage: `url(${cardFront})`, color: CARD_INK }}
                 >
                   <span className="mc-label" dir={card.face === 'front' ? 'ltr' : 'auto'}>{card.text}</span>
                 </span>

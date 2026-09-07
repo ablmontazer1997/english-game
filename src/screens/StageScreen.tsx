@@ -1,7 +1,12 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { HeartIcon, StarIcon, CoinIcon, BoltIcon } from '../components/Icon'
-import { ImgIcon } from '../components/ImgIcon'
+import { HeartIcon } from '../components/Icon'
+import { Panel, Art } from '../components/PageArt'
+import stageBg from '../assets/stage_bg.webp'
+import wordCard from '../assets/games/word_card.png'
+import icEnergy from '../assets/sky/ic_energy.png'
+import icCoin from '../assets/sky/ic_coin.png'
+import icHeart from '../assets/sky/ic_heart.png'
 import type { Stage, SrsItem, StageResult } from '../types/game'
 import { gameFor } from '../games/registry'
 import type { MiniGameOutcome } from '../games/types'
@@ -9,20 +14,22 @@ import './stage.css'
 
 type Phase = 'gate' | 'intro' | 'play' | 'result'
 // mini-games that paint a full-bleed background paint edge-to-edge (no host padding)
-const FULL_BLEED = new Set(['gap-gate', 'memory-crystals'])
+const FULL_BLEED = new Set(['gap-gate', 'memory-crystals', 'match-blitz', 'bubble-pop'])
 const MG_LABEL: Record<string, string> = {
   'boss-battle': 'Boss Battle', 'match-blitz': 'Match Blitz', 'bubble-pop': 'Bubble Pop',
   'rune-type': 'Rune Type', 'memory-crystals': 'Memory Crystals', 'gap-gate': 'Gap Gate',
   'spell-weaver': 'Spell Weaver', 'echo': 'Echo', 'portal-run': 'Portal Run', 'potion-mix': 'Potion Mix',
 }
 
-export function StageScreen({ stage, onExit, onNeedHearts }: { stage: Stage; onExit: () => void; onNeedHearts: () => void }) {
+export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { stage: Stage; onExit: () => void; onNeedHearts: () => void; previewPhase?: Phase }) {
   const { currencies, service, submitResult } = useGame()
   const hearts = currencies?.hearts ?? 0
-  const [phase, setPhase] = useState<Phase>(hearts > 0 ? 'intro' : 'gate')
+  const [phase, setPhase] = useState<Phase>(previewPhase ?? (hearts > 0 ? 'intro' : 'gate'))
   const [items, setItems] = useState<SrsItem[]>([])
-  const [maxCombo, setMaxCombo] = useState(0)
-  const [result, setResult] = useState<StageResult | null>(null)
+  const [, setMaxCombo] = useState(0)
+  const [result, setResult] = useState<StageResult | null>(previewPhase === 'result'
+    ? { stageId: stage.id, correct: 8, total: 10, stars: 3, heartsLost: 0, xpGained: 126, coinsGained: 85 }
+    : null)
 
   useEffect(() => { service.getStageItems(stage.id, stage.miniGame).then(setItems) }, [stage, service])
 
@@ -56,40 +63,50 @@ export function StageScreen({ stage, onExit, onNeedHearts }: { stage: Stage; onE
 
   if (phase === 'intro') return (
     <div className="stage-host full">
-      <div className="sky" />
+      <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
-      <div className="intro-card pop">
-        <span className="mg-tag">{MG_LABEL[stage.miniGame] ?? stage.miniGame}</span>
-        <h2>{stage.title}</h2>
-        <p>Study 3 words for this stage, then use them in the game.</p>
-        <div className="teach-list">
+      <div className="lobby pop">
+        <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">
+          {MG_LABEL[stage.miniGame] ?? stage.miniGame}
+        </Panel>
+        <h2 className="lobby-title">{stage.title}</h2>
+        <p className="lobby-sub">Learn 3 runes, then cast them</p>
+        <div className="lobby-cards">
           {items.slice(0, 3).map((it) => (
-            <div className="teach-row" key={it.id}><b>{it.front}</b><span>{it.back}</span></div>
+            <div className="lobby-card" style={{ backgroundImage: `url(${wordCard})` }} key={it.id}>
+              <b>{it.front}</b><span>{it.back}</span>
+            </div>
           ))}
         </div>
-        <button className="btn btn-cyan big" disabled={!items.length} onClick={() => setPhase('play')}>Start</button>
+        <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in"
+          disabled={!items.length} onClick={() => items.length && setPhase('play')}>
+          Start
+        </Panel>
       </div>
     </div>
   )
 
   if (phase === 'result' && result) return (
     <div className="stage-host full">
-      <div className="sky" />
-      <div className="result-card pop">
+      <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
+      <div className="result pop">
         <div className="result-stars">
           {[0, 1, 2].map((i) => (
-            <span key={i} className={`rstar ${i < result.stars ? 'on' : ''}`} style={{ animationDelay: `${i * 140}ms` }}>
-              <StarIcon size={i === 1 ? 62 : 50} />
+            <span key={i} className={`rstar s${i} ${i < result.stars ? 'on' : ''}`} style={{ animationDelay: `${i * 150}ms` }}>
+              <Art name="qi_star" />
             </span>
           ))}
         </div>
-        <h2>{result.stars === 3 ? 'Perfect!' : result.stars >= 1 ? 'Nice!' : 'Try again'}</h2>
-        <p>{result.correct} of {result.total} correct · Best combo: {maxCombo}</p>
-        <div className="reward-row">
-          <span className="rw"><BoltIcon size={18} />{result.xpGained} XP</span>
-          <span className="rw"><CoinIcon size={18} />{result.coinsGained}</span>
+        <h2 className="result-title">{result.stars === 3 ? 'Perfect!' : result.stars >= 1 ? 'Nice!' : 'Try again'}</h2>
+        <p className="result-sub">{result.correct} of {result.total} runes cast</p>
+        <div className="result-rewards">
+          <span className="rwd"><img src={icEnergy} alt="" /><b>{result.xpGained}</b><small>XP</small></span>
+          <span className="rwd"><img src={icCoin} alt="" /><b>{result.coinsGained}</b></span>
         </div>
-        <button className="btn btn-gold big" onClick={onExit}>Continue</button>
+        <Art name="chest_open" className="result-chest" />
+        <Panel name="btn_gold" className="result-continue btn-h" inner="lobby-start-in" onClick={onExit}>
+          Continue
+        </Panel>
       </div>
     </div>
   )
@@ -101,7 +118,7 @@ export function StageScreen({ stage, onExit, onNeedHearts }: { stage: Stage; onE
       <div className="sky" />
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="play-top">
-        <div className="play-hearts"><ImgIcon name="heart" size={22} /><b>{hearts}</b></div>
+        <div className="play-hearts"><img src={icHeart} alt="" /><b>{hearts}</b></div>
         <span className="play-mg">{MG_LABEL[stage.miniGame] ?? stage.miniGame}</span>
       </div>
       <div className={`game-host${FULL_BLEED.has(stage.miniGame) ? ' bleed' : ''}`}>

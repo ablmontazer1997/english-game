@@ -1,0 +1,17 @@
+Using the attached screenshot only as the style, colour and lighting reference, draw ONE vertical segment of a floating sky island, in exactly the same glossy 3D mobile-game art style, same palette, same soft top-down-front camera angle and same lighting as the reference.
+
+Composition rules, follow them exactly, they are the point of the image:
+
+1. The island fills the middle of the frame as a vertical strip. Bright green grass on top, warm brown and grey rock cliff falling away below it, with a few small hanging vines and moss on the rock.
+
+2. A pale cream stone-tile path with a warm golden trim along both of its edges runs up the island. The path ENTERS the image at the BOTTOM EDGE exactly at the horizontal centre of the frame, and LEAVES the image at the TOP EDGE exactly at the horizontal centre of the frame. In between it winds in a gentle S curve, going right of centre in the lower half and left of centre in the upper half, a wider and lazier curve than a tight zigzag. The path is continuous and unbroken from the bottom edge to the top edge.
+
+3. The green grass plateau must have EXACTLY the same width at the very top row of the image as it has at the very bottom row of the image, and it must be centred in the frame at both of those rows. The cliff silhouette at the top edge and at the bottom edge must look the same.
+
+4. The island does not reach the left or right sides of the frame. Leave roughly one sixth of the frame as empty background on the left and one sixth as empty background on the right.
+
+5. The background outside the island is a completely flat, uniform, solid sky blue, one single colour, with no clouds, no gradient, no texture and no shadow cast on it.
+
+6. Decorate the grass beside the path with a few small things in the reference style: two small pink-blossom trees, a patch of tiny white flowers and one grey boulder. Keep them small and near the outer edge of the grass so the path stays clear.
+
+7. Absolutely nothing else: no level buttons, no numbered discs, no stars, no characters, no text, no user interface, no clouds, no other islands, no portal, no frame, no border.

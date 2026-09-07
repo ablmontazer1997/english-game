@@ -1,0 +1,174 @@
+/* Shared design system for the four secondary pages.
+
+   Every painted panel is locked to the aspect ratio it was painted at and only
+   ever scales uniformly. Panel content lives in an absolutely positioned layer
+   so overflowing art can never grow the box, and art inside a definite-size
+   slot uses object-fit:contain so it is never distorted either. Buttons are
+   sized by HEIGHT (width follows from their own ratio). Only the progress
+   fills, which are variable by nature, are drawn with CSS. */
+
+.screen.pg { padding: 0; overflow: hidden; }
+.pg-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0; pointer-events: none;
+}
+.pg-scroll {
+  position: absolute; inset: 0; z-index: 1;
+  overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+  padding: calc(var(--hud-h) + var(--safe-top) + 10px) 12px
+           calc(var(--nav-h) + var(--safe-bottom) + 16px);
+  display: grid; grid-template-columns: 100%; gap: 10px; align-content: start;
+}
+
+.pnl {
+  background-repeat: no-repeat; background-size: 100% 100%;
+  border: 0; padding: 0; width: 100%; display: block; position: relative;
+  filter: drop-shadow(0 5px 12px rgba(20, 60, 110, .18));
+}
+.pnl-in { position: absolute; inset: 0; display: grid; place-items: center; }
+button.pnl { cursor: pointer; transition: transform 120ms var(--ease-magic, ease-out); }
+button.pnl:not(:disabled):active { transform: scale(.96); }
+button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
+/* a button sized by height: its painted ratio then decides the width */
+.btn-h { width: auto; }
+
+.pg-h {
+  margin: 6px 2px 0; font-size: 15px; font-weight: 800; color: #fff;
+  text-shadow: 0 2px 6px rgba(20, 50, 110, .55);
+  display: flex; align-items: center; gap: 8px;
+}
+.pg-h::after { content: ''; flex: 1; height: 2px; border-radius: 2px; background: rgba(255,255,255,.45); }
+
+/* ---------- title card ---------- */
+.pg-title { justify-items: stretch; display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: 100%;
+  align-items: center; padding: 0 16px; gap: 10px; }
+.pg-title-t { font-size: 25px; font-weight: 900; color: #3c4160; letter-spacing: -.01em; }
+.pg-chip {
+  height: 36px; display: grid; place-items: center; padding: 0 4px;
+  color: #fff; font-size: 12.5px; font-weight: 800;
+  text-shadow: 0 1px 3px rgba(60, 20, 140, .5);
+}
+
+/* ---------- segmented switch ---------- */
+.seg {
+  position: relative; width: 262px; aspect-ratio: 6; justify-self: center; margin: 2px 0 0;
+  background-image: var(--seg-track); background-size: 100% 100%; background-repeat: no-repeat;
+  filter: drop-shadow(0 4px 10px rgba(20, 60, 110, .18));
+}
+.seg-pill {
+  position: absolute; top: 9%; bottom: 9%; width: 47%;
+  background-size: 100% 100%; background-repeat: no-repeat;
+  transition: left 260ms cubic-bezier(.34, 1.42, .5, 1);
+}
+.seg button {
+  position: absolute; top: 0; bottom: 0; width: 50%;
+  background: none; padding: 0; font-size: 13.5px; font-weight: 800; color: #7d83a2;
+}
+.seg button:first-of-type { left: 0; }
+.seg button:last-of-type { right: 0; }
+.seg button.on { color: #fff; text-shadow: 0 1px 3px rgba(60, 20, 140, .45); }
+
+/* ---------- quest row ---------- */
+.q-row { justify-items: stretch; display: grid; grid-template-columns: 62px 1fr auto; grid-template-rows: 100%;
+  align-items: center; padding: 6px 14px 6px 8px; gap: 10px; }
+.q-ic { width: 100%; height: 100%; object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(40, 60, 120, .28)); }
+.q-main { min-width: 0; display: grid; gap: 7px; align-content: center; }
+.q-title { font-size: 14px; font-weight: 800; color: #3c4160; text-align: left;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q-prog { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.bar { height: 11px; border-radius: 99px; background: #e4e6f2;
+  box-shadow: inset 0 2px 3px rgba(60, 70, 120, .18); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 99px;
+  background: linear-gradient(180deg, #8fe97a, #3fb63c);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5); transition: width 320ms ease; }
+.q-prog b { font-size: 12px; font-weight: 800; color: #6b7192; }
+.q-cta { height: 42px; width: auto; display: grid; place-items: center;
+  color: #fff; font-size: 13.5px; font-weight: 800; text-shadow: 0 1px 3px rgba(120, 70, 0, .45); }
+.q-reward { width: 50px; height: auto; }
+.q-row-done { filter: drop-shadow(0 5px 12px rgba(20, 60, 110, .18)) drop-shadow(0 0 9px rgba(255, 210, 110, .95)); }
+
+/* ---------- shop ---------- */
+.sh-banner { justify-items: stretch; display: grid; grid-template-columns: 42% 1fr; grid-template-rows: 100%;
+  align-items: center; padding: 6px 14px 6px 6px; }
+.sh-banner-art { width: 100%; height: 100%; object-fit: contain; }
+.sh-banner-main { display: grid; gap: 6px; justify-items: start; align-content: center; }
+.sh-banner-t { font-size: 17px; font-weight: 900; color: #3c4160; }
+.sh-banner-l { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 800; color: #5a6086; }
+.sh-banner-l img { width: 20px; height: auto; }
+.sh-ribbon { position: absolute; right: 16px; top: 6px; height: 30px; width: auto;
+  color: #6a4a00; font-size: 10.5px; font-weight: 900; z-index: 2; }
+.sh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sh-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sh-card { display: grid; grid-template-rows: minmax(0, 1fr) 20px 34px;
+  justify-items: center; align-items: center; padding: 10px 10px 12px; gap: 4px; }
+.sh-card-art { width: 100%; height: 100%; object-fit: contain; }
+.sh-card-n { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 900; color: #3c4160; }
+.sh-card-n img { width: 16px; height: auto; }
+.sh-price { height: 100%; width: auto; display: grid; place-items: center; padding: 0 6px;
+  color: #fff; font-size: 12.5px; font-weight: 800; text-shadow: 0 1px 3px rgba(20, 90, 20, .5); }
+.sh-grid3 .sh-card { grid-template-rows: minmax(0, 1fr) 18px 30px; padding: 8px 6px 10px; }
+.sh-grid3 .sh-card-n { font-size: 12px; }
+.sh-grid3 .sh-price { font-size: 11px; }
+.sh-row { justify-items: stretch; display: grid; grid-template-columns: 44px 1fr auto; grid-template-rows: 100%;
+  align-items: center; gap: 10px; padding: 8px 14px 8px 12px; }
+.sh-row-ic { width: 100%; height: 100%; object-fit: contain; }
+.sh-row b { font-size: 13px; font-weight: 800; color: #3c4160; text-align: left; }
+
+/* ---------- league ---------- */
+.lg-hero { display: grid; justify-items: center; gap: 5px; padding-top: 2px; }
+.lg-trophy { width: 146px; height: auto; filter: drop-shadow(0 8px 18px rgba(20, 50, 110, .35)); }
+.lg-name { font-size: 27px; font-weight: 900; color: #fff;
+  text-shadow: 0 3px 10px rgba(30, 50, 130, .6), 0 1px 0 rgba(90, 60, 160, .5); }
+.lg-hero .pg-chip { width: 96px; }
+.lg-rail { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 4px 0; }
+.lg-rail img { width: 42px; height: auto; opacity: .5; filter: saturate(.45); transition: all 220ms ease; }
+.lg-rail img.on { width: 58px; opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 220, 130, .95)); }
+.lg-list { display: grid; gap: 8px; }
+.lg-row { justify-items: stretch; display: grid; grid-template-columns: 44px 1fr auto; grid-template-rows: 100%;
+  align-items: center; gap: 10px; padding: 7px 16px 7px 9px; }
+.lg-rank { position: relative; width: 100%; height: 100%; display: grid; place-items: center;
+  font-size: 16px; font-weight: 900; color: #6b7192; }
+.lg-rank img { width: 100%; height: 100%; object-fit: contain; }
+.lg-rank span { position: absolute; font-size: 15px; font-weight: 900; color: #fff;
+  text-shadow: 0 1px 2px rgba(90, 60, 0, .55); }
+.lg-nm { font-size: 15px; font-weight: 800; color: #3c4160; text-align: left;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lg-lp { font-size: 13.5px; font-weight: 900; color: #4a5075; white-space: nowrap; }
+.lg-row-me .lg-nm, .lg-row-me .lg-lp, .lg-row-me .lg-rank {
+  color: #fff; text-shadow: 0 1px 3px rgba(60, 20, 140, .5); }
+.lg-zone { position: relative; }
+.lg-zone.promote::before, .lg-zone.demote::before {
+  content: ''; position: absolute; left: -5px; right: -5px; top: -3px; bottom: -3px;
+  border-radius: 20px; z-index: 0;
+}
+.lg-zone.promote::before { background: rgba(120, 225, 130, .30); }
+.lg-zone.demote::before { background: rgba(255, 125, 125, .26); }
+.lg-zone .pnl { z-index: 1; }
+
+/* ---------- profile ---------- */
+.pf-stage { display: grid; justify-items: center; position: relative; margin-top: 2px; }
+.pf-char { width: 158px; height: auto; margin-bottom: -56px; z-index: 1;
+  filter: drop-shadow(0 10px 16px rgba(20, 50, 110, .4)); }
+.pf-podium { width: 214px; height: auto; }
+.pf-edit { position: absolute; right: 8px; bottom: 20px; height: 40px; width: auto;
+  display: grid; place-items: center; padding: 0 10px;
+  color: #fff; font-size: 13.5px; font-weight: 800; text-shadow: 0 1px 3px rgba(120, 70, 0, .45); }
+.pf-name { display: grid; place-items: center; }
+.pf-name-t { font-size: 24px; font-weight: 900; color: #3c4160;
+  display: flex; align-items: center; gap: 8px; }
+.pf-lvl { min-width: 30px; height: 24px; padding: 0 7px; display: grid; place-items: center;
+  border-radius: 99px; border: 2px solid #fff; color: #fff; font-size: 12px; font-weight: 900;
+  font-style: normal; background: linear-gradient(180deg, #ffb443, #f6903c); }
+.pf-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.pf-stat { display: grid; grid-template-rows: minmax(0, 1fr) 24px 14px; justify-items: center;
+  align-items: center; padding: 10px 6px 11px; gap: 2px; }
+.pf-stat img { width: 100%; height: 100%; object-fit: contain; }
+.pf-stat b { font-size: 20px; font-weight: 900; color: #3c4160; }
+.pf-stat span { font-size: 11px; font-weight: 700; color: #7d83a2; }
+.pf-ach { padding: 12px 12px 14px; display: grid; grid-template-rows: 20px minmax(0, 1fr);
+  align-content: start; gap: 8px; }
+.pf-ach-t { font-size: 15px; font-weight: 900; color: #3c4160; text-align: left; }
+.pf-ach-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;
+  align-items: center; height: 100%; }
+.pf-ach-row img { width: 100%; height: 100%; object-fit: contain; }

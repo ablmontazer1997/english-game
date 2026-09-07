@@ -38,10 +38,11 @@ export function App() {
     ? new URLSearchParams(location.search).get('game') : null) as MiniGameId | null
   if (ready && previewGame) {
     const stage: Stage = { id: 'preview', index: 1, kind: 'practice', status: 'current', stars: 0, miniGame: previewGame, title: 'Preview' }
+    const previewPhase = new URLSearchParams(location.search).get('phase') as any
     return (
       <div className="app-frame">
         <div className="sky" />
-        <StageScreen stage={stage} onExit={() => { location.search = '' }} onNeedHearts={() => {}} />
+        <StageScreen stage={stage} onExit={() => { location.search = '' }} onNeedHearts={() => {}} previewPhase={previewPhase || undefined} />
       </div>
     )
   }

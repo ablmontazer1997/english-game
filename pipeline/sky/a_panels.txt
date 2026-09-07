@@ -1,0 +1,6 @@
+A single row of THREE separate mobile-game user-interface panels on a flat solid MEDIUM GREY background (RGB 128 128 128), completely uniform, no gradient, no ground plane, no cast shadows on the background. Rendered as premium glossy 3D game art matching a magical floating sky kingdom: soft studio lighting from the upper left, smooth polished plastic material, a thin white border, a gentle top highlight and a soft blue drop shadow, seen straight on from the front. Evenly spaced with generous empty space between them so none touch or overlap. All three are COMPLETELY EMPTY: no text, no letters, no numbers, no icons, no decoration of any kind on their surfaces.
+
+Left to right:
+1. A horizontal rounded rectangle card in soft off-white, exactly FOUR times as wide as it is tall, with generously rounded corners.
+2. A horizontal rounded rectangle row plate in soft off-white, exactly SIX times as wide as it is tall, with fully rounded pill ends.
+3. The same six-to-one row plate but filled with a glossy violet to purple gradient and outlined with a thin gold rim.

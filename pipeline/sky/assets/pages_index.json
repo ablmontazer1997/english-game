@@ -1,0 +1,320 @@
+{
+ "isle_fall": {
+  "sheet": "a_isles",
+  "w": 280,
+  "h": 371,
+  "aspect": 0.7547
+ },
+ "isle_tree": {
+  "sheet": "a_isles",
+  "w": 241,
+  "h": 411,
+  "aspect": 0.5864
+ },
+ "isle_rock": {
+  "sheet": "a_isles",
+  "w": 318,
+  "h": 266,
+  "aspect": 1.1955
+ },
+ "isle_tiny": {
+  "sheet": "a_isles",
+  "w": 131,
+  "h": 148,
+  "aspect": 0.8851
+ },
+ "isle_crystal": {
+  "sheet": "a_isles",
+  "w": 371,
+  "h": 340,
+  "aspect": 1.0912
+ },
+ "fall_big": {
+  "sheet": "a_edge",
+  "w": 345,
+  "h": 538,
+  "aspect": 0.6413
+ },
+ "trees_pink": {
+  "sheet": "a_edge",
+  "w": 386,
+  "h": 497,
+  "aspect": 0.7767
+ },
+ "trees_purple": {
+  "sheet": "a_edge",
+  "w": 387,
+  "h": 496,
+  "aspect": 0.7802
+ },
+ "crystals_big": {
+  "sheet": "a_edge",
+  "w": 391,
+  "h": 521,
+  "aspect": 0.7505
+ },
+ "pnl_card4": {
+  "sheet": "a_panels",
+  "w": 485,
+  "h": 196,
+  "aspect": 2.4745
+ },
+ "pnl_row6": {
+  "sheet": "a_panels",
+  "w": 581,
+  "h": 184,
+  "aspect": 3.1576
+ },
+ "pnl_row6v": {
+  "sheet": "a_panels",
+  "w": 538,
+  "h": 187,
+  "aspect": 2.877
+ },
+ "qi_star": {
+  "sheet": "a_qicons",
+  "w": 329,
+  "h": 334,
+  "aspect": 0.985
+ },
+ "qi_potion": {
+  "sheet": "a_qicons",
+  "w": 287,
+  "h": 397,
+  "aspect": 0.7229
+ },
+ "qi_crystal": {
+  "sheet": "a_qicons",
+  "w": 279,
+  "h": 394,
+  "aspect": 0.7081
+ },
+ "qi_chest": {
+  "sheet": "a_qicons",
+  "w": 346,
+  "h": 331,
+  "aspect": 1.0453
+ },
+ "qi_flame": {
+  "sheet": "a_qicons",
+  "w": 233,
+  "h": 434,
+  "aspect": 0.5369
+ },
+ "ui_card_wide": {
+  "sheet": "a_qui",
+  "w": 575,
+  "h": 208,
+  "aspect": 2.7644
+ },
+ "btn_gold": {
+  "sheet": "a_qui",
+  "w": 376,
+  "h": 175,
+  "aspect": 2.1486
+ },
+ "chip_violet": {
+  "sheet": "a_qui",
+  "w": 348,
+  "h": 175,
+  "aspect": 1.9886
+ },
+ "switch_seg": {
+  "sheet": "a_qui",
+  "w": 390,
+  "h": 147,
+  "aspect": 2.6531
+ },
+ "gem_s": {
+  "sheet": "a_gems",
+  "w": 168,
+  "h": 172,
+  "aspect": 0.9767
+ },
+ "gem_m": {
+  "sheet": "a_gems",
+  "w": 287,
+  "h": 226,
+  "aspect": 1.2699
+ },
+ "gem_l": {
+  "sheet": "a_gems",
+  "w": 428,
+  "h": 318,
+  "aspect": 1.3459
+ },
+ "gem_xl": {
+  "sheet": "a_gems",
+  "w": 623,
+  "h": 398,
+  "aspect": 1.5653
+ },
+ "chest_wood": {
+  "sheet": "a_chests",
+  "w": 333,
+  "h": 323,
+  "aspect": 1.031
+ },
+ "chest_silver": {
+  "sheet": "a_chests",
+  "w": 334,
+  "h": 327,
+  "aspect": 1.0214
+ },
+ "chest_epic": {
+  "sheet": "a_chests",
+  "w": 379,
+  "h": 361,
+  "aspect": 1.0499
+ },
+ "chest_open": {
+  "sheet": "a_chests",
+  "w": 416,
+  "h": 540,
+  "aspect": 0.7704
+ },
+ "panel_banner": {
+  "sheet": "a_sui",
+  "w": 522,
+  "h": 241,
+  "aspect": 2.166
+ },
+ "card_square": {
+  "sheet": "a_sui",
+  "w": 272,
+  "h": 273,
+  "aspect": 0.9963
+ },
+ "btn_green": {
+  "sheet": "a_sui",
+  "w": 336,
+  "h": 150,
+  "aspect": 2.24
+ },
+ "ribbon_gold": {
+  "sheet": "a_sui",
+  "w": 397,
+  "h": 153,
+  "aspect": 2.5948
+ },
+ "tier_1": {
+  "sheet": "a_tiers",
+  "w": 271,
+  "h": 343,
+  "aspect": 0.7901
+ },
+ "tier_2": {
+  "sheet": "a_tiers",
+  "w": 278,
+  "h": 377,
+  "aspect": 0.7374
+ },
+ "tier_3": {
+  "sheet": "a_tiers",
+  "w": 268,
+  "h": 375,
+  "aspect": 0.7147
+ },
+ "tier_4": {
+  "sheet": "a_tiers",
+  "w": 398,
+  "h": 394,
+  "aspect": 1.0102
+ },
+ "tier_5": {
+  "sheet": "a_tiers",
+  "w": 343,
+  "h": 447,
+  "aspect": 0.7673
+ },
+ "rank_gold": {
+  "sheet": "a_lui",
+  "w": 221,
+  "h": 229,
+  "aspect": 0.9651
+ },
+ "rank_silver": {
+  "sheet": "a_lui",
+  "w": 210,
+  "h": 228,
+  "aspect": 0.9211
+ },
+ "rank_bronze": {
+  "sheet": "a_lui",
+  "w": 214,
+  "h": 228,
+  "aspect": 0.9386
+ },
+ "row_white": {
+  "sheet": "a_lui",
+  "w": 391,
+  "h": 174,
+  "aspect": 2.2471
+ },
+ "row_violet": {
+  "sheet": "a_lui",
+  "w": 362,
+  "h": 174,
+  "aspect": 2.0805
+ },
+ "trophy_big": {
+  "sheet": "a_lui",
+  "w": 275,
+  "h": 343,
+  "aspect": 0.8017
+ },
+ "podium": {
+  "sheet": "a_pui",
+  "w": 397,
+  "h": 302,
+  "aspect": 1.3146
+ },
+ "card_stat": {
+  "sheet": "a_pui",
+  "w": 317,
+  "h": 312,
+  "aspect": 1.016
+ },
+ "btn_edit": {
+  "sheet": "a_pui",
+  "w": 422,
+  "h": 195,
+  "aspect": 2.1641
+ },
+ "panel_wide": {
+  "sheet": "a_pui",
+  "w": 462,
+  "h": 254,
+  "aspect": 1.8189
+ },
+ "badge_1": {
+  "sheet": "a_badges2",
+  "w": 345,
+  "h": 377,
+  "aspect": 0.9151
+ },
+ "badge_2": {
+  "sheet": "a_badges2",
+  "w": 346,
+  "h": 377,
+  "aspect": 0.9178
+ },
+ "badge_3": {
+  "sheet": "a_badges2",
+  "w": 345,
+  "h": 375,
+  "aspect": 0.92
+ },
+ "badge_lock1": {
+  "sheet": "a_badges2",
+  "w": 341,
+  "h": 373,
+  "aspect": 0.9142
+ },
+ "badge_lock2": {
+  "sheet": "a_badges2",
+  "w": 340,
+  "h": 372,
+  "aspect": 0.914
+ }
+}

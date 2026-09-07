@@ -1,0 +1,11 @@
+A single row of FIVE separate mobile-game navigation icons, rendered as premium glossy 3D game art: soft clay/plastic materials, smooth rounded chunky forms, bright saturated colours, soft studio lighting from the upper left, gentle rim light, subtle sub-surface glow, crisp specular highlights, slight three-quarter front view, the same polished mobile-puzzle-game art style as a magical floating sky kingdom (violet, gold, cream, sky blue, mint green palette).
+
+The five icons, left to right, evenly spaced, with generous empty space between them so that none of them touch or overlap:
+1. A cosy fairytale cottage: cream stone walls, a rounded violet shingled roof with gold trim, a warm glowing yellow window and a small gold door.
+2. A partly unrolled parchment scroll with gold rolled ends, a violet wax seal with a rune on it, and one small pink gem.
+3. A shopping basket with a glossy violet body, a thick gold rim and handle, holding one pink crystal and two gold coins.
+4. A gold trophy cup with two handles, a violet gemstone set in the front and a small gold star floating just above its rim.
+5. A cute chibi character bust seen from the front: a rounded head with a pointed violet wizard hat with a gold star band, simple friendly face, no visible arms.
+
+All five icons must be clearly readable when shrunk down to 30 pixels: bold silhouettes, thick shapes, no thin lines, no fine detail, no text, no letters, no numbers, no labels.
+Flat solid MEDIUM GREY background, RGB 128 128 128, completely uniform, no gradient, no vignette, no ground plane, no cast shadows on the background. Only the five icons floating on the grey.

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
+import matchBg from '../assets/matchblitz_bg.webp'
 import './matchblitz.css'
 
 // ---- Faithful port of the approved "Match Blitz" (#mb) mini-game from
@@ -12,8 +13,8 @@ import './matchblitz.css'
 // the timer hits zero, reporting { correct, total, maxCombo } exactly once. ----
 
 const NS = 'http://www.w3.org/2000/svg'
-const ACCENT = '#16A79A'
-const ACCENT_GLOW = 'rgba(22,167,154,.32)'
+const ACCENT = '#f7cf5e'
+const ACCENT_GLOW = 'rgba(154,107,255,.45)'
 const START_SECONDS = 30
 const TIME_CAP = 35
 const CLEAR_BONUS = 6
@@ -387,7 +388,8 @@ export function MatchBlitz({ items, onFinish }: MiniGameProps) {
   const comboText = `x${Math.max(1, combo)}`
 
   return (
-    <div className="matchblitz">
+    <div className="matchblitz" style={{ backgroundImage: `url(${matchBg})` }}>
+      <div className="mb-scrim" />
       <div className="mb-app">
         <div className="mb-top">
           <div className="mb-back">&#8592;</div>

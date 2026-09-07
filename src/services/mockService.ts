@@ -23,7 +23,7 @@ function defaultState(): SaveState {
       leagueTier: 'gold',
       avatar: { base: 'wolf-hood', robeColor: 'amethyst', familiar: 'owl', staff: 'crystal', aura: 'none' },
     },
-    stars: {}, unlockedUpTo: 3, claimed: [],
+    stars: { 'w1-s1': 3, 'w1-s2': 2, 'w1-s3': 1 }, unlockedUpTo: 3, claimed: [],
   }
 }
 

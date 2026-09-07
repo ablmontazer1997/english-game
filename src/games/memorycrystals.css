@@ -38,28 +38,31 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 12px;
+  padding: 6px 13px;
   border-radius: var(--r-pill, 999px);
-  background: rgba(154, 171, 255, 0.08);
-  border: 1px solid var(--line, rgba(154, 171, 255, 0.14));
+  background: rgba(38, 26, 74, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   font-family: var(--game, sans-serif);
   font-size: 13px;
-  color: var(--ink-soft, #a9b6e6);
+  color: #eae4ff;
 }
 
 .mc-stat-num {
   font-weight: 800;
-  color: var(--ink, #eaf0ff);
+  color: #fff;
   font-size: 15px;
 }
 
 .mc-stat-lbl {
   font-size: 12px;
-  color: var(--ink-faint, #6b78ad);
+  color: rgba(234, 228, 255, 0.75);
 }
 
 .mc-stat-sep {
-  color: var(--ink-faint, #6b78ad);
+  color: rgba(234, 228, 255, 0.6);
 }
 
 .mc-stat-combo {
@@ -94,7 +97,7 @@
   padding: 0;
   background: transparent;
   cursor: pointer;
-  aspect-ratio: 381 / 683;
+  aspect-ratio: 440 / 748;
   min-height: 0;
   perspective: 700px;
   -webkit-tap-highlight-color: transparent;
@@ -145,13 +148,12 @@
   overflow-wrap: anywhere;
 }
 .mc-label {
-  display: block; max-width: 78%;
-  /* the card art has a moon at top and clouds at the bottom; sit the word in the
-     clear middle band, a touch above centre */
-  margin-bottom: 12%;
+  display: block; max-width: 74%;
+  /* parchment face: sit the word in the clear centre of the card */
+  margin-bottom: 2%;
   font-size: clamp(11px, 3.3vw, 17px);
   letter-spacing: .3px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
 }
 
 /* matched: gold lock glow */

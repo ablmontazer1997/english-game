@@ -1,97 +1,66 @@
 import { useGame } from '../services/ServiceProvider'
-import { ImgIcon, type IconName } from '../components/ImgIcon'
-import './screens.css'
-import './screens2.css'
+import { Panel, art, PAGE_BG, type ArtName } from '../components/PageArt'
+import './pages.css'
 
-type Offer = { label: string; note: string; priceGems?: number; cta?: string; icon: IconName }
-
-// Full shop, grouped by category. Paid purchases are inert until the backend is
-// connected; the potion heart-refill is the one live action.
-const SECTIONS: { label: string; offers: Offer[] }[] = [
-  {
-    label: 'Gems',
-    offers: [
-      { label: '100 Gems Pack', note: 'A small pile of shiny gems', cta: 'Buy', icon: 'gem' },
-      { label: 'Seasonal Moon Pass', note: 'Premium reward track', cta: 'Buy', icon: 'bolt' },
-    ],
-  },
-  {
-    label: 'Hearts',
-    offers: [
-      { label: 'Unlimited Hearts · 30 min', note: 'Play without limits!', priceGems: 50, icon: 'bolt' },
-      { label: '5 Hearts Pack', note: 'Instant refill', priceGems: 40, icon: 'heart' },
-    ],
-  },
-  {
-    label: 'Potions',
-    offers: [
-      { label: '3 Potions Pack', note: 'Three magical potions', priceGems: 60, icon: 'potion' },
-    ],
-  },
-  {
-    label: 'Coins',
-    offers: [
-      { label: '1000 Coins Bag', note: 'A bag of gleaming coins', priceGems: 40, icon: 'coin' },
-    ],
-  },
+const GEM_PACKS: { art: ArtName; n: number; price: string }[] = [
+  { art: 'gem_s', n: 80, price: '$0.99' },
+  { art: 'gem_m', n: 250, price: '$2.99' },
+  { art: 'gem_l', n: 650, price: '$6.99' },
+  { art: 'gem_xl', n: 1500, price: '$12.99' },
 ]
-
-function Price({ o }: { o: Offer }) {
-  if (o.priceGems == null) return <>{o.cta ?? 'Buy'}</>
-  return <span className="rc-price"><ImgIcon name="gem" size={16} />{o.priceGems}</span>
-}
-
-function Row({ icon, children, cta }: { icon: IconName; children: React.ReactNode; cta: React.ReactNode }) {
-  return (
-    <div className="rc-crow">
-      <div className="rc-medallion"><div className="rc-medallion-in"><ImgIcon name={icon} size={38} /></div></div>
-      <div className="rc-crow-main">{children}</div>
-      {cta}
-    </div>
-  )
-}
+const CHESTS: { art: ArtName; label: string; price: string }[] = [
+  { art: 'chest_wood', label: 'Wooden', price: '$0.99' },
+  { art: 'chest_silver', label: 'Silver', price: '$2.99' },
+  { art: 'chest_epic', label: 'Epic', price: '$6.99' },
+]
 
 export function ShopScreen() {
   const { currencies, refillHearts } = useGame()
   const canRefill = !!currencies?.potion
 
   return (
-    <div className="screen">
-      <div className="page reveal">
-        <div className="rc-banner"><h1>Shop</h1><p>Gems, boosters, potions and cosmetics.</p></div>
-
-        <div className="rc-hero">
-          <ImgIcon name="chest_open" size={92} className="rc-hero-art" />
-          <div className="rc-hero-main">
-            <b>Daily Treasure</b>
-            <p>Open a free chest of coins and gems.</p>
-            <button className="btn-img gold rc-hero-cta">Open</button>
+    <div className="screen pg">
+      <img className="pg-bg" src={PAGE_BG.shop} alt="" draggable={false} />
+      <div className="pg-scroll">
+        <Panel name="panel_banner" className="reveal" inner="sh-banner">
+          <img className="sh-banner-art" src={art('chest_open')} alt="" draggable={false} />
+          <div className="sh-banner-main">
+            <span className="sh-banner-t">Treasure Pile</span>
+            <span className="sh-banner-l"><img src={art('gem_s')} alt="" />2,500</span>
+            <Panel name="btn_green" className="sh-price" style={{ height: 38 }}>$9.99</Panel>
           </div>
+          <Panel name="ribbon_gold" className="sh-ribbon">Best value</Panel>
+        </Panel>
+
+        <div className="pg-h">Gems</div>
+        <div className="sh-grid">
+          {GEM_PACKS.map((p) => (
+            <Panel key={p.n} name="card_square" className="reveal" inner="sh-card">
+              <img className="sh-card-art" src={art(p.art)} alt="" draggable={false} />
+              <span className="sh-card-n"><img src={art('gem_s')} alt="" />{p.n.toLocaleString('en-US')}</span>
+              <Panel name="btn_green" className="sh-price">{p.price}</Panel>
+            </Panel>
+          ))}
         </div>
 
-        <div className="rc-sec"><span className="rc-sec-t">Quick Refill</span></div>
-        <Row icon="heart"
-          cta={<button className="btn-img cyan rc-crow-btn" disabled={!canRefill} onClick={() => refillHearts()}>Refill</button>}>
-          <b>Full Refill with Potion</b>
-          <p>Restores all hearts to full · You have {currencies?.potion ?? 0}</p>
-        </Row>
+        <div className="pg-h">Chests</div>
+        <div className="sh-grid3">
+          {CHESTS.map((c) => (
+            <Panel key={c.label} name="card_square" className="reveal" inner="sh-card">
+              <img className="sh-card-art" src={art(c.art)} alt="" draggable={false} />
+              <span className="sh-card-n">{c.label}</span>
+              <Panel name="btn_green" className="sh-price">{c.price}</Panel>
+            </Panel>
+          ))}
+        </div>
 
-        {SECTIONS.map((s) => (
-          <div key={s.label}>
-            <div className="rc-sec"><span className="rc-sec-t">{s.label}</span></div>
-            {s.offers.map((o) => (
-              <Row key={o.label} icon={o.icon}
-                cta={<button className="btn-img gold rc-crow-btn"><Price o={o} /></button>}>
-                <b>{o.label}</b>
-                <p>{o.note}</p>
-              </Row>
-            ))}
-          </div>
-        ))}
-
-        <p style={{ textAlign: 'center', color: 'var(--ink-faint)', fontSize: 12, margin: '14px 0 4px' }}>
-          Paid purchases unlock once the backend is connected.
-        </p>
+        <div className="pg-h">Quick refill</div>
+        <Panel name="pnl_row6" inner="sh-row">
+          <img className="sh-row-ic" src={art('qi_potion')} alt="" draggable={false} />
+          <b>Refill hearts with a potion · {currencies?.potion ?? 0} left</b>
+          <Panel name="btn_gold" className="q-cta" style={{ height: 36 }}
+            disabled={!canRefill} onClick={() => refillHearts()}>Use</Panel>
+        </Panel>
       </div>
     </div>
   )

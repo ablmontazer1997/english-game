@@ -29,9 +29,12 @@
 .bubblepop .bp-sky {
   position: absolute;
   inset: 0;
-  background: linear-gradient(#2e93e6, #4fb0f0 55%, #8fd0f7);
+  background: url(../assets/bubblepop_bg.webp) center / cover no-repeat;
 }
+/* The illustrated background already has its own sky, clouds and foreground,
+   so the procedural clouds/bushes are hidden to avoid clashing with it. */
 .bubblepop .bp-cloud {
+  display: none;
   position: absolute;
   background: #fff;
   border-radius: 50%;
@@ -39,6 +42,7 @@
   opacity: 0.9;
 }
 .bubblepop .bp-bushes {
+  display: none;
   position: absolute;
   left: 0;
   right: 0;
@@ -170,6 +174,9 @@
 
 .bubblepop .bp-bub {
   position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -179,10 +186,22 @@
   text-shadow: 0 2px 3px rgba(0, 0, 0, 0.18);
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.5);
-  animation: bp-bob ease-in-out infinite;
-  transition: transform 0.12s;
   padding: 0;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* ambient rising bubble — pure decoration, non-interactive */
+.bubblepop .bp-amb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+  background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.92),
+      rgba(205,238,255,.28) 66%, rgba(191,230,255,.06));
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 0 4px rgba(255,255,255,.5);
 }
 .bubblepop .bp-bub:after {
   content: "";
@@ -242,6 +261,9 @@
 /* ---- pop particles (spawned by JS, animated with WAAPI) ------------------ */
 .bubblepop .bp-drop {
   position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
   border-radius: 50%;
   pointer-events: none;
   z-index: 23;
@@ -318,4 +340,16 @@
 @media (prefers-reduced-motion: reduce) {
   .bubblepop .bp-bub,
   .bubblepop .bp-mini { animation: none !important; }
+}
+
+/* ---- orb canvas: answer orbs + gold frames + burst FX are drawn here ---- */
+.bubblepop .bp-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: pointer;
+  z-index: 3;
 }

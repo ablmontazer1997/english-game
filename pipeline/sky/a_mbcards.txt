@@ -1,0 +1,8 @@
+Use the attached image ONLY as an art-direction reference for style, palette and quality (a premium magical gold-and-amethyst mobile game UI, gold-framed cream cards and gem accents). Draw a small ASSET SHEET, NOT a screen.
+
+On a single flat solid GREEN background (RGB 0,150,80) filling the whole frame, draw TWO rounded-rectangle magical "word cards" side by side in one row, evenly spaced with a large clear gap and clear margin around all edges. Each card is a rounded rectangle, aspect about 3:2 (a little wider than tall), with a smooth glowing GOLD frame and a light warm CREAM interior with a soft inner sheen and a tiny amethyst gem accent centered on the top edge of the frame. The interior is EMPTY, plain and calm (no text, no numbers, no symbol) because words will be written on top in the app.
+
+LEFT card: the calm/default state (cream interior, gold frame).
+RIGHT card: the SAME card in a "matched" state, the whole frame and interior glowing warm gold as if lit up.
+
+Flat even lighting, no drop shadows, no ground, nothing else. Both cards identical in size and shape.

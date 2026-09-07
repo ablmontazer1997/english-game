@@ -1,0 +1,10 @@
+Using the attached screenshot as the exact art-direction reference, paint ONE VERTICAL SLICE of the floating sky-island plateau in the identical style: glossy 3D game art, bright green grass with a soft rounded lip, pale rocky cliff sides, a winding stone path of cream flagstones with a warm gold kerb along both of its edges, the same lighting and the same violet, gold, cream and mint palette. Portrait 2:3.
+
+CRITICAL RULES so that copies of this slice can be stacked on top of each other:
+- The land fills the FULL WIDTH of the image and runs off the left and right edges.
+- The land is cut off perfectly FLAT and STRAIGHT at the very top edge and at the very bottom edge of the image, like a slice cut out of a longer strip. No rounded ends, no floating rock underside, no sky gap at the top or the bottom.
+- The stone path TOUCHES the bottom edge of the image and TOUCHES the top edge of the image, so it continues into the next slice.
+- Flat solid MEDIUM GREY background (RGB 128 128 128) in the areas beside the cliffs, completely uniform, no gradient, no clouds, no sky.
+- Nothing else at all: no trees, no crystals, no rocks, no flowers, no buildings, no characters, no text.
+
+In this slice the path enters at the bottom near the LEFT third of the width, swings out towards the right side in the middle of the slice, then comes back and leaves at the top near the left third again, making a gentle S shape.

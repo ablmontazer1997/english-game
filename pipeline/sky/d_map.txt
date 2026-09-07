@@ -1,0 +1,18 @@
+Recreate the attached screenshot as a single complete illustration, in exactly the same glossy 3D mobile-game art style, the same palette, the same lighting and the same camera angle. Keep the whole composition of the reference: it is one finished scene, not a tileable piece.
+
+Keep from the reference:
+- The chain of floating sky islands running up the middle of the frame, seen slightly from above, with bright green grass on top and pale rock cliffs falling away underneath.
+- The wide pale cream stone-tile path with a warm golden trim along both edges. It starts at the BOTTOM of the frame, a little left of centre, and winds up the islands in a long S curve to the top of the frame.
+- At the top of the path, a tall glowing stone archway portal with a swirling violet vortex inside it, standing on a wide grass island with a short flight of stone steps leading up to it, flanked by big pink and violet crystals.
+- On the left, a separate floating island with a tall waterfall pouring off it into the clouds, and large pink and violet blossom trees with thick trunks.
+- On the right, more separate floating islands with blossom trees, glowing crystals and thin waterfalls.
+- Smaller floating islets, soft white cloud banks, and one small hot air balloon drifting in the blue sky.
+- Clusters of glowing blue and violet crystals, grey boulders and little flowers on the grass beside the path.
+- The deep blue sky with soft white clouds behind everything, and a bank of cloud along the very bottom of the frame under the lowest island.
+
+Change from the reference, this is important:
+- Remove every piece of user interface. No avatar, no currency bars, no buttons, no side icons, no chest widget, no bottom navigation bar, no text of any kind.
+- Remove ALL the round numbered level discs, the padlock discs, the star badges and the purple Current label from the path. The stone path must be completely empty and unobstructed along its whole length, so the discs can be placed on it afterwards. Nothing stands on the path.
+- The path must stay clearly visible and continuous from the bottom edge of the frame all the way up to the steps of the portal, wide enough to comfortably hold a large round disc at any point along it.
+
+Nothing else: no characters, no people, no creatures, no logos, no frame, no border, no watermark.

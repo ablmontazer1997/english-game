@@ -36,6 +36,25 @@ import btn_side from '../assets/sky/btn_side.png'
 import ic_mail from '../assets/sky/ic_mail.png'
 import ic_events from '../assets/sky/ic_events.png'
 import ic_friends from '../assets/sky/ic_friends.png'
+// v2: colourful 3D nav icons and the star-free level pad (pipeline/sky b_*).
+import nav2_home from '../assets/sky/nav2_home.png'
+import nav2_quests from '../assets/sky/nav2_quests.png'
+import nav2_shop from '../assets/sky/nav2_shop.png'
+import nav2_league from '../assets/sky/nav2_league.png'
+import nav2_profile from '../assets/sky/nav2_profile.png'
+import pad_base from '../assets/sky/pad_base.png'
+import pad_star from '../assets/sky/pad_star.png'
+import pad_lock from '../assets/sky/pad_lock.png'
+// diorama scenery: separate sky islands and big edge decorations
+import isle_fall from '../assets/sky/isle_fall.png'
+import isle_tree from '../assets/sky/isle_tree.png'
+import isle_rock from '../assets/sky/isle_rock.png'
+import isle_tiny from '../assets/sky/isle_tiny.png'
+import isle_crystal from '../assets/sky/isle_crystal.png'
+import fall_big from '../assets/sky/fall_big.png'
+import trees_pink from '../assets/sky/trees_pink.png'
+import trees_purple from '../assets/sky/trees_purple.png'
+import crystals_big from '../assets/sky/crystals_big.png'
 
 const MAP = {
   token_open, token_locked, pill_current,
@@ -45,6 +64,10 @@ const MAP = {
   nav_home, nav_quests, nav_shop, nav_league, nav_profile,
   card_daily, dropdown, widget_chest, btn_side,
   ic_mail, ic_events, ic_friends,
+  nav2_home, nav2_quests, nav2_shop, nav2_league, nav2_profile,
+  pad_base, pad_star, pad_lock,
+  isle_fall, isle_tree, isle_rock, isle_tiny, isle_crystal,
+  fall_big, trees_pink, trees_purple, crystals_big,
 }
 export type SkyName = keyof typeof MAP
 export const skySrc = (name: SkyName) => MAP[name]

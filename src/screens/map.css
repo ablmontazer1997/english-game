@@ -1,49 +1,83 @@
-/* Sky-island level map — layout traced from the reference screenshot. */
+/* The map is one finished painting scaled to cover the screen, with the level
+   discs placed on the path at measured, fixed positions. */
 
-.map-screen { background: #4bb3f2; }
+.map-screen { background: #3aa8ee; }
 
-/* the painted world plate: full-height, centre-cropped horizontally, so the
-   percent-positioned tokens always land on the painted road. */
-.map-plate {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  height: 100%; aspect-ratio: 941 / 1672;
-  z-index: 0;
-}
-.map-plate-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mw-frame { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+.mw-scene { position: absolute; }
+.mw-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* ambient life (swaying trees, flowing falls) drawn over the painting, under the level discs */
+.mw-life { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 
-/* ---------- level tokens ---------- */
+/* ---------- level tokens ----------
+   One asset for every state: the plain gold pad, no stars baked in. Stars,
+   number and lock are separate layers on top. The pad NEVER translates —
+   the current level is marked by a breathing halo behind it, nothing else. */
 .rtoken {
-  position: absolute; transform: translate(-50%, -50%);
+  container-type: inline-size;
+  position: absolute; transform: translate(-50%, -62%);
   display: grid; place-items: center;
+  z-index: 2; isolation: isolate;  /* keeps the halo's z-index:-1 above the land */
 }
 .rtoken-btn {
-  position: relative; display: block; padding: 0;
-  filter: drop-shadow(0 8px 14px rgba(20, 60, 110, .30));
-  transition: transform 140ms var(--ease-magic, ease-out);
+  position: relative; display: block; padding: 0; width: 100%;
+  filter: drop-shadow(0 9px 15px rgba(20, 60, 110, .32));
+  transition: filter 200ms ease;
 }
-.rtoken-btn:not(:disabled):active { transform: scale(.94); }
+.rtoken-btn:not(:disabled):active { transform: scale(.95); }
 .rtoken-btn:disabled { cursor: default; }
-.rtoken-img { width: 100%; height: auto; }
+.rtoken-pad { width: 100%; height: auto; display: block; }
+
+/* the halo: pure decoration behind the pad, so the pad stays put */
+.rtoken-halo {
+  position: absolute; left: 50%; top: 46%;
+  width: 175cqw; height: 175cqw;
+  transform: translate(-50%, -50%);
+  border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(closest-side,
+    rgba(255, 246, 200, .95) 0%, rgba(255, 214, 120, .55) 34%,
+    rgba(168, 128, 255, .34) 60%, rgba(168, 128, 255, 0) 78%);
+  animation: rtoken-breathe 2.6s ease-in-out infinite;
+}
+@keyframes rtoken-breathe {
+  0%, 100% { opacity: .58; transform: translate(-50%, -50%) scale(.92); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.06); }
+}
+.rtoken.is-current .rtoken-btn {
+  filter: drop-shadow(0 9px 15px rgba(20, 60, 110, .32))
+          drop-shadow(0 0 12px rgba(255, 226, 150, .9));
+}
 
 .rtoken-num {
-  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);
+  position: absolute; left: 50%; top: 39%; transform: translate(-50%, -50%);
   font-family: var(--display, ui-rounded, system-ui, sans-serif);
   font-weight: 900; color: #3b3f52;
-  font-size: calc(var(--tok, 100px) * .34);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+  font-size: 30cqw;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .85);
   pointer-events: none;
 }
-.rtoken { --tok: 100px; }
-.rtoken[style*="width: 116"] { --tok: 116px; }
-
-/* the current level pulses gently and carries the violet badge */
-.rtoken.is-current .rtoken-btn { animation: rtoken-bob 2.4s ease-in-out infinite; }
-@keyframes rtoken-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+.rtoken-lock {
+  position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%);
+  width: 30cqw; height: auto; pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(20, 40, 90, .35));
 }
+
+/* the three star slots ride the front gold rim */
+.rtoken-stars {
+  position: absolute; left: 50%; top: 76%; transform: translate(-50%, -50%);
+  display: flex; gap: 1.5cqw; pointer-events: none;
+}
+.rtoken-star {
+  width: 21.5cqw; height: auto;
+  filter: drop-shadow(0 1px 2px rgba(120, 70, 0, .45));
+}
+.rtoken-star.off { filter: grayscale(.95) brightness(.78) opacity(.55); }
+.rtoken-stars .rtoken-star:nth-child(2) { transform: translateY(2.2cqw); }
+
+/* the pill hangs off whichever side of the disc has room on screen */
+.rtoken.flip .rtoken-current { left: auto; right: 104%; }
 .rtoken-current {
-  position: absolute; left: 108%; top: 6%;
+  position: absolute; left: 104%; top: 2%;
   display: grid; place-items: center; width: 92px;
   filter: drop-shadow(0 4px 8px rgba(60, 20, 120, .35));
 }
@@ -108,8 +142,10 @@
   border-radius: 99px; background: #ff4d4f; border: 2px solid #fff;
 }
 .side-btn-lbl {
-  font-size: 11px; font-weight: 700; color: #4b5170; line-height: 1;
-  text-shadow: 0 1px 3px rgba(255, 255, 255, .9);
+  font-size: 10.5px; font-weight: 700; color: #454b6b; line-height: 1;
+  padding: 2.5px 8px; border-radius: 99px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 2px 5px rgba(20, 60, 110, .18);
 }
 
 .chest-widget {
@@ -125,5 +161,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rtoken.is-current .rtoken-btn { animation: none; }
+  .rtoken-halo { animation: none; opacity: .8; }
 }

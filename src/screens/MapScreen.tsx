@@ -1,60 +1,66 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import type { Stage, World } from '../types/game'
-import { SkyIcon, skySrc, type SkyName } from '../components/SkyIcon'
-import mapBg from '../assets/sky/map-bg.png'
+import type { Stage } from '../types/game'
+import { skySrc } from '../components/SkyIcon'
+import { themeFor, MAP_ASPECT, MAP_PAD_W, MAP_NODES } from './mapLayout'
+import mapW1 from '../assets/sky/map_w1.webp'
+import { MapLife } from '../components/MapLife'
 import './map.css'
 
-// One screen = one stage of the sky road. The background plate is the painted
-// world (islands, road, portal); the level tokens are positioned in percent of
-// that plate so they always sit on the road at any screen size.
-const NODES_PER_STAGE = 6
-
-// Anchors traced along the painted road, bottom -> top. `size` is the token
-// width in px; the nearest pad is the largest, exactly as in the reference.
-const ROAD_POINTS = [
-  { x: 21, y: 92, size: 116 },
-  { x: 38, y: 82, size: 106 },
-  { x: 50, y: 71, size: 98 },
-  { x: 53, y: 59, size: 92 },
-  { x: 57, y: 47, size: 87 },
-  { x: 62, y: 35, size: 83 },
-]
-
-interface Placed { stage: Stage; world: World; x: number; y: number; size: number }
+/** A disc is drawn a touch wider than the path, and the perspective scaling is
+ *  damped: the raw ratio between the foot and the head of the path is far too
+ *  strong once a real disc is on it. */
+const PAD_OVER = 0.87
+const damp = (s: number) => 0.6 + 0.4 * s
 
 export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
   const { worlds, quests } = useGame()
+  const [worldIdx, setWorldIdx] = useState(0)
+  const frame = useRef<HTMLDivElement>(null)
+  const [box, setBox] = useState({ w: 0, h: 0 })
 
-  const flat = useMemo(() => {
-    const out: { stage: Stage; world: World }[] = []
-    worlds.forEach((w) => w.stages.forEach((stage) => out.push({ stage, world: w })))
-    return out
-  }, [worlds])
+  const world = worlds[worldIdx % Math.max(1, worlds.length)]
+  const theme = themeFor(worldIdx)
+  const stages = world?.stages ?? []
 
-  const stageCount = Math.max(1, Math.ceil(flat.length / NODES_PER_STAGE))
-  const currentStageIdx = Math.floor(
-    Math.max(0, flat.findIndex((f) => f.stage.status === 'current')) / NODES_PER_STAGE,
-  )
-  const [view, setView] = useState(currentStageIdx)
-  const stageIdx = Math.min(view, stageCount - 1)
+  // the scene is one picture: scale it to cover the screen and centre it, the
+  // way a background does, so no stage ever needs to be scrolled to
+  useLayoutEffect(() => {
+    const el = frame.current
+    if (!el) return
+    const read = () => setBox({ w: el.clientWidth, h: el.clientHeight })
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    read()
+    return () => ro.disconnect()
+  }, [])
 
-  const slice = flat.slice(stageIdx * NODES_PER_STAGE, stageIdx * NODES_PER_STAGE + NODES_PER_STAGE)
-  const world = slice[0]?.world
-  const placed: Placed[] = slice.map((f, i) => ({ ...f, ...ROAD_POINTS[i % ROAD_POINTS.length] }))
-
+  const sceneW = Math.max(box.w, box.h * MAP_ASPECT)
+  const sceneH = sceneW / MAP_ASPECT
   const daily = quests.find((q) => q.period === 'daily')
   const dailyPct = daily ? Math.min(100, Math.round((daily.progress / daily.target) * 100)) : 0
 
   return (
     <div className="screen map-screen full">
-      {/* painted world; tokens are its children so they ride the road */}
-      <div className="map-plate">
-        <img className="map-plate-img" src={mapBg} alt="" draggable={false} />
-        {placed.map((p) => <RoadToken key={p.stage.id} p={p} onPlay={onPlay} />)}
+      <div className="mw-frame" ref={frame}>
+        <div className="mw-scene" style={{
+          width: sceneW, height: sceneH,
+          left: (box.w - sceneW) / 2, top: (box.h - sceneH) / 2,
+          filter: theme.filter,
+        }}>
+          <img className="mw-bg" src={mapW1} alt="" draggable={false} />
+          <MapLife width={sceneW} height={sceneH} />
+          {stages.map((stage, i) => {
+            const n = MAP_NODES[i]
+            if (!n) return null
+            return (
+              <RoadToken key={stage.id} stage={stage} node={n}
+                width={sceneW * MAP_PAD_W * damp(n.scale) * PAD_OVER} onPlay={onPlay} />
+            )
+          })}
+        </div>
       </div>
 
-      {/* --- overlay chrome, laid out like the reference --- */}
       <div className="map-chrome">
         {daily && (
           <button className="daily-card reveal" aria-label={`Daily quest: ${daily.title}`}>
@@ -64,18 +70,10 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
           </button>
         )}
 
-        <button className="world-drop reveal" onClick={() => setView((v) => (v + 1) % stageCount)}>
+        <button className="world-drop reveal" onClick={() => setWorldIdx((v) => (v + 1) % Math.max(1, worlds.length))}>
           <img className="world-drop-bg" src={skySrc('dropdown')} alt="" draggable={false} />
-          <span className="world-drop-txt">
-            {world ? world.name : 'Sky Realm'} - Stage {stageIdx + 1}
-          </span>
+          <span className="world-drop-txt">{world ? world.name : 'Sky Realm'}</span>
         </button>
-
-        <div className="side-rail">
-          <SideButton label="Mail" icon="ic_mail" dot />
-          <SideButton label="Events" icon="ic_events" />
-          <SideButton label="Friends" icon="ic_friends" />
-        </div>
 
         <div className="chest-widget reveal">
           <img className="chest-widget-bg" src={skySrc('widget_chest')} alt="" draggable={false} />
@@ -86,30 +84,31 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
   )
 }
 
-function SideButton({ label, icon, dot }: { label: string; icon: SkyName; dot?: boolean }) {
+function RoadToken({ stage, node, width, onPlay }: {
+  stage: Stage; node: { x: number; y: number }; width: number; onPlay: (s: Stage) => void
+}) {
+  const locked = stage.status === 'locked'
+  const current = stage.status === 'current'
+  const done = stage.status === 'done'
   return (
-    <button className="side-btn" aria-label={label}>
-      <span className="side-btn-face">
-        <img className="side-btn-bg" src={skySrc('btn_side')} alt="" draggable={false} />
-        <SkyIcon name={icon} size={28} className="side-btn-ic" />
-        {dot && <i className="side-btn-dot" />}
-      </span>
-      <span className="side-btn-lbl">{label}</span>
-    </button>
-  )
-}
-
-function RoadToken({ p, onPlay }: { p: Placed; onPlay: (s: Stage) => void }) {
-  const locked = p.stage.status === 'locked'
-  const current = p.stage.status === 'current'
-  return (
-    <div className={`rtoken${current ? ' is-current' : ''}`}
-      style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size }}>
+    <div className={`rtoken${current ? ' is-current' : ''}${node.x > 0.55 ? ' flip' : ''}`}
+      style={{ left: `${node.x * 100}%`, top: `${node.y * 100}%`, width }}>
+      {current && <span className="rtoken-halo" aria-hidden />}
       <button className="rtoken-btn" disabled={locked}
-        onClick={() => !locked && onPlay(p.stage)}
-        aria-label={locked ? `Level ${p.stage.index} locked` : `Play level ${p.stage.index}`}>
-        <SkyIcon name={locked ? 'token_locked' : 'token_open'} size={p.size} className="rtoken-img" />
-        {!locked && <span className="rtoken-num">{p.stage.index}</span>}
+        onClick={() => !locked && onPlay(stage)}
+        aria-label={locked ? `Level ${stage.index} locked` : `Play level ${stage.index}`}>
+        <img className="rtoken-pad" src={skySrc('pad_base')} alt="" draggable={false} />
+        {locked
+          ? <img className="rtoken-lock" src={skySrc('pad_lock')} alt="" draggable={false} />
+          : <span className="rtoken-num">{stage.index}</span>}
+        {done && (
+          <span className="rtoken-stars">
+            {[0, 1, 2].map((i) => (
+              <img key={i} src={skySrc('pad_star')} alt="" draggable={false}
+                className={`rtoken-star${i < stage.stars ? '' : ' off'}`} />
+            ))}
+          </span>
+        )}
       </button>
       {current && (
         <span className="rtoken-current">
