@@ -150,6 +150,7 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
 .pf-stage { display: grid; justify-items: center; position: relative; margin-top: 2px; }
 .pf-char { width: 158px; height: auto; margin-bottom: -56px; z-index: 1;
   filter: drop-shadow(0 10px 16px rgba(20, 50, 110, .4)); }
+.pf-char3d { width: 200px; height: 236px; border: 0; margin-bottom: -60px; z-index: 1; background: transparent; }
 .pf-podium { width: 214px; height: auto; }
 .pf-edit { position: absolute; right: 8px; bottom: 20px; height: 40px; width: auto;
   display: grid; place-items: center; padding: 0 10px;

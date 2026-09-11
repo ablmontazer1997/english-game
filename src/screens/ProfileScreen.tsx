@@ -1,7 +1,6 @@
 import { useGame } from '../services/ServiceProvider'
 import { Panel, Art, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import type { CurrencyId } from '../types/game'
-import mage from '../assets/character/body/mage_m.webp'
 import './pages.css'
 
 const BADGES: ArtName[] = ['badge_1', 'badge_2', 'badge_3', 'badge_lock1', 'badge_lock2']
@@ -16,7 +15,7 @@ export function ProfileScreen({ onCustomize }: { onBuy: (c: CurrencyId) => void;
       <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
       <div className="pg-scroll">
         <div className="pf-stage reveal">
-          <img className="pf-char" src={mage} alt="" draggable={false} />
+          <iframe className="pf-char3d" src="/runecast-studio/profile-viewer.html?bg=none" title="character" scrolling="no" />
           <Art name="podium" className="pf-podium" />
           <Panel name="btn_edit" className="pf-edit" onClick={onCustomize}>Edit</Panel>
         </div>
