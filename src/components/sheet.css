@@ -32,7 +32,7 @@
 }
 
 .sheet-close {
-  position: absolute; top: -2%; right: -2%; width: 40px; height: 40px; padding: 0;
+  position: absolute; top: 2.5%; right: 3%; width: 40px; height: 40px; padding: 0;
   background: none; border: 0; display: grid; place-items: center; z-index: 2;
 }
 .sheet-close:active { transform: scale(.9); }

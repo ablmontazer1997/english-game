@@ -23,7 +23,7 @@
 
 /* ---- the sliding lit cradle behind the active tab ---- */
 .bnav-cradle {
-  position: absolute; top: 5px; bottom: 5px; width: 68px;
+  position: absolute; top: 5px; bottom: 5px; width: 70px;
   transform: translateX(-50%);
   border-radius: 20px;
   background: linear-gradient(180deg, #b79bff 0%, #8f68f2 100%);
