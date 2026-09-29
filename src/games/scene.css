@@ -1,0 +1,49 @@
+/* Shared layout for the mockup-faithful mini-games.
+ * The painted scene keeps the 2:3 mockup frame and covers the screen (centred,
+ * or shifted with --sx). Props sit inside it at the mockup's own percentages,
+ * so they always land on the painted spot. UI sits in screen space at the
+ * mockup's vertical percentages. */
+.gs { position: relative; height: 100%; min-height: 0; overflow: hidden; container-type: size;
+  direction: ltr; font-family: var(--sans); color: #2a2550; }
+.gs *, .gs *::before, .gs *::after { box-sizing: border-box; }
+.gs-scene { position: absolute; top: 0; width: max(100cqw, 66.667cqh); aspect-ratio: 2 / 3;
+  left: calc((100cqw - max(100cqw, 66.667cqh)) * var(--sx, .5)); pointer-events: none; }
+.gs-scene > .gs-plate { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.gs-at { position: absolute; }
+.gs-at > img { width: 100%; height: auto; display: block; }
+.gs-title { position: absolute; left: 0; right: 0; top: calc(6px + var(--safe-top, 0px)); z-index: 5; }
+.gs-ui { position: absolute; left: 4%; right: 4%; z-index: 4; }
+
+/* cream panel with a thin gold trim, as in the mockups */
+.gs-panel { background: linear-gradient(180deg, #fffdf6, #f9f0dd); border: 3px solid #e7c47a; border-radius: 26px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .95), 0 10px 24px rgba(40, 30, 100, .3), inset 0 0 0 2px rgba(255, 255, 255, .85); }
+.gs-pill { min-height: 48px; padding: 0 18px; border-radius: 999px; border: 3px solid #e7c47a; font: inherit; font-size: 17px; font-weight: 800; color: #2a2550;
+  background: linear-gradient(180deg, #fffdf6, #f7ecd4); box-shadow: 0 0 0 2px #fff, 0 4px 0 #d9c49a, 0 6px 12px rgba(40, 30, 100, .18); }
+.gs-pill:active { transform: translateY(2px); box-shadow: 0 0 0 2px #fff, 0 2px 0 #d9c49a; }
+.gs-gold { min-height: 50px; padding: 0 18px; border-radius: 999px; border: 3px solid #fff3c4; font: inherit; font-size: 18px; font-weight: 900; color: #3b2400;
+  background: linear-gradient(180deg, #ffe58f, #f6b92d 70%, #eaa21a); box-shadow: 0 0 0 2px #c98a1c, 0 5px 0 #b87818, 0 8px 14px rgba(120, 70, 0, .3); }
+.gs-gold:active { transform: translateY(3px); box-shadow: 0 0 0 2px #c98a1c, 0 2px 0 #b87818; }
+.gs-chip { min-height: 44px; padding: 0 14px; border-radius: 16px; border: 3px solid #eed9a8; font: inherit; font-size: 18px; font-weight: 800; color: #2a2550;
+  background: linear-gradient(180deg, #fffdf8, #f8eedb); box-shadow: 0 0 0 2px #fff, 0 3px 0 #dccaa2; }
+.gs-chip:active { transform: translateY(2px); }
+/* big glossy action buttons */
+.gs-go { display: block; width: 100%; min-height: 64px; border-radius: 999px; font: inherit; font-family: var(--sans); font-size: 26px; font-weight: 900; color: #fff; text-transform: none; font-variant: normal;
+  border: 4px solid #d8ffb9; background: linear-gradient(180deg, #9cf06a, #52c236 55%, #3aa825); letter-spacing: .01em;
+  text-shadow: 0 2px 0 #2b7d1a, 0 0 2px #2b7d1a; box-shadow: 0 0 0 3px #2f8a1f, 0 6px 0 #26731a, 0 10px 18px rgba(30, 90, 20, .35), inset 0 3px 0 rgba(255, 255, 255, .45); }
+.gs-go.violet { border-color: #e2d0ff; background: linear-gradient(180deg, #b58cff, #8a4dff 55%, #6d2fe6); text-shadow: 0 2px 0 #4a1aa8, 0 0 2px #4a1aa8;
+  box-shadow: 0 0 0 3px #5a24c0, 0 6px 0 #4a1aa8, 0 10px 18px rgba(60, 20, 140, .35), inset 0 3px 0 rgba(255, 255, 255, .4); }
+.gs-go:active { transform: translateY(4px); box-shadow: 0 0 0 3px #2f8a1f, 0 2px 0 #26731a; }
+.gs-go:disabled { filter: saturate(.8); opacity: .92; }
+.gs-orb { display: grid; place-items: center; border-radius: 50%; border: 4px solid #fff; color: #fff;
+  background: radial-gradient(circle at 35% 28%, #d3b4ff, #8a4dff 58%, #6a2fe0); box-shadow: 0 5px 0 #4a1aa8, 0 10px 22px rgba(90, 40, 200, .45), inset 0 3px 0 rgba(255, 255, 255, .4); }
+.gs-orb:active { transform: translateY(3px); box-shadow: 0 2px 0 #4a1aa8; }
+@keyframes gs-no { 20% { translate: -6px 0 } 40% { translate: 6px 0 } 60% { translate: -3px 0 } 80% { translate: 3px 0 } }
+@keyframes gs-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+/* the title crest as big and bold as in the mockups */
+.gs-title .gt-ribbon { width: min(70cqw, 330px); }
+.gs-title .gt-ribbon span { top: 22%; font-family: var(--sans); font-weight: 900; font-variant: normal; text-transform: none; letter-spacing: 0; font-size: clamp(22px, 7.2cqw, 32px); color: #fff; -webkit-text-stroke: 1.2px #9a5a10; paint-order: stroke fill;
+  text-shadow: 0 3px 0 #9a5a10, 0 4px 8px rgba(120, 70, 0, .45); }
+.gs-title .gt-ribbon span { -webkit-text-stroke: 0; color: #fff;
+  text-shadow: -2px -2px 0 #8a4b0c, 2px -2px 0 #8a4b0c, -2px 2px 0 #8a4b0c, 2px 2px 0 #8a4b0c, 0 -2px 0 #8a4b0c, 0 2px 0 #8a4b0c, -2px 0 0 #8a4b0c, 2px 0 0 #8a4b0c, 0 4px 0 #8a4b0c, 0 6px 8px rgba(90, 50, 0, .45); }
+/* the round counter tucks under the ribbon's right tail so it never covers a panel */
+.gs-title .gt-count { position: absolute; top: 74%; right: calc(50% - min(35cqw, 165px) + 6px); margin: 0; padding: 2px 10px; font-size: 12px; }

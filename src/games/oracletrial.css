@@ -1,0 +1,142 @@
+/* Oracle Trial — layered sky-temple scene. The plate is the empty temple; the
+   oracle, pedestal and orb are separate cut-outs so each can react. Scoped
+   under .ot so nothing leaks. */
+
+.ot {
+  position: relative; height: 100%; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; direction: ltr;
+  font-family: var(--sans); color: #3c4160;
+  padding: calc(52px + var(--safe-top, 0px)) 14px calc(14px + var(--safe-bottom, 0px));
+  --orb-hue: 0deg;
+}
+.ot *, .ot *::before, .ot *::after { box-sizing: border-box; }
+
+/* painted plate: slow breathing zoom so the world never feels frozen */
+.ot-plate {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;
+  animation: ot-kenburns 22s ease-in-out infinite alternate; pointer-events: none;
+}
+@keyframes ot-kenburns { from { transform: scale(1.02) } to { transform: scale(1.08) translateY(-1%) } }
+
+/* ---------- head: ribbon, counter, CEFR gauge ---------- */
+.ot-head { position: relative; z-index: 3; display: grid; justify-items: center; gap: 4px; flex: none; }
+.ot-ribbon { position: relative; width: 230px; display: grid; place-items: center; }
+.ot-ribbon img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(120, 70, 0, .3)); }
+.ot-ribbon span {
+  position: absolute; top: 27%; font-family: var(--display, var(--sans)); font-weight: 900; font-size: 20px;
+  color: #fff; text-shadow: 0 2px 0 #b8741a, 0 3px 6px rgba(120, 70, 0, .45);
+}
+.ot-count {
+  margin-top: -6px; padding: 4px 14px; border-radius: 999px;
+  background: linear-gradient(180deg, #a978ff, #7b3ff0); color: #fff; font-weight: 800; font-size: 13px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 3px 0 #5a24c0, 0 5px 10px rgba(60, 20, 140, .3);
+}
+.ot-gauge {
+  position: relative; width: min(300px, 86%); height: 38px; margin-top: 4px;
+  padding: 0 18px; border-radius: 999px; background: rgba(255, 255, 255, .92);
+  box-shadow: 0 3px 0 #b9c3dd, 0 6px 14px rgba(20, 40, 100, .2);
+}
+.ot-rail { position: absolute; left: 22px; right: 22px; top: 0; bottom: 0; }
+.ot-track { position: absolute; left: 0; right: 0; top: 13px; height: 5px; border-radius: 9px; background: #dde1ee; overflow: hidden; }
+.ot-track i { display: block; height: 100%; background: linear-gradient(90deg, #ffcf4a, #f2a51a); transition: width .7s var(--ease-magic, ease); }
+.ot-node { position: absolute; top: 8px; width: 0; }
+.ot-node::before {
+  content: ''; position: absolute; left: -7px; top: 1px; width: 14px; height: 14px; border-radius: 50%;
+  background: #cfd4e3; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .12); transition: all .4s;
+}
+.ot-node.on::before { background: radial-gradient(circle at 35% 30%, #fff3b0, #f2a51a 70%); }
+.ot-node.cur::before {
+  left: -10px; top: -2px; width: 20px; height: 20px; border-radius: 4px; transform: rotate(45deg);
+  background: linear-gradient(135deg, #d9b8ff, #8a4dff); box-shadow: 0 0 10px rgba(160, 110, 255, .9);
+}
+.ot-node b { position: absolute; top: 17px; left: -12px; width: 24px; text-align: center; font-size: 10px; font-weight: 900; color: #6b7192; }
+
+/* ---------- stage: oracle, pedestal, orb ---------- */
+.ot-stage {
+  position: absolute; left: 50%; top: 25%; width: min(92vw, 380px); height: 37%;
+  transform: translateX(-50%); z-index: 1; pointer-events: none;
+}
+.ot-oracle { position: absolute; left: 50%; bottom: 36%; width: 47%; transform: translateX(-50%); aspect-ratio: 0.861; }
+.ot-oracle-float { position: absolute; inset: 0; animation: ot-hover 4.2s ease-in-out infinite; }
+.ot-oracle img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  opacity: 0; transition: opacity .25s ease;
+  filter: drop-shadow(0 0 18px rgba(200, 170, 255, .55));
+}
+.ot-oracle img.on { opacity: 1; }
+@keyframes ot-hover { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-2%) } }
+
+.ot-pedestal { position: absolute; left: 50%; bottom: 0; width: 46%; transform: translateX(-50%); filter: drop-shadow(0 8px 12px rgba(40, 30, 90, .3)); }
+
+.ot-orb {
+  position: absolute; left: 50%; bottom: 22%; width: 34%; aspect-ratio: 1; transform: translateX(-50%);
+  animation: ot-bob 3.2s ease-in-out infinite;
+}
+@keyframes ot-bob { 0%, 100% { translate: 0 0 } 50% { translate: 0 -5% } }
+.ot-orb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ot-orb-base { filter: hue-rotate(var(--orb-hue)) saturate(1.1); transition: filter .6s; }
+/* a second, masked copy turning slowly = the galaxy swirls inside the glass */
+.ot-orb-swirl {
+  -webkit-mask: radial-gradient(circle, #000 52%, transparent 66%); mask: radial-gradient(circle, #000 52%, transparent 66%);
+  mix-blend-mode: screen; opacity: .55; animation: ot-swirl 9s linear infinite;
+  filter: hue-rotate(var(--orb-hue)) saturate(1.2);
+}
+@keyframes ot-swirl { to { transform: rotate(360deg) } }
+.ot-glow {
+  position: absolute; inset: -38%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(190, 150, 255, .75), rgba(150, 110, 255, .28) 50%, rgba(150, 110, 255, 0) 75%);
+  filter: hue-rotate(var(--orb-hue)); animation: ot-pulse 2.6s ease-in-out infinite; transition: background .5s;
+}
+@keyframes ot-pulse { 0%, 100% { opacity: .6; transform: scale(.94) } 50% { opacity: 1; transform: scale(1.06) } }
+.ot-ring { position: absolute; inset: -6%; border-radius: 50%; border: 3px solid rgba(255, 220, 120, 0); }
+
+/* reactions */
+.ot-ok .ot-glow { background: radial-gradient(closest-side, rgba(255, 236, 150, .95), rgba(255, 196, 60, .45) 50%, rgba(255, 196, 60, 0) 75%); filter: none; }
+.ot-ok .ot-orb-base { filter: brightness(1.35) saturate(1.3) sepia(.25); }
+.ot-ok .ot-ring { animation: ot-ring .9s ease-out; }
+@keyframes ot-ring { 0% { transform: scale(.8); border-color: rgba(255, 220, 120, .95) } 100% { transform: scale(2.3); border-color: rgba(255, 220, 120, 0) } }
+.ot-bad .ot-orb { animation: ot-shake .45s ease-in-out, ot-bob 3.2s ease-in-out .45s infinite; }
+.ot-bad .ot-orb-base, .ot-bad .ot-orb-swirl { filter: grayscale(.6) brightness(.7); }
+.ot-bad .ot-glow { opacity: .25; animation: none; }
+@keyframes ot-shake { 0%, 100% { transform: translateX(-50%) } 20% { transform: translateX(-56%) } 40% { transform: translateX(-44%) } 60% { transform: translateX(-54%) } 80% { transform: translateX(-47%) } }
+.ot-done .ot-glow { background: radial-gradient(closest-side, rgba(255, 236, 150, .95), rgba(255, 196, 60, .5) 50%, rgba(255, 196, 60, 0) 75%); filter: none; }
+/* harder questions: the orb heats from calm blue to deep magenta */
+.ot-lv0 { --orb-hue: -40deg } .ot-lv1 { --orb-hue: -20deg } .ot-lv2 { --orb-hue: 0deg } .ot-lv3 { --orb-hue: 25deg } .ot-lv4 { --orb-hue: 50deg }
+
+.ot-sparks { position: absolute; left: 0; right: 0; top: 0; height: 100%; width: 100%; }
+
+/* ---------- ui ---------- */
+.ot-ui { position: relative; z-index: 3; margin-top: auto; display: grid; gap: 10px; }
+.ot-q {
+  padding: 14px 16px 16px; border-radius: 24px; border: 3px solid #fff; text-align: center;
+  background: linear-gradient(180deg, #fff, #f6f2ff); box-shadow: 0 5px 0 #b9c3dd, 0 12px 26px rgba(20, 40, 100, .25);
+}
+.ot-skill { display: inline-block; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #8a4dff; margin-bottom: 4px; }
+.ot-q p { margin: 0; font-size: 19px; font-weight: 800; line-height: 1.3; color: #3c4160; }
+.ot-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.ot-opt {
+  min-height: 50px; padding: 6px 10px; border-radius: 18px; border: 3px solid #fff;
+  background: linear-gradient(180deg, #fffaf0, #f7ecd6); color: #3c4160; font: inherit; font-size: 16px; font-weight: 800;
+  box-shadow: 0 4px 0 #cfc3a6, 0 8px 14px rgba(20, 40, 100, .15); transition: transform .12s, box-shadow .12s, background .2s;
+}
+.ot-opt:active { transform: translateY(2px); box-shadow: 0 2px 0 #cfc3a6; }
+.ot-opt.sel { background: linear-gradient(180deg, #efe4ff, #d9c4ff); box-shadow: 0 4px 0 #9d7ae0, 0 0 0 3px #a878ff; }
+.ot-opt.right { background: linear-gradient(180deg, #e4ffd6, #b8f09a); box-shadow: 0 4px 0 #5fb33c, 0 0 14px rgba(120, 220, 80, .7); }
+.ot-opt.wrong { background: linear-gradient(180deg, #ffe1dc, #ffb7ab); box-shadow: 0 4px 0 #d9695a; animation: ot-no .4s; }
+@keyframes ot-no { 20% { transform: translateX(-6px) } 40% { transform: translateX(6px) } 60% { transform: translateX(-4px) } 80% { transform: translateX(4px) } }
+.ot-opt:disabled { cursor: default; }
+.ot-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
+.ot-result .ot-actions { grid-template-columns: 1fr; }
+.ot-skip, .ot-check {
+  min-height: 54px; border: 0; border-radius: 999px; font: inherit; font-size: 18px; font-weight: 900; color: #fff;
+}
+.ot-skip { background: linear-gradient(180deg, #a978ff, #7b3ff0); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .45), 0 5px 0 #5a24c0; text-shadow: 0 2px 0 rgba(60, 20, 140, .4); }
+.ot-check { background: linear-gradient(180deg, #86e25a, #46b52f); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .5), 0 5px 0 #2f8a1f; text-shadow: 0 2px 0 rgba(30, 90, 20, .4); }
+.ot-skip:active, .ot-check:active { transform: translateY(3px); box-shadow: none; }
+.ot-check:disabled, .ot-skip:disabled { filter: saturate(.4) brightness(1.08); opacity: .75; }
+.ot-level { font-family: var(--display, var(--sans)); font-size: 54px !important; font-weight: 900; color: #8a4dff !important; line-height: 1.05 !important; }
+.ot-level-sub { font-size: 15px !important; font-weight: 700 !important; color: #6b7192 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ot-plate, .ot-oracle-float, .ot-orb, .ot-orb-swirl, .ot-glow { animation: none !important; }
+}

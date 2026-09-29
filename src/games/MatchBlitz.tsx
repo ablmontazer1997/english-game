@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
-import matchBg from '../assets/matchblitz_bg.webp'
+import matchBg from '../assets/games/mb_bg2.webp'
 import './matchblitz.css'
 
 // ---- Faithful port of the approved "Match Blitz" (#mb) mini-game from

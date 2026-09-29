@@ -1,0 +1,80 @@
+import type { ByLevel, CurseLine } from './types'
+
+// Curse Breaker: one wrong token per line. Index 0..4 = A1..C1.
+export const CURSES: ByLevel<CurseLine> = [
+  // A1: be, do, has, plurals, articles
+  [
+    { text: 'She have two brothers and a sister.', bad: 1, fix: 'has', wrong: ['having', 'haves'], why: 'With he, she and it we use has.' },
+    { text: 'I is a student at the city school.', bad: 1, fix: 'am', wrong: ['are', 'be'], why: 'With I we use am.' },
+    { text: 'We has lunch at one o\'clock.', bad: 1, fix: 'have', wrong: ['haves', 'having'], why: 'With we we use have.' },
+    { text: 'My father drink coffee every morning.', bad: 2, fix: 'drinks', wrong: ['drinking', 'drinked'], why: 'Add -s to the verb after he, she or it.' },
+    { text: 'There are three childs in the garden.', bad: 3, fix: 'children', wrong: ['childes', 'child'], why: 'Child has an irregular plural: children.' },
+    { text: 'Amara is a engineer in Lagos.', bad: 2, fix: 'an', wrong: ['the', 'some'], why: 'Use an before a vowel sound.' },
+    { text: 'Do he like chocolate cake?', bad: 0, fix: 'Does', wrong: ['Is', 'Are'], why: 'Questions with he, she or it use does.' },
+    { text: 'The dragons is very hungry today.', bad: 2, fix: 'are', wrong: ['am', 'be'], why: 'Plural nouns take are.' },
+    { text: 'I don\'t has a pet at home.', bad: 2, fix: 'have', wrong: ['having', 'haves'], why: 'After don\'t we use the base verb have.' },
+    { text: 'Luca buys two tomato for the soup.', bad: 3, fix: 'tomatoes', wrong: ['tomatos', 'tomatoe'], why: 'Tomato takes -es in the plural.' },
+    { text: 'The wizard live in a tall tower.', bad: 2, fix: 'lives', wrong: ['living', 'lived'], why: 'Present simple with he, she or it adds -s.' },
+    { text: 'Where are my keys? They is on the table.', bad: 5, fix: 'are', wrong: ['am', 'be'], why: 'They takes are.' },
+  ],
+  // A2: past forms, comparatives, prepositions of time
+  [
+    { text: 'Yesterday we goed to the beach by train.', bad: 2, fix: 'went', wrong: ['gone', 'goes'], why: 'Go has an irregular past form: went.' },
+    { text: 'My new phone is cheap than my old one.', bad: 4, fix: 'cheaper', wrong: ['cheapest', 'cheaply'], why: 'Use the comparative form cheaper before than.' },
+    { text: 'The shop opens at Monday morning.', bad: 3, fix: 'on', wrong: ['in', 'for'], why: 'Use on with days of the week.' },
+    { text: 'Hiroshi buyed a new jacket last weekend.', bad: 1, fix: 'bought', wrong: ['buy', 'brought'], why: 'The past form of buy is bought.' },
+    { text: 'I was born on 2010 in a small town.', bad: 3, fix: 'in', wrong: ['at', 'from'], why: 'Use in with years.' },
+    { text: 'This potion is gooder than the blue one.', bad: 3, fix: 'better', wrong: ['best', 'more good'], why: 'Good has an irregular comparative: better.' },
+    { text: 'Did you saw the fireworks last night?', bad: 2, fix: 'see', wrong: ['seen', 'seeing'], why: 'After did we use the base verb.' },
+    { text: 'We always have a party in New Year\'s Eve.', bad: 5, fix: 'on', wrong: ['by', 'since'], why: 'Use on with special days.' },
+    { text: 'Mount Tallis is the most highest mountain in the kingdom.', bad: 4, fix: '', wrong: ['more', 'much'], why: 'Highest is already a superlative, so delete most.' },
+    { text: 'The film started in eight o\'clock.', bad: 3, fix: 'at', wrong: ['on', 'for'], why: 'Use at with clock times.' },
+    { text: 'Sofia writed a postcard to her grandmother.', bad: 1, fix: 'wrote', wrong: ['written', 'writes'], why: 'The past form of write is wrote.' },
+    { text: 'The cat was fastest than the dog.', bad: 3, fix: 'faster', wrong: ['fast', 'more fast'], why: 'Use the comparative -er form before than.' },
+  ],
+  // B1: present perfect vs past, gerund/infinitive, countable, some/any
+  [
+    { text: 'I have visited Rome last summer with my cousins.', bad: 1, fix: '', wrong: ['has', 'am'], why: 'Use past simple with a finished time like last summer.' },
+    { text: 'She enjoys cook for her friends on Sundays.', bad: 2, fix: 'cooking', wrong: ['to cook', 'cooked'], why: 'Enjoy is followed by the -ing form.' },
+    { text: 'Can you give me some advices about the course?', bad: 5, fix: 'advice', wrong: ['an advice', 'advise'], why: 'Advice is uncountable, so it has no plural.' },
+    { text: 'There isn\'t some milk left in the fridge.', bad: 2, fix: 'any', wrong: ['many', 'a'], why: 'Use any in negative sentences.' },
+    { text: 'We decided going to the mountains by car.', bad: 2, fix: 'to go', wrong: ['go', 'went'], why: 'Decide is followed by to + verb.' },
+    { text: 'Kofi has lived in this flat since three years.', bad: 6, fix: 'for', wrong: ['from', 'during'], why: 'Use for with a period of time.' },
+    { text: 'How many luggage did you bring on the trip?', bad: 1, fix: 'much', wrong: ['lot', 'few'], why: 'Luggage is uncountable, so use how much.' },
+    { text: 'The apprentice has finished the spell yesterday.', bad: 2, fix: '', wrong: ['have', 'is'], why: 'Yesterday is a finished time, so use past simple.' },
+    { text: 'I\'m looking forward to meet your parents.', bad: 4, fix: 'meeting', wrong: ['met', 'meets'], why: 'After look forward to we use the -ing form.' },
+    { text: 'I know him since we were at primary school together.', bad: 1, fix: 'have known', wrong: ['knew', 'am knowing'], why: 'Use present perfect with since for a state that continues.' },
+    { text: 'She promised calling me after the meeting.', bad: 2, fix: 'to call', wrong: ['call', 'called'], why: 'Promise is followed by to + verb.' },
+    { text: 'We need some new furnitures for the living room.', bad: 4, fix: 'furniture', wrong: ['furnishes', 'a furniture'], why: 'Furniture is uncountable and has no plural.' },
+  ],
+  // B2: conditionals, reported speech, passive, since/for, affect/effect
+  [
+    { text: 'If I had knew, I would have helped you.', bad: 3, fix: 'known,', wrong: ['know,', 'knowing,'], why: 'The third conditional uses had + past participle: had known.' },
+    { text: 'Tomas told me that he has seen the film the night before.', bad: 5, fix: 'had', wrong: ['have', 'was'], why: 'In reported speech about the past, has seen becomes had seen.' },
+    { text: 'The bridge was build over two hundred years ago.', bad: 3, fix: 'built', wrong: ['building', 'builded'], why: 'The passive needs the past participle: built.' },
+    { text: 'I haven\'t seen Olga for last Christmas.', bad: 4, fix: 'since', wrong: ['during', 'from'], why: 'Use since with a point in time.' },
+    { text: 'Lack of sleep can effect your concentration badly.', bad: 4, fix: 'affect', wrong: ['effort', 'infect'], why: 'Affect is the verb; effect is usually the noun.' },
+    { text: 'If she had taken the earlier train, she would arrive on time yesterday.', bad: 9, fix: 'have arrived', wrong: ['arrived', 'be arriving'], why: 'Past unreal result needs would have + past participle.' },
+    { text: 'The museum is visiting by thousands of tourists every year.', bad: 3, fix: 'visited', wrong: ['visit', 'visits'], why: 'The passive needs be + past participle: is visited.' },
+    { text: 'The ancient scroll has been stole from the guild library.', bad: 5, fix: 'stolen', wrong: ['stealing', 'steal'], why: 'Present perfect passive uses been + past participle: stolen.' },
+    { text: 'If I was you, I would apologise to her.', bad: 2, fix: 'were', wrong: ['am', 'had'], why: 'In formal advice we say If I were you.' },
+    { text: 'The new rules had a big affect on small businesses.', bad: 6, fix: 'effect', wrong: ['affection', 'effort'], why: 'Effect is the noun meaning result.' },
+    { text: 'The tickets will be send to you by email.', bad: 4, fix: 'sent', wrong: ['sending', 'sended'], why: 'Future passive uses be + past participle: sent.' },
+    { text: 'Nadia said she will call me the next day.', bad: 3, fix: 'would', wrong: ['shall', 'can'], why: 'In reported speech, will usually becomes would.' },
+  ],
+  // C1: inversion, subjunctive, collocation, 'despite of', 'discuss about', articles
+  [
+    { text: 'Was I in your position, I would accept the offer.', bad: 0, fix: 'Were', wrong: ['Had', 'Am'], why: 'Inverted conditionals use Were I, not Was I.' },
+    { text: 'The doctor recommended that he takes more rest.', bad: 5, fix: 'take', wrong: ['taking', 'to take'], why: 'After recommend that, the subjunctive uses the base form.' },
+    { text: 'We need to do a decision before Friday.', bad: 3, fix: 'make', wrong: ['take on', 'give'], why: 'The natural collocation is make a decision.' },
+    { text: 'Despite of the storm, the ferry left on time.', bad: 1, fix: '', wrong: ['from', 'for'], why: 'Despite is never followed by of; delete it.' },
+    { text: 'The council will discuss about the new bus routes.', bad: 4, fix: '', wrong: ['on', 'over'], why: 'Discuss takes a direct object, so no about.' },
+    { text: 'Not only did she painted the mural, but she also designed it.', bad: 4, fix: 'paint', wrong: ['painting', 'paints'], why: 'After inverted did, use the base form of the verb.' },
+    { text: 'It is essential that every guild member is present.', bad: 7, fix: 'be', wrong: ['was', 'being'], why: 'After it is essential that, use the subjunctive base form be.' },
+    { text: 'Could you make me a favour and hold this box?', bad: 2, fix: 'do', wrong: ['give', 'take'], why: 'The collocation is do someone a favour.' },
+    { text: 'She is the most talented musician in the our orchestra.', bad: 7, fix: '', wrong: ['a', 'this'], why: 'Do not use the before a possessive like our.' },
+    { text: 'Hardly had we sat down than the lights went out.', bad: 5, fix: 'when', wrong: ['then', 'that'], why: 'The pattern is hardly ... when, not hardly ... than.' },
+    { text: 'The committee insisted that the report was rewritten immediately.', bad: 6, fix: 'be', wrong: ['is', 'had'], why: 'After insist that, use the subjunctive: be rewritten.' },
+    { text: 'Little did they knew that the old map was a fake.', bad: 3, fix: 'know', wrong: ['known', 'knowing'], why: 'After inverted did, use the base form: did they know.' },
+  ],
+]

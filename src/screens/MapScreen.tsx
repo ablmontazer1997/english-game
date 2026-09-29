@@ -1,26 +1,39 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import type { Stage } from '../types/game'
 import { skySrc } from '../components/SkyIcon'
-import { themeFor, MAP_ASPECT, MAP_PAD_W, MAP_NODES } from './mapLayout'
-import mapW1 from '../assets/sky/map_w1.webp'
+import { sceneFor } from './worlds'
+import { layoutTall } from './tallMap'
 import { MapLife } from '../components/MapLife'
 import './map.css'
+import { WorldAtlas } from './WorldAtlas'
+import atlasIcon from '../assets/atlas/icon.png'
 
 /** A disc is drawn a touch wider than the path, and the perspective scaling is
  *  damped: the raw ratio between the foot and the head of the path is far too
  *  strong once a real disc is on it. */
-const PAD_OVER = 0.87
+const PAD_OVER = 0.74
 const damp = (s: number) => 0.6 + 0.4 * s
 
 export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
   const { worlds, quests } = useGame()
   const [worldIdx, setWorldIdx] = useState(0)
+  const [atlas, setAtlas] = useState(false)
+  // open on the world the player is actually in (the one holding the current
+  // stage): finishing a path lands them in the next world's scene
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current || !worlds.length) return
+    opened.current = true
+    const cur = worlds.findIndex((w) => w.stages.some((s) => s.status === 'current'))
+    if (cur > 0) setWorldIdx(cur)
+  }, [worlds])
   const frame = useRef<HTMLDivElement>(null)
   const [box, setBox] = useState({ w: 0, h: 0 })
 
   const world = worlds[worldIdx % Math.max(1, worlds.length)]
-  const theme = themeFor(worldIdx)
+  const scene = sceneFor(worldIdx)
+  const { aspect: MAP_ASPECT, padW: MAP_PAD_W, nodes: MAP_NODES } = scene.map
   const stages = world?.stages ?? []
 
   // the scene is one picture: scale it to cover the screen and centre it, the
@@ -35,27 +48,56 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
     return () => ro.disconnect()
   }, [])
 
-  const sceneW = Math.max(box.w, box.h * MAP_ASPECT)
-  const sceneH = sceneW / MAP_ASPECT
+  // a tall world is as wide as the screen and scrolls; a one-panel world covers the screen
+  const tall = scene.tall && box.w ? layoutTall(scene.tall, box.w, stages.length) : null
+  const sceneW = tall ? box.w : Math.max(box.w, box.h * MAP_ASPECT)
+  const sceneH = tall ? tall.h : sceneW / MAP_ASPECT
+  const nodes = tall ? tall.nodes : MAP_NODES
+  const padW = tall ? tall.road / sceneW : MAP_PAD_W
+  const lifeH = tall ? tall.panels[0].h * (scene.tall!.life ?? 1) : sceneH
+
+  // open a tall world on the current stage (or the start of the road), a little below the middle
+  const cur = stages.findIndex((s) => s.status === 'current')
+  const aimed = useRef('')
+  useLayoutEffect(() => {
+    const el = frame.current
+    if (!el || !tall || !box.h) return
+    const key = `${scene.id}:${box.w}`
+    if (aimed.current === key) return
+    aimed.current = key
+    const n = nodes[cur >= 0 ? cur : stages.every((s) => s.status === 'done') ? nodes.length - 1 : 0]
+    if (n) el.scrollTop = Math.max(0, Math.min(sceneH - box.h, n.y * sceneH - box.h * 0.58))
+  })
   const daily = quests.find((q) => q.period === 'daily')
   const dailyPct = daily ? Math.min(100, Math.round((daily.progress / daily.target) * 100)) : 0
 
   return (
     <div className="screen map-screen full">
-      <div className="mw-frame" ref={frame}>
-        <div className="mw-scene" style={{
+      <div className={`mw-frame${tall ? ' is-tall' : ''}`} ref={frame}>
+        <div className="mw-scene" style={tall ? { width: sceneW, height: sceneH, left: 0, top: 0 } : {
           width: sceneW, height: sceneH,
           left: (box.w - sceneW) / 2, top: (box.h - sceneH) / 2,
-          filter: theme.filter,
         }}>
-          <img className="mw-bg" src={mapW1} alt="" draggable={false} />
-          <MapLife width={sceneW} height={sceneH} />
+          {tall ? tall.panels.map((p, i) => (
+            <img key={i} className="mw-panel" src={p.bg} alt="" draggable={false} style={{
+              top: p.top, height: p.h, zIndex: i,
+              ...(i ? { maskImage: `linear-gradient(#0000, #000 ${tall.overlap}px)`, WebkitMaskImage: `linear-gradient(#0000, #000 ${tall.overlap}px)` } : {}),
+            }} />
+          )) : <img className="mw-bg" src={scene.bg} alt="" draggable={false} />}
+          <div className="mw-lifebox" style={{ height: tall ? tall.panels[0].h : sceneH }}>
+            <div className="mw-lifebox-in" style={{ height: lifeH }}>
+              <MapLife width={sceneW} height={lifeH} life={scene.life} src={scene.src} fx={scene.fx} extras={scene.extras} />
+            </div>
+          </div>
+          {tall && scene.tall!.clouds?.length ? tall.seams.map((sm, i) => (
+            <CloudBank key={i} x={sm.x} y={sm.y} w={sceneW} clouds={scene.tall!.clouds!} flip={i % 2 === 1} />
+          )) : null}
           {stages.map((stage, i) => {
-            const n = MAP_NODES[i]
+            const n = nodes[i]
             if (!n) return null
             return (
               <RoadToken key={stage.id} stage={stage} node={n}
-                width={sceneW * MAP_PAD_W * damp(n.scale) * PAD_OVER} onPlay={onPlay} />
+                width={sceneW * padW * damp(n.scale) * PAD_OVER} onPlay={onPlay} />
             )
           })}
         </div>
@@ -70,9 +112,9 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
           </button>
         )}
 
-        <button className="world-drop reveal" onClick={() => setWorldIdx((v) => (v + 1) % Math.max(1, worlds.length))}>
-          <img className="world-drop-bg" src={skySrc('dropdown')} alt="" draggable={false} />
-          <span className="world-drop-txt">{world ? world.name : 'Sky Realm'}</span>
+        <button className="atlas-btn reveal" onClick={() => setAtlas(true)} aria-label="Open the world map">
+          <img src={atlasIcon} alt="" draggable={false} />
+          <span>{world ? world.name : 'World Map'}</span>
         </button>
 
         <div className="chest-widget reveal">
@@ -80,6 +122,8 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
           <span className="chest-widget-txt">1 / 4</span>
         </div>
       </div>
+      {atlas && <WorldAtlas worlds={worlds} current={worldIdx % Math.max(1, worlds.length)}
+        onPick={(i) => setWorldIdx(i)} onClose={() => setAtlas(false)} />}
     </div>
   )
 }
@@ -91,16 +135,14 @@ function RoadToken({ stage, node, width, onPlay }: {
   const current = stage.status === 'current'
   const done = stage.status === 'done'
   return (
-    <div className={`rtoken${current ? ' is-current' : ''}${node.x > 0.55 ? ' flip' : ''}`}
+    <div className={`rtoken${current ? ' is-current' : ''}${locked ? ' is-locked' : ''}${node.x > 0.55 ? ' flip' : ''}`}
       style={{ left: `${node.x * 100}%`, top: `${node.y * 100}%`, width }}>
       {current && <span className="rtoken-halo" aria-hidden />}
       <button className="rtoken-btn" disabled={locked}
         onClick={() => !locked && onPlay(stage)}
         aria-label={locked ? `Level ${stage.index} locked` : `Play level ${stage.index}`}>
         <img className="rtoken-pad" src={skySrc('pad_base')} alt="" draggable={false} />
-        {locked
-          ? <img className="rtoken-lock" src={skySrc('pad_lock')} alt="" draggable={false} />
-          : <span className="rtoken-num">{stage.index}</span>}
+        {locked && <img className="rtoken-lock" src={skySrc('pad_lock')} alt="" draggable={false} />}
         {done && (
           <span className="rtoken-stars">
             {[0, 1, 2].map((i) => (
@@ -116,6 +158,26 @@ function RoadToken({ stage, node, width, onPlay }: {
           <b>Current</b>
         </span>
       )}
+    </div>
+  )
+}
+
+/** The clouds over a join between two panels: a few loose puffs gathered on the road
+ *  where it crosses, not a wall across the screen (the panels themselves fade into
+ *  each other underneath). Positions are in screen widths from the crossing. */
+const PUFFS = [
+  { c: 0, dx: 0, dy: -0.02, w: 0.62 },   // the big one, sat on the road
+  { c: 1, dx: -0.36, dy: -0.1, w: 0.42 }, // a smaller one up and to one side
+  { c: 2, dx: 0.34, dy: 0.07, w: 0.5 },   // and one lower on the other
+]
+function CloudBank({ x, y, w, clouds, flip }: { x: number; y: number; w: number; clouds: string[]; flip: boolean }) {
+  return (
+    <div className="mw-clouds" style={{ left: x, top: y }} aria-hidden>
+      {PUFFS.map((p, i) => (
+        <img key={i} src={clouds[p.c % clouds.length]} alt="" draggable={false}
+          className={`mw-puff mw-puff-${i}`}
+          style={{ left: (flip ? -p.dx : p.dx) * w, top: p.dy * w, width: p.w * w }} />
+      ))}
     </div>
   )
 }

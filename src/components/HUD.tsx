@@ -1,6 +1,6 @@
 import { useGame } from '../services/ServiceProvider'
 import { SkyIcon, skySrc, type SkyName } from './SkyIcon'
-import mage from '../assets/character/body/mage_m.webp'
+import { usePortrait } from './Portrait'
 import type { CurrencyId } from '../types/game'
 import './hud.css'
 
@@ -12,20 +12,21 @@ function fmt(n: number) {
 
 export function HUD({ onBuy, onSettings }: { onBuy: (c: CurrencyId) => void; onSettings: () => void }) {
   const { currencies, profile } = useGame()
+  const face = usePortrait()
   if (!currencies || !profile) return <div className="hud" />
 
   return (
     <div className="hud">
-      <button className="hud-avatar" aria-label="Profile & settings" onClick={onSettings}>
-        <img src={mage} alt="" className="hud-avatar-img" draggable={false} />
+      <button className="hud-avatar" aria-label={`Level ${profile.level}, ${profile.xp} of ${profile.xpToNext} XP`} onClick={onSettings}
+        style={{ '--xp': `${Math.min(100, (profile.xp / Math.max(1, profile.xpToNext)) * 100)}%` } as React.CSSProperties}>
+        <img src={face} alt="" className="hud-avatar-img" draggable={false} style={face.startsWith('data:') ? { objectPosition: '50% 50%' } : undefined} />
         <span className="hud-avatar-lvl">{profile.level}</span>
       </button>
 
       <div className="hud-pills">
-        <Pill icon="ic_energy" wide value={`${profile.xp} / ${profile.xpToNext}`} onBuy={() => onBuy('potion')} />
         <Pill icon="ic_heart" value={`${currencies.hearts}/${currencies.heartsMax}`} onBuy={() => onBuy('hearts')} />
-        <Pill icon="ic_gem" value={fmt(currencies.potion)} onBuy={() => onBuy('potion')} />
         <Pill icon="ic_coin" value={fmt(currencies.coins)} onBuy={() => onBuy('coins')} />
+        <Pill icon="ic_gem" value={fmt(currencies.gems)} onBuy={() => onBuy('gems')} />
       </div>
 
       <button className="hud-gear" aria-label="Settings" onClick={onSettings}>

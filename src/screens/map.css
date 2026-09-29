@@ -6,6 +6,23 @@
 .mw-frame { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
 .mw-scene { position: absolute; }
 .mw-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* a tall world (tallMap.ts): the painted panels stacked, scrolled vertically; the
+   chrome and nav stay put over it */
+.mw-frame.is-tall {
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.mw-frame.is-tall::-webkit-scrollbar { display: none; }
+.mw-panel { position: absolute; left: 0; width: 100%; display: block; }
+.mw-lifebox { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; overflow: hidden; }
+.mw-lifebox-in { position: absolute; left: 0; top: 0; width: 100%; }
+/* the clouds over a join: loose puffs around the road crossing, drifting a little */
+.mw-clouds { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 4; }
+.mw-puff { position: absolute; display: block; max-width: none; transform: translate(-50%, -50%);
+  filter: drop-shadow(0 10px 14px rgba(70, 110, 170, .18)); animation: mw-drift 9s ease-in-out infinite alternate; }
+.mw-puff-1 { animation-duration: 11s; animation-delay: -3s; }
+.mw-puff-2 { animation-duration: 13s; animation-delay: -6s; }
+@keyframes mw-drift { from { translate: -6px 0; } to { translate: 6px 0; } }
 /* ambient life (swaying trees, flowing falls) drawn over the painting, under the level discs */
 .mw-life { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 
@@ -17,7 +34,7 @@
   container-type: inline-size;
   position: absolute; transform: translate(-50%, -62%);
   display: grid; place-items: center;
-  z-index: 2; isolation: isolate;  /* keeps the halo's z-index:-1 above the land */
+  z-index: 5; isolation: isolate;  /* keeps the halo's z-index:-1 above the land */
 }
 .rtoken-btn {
   position: relative; display: block; padding: 0; width: 100%;
@@ -47,6 +64,9 @@
   filter: drop-shadow(0 9px 15px rgba(20, 60, 110, .32))
           drop-shadow(0 0 12px rgba(255, 226, 150, .9));
 }
+
+/* not reached yet: the pad itself goes grey */
+.rtoken.is-locked .rtoken-pad { filter: grayscale(1) brightness(1.02) contrast(.92); }
 
 .rtoken-num {
   position: absolute; left: 50%; top: 39%; transform: translate(-50%, -50%);
@@ -161,5 +181,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mw-puff { animation: none; }
   .rtoken-halo { animation: none; opacity: .8; }
 }

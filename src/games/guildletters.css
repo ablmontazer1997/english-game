@@ -1,0 +1,46 @@
+/* Guild Letters: positions follow the mockup (c_guild); the parchment, quill and books are painted */
+.gl { --sx: .38; }
+.gl-owl { left: 4.5%; top: 18.5%; width: 32%; }
+.gl-owl img { transform-origin: 50% 100%; animation: gl-hop 3.4s ease-in-out infinite; }
+@keyframes gl-hop { 0%, 80%, 100% { transform: none } 85% { transform: translateY(-6px) rotate(-4deg) } 90% { transform: none } }
+.gl-sent .gl-owl img { animation: gl-fly 1.6s ease-in forwards; }
+@keyframes gl-fly { 30% { transform: translate(8px, -10px) rotate(6deg) } to { transform: translate(120%, -90%) scale(.4) rotate(20deg); opacity: 0 } }
+
+/* the letter is handwritten onto the painted parchment */
+.gl-letter { left: 40%; top: 32.5%; width: 41%; height: 16.5%; overflow: auto; padding: 1% 2%; transform: rotate(-1deg);
+  font-style: italic; font-weight: 700; line-height: 1.35; color: #3a2a18; scrollbar-width: none; }
+.gl-letter p { margin: 0; }
+.gl-from { margin-top: .4em !important; text-align: right; font-weight: 900; color: #6a4a20; }
+
+.gl-write { top: 58.5%; height: 21.5%; left: 4%; right: 4%; display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 8px; }
+.gl-task { font-size: 13px; font-weight: 900; color: #7b3ff0; line-height: 1.25; }
+.gl-tips { margin: 0; font-size: 12px; font-weight: 800; color: #b8741a; }
+.gl-write textarea { flex: 1; min-height: 0; width: 100%; resize: none; border: 0; background: none; padding: 2px 0; font: inherit; font-size: clamp(16px, 4.8cqw, 21px);
+  font-weight: 800; color: #2a2550; line-height: 1.35; caret-color: #8a4dff; }
+.gl-write textarea:focus { outline: none; }
+.gl-count { align-self: flex-end; font-size: 13px; font-weight: 800; color: #5a5f7d; }
+.gl-count.ok { color: #3f9d27; }
+.gl-go { top: 84%; left: 15%; right: 15%; }
+.gl-go .gs-go { font-size: clamp(20px, 6cqw, 26px); }
+
+.gl-review { height: auto; min-height: 21.5%; justify-content: center; gap: 6px; }
+.gl-stars { display: flex; justify-content: center; gap: 6px; font-size: 34px; color: #ddd6ea; }
+.gl-stars span.on { color: #ffc93a; text-shadow: 0 2px 0 #c98a1c, 0 0 12px rgba(255, 200, 60, .8); animation: gl-star .5s ease-out both; }
+.gl-stars span:nth-child(2) { animation-delay: .15s } .gl-stars span:nth-child(3) { animation-delay: .3s }
+@keyframes gl-star { from { transform: scale(0) rotate(-60deg) } 70% { transform: scale(1.3) } }
+.gl-review ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.gl-review li { font-size: 14px; font-weight: 800; }
+.gl-review li.ok { color: #3f9d27; } .gl-review li.no { color: #d4503f; }
+.gl-review details { font-size: 13px; font-weight: 700; }
+.gl-review summary { color: #7b3ff0; font-weight: 900; cursor: pointer; }
+.gl-review details p { margin: 4px 0 0; line-height: 1.35; max-height: 90px; overflow: auto; }
+
+/* motion: the written reply folds up into a small letter and flies to the owl */
+.gl-sending .gl-write { animation: gl-fold 1.05s ease-in forwards; transform-origin: 30% 20%; }
+@keyframes gl-fold { 0% { transform: none } 30% { transform: scaleY(.25) rotateX(40deg); border-radius: 12px } 55% { transform: scale(.28, .18) } 100% { transform: translate(-18%, -150%) scale(.12, .08) rotate(-18deg); opacity: 0 } }
+.gl-sending .gl-go { opacity: 0; transition: opacity .2s; }
+.gl-review { animation: gl-open .45s ease-out both; }
+@keyframes gl-open { from { transform: translateY(24px) scale(.96); opacity: 0 } }
+.gl-review li { animation: gl-li .3s ease-out both; }
+.gl-review li:nth-child(2) { animation-delay: .1s } .gl-review li:nth-child(3) { animation-delay: .2s }
+@keyframes gl-li { from { transform: translateX(-12px); opacity: 0 } }

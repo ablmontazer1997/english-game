@@ -1,0 +1,34 @@
+/* Rune Type: positions follow the mockup (c_runetype) */
+.rt-clue { top: 18%; min-height: 11%; display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 20px; }
+.rt-clue p { margin: 0; flex: 1; text-align: center; font-size: clamp(17px, 5.3cqw, 23px); font-weight: 900; line-height: 1.3; }
+.rt-say { flex: none; width: 62px; height: 62px; }
+
+.rt-slots { top: 31%; display: flex; justify-content: center; gap: 1.2cqw; }
+.rt-slot {
+  width: min(11.2cqw, calc(88cqw / var(--n) - 1.2cqw), 50px); aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center;
+  font-size: min(6.6cqw, 30px); font-weight: 900; text-transform: uppercase; color: #2a2550;
+  background: linear-gradient(180deg, #fffdf6, #f5ead2); border: 3px solid #e2b551;
+  box-shadow: 0 0 0 2px #fff6d6, 0 4px 0 #c99a38, 0 6px 10px rgba(80, 50, 0, .25); transition: background .2s;
+}
+.rt-slot.full { background: linear-gradient(180deg, #fff1b8, #ffd45a); }
+.rt-slot.bad { color: #fff; background: linear-gradient(180deg, #ff9d8f, #e0523f); animation: rt-crack .45s; }
+@keyframes rt-crack { 25% { transform: rotate(-8deg) } 50% { transform: rotate(7deg) translateY(3px) } 75% { transform: rotate(-4deg) } }
+.rt-ok .rt-slot { color: #fff; background: linear-gradient(180deg, #8fe56a, #4fbf34); animation: rt-yay .5s ease-out both; }
+.rt-ok .rt-slot:nth-child(2n) { animation-delay: .06s; }
+@keyframes rt-yay { 40% { transform: translateY(-9px) } }
+.rt-reveal .rt-slot { color: #fff; background: linear-gradient(180deg, #c9a8ff, #a77cf5); }
+
+.rt-kb { top: 73.5%; left: 1%; right: 1%; display: grid; gap: 1.9cqh; }
+.rt-row { display: flex; justify-content: center; gap: 1.2cqw; }
+.rt-key {
+  width: 9.2cqw; max-width: 50px; aspect-ratio: .88; border: 2px solid #fff; padding: 0; border-radius: 10px;
+  background: linear-gradient(180deg, #fffdf8, #f1e6cf); color: #3a2a8c; font: inherit; font-size: min(6.2cqw, 27px); font-weight: 900; text-transform: uppercase;
+  box-shadow: 0 4px 0 #cdbb95, 0 6px 10px rgba(60, 40, 20, .25);
+}
+.rt-key:active { transform: translateY(3px); box-shadow: 0 1px 0 #cdbb95; }
+.rt-back { width: 14cqw; max-width: 72px; aspect-ratio: auto; font-size: min(6cqw, 26px); }
+
+/* motion: a carved rune flashes gold as it lands */
+.rt-slot.full { animation: rt-carve .35s ease-out; }
+@keyframes rt-carve { 0% { box-shadow: 0 0 0 2px #fff6d6, 0 0 22px rgba(255, 210, 80, 1), 0 4px 0 #c99a38 } }
+.rt-reveal .rt-slot { animation: rt-yay .5s ease-out both; }

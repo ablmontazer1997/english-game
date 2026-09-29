@@ -1,0 +1,80 @@
+import type { ByLevel, EchoLine } from './types'
+
+// Echo Cave: listen and repeat. Index 0..4 = A1..C1.
+export const ECHO: ByLevel<EchoLine> = [
+  // A1: 4-6 words
+  [
+    { text: 'I think this is right.' },
+    { text: 'The red lamp is lovely.' },
+    { text: 'We visit Grandma every week.' },
+    { text: 'Three thin cats sit here.' },
+    { text: 'Lara likes rice and lemons.' },
+    { text: 'The wizard wears a velvet hat.' },
+    { text: 'My brother rides a bike.' },
+    { text: 'Please wash your hands first.' },
+    { text: 'Very warm water, please.' },
+    { text: 'The little dragon is sleepy.' },
+    { text: 'Thank you for the flowers.' },
+    { text: 'Where is the train station?' },
+  ],
+  // A2: 6-8 words
+  [
+    { text: 'Rafael left his wallet on the bus.' },
+    { text: 'We watched a very long film yesterday.' },
+    { text: 'The weather is warmer than last week.' },
+    { text: 'Could you throw the ball to Aiko?' },
+    { text: 'I usually walk to work in the morning.' },
+    { text: 'The old wizard lives near the river.' },
+    { text: 'There are three rooms on this floor.' },
+    { text: 'Leila really loves fresh strawberries with cream.' },
+    { text: 'My father fixed the broken window.' },
+    { text: 'Our village has a very small library.' },
+    { text: 'The potion smells like wet leaves.' },
+    { text: 'Tom thought the test was easy.' },
+  ],
+  // B1: 8-11 words
+  [
+    { text: 'I have never travelled abroad without my brother before.' },
+    { text: 'Would you like to join us for dinner tonight?' },
+    { text: 'The weather was worse than we expected on Thursday.' },
+    { text: 'Kwame wrote a really long letter to his aunt.' },
+    { text: 'If it rains tomorrow, we will stay at home.' },
+    { text: 'The guild needs three volunteers to guard the bridge.' },
+    { text: 'She always leaves her umbrella in the office.' },
+    { text: 'Our neighbours are moving to a quieter part of town.' },
+    { text: 'I rarely remember the names of people I meet.' },
+    { text: 'The dragon flew over the valley without making a sound.' },
+    { text: 'Everyone should drink water regularly when the weather is hot.' },
+    { text: 'We ordered vegetable soup and a large loaf of bread.' },
+  ],
+  // B2: 10-14 words
+  [
+    { text: 'I would rather walk than wait another hour for the bus.' },
+    { text: 'The photographer asked us to stand a little closer together.' },
+    { text: 'Although the recipe looked difficult, it turned out to be surprisingly simple.' },
+    { text: 'The apprentice was warned not to touch the glowing crystal.' },
+    { text: 'Ingrid has been working remotely for almost three years now.' },
+    { text: 'We should have booked the tickets well before the festival started.' },
+    { text: 'Regular exercise can really improve both your mood and your memory.' },
+    { text: 'The rural roads were blocked after the heavy rain last night.' },
+    { text: 'I can hardly believe how quickly the new library was built.' },
+    { text: 'The healer brewed a bitter potion that relieved the fever overnight.' },
+    { text: 'Would you mind turning the volume down while I am on the phone?' },
+    { text: 'The development of the project depends entirely on our budget.' },
+  ],
+  // C1: 12-18 words
+  [
+    { text: 'Had we left a little earlier, we would never have missed the ferry.' },
+    { text: 'The committee is thoroughly reviewing the proposal before making any final decisions.' },
+    { text: 'What worries me most is not the cost but the lack of reliable information.' },
+    { text: 'Rarely have I seen a garden so carefully planned and so lovingly maintained.' },
+    { text: 'The archmage insisted that every apprentice record their experiments in the guild archive.' },
+    { text: 'It is worth bearing in mind that first impressions are not always accurate.' },
+    { text: 'The photographer\'s latest exhibition explores the relationship between memory and urban architecture.' },
+    { text: 'Whether or not the weather improves, the rehearsal will go ahead as planned.' },
+    { text: 'Our neighbourhood has undergone a remarkable transformation over the last few years.' },
+    { text: 'Not only did the dragon guard the treasure, but it also protected the villagers.' },
+    { text: 'Many researchers would argue that curiosity is a far more valuable trait than talent.' },
+    { text: 'I\'d appreciate it if you could let me know whether the venue is available.' },
+  ],
+]

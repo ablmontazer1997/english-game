@@ -20,13 +20,5 @@ export const MAP_ASPECT = M.aspect
 export const MAP_PAD_W = M.padW
 export const MAP_NODES = M.nodes
 
-export interface WorldTheme {
-  /** each world reuses the scene under its own colour grade until it has art of its own */
-  filter?: string
-}
-export const THEMES: WorldTheme[] = [
-  {},
-  { filter: 'hue-rotate(-22deg) saturate(1.06)' },
-  { filter: 'hue-rotate(148deg) saturate(.88) brightness(.97)' },
-]
-export const themeFor = (worldIdx: number) => THEMES[worldIdx % THEMES.length]
+// every world now has its own painted scene: see worlds.ts (the old per-world
+// colour grades of this one picture are gone)

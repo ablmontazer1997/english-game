@@ -1,56 +1,41 @@
-import type { ReactNode } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { Sheet } from '../components/Sheet'
-import { HeartIcon, PotionIcon, CoinIcon, GemIcon, BoltIcon } from '../components/Icon'
+import { OfferRow } from './ShopScreen'
+import { ESSENTIALS, BOOSTS } from '../services/shopCatalog'
 import type { CurrencyId } from '../types/game'
 import './screens.css'
+import './pages.css'
+import '../components/progression.css'
 
 const TITLES: Record<CurrencyId, string> = {
-  hearts: 'More Hearts', potion: 'Potions', coins: 'Coins', gems: 'Gems',
+  hearts: 'More Hearts', potion: 'Elixirs', coins: 'Coins', gems: 'Gems',
 }
+const by = (id: string) => [...ESSENTIALS, ...BOOSTS].find((o) => o.id === id)!
 
+// the "+" on a HUD pill: the same offers as the Shop tab, right where you need them
 export function ShopSheet({ currency, onClose }: { currency: CurrencyId | null; onClose: () => void }) {
-  const { currencies, refillHearts } = useGame()
+  const { currencies } = useGame()
   if (!currency) return null
-
-  const offers = OFFERS[currency]
+  const full = !!currencies && currencies.hearts >= currencies.heartsMax
   return (
     <Sheet open={!!currency} title={TITLES[currency]} onClose={onClose}>
-      <p className="page-sub" style={{ marginTop: -6 }}>Shop right here, no separate tab.</p>
-      {currency === 'hearts' && (
-        <div className="tile">
-          <div className="tile-ic" style={{ color: 'var(--rose)' }}><HeartIcon size={20} /></div>
-          <div className="tile-main"><b>Full Refill with Potion</b><p>Spends one potion · You have: {currencies?.potion}</p></div>
-          <button className="btn btn-cyan" disabled={!currencies?.potion} onClick={() => { refillHearts(); onClose() }}>Refill</button>
-        </div>
-      )}
-      {offers.map((o) => (
-        <div className="tile" key={o.label}>
-          <div className="tile-ic" style={{ color: o.tint }}>{o.icon}</div>
-          <div className="tile-main"><b>{o.label}</b><p>{o.note}</p></div>
-          <button className="btn btn-gold" disabled>{o.price}</button>
-        </div>
-      ))}
-      <p style={{ textAlign: 'center', color: 'var(--ink-faint)', fontSize: 12, margin: '14px 0 4px' }}>
-        Paid purchases unlock once the backend is connected.
-      </p>
+      <div className="ss-list">
+        {currency === 'hearts' && <>
+          <OfferRow o={by('hearts_full')} disabled={full} status={full ? 'Hearts are full' : undefined} />
+          <p className="ss-note">Hearts refill by themselves: one every 20 minutes. You only lose a heart when a stage ends with no stars.</p>
+        </>}
+        {currency === 'potion' && <>
+          <OfferRow o={by('elixir_1')} status={`You have ${currencies?.potion ?? 0}`} />
+          <OfferRow o={by('elixir_3')} />
+        </>}
+        {currency === 'coins' && <>
+          <OfferRow o={by('coin_sack')} />
+          <p className="ss-note">Coins come from every stage you play, from quests and from chests.</p>
+        </>}
+        {currency === 'gems' && (
+          <p className="ss-note">Earn gems from weekly quests, achievements, level-ups, chests and top league finishes. Gem packs open when store payments go live.</p>
+        )}
+      </div>
     </Sheet>
   )
-}
-
-const OFFERS: Record<CurrencyId, { label: string; note: string; price: string; icon: ReactNode; tint: string }[]> = {
-  hearts: [
-    { label: 'Unlimited Hearts 30 min', note: 'Play without heart worries', price: '20 💎', icon: <BoltIcon size={20} />, tint: 'var(--gold)' },
-    { label: '5 Hearts Pack', note: 'Instant refill', price: '15 💎', icon: <HeartIcon size={20} />, tint: 'var(--rose)' },
-  ],
-  potion: [
-    { label: '3 Potions Pack', note: 'Refill / boost / hint', price: '25 💎', icon: <PotionIcon size={20} />, tint: 'var(--potion)' },
-  ],
-  coins: [
-    { label: '1000 Coins Bag', note: 'For boosters and cosmetics', price: '10 💎', icon: <CoinIcon size={20} />, tint: 'var(--gold)' },
-  ],
-  gems: [
-    { label: '100 Gems Pack', note: 'Premium currency', price: 'Buy', icon: <GemIcon size={20} />, tint: 'var(--amethyst-soft)' },
-    { label: 'Seasonal Moon Pass', note: 'Premium reward track', price: 'Buy', icon: <BoltIcon size={20} />, tint: 'var(--cyan)' },
-  ],
 }

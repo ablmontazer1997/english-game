@@ -1,0 +1,45 @@
+/* booster tray: fixed right edge, same place in every mini-game */
+.bt {
+  position: absolute; right: 8px; top: 38%; z-index: 20;
+  display: grid; gap: 10px; justify-items: end;
+}
+.bt-btn {
+  position: relative; width: 50px; height: 50px; padding: 0; border-radius: 16px; border: 3px solid #fff;
+  display: grid; place-items: center; background: linear-gradient(180deg, #fff, #efeaff);
+  box-shadow: 0 4px 0 #b9c3dd, 0 8px 14px rgba(20, 40, 100, .25);
+}
+.bt-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #b9c3dd; }
+.bt-btn.off { filter: grayscale(1); opacity: .6; }
+.bt-btn.pulse { animation: bt-pulse .5s ease-out; }
+@keyframes bt-pulse { 40% { transform: scale(1.18); box-shadow: 0 0 0 8px rgba(255, 210, 80, .5) } }
+.bt-ic { font-size: 24px; line-height: 1; }
+.bt-cost {
+  position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 2px; padding: 1px 6px 1px 3px; border-radius: 99px;
+  background: linear-gradient(180deg, #ffd66b, #f2a51a); border: 2px solid #fff;
+  font-size: 10.5px; font-weight: 900; color: #6a4a00; white-space: nowrap;
+}
+.bt-cost img { width: 13px; height: 13px; }
+.bt-count {
+  position: absolute; top: -8px; right: -8px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px;
+  display: grid; place-items: center; background: linear-gradient(180deg, #a978ff, #7b3ff0); border: 2px solid #fff;
+  font-size: 11px; font-weight: 900; color: #fff;
+}
+.bt-tip {
+  position: absolute; right: 58px; top: 10px; width: 170px; padding: 8px 10px; border-radius: 12px;
+  background: rgba(40, 24, 90, .88); color: #fff; font-size: 12px; font-weight: 700; line-height: 1.3;
+  animation: bt-in .2s ease-out;
+}
+@keyframes bt-in { from { opacity: 0; transform: translateX(6px) } }
+
+/* rescue step after a lost stage */
+.rescue {
+  position: relative; z-index: 2; margin: auto; width: min(88vw, 330px); padding: 26px 18px 18px; text-align: center;
+  border-radius: 28px; border: 4px solid #fff; background: linear-gradient(180deg, #fff, #f6f2ff);
+  box-shadow: 0 7px 0 #b9c3dd, 0 22px 44px rgba(20, 40, 100, .35); display: grid; gap: 10px; color: #3c4160;
+}
+.rescue-ic { font-size: 54px; line-height: 1; }
+.rescue h2 { margin: 0; font-size: 22px; font-weight: 900; }
+.rescue p { margin: 0; font-size: 14.5px; font-weight: 700; color: #6b7192; }
+.rescue .cb { width: 100%; }
+.rescue-wrap { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 16px; }

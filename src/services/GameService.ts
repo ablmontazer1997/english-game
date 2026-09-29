@@ -1,6 +1,6 @@
 import type {
   Currencies, PlayerProfile, World, Quest, League, SrsItem,
-  StageResult, MiniGameId, CurrencyId,
+  StageResult, MiniGameId, CurrencyId, Achievement, ChestKind, Reward, Inventory,
 } from '../types/game'
 
 // The single seam between UI and data. `MockGameService` implements it now;
@@ -21,6 +21,16 @@ export interface GameService {
 
   // Economy actions.
   spend(currency: CurrencyId, amount: number): Promise<Currencies>
+  drinkElixir(): Promise<{ ok: boolean; currencies: Currencies }>
   refillHearts(): Promise<Currencies>          // e.g. via potion / purchase
-  claimQuest(questId: string): Promise<{ quests: Quest[]; currencies: Currencies }>
+  claimQuest(questId: string): Promise<{ quests: Quest[]; currencies: Currencies; reward: Reward }>
+
+  // Progression beyond stages.
+  getInventory(): Promise<Inventory>
+  getAchievements(): Promise<Achievement[]>
+  claimAchievement(id: string): Promise<{ achievements: Achievement[]; currencies: Currencies; reward: Reward }>
+  openChest(kind: ChestKind): Promise<{ ok: boolean; reward: Reward; currencies: Currencies }>
+  buy(offerId: string): Promise<{ ok: boolean; reason?: string; currencies: Currencies }>
+  seenLeagueResult(): Promise<void>
+  noteHint(): Promise<void>
 }

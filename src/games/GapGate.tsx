@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { GameTitle } from '../components/GameTitle'
 import type { MiniGameProps } from './types'
 import gateImg from '../assets/sky/portal.png'
-import sceneBg from '../assets/gapgate_sky.webp'
+import sceneBg from '../assets/gapgate_bg.webp'
+import { useHint } from './boosters'
 import './gapgate.css'
 
 const ADVANCE_OK_MS = 720 // pause after a correct answer (let the gate open)
@@ -32,6 +34,7 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
   const [shake, setShake] = useState(false)
   const [opened, setOpened] = useState(false)
   const [locked, setLocked] = useState(false)
+  const [gone, setGone] = useState<Set<string>>(() => new Set()) // options removed by a hint
 
   // Live refs so the advance timer reads the latest tallies (no stale closures).
   const correctRef = useRef(0)
@@ -88,9 +91,18 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
     setShake(false)
     setOpened(false)
     setLocked(false)
+    setGone(new Set())
     if (idx + 1 < items.length) setIdx((i) => i + 1)
     else finish()
   }, [idx, items.length, finish])
+
+  useHint(() => {
+    if (locked || !item) return false
+    const wrong = options.filter((o) => !o.correct && !gone.has(o.key))
+    if (wrong.length < 2) return false
+    setGone(new Set([...gone, ...wrong.slice(0, 2).map((o) => o.key)]))
+    return true
+  })
 
   function pick(o: Option) {
     if (locked || !item) return
@@ -135,10 +147,8 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
 
   return (
     <div className={`gg ${shake ? 'gg-shake' : ''}`} style={{ backgroundImage: `url(${sceneBg})` }}>
+      <GameTitle title="Gap Gate" count={`Gate ${idx + 1} / ${items.length}`} />
       <div className="gg-hud">
-        <span className="gg-progress">
-          {idx + 1}/{items.length}
-        </span>
         {combo >= 2 && (
           <span className="gg-combo pop" key={combo}>
             Combo ×{combo}
@@ -185,8 +195,8 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
           return (
             <button
               key={o.key}
-              className={`gg-opt ${state} ${showRight}`}
-              disabled={locked}
+              className={`gg-opt ${state} ${showRight}${gone.has(o.key) ? ' gone' : ''}`}
+              disabled={locked || gone.has(o.key)}
               onClick={() => pick(o)}
               dir="ltr"
             >

@@ -1,0 +1,37 @@
+/* Crystal Ball: positions follow the mockup (c_crystal); the ball and its two figures are painted */
+.cr-spot { top: 22%; width: 17%; height: 20%; border-radius: 50%; display: grid; align-items: end; justify-items: center; transition: box-shadow .25s, background .25s; }
+.cr-spot.a { left: 32%; } .cr-spot.b { left: 51%; }
+.cr-spot b { transform: translateY(80%); font-size: 12px; font-weight: 900; color: #fff; padding: 1px 8px; border-radius: 999px; background: rgba(90, 40, 170, .7); opacity: 0; transition: opacity .25s; }
+.cr-spot.on { background: radial-gradient(closest-side, rgba(255, 240, 255, .55), transparent); }
+.cr-spot.on b { opacity: 1; }
+.cr-talking .gs-plate { animation: cr-glow 1.2s ease-in-out infinite alternate; }
+@keyframes cr-glow { to { filter: brightness(1.06) saturate(1.08) } }
+
+.cr-player { top: 55%; left: 6%; right: 6%; display: flex; align-items: center; gap: 10px; }
+.cr-play { flex: none; width: 64px; height: 64px; }
+.cr-bar { position: relative; flex: 1; height: 18px; border-radius: 999px; background: linear-gradient(180deg, #fff8e0, #f3e2b4); border: 3px solid #e2b551; box-shadow: 0 3px 6px rgba(80, 50, 0, .25); }
+.cr-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(180deg, #ffe07a, #f0a92a); transition: width .4s; }
+.cr-bar b { position: absolute; top: 50%; width: 26px; height: 26px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff3b0, #f0a92a); border: 3px solid #fff; box-shadow: 0 2px 4px rgba(80, 50, 0, .35); transition: left .4s; }
+
+.cr-q { top: 64%; bottom: calc(4% + var(--safe-bottom, 0px)); display: grid; align-content: space-evenly; gap: 8px; padding: 12px 14px; text-align: center; }
+.cr-ask { margin: 0; font-size: clamp(17px, 5.2cqw, 23px); font-weight: 900; line-height: 1.2; }
+.cr-sub { margin: 0; font-size: 15px; font-weight: 700; color: #5a5f7d; }
+.cr-opt { width: 100%; min-height: 50px; transition: opacity .3s; }
+.cr-opt.right { color: #fff; border-color: #d8ffb9; background: linear-gradient(180deg, #8fe56a, #4fbf34); box-shadow: 0 0 0 2px #2f8a1f, 0 4px 0 #26731a; }
+.cr-opt.wrong { color: #fff; border-color: #ffd0c8; background: linear-gradient(180deg, #ff9d8f, #e0523f); box-shadow: 0 0 0 2px #a8382a, 0 4px 0 #8a2a1e; }
+.cr-opt.gone { opacity: .25; }
+
+/* motion: mist swirls inside the ball, faster and brighter while the vision speaks */
+.cr-mist { left: 27%; top: 12%; width: 46%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; mix-blend-mode: screen; opacity: .35; transition: opacity .6s; }
+.cr-mist i { position: absolute; inset: -20%; border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(210, 160, 255, .7), transparent 35%, rgba(140, 200, 255, .6), transparent 70%, rgba(255, 190, 240, .6), transparent);
+  filter: blur(14px); animation: cr-spin 9s linear infinite; }
+.cr-mist i + i { animation-duration: 13s; animation-direction: reverse; opacity: .7; }
+@keyframes cr-spin { to { transform: rotate(360deg) } }
+.cr-talking .cr-mist { opacity: .85; } .cr-talking .cr-mist i { animation-duration: 3s; } .cr-talking .cr-mist i + i { animation-duration: 4.5s; }
+.cr-q > * { animation: cr-in .35s ease-out both; }
+.cr-q > :nth-child(2) { animation-delay: .06s } .cr-q > :nth-child(3) { animation-delay: .12s } .cr-q > :nth-child(4) { animation-delay: .18s } .cr-q > :nth-child(5) { animation-delay: .24s }
+@keyframes cr-in { from { transform: translateY(14px); opacity: 0 } }
+.cr-opt.right { animation: cr-yes .4s ease-out; }
+@keyframes cr-yes { 40% { transform: scale(1.05) } }
+.cr-spot.on { animation: cr-speak .5s ease-in-out infinite alternate; }
+@keyframes cr-speak { to { transform: scale(1.06) } }

@@ -1,0 +1,37 @@
+/* Spell Weaver: positions follow the mockup (c_spell); the loom is part of the painting */
+.swv-source { top: 14%; left: 9%; right: 9%; min-height: 10%; display: grid; justify-items: center; align-content: center; gap: 6px; text-align: center; padding: 10px 14px; }
+.swv-source p { margin: 0; font-size: clamp(17px, 5.2cqw, 23px); font-weight: 900; line-height: 1.25; }
+.swv-cmd { padding: 3px 16px; border-radius: 999px; font-size: 13px; font-weight: 900; letter-spacing: .05em; color: #fff; border: 2px solid #e2d0ff;
+  background: linear-gradient(180deg, #a978ff, #7b3ff0); box-shadow: 0 2px 0 #5a24c0; }
+
+/* the woven line sits on the loom's glowing middle bar */
+.swv-line { left: 15%; width: 70%; top: 43.5%; min-height: 8%; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 1.4%; pointer-events: auto; }
+.swv-glow { left: 20%; top: 25%; width: 60%; height: 40%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 225, 140, .95), transparent); opacity: 0; }
+.swv-ok .swv-glow { animation: swv-burst 1.4s ease-out; }
+@keyframes swv-burst { 30% { opacity: 1 } to { opacity: 0; transform: scale(1.4) } }
+.swv-slot { width: 22%; min-height: 44px; background: center / 100% 100% no-repeat; opacity: .6; filter: saturate(.7); }
+.swv-tile { min-height: 46px; padding: 0 16px; border: 0; background: center / 100% 100% no-repeat; font: inherit; font-size: clamp(14px, 4.2cqw, 18px); font-weight: 900; }
+.swv-tile.in { color: #fff; text-shadow: 0 1px 2px rgba(40, 10, 90, .6); filter: drop-shadow(0 0 8px rgba(190, 140, 255, .9)); animation: swv-in .3s ease-out; }
+@keyframes swv-in { from { transform: scale(.6); opacity: 0 } }
+.swv-ok .swv-tile.in { filter: drop-shadow(0 0 12px rgba(255, 220, 110, 1)) hue-rotate(-60deg) saturate(1.2); }
+.swv-bad .swv-line { animation: gs-no .4s; }
+
+.swv-pool { top: 69%; left: 2%; right: 2%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px; }
+.swv-tile.rope { min-height: 52px; padding: 0 22px; color: #2a2550; filter: drop-shadow(0 4px 4px rgba(80, 50, 0, .25)); }
+.swv-tile.rope:active { transform: translateY(2px); }
+.swv-tile.used { opacity: .25; }
+.swv-go { top: 84%; left: 20%; right: 20%; }
+
+/* motion: a woven spell shimmers along the loom; a wrong one unravels and drops */
+.swv-ok .swv-tile.in { animation: swv-hop .45s ease-out both; }
+.swv-ok .swv-tile.in:nth-child(2) { animation-delay: .12s } .swv-ok .swv-tile.in:nth-child(3) { animation-delay: .24s }
+.swv-ok .swv-tile.in:nth-child(4) { animation-delay: .36s } .swv-ok .swv-tile.in:nth-child(5) { animation-delay: .48s } .swv-ok .swv-tile.in:nth-child(6) { animation-delay: .6s }
+@keyframes swv-hop { 40% { transform: translateY(-12px) scale(1.08) } }
+.swv-line::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px; opacity: 0;
+  background: linear-gradient(90deg, transparent, #fff3b0, #ffd35a, #fff3b0, transparent); background-size: 50% 100%; background-repeat: no-repeat; z-index: -1; }
+.swv-ok .swv-line::after { animation: swv-thread 1.1s ease-in-out; }
+@keyframes swv-thread { 0% { opacity: 1; background-position: -60% 0 } 100% { opacity: 1; background-position: 160% 0 } }
+.swv-bad .swv-tile.in { animation: swv-fall .9s ease-in both; }
+.swv-bad .swv-tile.in:nth-child(2n) { animation-delay: .08s }
+@keyframes swv-fall { 20% { transform: rotate(-8deg) } 100% { transform: translateY(80px) rotate(25deg); opacity: 0 } }
+.swv-pool .swv-tile.rope { transition: opacity .2s, transform .15s; }

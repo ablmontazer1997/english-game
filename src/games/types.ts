@@ -14,6 +14,8 @@ export interface MiniGameOutcome {
 export interface MiniGameProps {
   items: SrsItem[]
   onFinish: (o: MiniGameOutcome) => void
+  /** the player's CEFR level for this stage: 0..4 = A1..C1 */
+  level?: number
 }
 
 export type MiniGameComponent = (props: MiniGameProps) => React.ReactElement

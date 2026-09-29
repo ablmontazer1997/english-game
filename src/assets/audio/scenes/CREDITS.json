@@ -1,0 +1,158 @@
+{
+ "potion-mix": {
+  "music": {
+   "id": 577949,
+   "name": "Magic Fantasy Fairy Tale Music",
+   "by": "SolarFLEX"
+  },
+  "amb": {
+   "id": 173607,
+   "name": "Cauldron Boiling",
+   "by": "Irhouen"
+  }
+ },
+ "echo": {
+  "music": {
+   "id": 593998,
+   "name": "Ambient - Ambient Music",
+   "by": "JonasBlakewood"
+  },
+  "amb": {
+   "id": 26638,
+   "name": "Water Drops",
+   "by": "freesound_community"
+  }
+ },
+ "rune-type": {
+  "music": {
+   "id": 490164,
+   "name": "Mystery Mysterious Mystical Music",
+   "by": "NastelBom"
+  }
+ },
+ "curse-breaker": {
+  "music": {
+   "id": 122118,
+   "name": "Let the Mystery Unfold",
+   "by": "geoffharvey"
+  },
+  "amb": {
+   "id": 6836,
+   "name": "Eerie Ambience",
+   "by": "freesound_community"
+  }
+ },
+ "spell-weaver": {
+  "music": {
+   "id": 389087,
+   "name": "Magical Storytime",
+   "by": "geoffharvey"
+  }
+ },
+ "crystal-ball": {
+  "music": {
+   "id": 114064,
+   "name": "Mysterious Celesta",
+   "by": "Ashot_Danielyan"
+  }
+ },
+ "bards-tale": {
+  "music": {
+   "id": 311693,
+   "name": "Medieval Irish Celtic Ireland Music",
+   "by": "MaksymMalko"
+  }
+ },
+ "guild-letters": {
+  "music": {
+   "id": 454036,
+   "name": "Fantasy",
+   "by": "NastelBom"
+  }
+ },
+ "tavern-talk": {
+  "music": {
+   "id": 235876,
+   "name": "Medieval city/tavern ambient",
+   "by": "DeusLower"
+  }
+ },
+ "boss-battle": {
+  "music": {
+   "id": 583276,
+   "name": "Battle Boss Fight Game Music",
+   "by": "alex-morgan"
+  }
+ },
+ "bubble-pop": {
+  "music": {
+   "id": 441727,
+   "name": "Playful",
+   "by": "leberch"
+  }
+ },
+ "match-blitz": {
+  "music": {
+   "id": 249202,
+   "name": "Puzzle Game - Bright Casual Video Game Music",
+   "by": "Cyberwave-Orchestra"
+  }
+ },
+ "memory-crystals": {
+  "music": {
+   "id": 601667,
+   "name": "Magic Fantasy Fairy Tale Music",
+   "by": "andriih"
+  },
+  "amb": {
+   "id": 64660,
+   "name": "Wind chime small",
+   "by": "freesound_community"
+  }
+ },
+ "oracle-trial": {
+  "music": {
+   "id": 560304,
+   "name": "Magic Fantasy Fairy Tale Music",
+   "by": "mirostar"
+  },
+  "amb": {
+   "id": 143010,
+   "name": "temple",
+   "by": "manhant1TV"
+  }
+ },
+ "rune-order": {
+  "music": {
+   "id": 576610,
+   "name": "Adventure - Adventure Music",
+   "by": "AtlasAudio"
+  }
+ },
+ "whisper-scroll": {
+  "music": {
+   "id": 411949,
+   "name": "Whispering Forest",
+   "by": "Grand_Project"
+  }
+ },
+ "gap-gate": {
+  "music": {
+   "id": 150606,
+   "name": "The Magic Tree",
+   "by": "geoffharvey"
+  }
+ },
+ "quiz": {
+  "music": {
+   "id": 111724,
+   "name": "Hiding place in the Forest",
+   "by": "geoffharvey"
+  }
+ },
+ "pour": {
+  "id": 250240,
+  "name": "Magic Spell 02",
+  "by": "Universfield"
+ }
+}

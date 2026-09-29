@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
 import sceneBg from '../assets/pages/bg_profile.webp'
-import cardBack from '../assets/games/tarot_back.png'
-import cardFront from '../assets/games/tarot_front.png'
+import cardBack from '../assets/games/mc_back.png'
+import cardFront from '../assets/games/mc_front.png'
+import { useHint } from './boosters'
 import './memorycrystals.css'
 
 // one unified magical card (new design system): decorated back, parchment face
@@ -11,6 +12,7 @@ const CARD_INK = '#42285f'
 
 const MAX_PAIRS = 6
 const FLIP_BACK_MS = 800
+const PREVIEW_MS = 3000 // show every card face-up first so the player knows what to remember
 
 type Face = 'front' | 'back'
 
@@ -54,6 +56,7 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
   const [wrong, setWrong] = useState<string[]>([]) // keys flashing wrong
   const [attempts, setAttempts] = useState(0)
   const [combo, setCombo] = useState(0)
+  const [preview, setPreview] = useState(true)
 
   const maxComboRef = useRef(0)
   const doneRef = useRef(false)
@@ -72,6 +75,19 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pairCount])
 
+  // Opening peek: all cards face-up, then they flip over.
+  useEffect(() => {
+    const t = setTimeout(() => setPreview(false), PREVIEW_MS)
+    return () => clearTimeout(t)
+  }, [])
+
+  useHint(() => {
+    if (preview || lockRef.current || doneRef.current) return false
+    setPreview(true)
+    setTimeout(() => setPreview(false), 2000)
+    return true
+  })
+
   // Clear any pending flip-back timer on unmount.
   useEffect(() => {
     return () => {
@@ -80,7 +96,7 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
   }, [])
 
   function onTap(card: Card) {
-    if (lockRef.current || doneRef.current) return
+    if (preview || lockRef.current || doneRef.current) return
     if (matched.has(card.pairId)) return
     if (flipped.includes(card.key)) return
     if (flipped.length >= 2) return
@@ -151,7 +167,7 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
       >
         {deck.map((card) => {
           const isMatched = matched.has(card.pairId)
-          const isUp = isMatched || flipped.includes(card.key)
+          const isUp = isMatched || preview || flipped.includes(card.key)
           const isWrong = wrong.includes(card.key)
           const cls =
             'mc-card' +

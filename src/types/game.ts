@@ -42,6 +42,7 @@ export interface Stage {
   stars: number       // 0..3
   miniGame: MiniGameId
   title: string
+  cefr?: string       // the world's level, 'A1' ...
 }
 
 export interface World {
@@ -55,7 +56,7 @@ export interface World {
 export type MiniGameId =
   | 'boss-battle' | 'match-blitz' | 'bubble-pop'
   | 'spell-weaver' | 'rune-type' | 'potion-mix'
-  | 'echo' | 'portal-run' | 'memory-crystals' | 'gap-gate'
+  | 'echo' | 'portal-run' | 'curse-breaker' | 'crystal-ball' | 'bards-tale' | 'guild-letters' | 'memory-crystals' | 'gap-gate' | 'oracle-trial' | 'rune-order' | 'whisper-scroll' | 'tavern-talk'
 
 export interface Quest {
   id: string
@@ -65,13 +66,38 @@ export interface Quest {
   reward: Reward
   period: 'daily' | 'weekly'
   done: boolean
+  /** the chest quest that completes a set (all dailies / dailies on 5 days) */
+  bonus?: boolean
 }
 
 export interface Reward {
   coins?: number
   gems?: number
   potion?: number
-  chest?: 'common' | 'rare' | 'epic' | 'legendary'
+  chest?: ChestKind
+}
+
+export type ChestKind = 'wood' | 'silver' | 'epic'
+
+export type AchievementCat = 'journey' | 'stars' | 'scholar' | 'streak' | 'boss' | 'treasure' | 'wealth' | 'gems' | 'league' | 'quests' | 'elixir' | 'explorer'
+export interface Achievement {
+  id: string
+  cat: AchievementCat
+  title: string
+  desc: string
+  tier: number        // 1 bronze, 2 silver, 3 gold, 4 astral
+  progress: number
+  target: number
+  reward: Reward
+  claimed: boolean
+}
+
+/** what the player owns and has running, besides the four currencies */
+export interface Inventory {
+  chests: Record<ChestKind, number>
+  freezes: number          // Streak Freeze charges (max 2)
+  xpBoostUntil: number     // epoch ms, double XP while in the future
+  dealBought: boolean      // today's deal already taken
 }
 
 export type LeagueTier = 'bronze' | 'silver' | 'gold' | 'ruby' | 'astral' | 'legend'
@@ -89,6 +115,8 @@ export interface League {
   entries: LeagueEntry[]
   promoteCount: number
   demoteCount: number
+  /** the result of the week that just ended, until the player has seen it */
+  last?: { tier: LeagueTier; rank: number; moved: -1 | 0 | 1; reward: Reward }
 }
 
 // One learning item scheduled by SRS and surfaced inside a mini-game.
@@ -109,4 +137,9 @@ export interface StageResult {
   heartsLost: number
   xpGained: number
   coinsGained: number
+  gemsGained?: number
+  miniGame?: MiniGameId
+  boss?: boolean
+  /** XP already includes the Double XP boost */
+  boosted?: boolean
 }

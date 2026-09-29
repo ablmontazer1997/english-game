@@ -6,8 +6,11 @@ cutouts of just the tree canopies and the waterfall sheets, straight from the
 painting's own pixels, and ship them next to a JSON of where they sit. At
 runtime MapLife.tsx draws the cutouts back over their own spot, animated.
 
-Because a cutout is drawn over the very pixels it came from, a sway of a few
-pixels never opens a gap: the baked original shows through underneath.
+Canopy boxes grow to the whole connected blossom (hand boxes clipped the crowns,
+so whole clumps of leaves stayed frozen in the painting while the rest swayed),
+and the blossom colour range covers the blue-violet and pale-pink leaves too.
+The runtime draws each canopy 3% overscaled about its trunk, so its own baked
+twin stays hidden under it through the sway.
 
 Usage: python3 pipeline/sky/cut_life.py   (writes src/assets/sky/life/*)
 """
@@ -15,9 +18,10 @@ import json, os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
-ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+ROOT = os.environ.get('RC_ROOT') or os.path.join(os.path.dirname(__file__), '..', '..')
 SRC = os.path.join(ROOT, 'src/assets/sky/map_w1.webp')
 OUT = os.path.join(ROOT, 'src/assets/sky/life')
+
 os.makedirs(OUT, exist_ok=True)
 
 im = Image.open(SRC).convert('RGB')
@@ -31,6 +35,9 @@ REGIONS = {
     'tree_l':  dict(kind='tree', box=(30, 755, 310, 1000), pivot_y=985),
     'tree_r':  dict(kind='tree', box=(752, 672, 898, 815), pivot_y=805),
     'tree_tl': dict(kind='tree', box=(82, 316, 190, 395),  pivot_y=388),
+    # the Final Gate's swirl: arched opening, animated like GateVortex (original
+    # pixels, brightness-modulated by a flowing spiral); core = swirl centre
+    'gate':    dict(kind='gate', box=(598, 160, 714, 380), arch=(603, 709, 220, 373), core=(667, 265)),
     # waterfalls: water and sky are the same saturated blue, so colour can't
     # separate them; the sheet is traced by hand as a polygon (natural px) and
     # only gated by brightness to drop the rock face beside it.
@@ -67,6 +74,23 @@ def soft(mask, grow=1, blur=1.2):
     return np.array(m).astype(np.float32) / 255.0
 
 
+from scipy import ndimage
+BLOSSOM = (((H > 228) | (H < 15)) & (S > 0.1) & (V > 0.3))
+SKYISH = (H > 190) & (H < 228)
+lab, _ = ndimage.label(ndimage.binary_closing(BLOSSOM, iterations=2))
+for name, r in REGIONS.items():
+    if r['kind'] != 'tree':
+        continue
+    x0, y0, x1, y1 = r['box']
+    ids = set(np.unique(lab[y0:y1, x0:x1])) - {0}
+    # keep only sizeable blossom blobs that touch the hand box, then grow the box to all of them
+    big = [i for i in ids if (lab == i).sum() > 150]
+    ys, xs = np.nonzero(np.isin(lab, big))
+    nb = tuple(int(v) for v in (max(0, min(x0, xs.min() - 4)), max(0, min(y0, ys.min() - 4)), min(im.width, max(x1, xs.max() + 5)), min(r['pivot_y'] + 15, max(y1, ys.max() + 5))))
+    print('grow', name, r['box'], '->', nb)
+    r['box'] = nb
+    r['blobs'] = big
+
 meta = {}
 for name, r in REGIONS.items():
     x0, y0, x1, y1 = r['box']
@@ -78,8 +102,16 @@ for name, r in REGIONS.items():
         m = soft(m, grow=1, blur=2.0)
     elif r['kind'] == 'tree':
         # canopy = the purple/pink blossom; trunk and ground stay baked
-        m = ((h > 245) & (h < 345) & (s > 0.16) & (v > 0.3)).astype(np.float32)
+        m = (np.isin(lab[y0:y1, x0:x1], r['blobs']) & BLOSSOM[y0:y1, x0:x1]).astype(np.float32)
+        m = ndimage.binary_closing(m, iterations=2).astype(np.float32)
         m = soft(m, grow=2, blur=1.6)
+    elif r['kind'] == 'gate':
+        ax0, ax1, ay_top, ay_bot = r['arch']
+        yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+        rad = (ax1 - ax0) / 2; cxa = (ax0 + ax1) / 2
+        inside = ((xx >= ax0) & (xx <= ax1) & (yy >= ay_top) & (yy <= ay_bot)) | ((yy < ay_top) & (((xx - cxa) / rad) ** 2 + ((yy - ay_top) / rad) ** 2 <= 1))
+        m = inside.astype(np.float32) * np.clip((s - 0.18) / 0.15, 0, 1)
+        m = soft(m, grow=0, blur=2.0)
     else:
         # waterfall sheet = the traced polygon, gated to bright pixels (drops the rock)
         pm = Image.new('L', (x1 - x0, y1 - y0), 0)
@@ -97,6 +129,7 @@ for name, r in REGIONS.items():
     extra = {}
     if 'pivot_y' in r: extra['pivotY'] = r['pivot_y']
     if 'depth' in r: extra['depth'] = r['depth']
+    if 'core' in r: extra['cx'], extra['cy'] = r['core']; extra['rx'] = (r['arch'][1] - r['arch'][0]) / 2; extra['ry'] = (r['arch'][3] - r['arch'][2] + (r['arch'][1] - r['arch'][0]) / 2) / 2
     meta[name] = dict(kind=r['kind'], x=x0, y=y0, w=x1 - x0, h=y1 - y0, **extra)
     print(name, meta[name], 'coverage %.2f' % m.mean())
 

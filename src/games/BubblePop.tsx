@@ -418,8 +418,6 @@ export function BubblePop({ items, onFinish }: MiniGameProps) {
         <div className="bp-cloud" style={{ top: 70, right: -30, width: 150, height: 56 }} />
         <div className="bp-bushes" />
 
-        <div className="bp-title"><span className="b">Bubble </span><span className="p">Pop</span></div>
-
         <div className="bp-qbar">
           <div className="q">?</div>
           <div className="qt">Pop the right bubble: <b lang="en">{item.front}</b></div>

@@ -1,0 +1,80 @@
+import type { ByLevel, PotionRecipe } from './types'
+
+// Potion Mix: pour the pieces in order to brew the word. Index 0..4 = A1..C1.
+export const POTIONS: ByLevel<PotionRecipe> = [
+  // A1: compound words, simple plurals, -er
+  [
+    { clue: 'a tall yellow flower', parts: ['sun', 'flower'], answer: 'sunflower', extra: ['moon', 'tree', 'ful'] },
+    { clue: 'the room where you sleep', parts: ['bed', 'room'], answer: 'bedroom', extra: ['bath', 'house', 'er'] },
+    { clue: 'a person who teaches', parts: ['teach', 'er'], answer: 'teacher', extra: ['ing', 's', 'ly'] },
+    { clue: 'more than one book', parts: ['book', 's'], answer: 'books', extra: ['es', 'er', 'shelf'] },
+    { clue: 'a ball you kick', parts: ['foot', 'ball'], answer: 'football', extra: ['hand', 'room', 's'] },
+    { clue: 'more than one box', parts: ['box', 'es'], answer: 'boxes', extra: ['s', 'er', 'ing'] },
+    { clue: 'water falling from rocks', parts: ['water', 'fall'], answer: 'waterfall', extra: ['rain', 'drop', 'er'] },
+    { clue: 'a person who plays games', parts: ['play', 'er'], answer: 'player', extra: ['ful', 'ing', 'room'] },
+    { clue: 'you wear it on your wrist', parts: ['wrist', 'watch'], answer: 'wristwatch', extra: ['hand', 'clock', 'band'] },
+    { clue: 'a cake shaped like a cup', parts: ['cup', 'cake'], answer: 'cupcake', extra: ['pan', 'tea', 's'] },
+    { clue: 'a book of magic spells', parts: ['spell', 'book'], answer: 'spellbook', extra: ['magic', 'word', 's'] },
+    { clue: 'a man made of snow', parts: ['snow', 'man'], answer: 'snowman', extra: ['rain', 'ice', 's'] },
+  ],
+  // A2: un-, re-, -ful, -less, -er, -ly
+  [
+    { clue: 'not kind', parts: ['un', 'kind'], answer: 'unkind', extra: ['dis', 'in', 'less'] },
+    { clue: 'write again', parts: ['re', 'write'], answer: 'rewrite', extra: ['un', 'mis', 'er'] },
+    { clue: 'full of colour', parts: ['colour', 'ful'], answer: 'colourful', extra: ['less', 'ly', 'un'] },
+    { clue: 'without a home', parts: ['home', 'less'], answer: 'homeless', extra: ['ful', 'ly', 'un'] },
+    { clue: 'a person who paints', parts: ['paint', 'er'], answer: 'painter', extra: ['ful', 'ly', 're'] },
+    { clue: 'in a slow way', parts: ['slow', 'ly'], answer: 'slowly', extra: ['er', 'ful', 'un'] },
+    { clue: 'open again', parts: ['re', 'open'], answer: 'reopen', extra: ['un', 'dis', 'ly'] },
+    { clue: 'not safe', parts: ['un', 'safe'], answer: 'unsafe', extra: ['in', 'less', 're'] },
+    { clue: 'without any fear', parts: ['fear', 'less'], answer: 'fearless', extra: ['ful', 'un', 'er'] },
+    { clue: 'always helping others', parts: ['help', 'ful'], answer: 'helpful', extra: ['less', 'er', 'un'] },
+    { clue: 'fill the potion bottle again', parts: ['re', 'fill'], answer: 'refill', extra: ['un', 'ful', 'dis'] },
+    { clue: 'in a quiet way', parts: ['quiet', 'ly'], answer: 'quietly', extra: ['er', 'less', 'un'] },
+  ],
+  // B1: dis-, im-/in-, -ness, -ment, -able, -tion, spelling changes
+  [
+    { clue: 'not agree', parts: ['dis', 'agree'], answer: 'disagree', extra: ['un', 'in', 'ment'] },
+    { clue: 'not possible', parts: ['im', 'possible'], answer: 'impossible', extra: ['un', 'in', 'dis'] },
+    { clue: 'the feeling of being happy', parts: ['happy', 'ness'], answer: 'happiness', extra: ['ment', 'ful', 'un'] },
+    { clue: 'the act of moving', parts: ['move', 'ment'], answer: 'movement', extra: ['tion', 'ness', 'able'] },
+    { clue: 'can be washed', parts: ['wash', 'able'], answer: 'washable', extra: ['ful', 'ness', 'dis'] },
+    { clue: 'the act of inviting someone', parts: ['invite', 'ation'], answer: 'invitation', extra: ['ment', 'ness', 'able'] },
+    { clue: 'not correct', parts: ['in', 'correct'], answer: 'incorrect', extra: ['un', 'dis', 'im'] },
+    { clue: 'the state of being lazy', parts: ['lazy', 'ness'], answer: 'laziness', extra: ['ment', 'ful', 'tion'] },
+    { clue: 'not honest', parts: ['dis', 'honest'], answer: 'dishonest', extra: ['un', 'im', 'in'] },
+    { clue: 'you can depend on it', parts: ['rely', 'able'], answer: 'reliable', extra: ['ment', 'ful', 'ness'] },
+    { clue: 'a plan to meet at a time', parts: ['appoint', 'ment'], answer: 'appointment', extra: ['tion', 'able', 'ness'] },
+    { clue: 'go out of sight suddenly', parts: ['dis', 'appear'], answer: 'disappear', extra: ['un', 'im', 'ment'] },
+  ],
+  // B2: mis-, over-, under-, -ity, -ise/-ize, -ous, -ive, two-suffix words
+  [
+    { clue: 'understand in the wrong way', parts: ['mis', 'understand'], answer: 'misunderstand', extra: ['dis', 'un', 'over'] },
+    { clue: 'cook for too long', parts: ['over', 'cook'], answer: 'overcook', extra: ['under', 'mis', 'ed'] },
+    { clue: 'paid less than you deserve', parts: ['under', 'paid'], answer: 'underpaid', extra: ['over', 'mis', 'un'] },
+    { clue: 'the quality of being creative', parts: ['creative', 'ity'], answer: 'creativity', extra: ['ness', 'ment', 'ous'] },
+    { clue: 'make something modern', parts: ['modern', 'ise'], answer: 'modernise', extra: ['ify', 'en', 'ity'] },
+    { clue: 'full of danger', parts: ['danger', 'ous'], answer: 'dangerous', extra: ['ive', 'ful', 'ity'] },
+    { clue: 'good at attracting others', parts: ['attract', 'ive'], answer: 'attractive', extra: ['ous', 'able', 'ity'] },
+    { clue: 'the state of not being careful', parts: ['care', 'less', 'ness'], answer: 'carelessness', extra: ['ful', 'ity', 'ment'] },
+    { clue: 'in a way full of hope', parts: ['hope', 'ful', 'ly'], answer: 'hopefully', extra: ['less', 'ness', 'ity'] },
+    { clue: 'the quality of being able to move', parts: ['mobile', 'ity'], answer: 'mobility', extra: ['ness', 'ment', 'ise'] },
+    { clue: 'write a word wrongly', parts: ['mis', 'spell'], answer: 'misspell', extra: ['dis', 'un', 'over'] },
+    { clue: 'known by many people', parts: ['fame', 'ous'], answer: 'famous', extra: ['ive', 'ity', 'ful'] },
+  ],
+  // C1: counter-, pre-, -ence, -hood, -ship, multi-part words, nominalisations
+  [
+    { clue: 'too amazing to believe', parts: ['un', 'believe', 'able'], answer: 'unbelievable', extra: ['dis', 'ment', 'ness'] },
+    { clue: 'a move against an attack', parts: ['counter', 'attack'], answer: 'counterattack', extra: ['pre', 'anti', 'over'] },
+    { clue: 'judge before knowing the facts', parts: ['pre', 'judge'], answer: 'prejudge', extra: ['mis', 'counter', 'ment'] },
+    { clue: 'the state of being independent', parts: ['in', 'depend', 'ence'], answer: 'independence', extra: ['ance', 'ity', 'dis'] },
+    { clue: 'the time of being a child', parts: ['child', 'hood'], answer: 'childhood', extra: ['ship', 'dom', 'ness'] },
+    { clue: 'a close bond between friends', parts: ['friend', 'ship'], answer: 'friendship', extra: ['hood', 'dom', 'ness'] },
+    { clue: 'the act of arriving somewhere', parts: ['arrive', 'al'], answer: 'arrival', extra: ['ment', 'ance', 'tion'] },
+    { clue: 'time learning a craft from a master', parts: ['apprentice', 'ship'], answer: 'apprenticeship', extra: ['hood', 'dom', 'ness'] },
+    { clue: 'having the opposite effect to what you want', parts: ['counter', 'product', 'ive'], answer: 'counterproductive', extra: ['pre', 'ous', 'ity'] },
+    { clue: 'the state of being real or alive', parts: ['exist', 'ence'], answer: 'existence', extra: ['ance', 'ity', 'hood'] },
+    { clue: 'the habit of keeping things clean', parts: ['clean', 'ly', 'ness'], answer: 'cleanliness', extra: ['hood', 'ship', 'ity'] },
+    { clue: 'decided in advance', parts: ['pre', 'determine', 'ed'], answer: 'predetermined', extra: ['counter', 'ment', 'ness'] },
+  ],
+]

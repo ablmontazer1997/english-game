@@ -1,0 +1,35 @@
+/* Echo Cave: positions follow the mockup (c_echo) */
+.ec-wisp { left: 39.5%; top: 20%; width: 21%; }
+.ec-wisp img { animation: gs-float 3.2s ease-in-out infinite; filter: drop-shadow(0 0 16px rgba(120, 200, 255, .7)); }
+.ec-talking .ec-wisp img { animation: gs-float 3.2s ease-in-out infinite, ec-pulse .35s ease-in-out infinite alternate; }
+@keyframes ec-pulse { to { filter: drop-shadow(0 0 30px rgba(150, 220, 255, 1)) brightness(1.15) } }
+.ec-ok .ec-wisp img { filter: drop-shadow(0 0 30px rgba(255, 220, 110, 1)); }
+
+.ec-note { top: 46%; text-align: center; font-size: 13px; font-weight: 700; color: #fff; background: rgba(60, 30, 120, .65); border-radius: 12px; padding: 6px 10px; }
+.ec-card { top: 52%; min-height: 10.5%; display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 18px; }
+.ec-line { margin: 0; flex: 1; text-align: center; font-size: clamp(18px, 5.4cqw, 24px); font-weight: 900; line-height: 1.3; }
+.ec-line span { transition: color .25s, text-shadow .25s; }
+.ec-line span.on { color: #7b3ff0; text-shadow: 0 0 10px rgba(168, 120, 255, .5); }
+.ec-btns { flex: none; display: grid; justify-items: center; gap: 4px; }
+.ec-say { width: 54px; height: 54px; border-width: 3px; }
+.ec-slow { border: 0; background: none; font-size: 18px; padding: 0; line-height: 1; }
+.ec-bad .ec-card { animation: gs-no .4s; }
+
+.ec-crystals { top: 64%; display: flex; justify-content: center; gap: 3.4cqw; }
+.ec-crystals img { width: min(8.4cqw, 44px); height: auto; filter: brightness(.78) saturate(.9); transition: filter .3s, transform .3s; }
+.ec-crystals img.on { filter: brightness(1.08) drop-shadow(0 0 10px rgba(200, 150, 255, 1)); transform: translateY(-3px) scale(1.08); }
+.ec-ok .ec-crystals img.on { animation: ec-hop .5s ease-out both; }
+@keyframes ec-hop { 40% { transform: translateY(-10px) scale(1.2) } }
+
+.ec-act { top: 72.5%; display: grid; justify-items: center; gap: 6px; }
+.ec-mic { position: relative; width: min(31cqw, 132px); height: min(31cqw, 132px); border-width: 5px; }
+.ec-mic:disabled { filter: saturate(.6); }
+/* the two white sound arcs on either side, as in the mockup */
+.ec-arc { position: absolute; top: 12%; bottom: 12%; width: 40%; border: 8px solid #fff; filter: drop-shadow(0 2px 3px rgba(60, 30, 140, .35)); border-radius: 50%; pointer-events: none; }
+.ec-arc.l { right: 112%; border-right-color: transparent; border-top-color: transparent; border-bottom-color: transparent; }
+.ec-arc.r { left: 112%; border-left-color: transparent; border-top-color: transparent; border-bottom-color: transparent; }
+.ec-hearing .ec-arc { animation: ec-wave .9s ease-in-out infinite alternate; }
+@keyframes ec-wave { to { transform: scale(1.15); opacity: .5 } }
+.ec-tip { margin: 0; font-weight: 900; font-size: 17px; color: #2a2550; text-shadow: 0 0 6px rgba(255, 255, 255, .9), 0 0 2px #fff; }
+.ec-type { width: 100%; display: grid; gap: 10px; }
+.ec-type input { min-height: 54px; padding: 0 16px; font: inherit; font-size: 17px; font-weight: 700; color: #2a2550; }

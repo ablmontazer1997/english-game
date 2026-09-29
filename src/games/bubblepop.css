@@ -90,23 +90,27 @@
 /* ---- question bar -------------------------------------------------------- */
 .bubblepop .bp-qbar {
   position: absolute;
-  top: 62px;
+  top: 52px;
   left: 12px;
   right: 12px;
-  background: #fff;
-  border-radius: 18px;
-  padding: 12px;
+  min-height: 60px;
+  background: linear-gradient(180deg, #fffdf6, #f9f0dd);
+  border: 3px solid #e7c47a;
+  border-radius: 24px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 3px 8px rgba(18, 64, 107, 0.18);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.95), 0 10px 24px rgba(40,30,100,.3), inset 0 0 0 2px rgba(255,255,255,.85);
 }
 .bubblepop .bp-qbar .q {
   width: 34px;
   height: 34px;
   flex: 0 0 auto;
   border-radius: 11px;
-  background: #1aa79c;
+  background: radial-gradient(circle at 38% 30%, #d9b6ff, #8a5be0 55%, #6a3fc7);
+  border: 2px solid #f5cf6a;
+  box-shadow: 0 2px 5px rgba(80,40,140,.4), inset 0 1px 2px rgba(255,255,255,.7);
   color: #fff;
   display: flex;
   align-items: center;
@@ -116,29 +120,30 @@
 }
 .bubblepop .bp-qbar .qt {
   flex: 1;
-  font-weight: 600;
-  color: #26356a;
-  font-size: 15px;
+  font-weight: 800;
+  color: #2a2550;
+  font-size: 17px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bubblepop .bp-qbar .qt b { font-weight: 700; }
+.bubblepop .bp-qbar .qt b { font-weight: 800; color: #7a4bd6; }
 
 /* ---- stat pill + timer ring --------------------------------------------- */
 .bubblepop .bp-stat {
   position: absolute;
-  top: 126px;
+  top: 138px;
   left: 14px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 8px 12px;
+  background: linear-gradient(180deg, #fffdf6, #f7ecd4);
+  border: 3px solid #e7c47a;
+  border-radius: 999px;
+  padding: 6px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 3px 6px rgba(18, 64, 107, 0.16);
-  font-weight: 700;
-  color: #26356a;
+  box-shadow: 0 0 0 2px #fff, 0 4px 0 #d9c49a, 0 6px 12px rgba(40,30,100,.2);
+  font-weight: 800;
+  color: #2a2550;
 }
 .bubblepop .bp-stat .st { color: #f5c518; }
 .bubblepop .bp-stat .s2 { color: #2e9e6b; font-weight: 600; }
@@ -146,7 +151,7 @@
 
 .bubblepop .bp-ring {
   position: absolute;
-  top: 120px;
+  top: 132px;
   right: 16px;
   width: 66px;
   height: 66px;
@@ -168,7 +173,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 190px;
+  top: 202px;
   bottom: 10px;
 }
 

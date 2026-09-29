@@ -70,3 +70,20 @@
   .pill-val { font-size: 9.5px; left: 23px; right: 23px; }
   .pill-ic { width: 19px; height: 19px; }
 }
+
+/* XP ring around the avatar: gold arc = progress to the next level */
+.hud-avatar::before {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%; z-index: -1;
+  background: conic-gradient(#f2b41a var(--xp, 0%), rgba(255, 255, 255, .75) 0);
+  box-shadow: 0 3px 10px rgba(20, 60, 110, .28);
+}
+
+/* the painted pill is 9-sliced: round left cap and the green “+” disc keep their
+   shape at any width, only the flat middle stretches (was: whole art stretched) */
+.pill-bg { display: none; }
+.pill::before {
+  content: ""; position: absolute; inset: 0;
+  border-style: solid; border-width: 0 30px 0 15px;
+  border-image: url(../assets/sky/pill.png) 0 182 0 91 fill / 0 30px 0 15px stretch;
+}
+.pill-val { font-size: 11px; }
