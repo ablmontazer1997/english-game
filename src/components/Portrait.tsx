@@ -7,7 +7,7 @@ import mage from '../assets/character/body/mage_m.webp'
 // one head-and-shoulders frame and posts it back (and stores it as rc.portrait).
 const KEY = 'rc.portrait'
 // bump when the wardrobe's look changes, so saved portraits are retaken once in the new lighting
-export const LOOK_VER = 'bake1'
+export const LOOK_VER = 'face1'
 export const portraitStale = () => { try { return !localStorage.getItem(KEY) || localStorage.getItem(KEY + '.look') !== LOOK_VER } catch { return true } }
 const read = () => { try { return localStorage.getItem(KEY) } catch { return null } }
 

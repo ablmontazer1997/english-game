@@ -1,35 +1,67 @@
 /* Boss Battle (bb2) — painted 9:16 arena from the approved mockup, cut-out mage + golem
    layers placed at the mockup's percentages, UI from the shared scene kit (scene.css). */
-.bb2 { background: #8fd0ff; }
-/* 9:16 frame covering the screen; nudged right so the golem's fist stays on screen */
+.bb2 { background: #8fd0ff; overflow: hidden; }
+/* blurred copy of the plate: fills whatever the anchored plate does not cover (short or wide screens) */
+.bb2-backdrop { position: absolute; inset: -20px; background: center / cover no-repeat; filter: blur(14px) saturate(1.1); opacity: .9; pointer-events: none; }
+/* the painted 9:16 plate; BossBattle.tsx sets left/top/width/height from the plate's own geometry (arena anchor).
+   The CSS values are only the first-paint fallback (cover). */
 .bb2-scene { position: absolute; top: 0; width: max(100cqw, 56.25cqh); aspect-ratio: 9 / 16;
-  left: calc((100cqw - max(100cqw, 56.25cqh)) * .6); pointer-events: none; }
+  left: calc((100cqw - max(100cqw, 56.25cqh)) * .5); pointer-events: none; }
 .bb2-scene > .gs-plate { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-.bb2-sprite { position: absolute; }
-.bb2-bob { position: relative; width: 100%; }
-.bb2-bob img { position: absolute; display: block; height: auto; opacity: 0; transition: opacity .18s ease; }
-.bb2-bob img:first-child { position: relative; }
+/* fighters: boxes in plate % (feet on the arena floor) */
+.bb2-sprite { position: absolute; z-index: 2; }
+.bb2-hero { z-index: 3; }
+.bb2-bob { position: absolute; inset: 0; }
+.bb2-bob img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .15s ease; }
 .bb2-bob img.on { opacity: 1; }
-.bb2-golem .bb2-bob { animation: bb2-breathe 3.2s ease-in-out infinite; transform-origin: 60% 100%; }
-.bb2-hero .bb2-bob { animation: bb2-breathe 2.6s ease-in-out infinite; transform-origin: 40% 100%; }
+.bb2-golem .bb2-bob { animation: bb2-breathe 3.2s ease-in-out infinite; transform-origin: 55% 99%; }
+.bb2-hero .bb2-bob { animation: bb2-breathe 2.6s ease-in-out infinite; transform-origin: 56% 98%; }
 @keyframes bb2-breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.012, 1.022) } }
-/* soft contact shadows on the marble */
-.bb2-sprite::after { content: ''; position: absolute; left: 12%; right: 8%; bottom: -1.5%; height: 7%; z-index: -1;
-  border-radius: 50%; background: radial-gradient(closest-side, rgba(60, 40, 90, .32), rgba(60, 40, 90, 0)); }
+.bb2-core { position: absolute; width: 0; height: 0; }
+/* contact shadows on the marble, flattened like the arena rings (b/a = .18) */
+.bb2-shadow { position: absolute; z-index: 1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(70, 45, 100, .42), rgba(70, 45, 100, .22) 55%, rgba(70, 45, 100, 0)); }
 
-/* the spell: a violet orb flying from the mage's hand into the golem */
-.bb2-bolt { position: absolute; left: 38%; top: 47%; width: 11%; aspect-ratio: 1; border-radius: 50%; z-index: 3;
-  background: radial-gradient(circle at 40% 38%, #fff, #e3ccff 25%, #a66bff 55%, rgba(138, 77, 255, 0) 72%);
-  box-shadow: 0 0 24px 10px rgba(170, 110, 255, .55); animation: bb2-bolt .6s cubic-bezier(.4, .1, .7, 1) forwards; }
-@keyframes bb2-bolt { 0% { transform: translate(0, 0) scale(.4); opacity: 0 } 15% { opacity: 1 }
-  100% { transform: translate(230%, -120%) scale(1.25); opacity: 0 } }
-/* the golem's counter: a rune stone thrown at the mage */
-.bb2-rock { position: absolute; left: 60%; top: 36%; width: 8%; aspect-ratio: 1; z-index: 3; border-radius: 28%;
-  background: linear-gradient(145deg, #fff7e6, #d9c7a8 60%, #b69e7a); border: 2px solid #e7c47a;
-  box-shadow: 0 0 14px rgba(255, 210, 120, .8); animation: bb2-rock .55s cubic-bezier(.3, 0, .6, 1) forwards; }
-@keyframes bb2-rock { 0% { transform: translate(0, 0) rotate(0) scale(.6); opacity: 0 } 15% { opacity: 1 }
-  100% { transform: translate(-330%, 170%) rotate(-280deg) scale(1); opacity: 0 } }
+/* hit reactions */
+.bb2-flash .bb2-bob, .bb2-flash .bb2-hero3d { animation: bb2-flash .42s ease-out; }
+.bb2-flash-red .bb2-bob, .bb2-flash-red .bb2-hero3d { animation: bb2-flash-red .5s ease-out; }
+@keyframes bb2-flash { 0% { filter: brightness(1.75) saturate(.75) } 35% { filter: brightness(1.3) } 100% { filter: none } }
+@keyframes bb2-flash-red { 0% { filter: brightness(1.5) drop-shadow(0 0 6px #ff3b4e) drop-shadow(0 0 12px #ff3b4e) } 100% { filter: none } }
+
+/* 3D hero (wardrobe iframe in battle mode); the painted mage shows until it is ready */
+.bb2-hero3d { position: absolute; border: 0; background: transparent; pointer-events: none; opacity: 0; transition: opacity .35s ease; }
+.bb2-3d .bb2-hero3d { opacity: 1; }
+.bb2-3d .bb2-bob { visibility: hidden; }
+
+/* effects layer (px inside the plate frame) */
+.bb2-fx { position: absolute; inset: 0; z-index: 5; }
+.bb2-fx > i { position: absolute; display: block; border-radius: 50%; pointer-events: none; }
+.bb2-orb { background: radial-gradient(circle at 42% 40%, #fff, #f0e2ff 22%, #b27bff 50%, rgba(138, 77, 255, 0) 72%);
+  box-shadow: 0 0 calc(40px * var(--s, .5)) calc(16px * var(--s, .5)) rgba(170, 110, 255, .6); }
+.bb2-orb.trail { box-shadow: none; opacity: .7; }
+.bb2-charge { background: radial-gradient(circle, rgba(255, 255, 255, .95), rgba(214, 180, 255, .8) 30%, rgba(160, 100, 255, 0) 70%);
+  animation: bb2-charge .42s ease-out forwards; }
+@keyframes bb2-charge { 0% { transform: scale(.2); opacity: 0 } 45% { transform: scale(1.1); opacity: 1 } 100% { transform: scale(.6); opacity: 0 } }
+.bb2-boom { background: radial-gradient(circle, #fff 0 18%, rgba(255, 236, 150, .9) 30%, rgba(190, 130, 255, .55) 50%, rgba(190, 130, 255, 0) 70%);
+  animation: bb2-boom .52s ease-out forwards; }
+.bb2-boom::after { content: ''; position: absolute; inset: 8%; border-radius: 50%; border: calc(6px * var(--s, .5) * 2) solid rgba(255, 240, 190, .9);
+  animation: bb2-ring .52s ease-out forwards; }
+.bb2-boom.red { background: radial-gradient(circle, #fff 0 16%, rgba(255, 190, 170, .9) 30%, rgba(255, 90, 90, .45) 52%, rgba(255, 90, 90, 0) 70%); }
+@keyframes bb2-boom { 0% { transform: scale(.2); opacity: 1 } 60% { opacity: 1 } 100% { transform: scale(1.15); opacity: 0 } }
+@keyframes bb2-ring { 0% { transform: scale(.3); opacity: 1 } 100% { transform: scale(1.6); opacity: 0 } }
+/* the boss's counter: a rune stone */
+.bb2-rock { border-radius: 28% !important; background: linear-gradient(145deg, #fff7e6, #d9c7a8 60%, #b69e7a); border: 2px solid #e7c47a;
+  box-shadow: 0 0 14px rgba(255, 210, 120, .8); }
+.bb2-rock.trail { box-shadow: none; opacity: .45; border: 0; }
+/* damage numbers */
+.bb2-dmg { position: absolute; transform: translate(-50%, -50%); font-size: clamp(22px, calc(70px * var(--s, .5)), 40px); font-weight: 900; color: #fff;
+  white-space: nowrap; animation: bb2-dmg 1.25s ease-out forwards; --c: #b8741a;
+  text-shadow: -2px -2px 0 var(--c), 2px -2px 0 var(--c), -2px 2px 0 var(--c), 2px 2px 0 var(--c), 0 4px 0 var(--c), 0 6px 10px rgba(0, 0, 0, .3); }
+.bb2-dmg.boss { color: #fff3b0; }
+.bb2-dmg.hero { color: #ffe1e4; --c: #b51f35; }
+@keyframes bb2-dmg { 0% { transform: translate(-50%, -20%) scale(.4); opacity: 0 } 15% { transform: translate(-50%, -60%) scale(1.2); opacity: 1 }
+  30% { transform: translate(-50%, -70%) scale(1) } 75% { opacity: 1 } 100% { transform: translate(-50%, -160%) scale(.95); opacity: 0 } }
 
 /* HP panels under the ribbon */
 .bb2-hud { top: 10.8cqh; display: grid; grid-template-columns: 1fr 1fr; gap: 3.5cqw; }
@@ -77,8 +109,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bb2-bob { animation: none !important; }
-  .bb2-bolt, .bb2-rock { animation-duration: .01s; }
+  .bb2-charge, .bb2-boom, .bb2-dmg { animation-duration: .01s; }
 }
-/* phones are taller than the mockup, so the cover crop zooms in: pull both fighters in a little */
-.bb2-golem { transform: scale(.86); transform-origin: 78% 96%; }
-.bb2-hero { transform: scale(.9) translateX(6%); transform-origin: 10% 100%; }
