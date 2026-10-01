@@ -104,7 +104,7 @@ function Loader() {
       <div className="pop" style={{ textAlign: 'center' }}>
         <div style={{ fontFamily: 'var(--display)', fontWeight: 900, fontSize: 34, letterSpacing: '.12em',
           background: 'linear-gradient(180deg,#fff,var(--gold))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
-          RUNECAST
+          ENGLISH SPELL
         </div>
         <div style={{ color: 'var(--ink-faint)', marginTop: 8, fontSize: 13 }}>Summoning the realm…</div>
       </div>

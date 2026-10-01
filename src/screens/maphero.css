@@ -1,0 +1,144 @@
+/* The hero on the map and the pads breaking (MapHero.tsx). The hero's place is
+   written by script as a translate of its feet point; everything here hangs off it. */
+
+.mhero {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  pointer-events: none; z-index: 6; will-change: transform, opacity;
+  --hero-h: 120px; --pad: 90px; --lift: 0px; --scale: 1; --flip: 1; --shadow: 1;
+}
+/* contact shadow on the ground under the feet; shrinks as the hero leaves it */
+.mhero-shadow {
+  position: absolute; left: 0; top: 0;
+  width: calc(var(--pad) * .5); height: calc(var(--pad) * .15);
+  transform: translate(-50%, -50%) scale(var(--shadow));
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(40, 30, 70, .42), rgba(40, 30, 70, .2) 60%, rgba(40, 30, 70, 0));
+  opacity: var(--shadow);
+}
+.mhero-body {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  transform: translateY(var(--lift)) scale(var(--scale));
+  transform-origin: 0 0;
+}
+.mhero-img {
+  position: absolute; left: 0; bottom: calc(var(--hero-h) * -.035);
+  height: var(--hero-h); width: auto; max-width: none;
+  transform: translateX(-50%) scaleX(var(--flip));
+  display: none;
+  filter: drop-shadow(0 3px 4px rgba(40, 30, 80, .18));
+}
+/* the painted sprites stand with their feet at the bottom edge; the back view's
+   feet sit a touch higher in its canvas */
+.mhero[data-view="front"] .mhero-front,
+.mhero[data-view="cheer"] .mhero-cheer,
+.mhero[data-view="back"] .mhero-back,
+.mhero[data-view="frame"] .mhero-frame { display: block; }
+.mhero-back { bottom: calc(var(--hero-h) * -.05); }
+
+/* ---------- the pad breaking ---------- */
+.rtoken.is-ruined .rtoken-btn { filter: drop-shadow(0 7px 10px rgba(20, 60, 110, .26)); }
+.pbreak { position: absolute; inset: 0; pointer-events: none; }
+.pbreak-crack { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* the cracks race out from the impact point while the pad shudders */
+.pbreak.is-crack .pbreak-crack { animation: pb-crack 480ms cubic-bezier(.3, .7, .3, 1) both; }
+@keyframes pb-crack {
+  from { clip-path: circle(0% at 48% 27%); }
+  to   { clip-path: circle(80% at 48% 27%); }
+}
+.rtoken.is-crack .rtoken-btn { animation: pb-shake 480ms linear both; }
+@keyframes pb-shake {
+  0%, 100% { translate: 0 0; }
+  15% { translate: -1.6cqw .4cqw; } 30% { translate: 1.8cqw -.3cqw; } 45% { translate: -2cqw .2cqw; }
+  60% { translate: 1.7cqw .3cqw; } 75% { translate: -1.2cqw 0; } 90% { translate: .8cqw 0; }
+}
+/* the burst: the crack lines stay on the ruin a moment, shards fly, dust rolls out */
+.pbreak.is-burst .pbreak-crack { animation: pb-fade 420ms ease-out both; }
+@keyframes pb-fade { to { opacity: 0; } }
+.rtoken.is-burst .rtoken-pad { animation: pb-settle 520ms cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes pb-settle { 0% { translate: 0 -3cqw; scale: 1.04 .94; } 100% { translate: 0 0; scale: 1; } }
+.pbreak-shard { position: absolute; inset: 0; animation: pb-shard 560ms cubic-bezier(.25, .6, .4, 1) both; }
+.pbreak-shard img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@keyframes pb-shard {
+  0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+  45%  { transform: translate(calc(var(--dx) * .55), calc(var(--dy) * .55 - 14cqw)) rotate(calc(var(--r) * .5)); opacity: 1; }
+  100% { transform: translate(var(--dx), calc(var(--dy) + 10cqw)) rotate(var(--r)) scale(.7); opacity: 0; }
+}
+.pbreak-dust {
+  position: absolute; width: 38cqw; height: 26cqw; border-radius: 50%;
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, rgba(246, 236, 220, .9), rgba(222, 206, 186, .55) 55%, rgba(222, 206, 186, 0));
+  animation: pb-dust 560ms cubic-bezier(.2, .7, .3, 1) both;
+}
+@keyframes pb-dust {
+  0%   { transform: translate(0, 0) scale(.3); opacity: 0; }
+  20%  { opacity: .95; }
+  100% { transform: translate(calc(var(--d) * 22cqw), -12cqw) scale(calc(var(--s) * 1.5)); opacity: 0; }
+}
+
+/* the next pad lights up as the hero lands on it */
+.rtoken.is-arriving .rtoken-halo { animation: pb-light 700ms ease-out both, rtoken-breathe 2.6s 700ms ease-in-out infinite; }
+@keyframes pb-light {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+  45%  { opacity: 1; transform: translate(-50%, -50%) scale(1.35); }
+  100% { opacity: .9; transform: translate(-50%, -50%) scale(1); }
+}
+.rtoken.is-arriving .rtoken-pad { animation: pb-glow 700ms ease-out both; }
+@keyframes pb-glow {
+  0% { filter: grayscale(1) brightness(1.02); }
+  40% { filter: grayscale(0) brightness(1.35); }
+  100% { filter: none; }
+}
+.rtoken.is-arriving .rtoken-current { animation: pb-pill 420ms 260ms cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes pb-pill { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
+
+/* the gate takes the hero in: a ring of light where the road ends */
+.mgate-flash {
+  position: absolute; width: 0; height: 0; pointer-events: none; z-index: 7;
+}
+.mgate-flash::before {
+  content: ''; position: absolute; left: 0; top: 0; width: 46vw; height: 46vw; max-width: 260px; max-height: 260px;
+  translate: -50% -60%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 250, 230, .95), rgba(214, 178, 255, .6) 45%, rgba(214, 178, 255, 0));
+  animation: pb-gate 900ms ease-out both;
+}
+@keyframes pb-gate { 0% { scale: .2; opacity: 0; } 40% { opacity: 1; } 100% { scale: 1.3; opacity: 0; } }
+
+/* a join's clouds stir while the hero passes under them: they swell, brighten and sparkle */
+.mw-clouds.is-stirred .mw-puff { scale: 1.08; filter: drop-shadow(0 10px 14px rgba(70, 110, 170, .18)) brightness(1.06); transition: scale 400ms ease, filter 400ms ease; }
+.mw-puff { transition: scale 600ms ease, filter 600ms ease; }
+.mw-clouds.is-stirred::after {
+  content: ''; position: absolute; left: 0; top: 0; width: 70vw; height: 30vw; max-width: 400px;
+  translate: -50% -50%; pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 40%, #fff 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 34% 70%, #fff8d8 0 2px, transparent 3px),
+    radial-gradient(circle at 52% 28%, #fff 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 66% 62%, #f3e6ff 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 36%, #fff 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 44% 52%, #fff8d8 0 1.2px, transparent 2px);
+  animation: pb-twinkle 750ms ease-out both;
+}
+@keyframes pb-twinkle { 0% { opacity: 0; scale: .8; } 35% { opacity: 1; } 100% { opacity: 0; scale: 1.15; translate: -50% -60%; } }
+
+/* while an advance plays the pads are not buttons */
+.mw-frame.is-playing .rtoken-btn { pointer-events: none; }
+
+/* test-only control (?mapdemo=1) */
+.mapdemo-btn {
+  position: absolute; left: 50%; translate: -50% 0;
+  bottom: calc(var(--nav-h, 84px) + var(--safe-bottom, 0px) + 84px);
+  padding: 9px 16px; border-radius: 99px; border: 2px solid #fff;
+  background: linear-gradient(180deg, #8f6bff, #6a46e6); color: #fff; font-weight: 800; font-size: 13px;
+  box-shadow: 0 6px 14px rgba(60, 20, 140, .35);
+}
+.mapdemo-btn:disabled { opacity: .5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pbreak-shard, .pbreak-dust, .mw-clouds.is-stirred::after { display: none; }
+  .rtoken.is-crack .rtoken-btn, .rtoken.is-burst .rtoken-pad { animation: none; }
+  .pbreak.is-crack .pbreak-crack { animation: pb-fade 1ms reverse both; }
+  .mgate-flash::before { animation-duration: 1ms; }
+}
+.is-reduced .pbreak-shard, .is-reduced .pbreak-dust, .is-reduced .mw-clouds.is-stirred::after { display: none; }
+.is-reduced .rtoken.is-crack .rtoken-btn, .is-reduced .rtoken.is-burst .rtoken-pad { animation: none; }
+.is-reduced .pbreak.is-crack .pbreak-crack { animation: none; }

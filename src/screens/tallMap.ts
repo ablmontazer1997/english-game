@@ -1,4 +1,5 @@
 import type { MapNode } from './mapLayout'
+import { measure, projectS, type Road } from './mapProgress'
 
 /**
  * A tall, scrolling world: more than one painted panel stacked top to bottom,
@@ -35,6 +36,9 @@ export type TallLayout = {
   nodes: MapNode[]
   /** the road's typical width in px (a node's scale is relative to it) */
   road: number
+  /** the whole road in walking order, the stretches under the clouds included, with each
+   *  stage's place along it: what the hero walks (scene px) */
+  walk: Road
 }
 
 export function layoutTall(tall: Tall, w: number, count: number): TallLayout {
@@ -92,5 +96,11 @@ export function layoutTall(tall: Tall, w: number, count: number): TallLayout {
     const x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f
     nodes.push({ x: x / w, y: y / H, scale: 1 })
   }
-  return { h: H, panels, seams, overlap: ov, nodes, road: wide }
+  // the walk: every traced point, bottom panel first, nothing skipped (the hero goes on under
+  // the clouds); stages keep the places worked out above
+  const full = measure(tall.panels.map((P, k) => P.pts.map(([x, y]) => ({ x: x * w, y: panels[k].top + y * panels[k].h })))
+    .reverse().flat())
+  const nodeS = nodes.map((n) => projectS(full, n.x * w, n.y * H))
+  const walk = { pts: full, total: full.length ? full[full.length - 1].s : 0, nodeS }
+  return { h: H, panels, seams, overlap: ov, nodes, road: wide, walk }
 }

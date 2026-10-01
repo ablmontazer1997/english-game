@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import type { Stage } from '../types/game'
 import { skySrc } from '../components/SkyIcon'
@@ -8,6 +8,8 @@ import { MapLife } from '../components/MapLife'
 import './map.css'
 import { WorldAtlas } from './WorldAtlas'
 import atlasIcon from '../assets/atlas/icon.png'
+import { MapHero, PadBreak, padRuin, useMapAdvance, useReducedMotion } from './MapHero'
+import { padLook, pointAt, type PadLook, type Beat } from './mapProgress'
 
 /** A disc is drawn a touch wider than the path, and the perspective scaling is
  *  damped: the raw ratio between the foot and the head of the path is far too
@@ -16,18 +18,10 @@ const PAD_OVER = 0.74
 const damp = (s: number) => 0.6 + 0.4 * s
 
 export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
-  const { worlds, quests } = useGame()
+  const { worlds, quests, submitResult } = useGame()
   const [worldIdx, setWorldIdx] = useState(0)
   const [atlas, setAtlas] = useState(false)
-  // open on the world the player is actually in (the one holding the current
-  // stage): finishing a path lands them in the next world's scene
-  const opened = useRef(false)
-  useEffect(() => {
-    if (opened.current || !worlds.length) return
-    opened.current = true
-    const cur = worlds.findIndex((w) => w.stages.some((s) => s.status === 'current'))
-    if (cur > 0) setWorldIdx(cur)
-  }, [worlds])
+  // the world the map opens on (the one the hero is in) is picked by useMapAdvance below
   const frame = useRef<HTMLDivElement>(null)
   const [box, setBox] = useState({ w: 0, h: 0 })
 
@@ -56,6 +50,15 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
   const padW = tall ? tall.road / sceneW : MAP_PAD_W
   const lifeH = tall ? tall.panels[0].h * (scene.tall!.life ?? 1) : sceneH
 
+  // the hero on the road: stands on the current pad; when a stage is finished the pad
+  // breaks and the hero walks on to the next one (mapProgress.ts has the rules)
+  const reduced = useReducedMotion()
+  const padPx = sceneW * padW * damp(1) * PAD_OVER
+  const adv = useMapAdvance({ worlds, worldIdx: worldIdx % Math.max(1, worlds.length), setWorldIdx, frame,
+    geo: { tall, sceneW, sceneH, padPx, box }, reduced })
+  const look = (i: number): PadLook => padLook(i, stages[i].status, adv.plan?.beats ?? null, adv.beatIdx)
+  const gateAt = adv.beat?.kind === 'portal' && tall ? pointAt(tall.walk.pts, tall.walk.total) : null
+
   // open a tall world on the current stage (or the start of the road), a little below the middle
   const cur = stages.findIndex((s) => s.status === 'current')
   const aimed = useRef('')
@@ -63,6 +66,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
     const el = frame.current
     if (!el || !tall || !box.h) return
     const key = `${scene.id}:${box.w}`
+    if (adv.playing) { aimed.current = key; return } // the advance moves the camera itself
     if (aimed.current === key) return
     aimed.current = key
     const n = nodes[cur >= 0 ? cur : stages.every((s) => s.status === 'done') ? nodes.length - 1 : 0]
@@ -73,7 +77,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
 
   return (
     <div className="screen map-screen full">
-      <div className={`mw-frame${tall ? ' is-tall' : ''}`} ref={frame}>
+      <div className={`mw-frame${tall ? ' is-tall' : ''}${adv.playing ? ' is-playing' : ''}${reduced ? ' is-reduced' : ''}`} ref={frame}>
         <div className="mw-scene" style={tall ? { width: sceneW, height: sceneH, left: 0, top: 0 } : {
           width: sceneW, height: sceneH,
           left: (box.w - sceneW) / 2, top: (box.h - sceneH) / 2,
@@ -96,10 +100,13 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
             const n = nodes[i]
             if (!n) return null
             return (
-              <RoadToken key={stage.id} stage={stage} node={n}
+              <RoadToken key={stage.id} stage={stage} node={n} look={look(i)}
+                beat={adv.beat && 'pad' in adv.beat && adv.beat.pad === i ? adv.beat : null}
                 width={sceneW * padW * damp(n.scale) * PAD_OVER} onPlay={onPlay} />
             )
           })}
+          {tall && adv.showHero && <MapHero heroRef={adv.heroRef} />}
+          {gateAt && <span className="mgate-flash" style={{ left: gateAt.x, top: gateAt.y }} />}
         </div>
       </div>
 
@@ -117,6 +124,16 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
           <span>{world ? world.name : 'World Map'}</span>
         </button>
 
+        {DEMO && (() => {
+          const cs = worlds.flatMap((w) => w.stages).find((s) => s.status === 'current')
+          return (
+            <button className="mapdemo-btn" disabled={!cs || adv.playing}
+              onClick={() => cs && submitResult({ stageId: cs.id, correct: 5, total: 5, stars: 3, heartsLost: 0, xpGained: 20, coinsGained: 10 })}>
+              Test: finish this stage
+            </button>
+          )
+        })()}
+
         <div className="chest-widget reveal">
           <img className="chest-widget-bg" src={skySrc('widget_chest')} alt="" draggable={false} />
           <span className="chest-widget-txt">1 / 4</span>
@@ -128,22 +145,32 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
   )
 }
 
-function RoadToken({ stage, node, width, onPlay }: {
+// test-only: ?mapdemo=1 shows a button that finishes the current stage, to watch the advance
+const DEMO = typeof location !== 'undefined' && new URLSearchParams(location.search).has('mapdemo')
+
+function RoadToken({ stage, node, width, onPlay, look, beat }: {
   stage: Stage; node: { x: number; y: number }; width: number; onPlay: (s: Stage) => void
+  /** how the pad looks now (mapProgress.padLook); beat: the advance beat playing on this pad */
+  look: PadLook; beat: Beat | null
 }) {
-  const locked = stage.status === 'locked'
-  const current = stage.status === 'current'
+  const locked = look === 'locked'
+  const current = look === 'current'
   const done = stage.status === 'done'
+  const phase = look === 'breaking' && beat ? (beat.kind === 'burst' ? 'burst' : 'crack') : null
+  const arriving = beat?.kind === 'arrive' && current
+  // a finished pad is a ruin; it breaks first (whole while it cracks, the ruin under the flying shards)
+  const pad = look === 'ruined' || phase === 'burst' ? padRuin : skySrc('pad_base')
   return (
-    <div className={`rtoken${current ? ' is-current' : ''}${locked ? ' is-locked' : ''}${node.x > 0.55 ? ' flip' : ''}`}
+    <div className={`rtoken${current ? ' is-current' : ''}${locked ? ' is-locked' : ''}${look === 'ruined' ? ' is-ruined' : ''}${phase ? ` is-${phase}` : ''}${arriving ? ' is-arriving' : ''}${node.x > 0.55 ? ' flip' : ''}`}
       style={{ left: `${node.x * 100}%`, top: `${node.y * 100}%`, width }}>
       {current && <span className="rtoken-halo" aria-hidden />}
-      <button className="rtoken-btn" disabled={locked}
-        onClick={() => !locked && onPlay(stage)}
-        aria-label={locked ? `Level ${stage.index} locked` : `Play level ${stage.index}`}>
-        <img className="rtoken-pad" src={skySrc('pad_base')} alt="" draggable={false} />
+      <button className="rtoken-btn" disabled={stage.status === 'locked'}
+        onClick={() => stage.status !== 'locked' && onPlay(stage)}
+        aria-label={stage.status === 'locked' ? `Level ${stage.index} locked` : `Play level ${stage.index}`}>
+        <img className="rtoken-pad" src={pad} alt="" draggable={false} />
+        <PadBreak phase={phase} padSrc={skySrc('pad_base')} />
         {locked && <img className="rtoken-lock" src={skySrc('pad_lock')} alt="" draggable={false} />}
-        {done && (
+        {done && look === 'ruined' && (
           <span className="rtoken-stars">
             {[0, 1, 2].map((i) => (
               <img key={i} src={skySrc('pad_star')} alt="" draggable={false}
