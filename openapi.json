@@ -1,0 +1,1847 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "English Spell API",
+        "description": "Backend for **English Spell**, an English-to-English grammar adventure (levels A1-C1).\n\nServer-authoritative: stars, XP, coins, gems, items, hearts, SRS, streak, quests and league points are all\ncomputed on the server. Get a token from `POST /v1/auth/guest`, then send `Authorization: Bearer <token>`.\nThe full contract with rules is in API.md.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/runecast-api"
+        }
+    ],
+    "paths": {
+        "/v1/auth/guest": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Create or resume a guest account for a device and get a JWT",
+                "operationId": "auth_guest_v1_auth_guest_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GuestIn"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenOut"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/me": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Me",
+                "operationId": "me_v1_me_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MeOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Me Patch",
+                "operationId": "me_patch_v1_me_patch",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MePatch"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MeOut"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/levels": {
+            "get": {
+                "tags": [
+                    "map"
+                ],
+                "summary": "Levels",
+                "operationId": "levels_v1_levels_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/LevelOut"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Levels V1 Levels Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/map/{level}": {
+            "get": {
+                "tags": [
+                    "map"
+                ],
+                "summary": "Worlds, stages and this player's state for one level",
+                "operationId": "map_level_v1_map__level__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "level",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Level"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/topics/{topic_id}": {
+            "get": {
+                "tags": [
+                    "map"
+                ],
+                "summary": "Spellbook page for a grammar topic",
+                "operationId": "topic_v1_topics__topic_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "topic_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Topic Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/stages/{stage_id}/start": {
+            "post": {
+                "tags": [
+                    "play"
+                ],
+                "summary": "Stage Start",
+                "operationId": "stage_start_v1_stages__stage_id__start_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "stage_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Stage Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StartOut"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/sessions/{session_id}/complete": {
+            "post": {
+                "tags": [
+                    "play"
+                ],
+                "summary": "Finish a stage: the server grades, awards and updates SRS",
+                "operationId": "session_complete_v1_sessions__session_id__complete_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Session Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CompleteIn"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/review/today": {
+            "get": {
+                "tags": [
+                    "review"
+                ],
+                "summary": "Overnight Cauldron: items due by the end of the local day",
+                "operationId": "review_today_v1_review_today_get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "default": 25,
+                            "title": "Limit"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/review/submit": {
+            "post": {
+                "tags": [
+                    "review"
+                ],
+                "summary": "Review Submit",
+                "operationId": "review_submit_v1_review_submit_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReviewIn"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/wallet": {
+            "get": {
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "Wallet",
+                "operationId": "wallet_v1_wallet_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WalletOut"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/wallet/ledger": {
+            "get": {
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "Ledger",
+                "operationId": "ledger_v1_wallet_ledger_get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 500,
+                            "minimum": 1,
+                            "default": 50,
+                            "title": "Limit"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/LedgerRow"
+                                    },
+                                    "title": "Response Ledger V1 Wallet Ledger Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/shop": {
+            "get": {
+                "tags": [
+                    "shop"
+                ],
+                "summary": "Shop List",
+                "operationId": "shop_list_v1_shop_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/shop/buy": {
+            "post": {
+                "tags": [
+                    "shop"
+                ],
+                "summary": "Buy a gem-shop item or an offer (gems/coins only)",
+                "operationId": "shop_buy_v1_shop_buy_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BuyIn"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/chests": {
+            "get": {
+                "tags": [
+                    "shop"
+                ],
+                "summary": "Chest kinds with published odds and how many you hold",
+                "operationId": "chests_v1_chests_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/chests/{kind}/open": {
+            "post": {
+                "tags": [
+                    "shop"
+                ],
+                "summary": "Chest Open",
+                "operationId": "chest_open_v1_chests__kind__open_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "kind",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Kind"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payments/skus": {
+            "get": {
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Real-money products (placeholder, all disabled)",
+                "operationId": "skus_v1_payments_skus_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/payments/checkout": {
+            "post": {
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Checkout",
+                "operationId": "checkout_v1_payments_checkout_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CheckoutIn"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "501": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/inventory": {
+            "get": {
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Inventory",
+                "operationId": "inventory_v1_inventory_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/inventory/equip": {
+            "put": {
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "Equip",
+                "operationId": "equip_v1_inventory_equip_put",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EquipIn"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/catalog/items": {
+            "get": {
+                "tags": [
+                    "inventory"
+                ],
+                "summary": "The whole wardrobe catalogue (no auth)",
+                "operationId": "catalog_items_v1_catalog_items_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/quests": {
+            "get": {
+                "tags": [
+                    "engagement"
+                ],
+                "summary": "Quests",
+                "operationId": "quests_v1_quests_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/quests/{quest_id}/claim": {
+            "post": {
+                "tags": [
+                    "engagement"
+                ],
+                "summary": "Quest Claim",
+                "operationId": "quest_claim_v1_quests__quest_id__claim_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "quest_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Quest Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/streak": {
+            "get": {
+                "tags": [
+                    "engagement"
+                ],
+                "summary": "Streak",
+                "operationId": "streak_v1_streak_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/league": {
+            "get": {
+                "tags": [
+                    "engagement"
+                ],
+                "summary": "League",
+                "operationId": "league_v1_league_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/v1/league/seen": {
+            "post": {
+                "tags": [
+                    "engagement"
+                ],
+                "summary": "Collect last week's league reward (once)",
+                "operationId": "league_seen_v1_league_seen_post",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/health": {
+            "get": {
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health",
+                "operationId": "health_health_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AnswerIn": {
+                "properties": {
+                    "qid": {
+                        "type": "string",
+                        "title": "Qid"
+                    },
+                    "answer": {
+                        "title": "Answer",
+                        "description": "game-specific, see API.md 'Grading'"
+                    },
+                    "correct": {
+                        "anyOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Correct",
+                        "description": "client's own verdict; trusted only for echo"
+                    },
+                    "ms": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Ms"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "qid"
+                ],
+                "title": "AnswerIn"
+            },
+            "BuyIn": {
+                "properties": {
+                    "item_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Item Id"
+                    },
+                    "offer_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Offer Id"
+                    }
+                },
+                "type": "object",
+                "title": "BuyIn"
+            },
+            "CheckoutIn": {
+                "properties": {
+                    "sku": {
+                        "type": "string",
+                        "title": "Sku"
+                    },
+                    "provider": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Provider"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "sku"
+                ],
+                "title": "CheckoutIn"
+            },
+            "CompleteIn": {
+                "properties": {
+                    "answers": {
+                        "items": {
+                            "$ref": "#/components/schemas/AnswerIn"
+                        },
+                        "type": "array",
+                        "maxItems": 60,
+                        "title": "Answers"
+                    },
+                    "hints_used": {
+                        "type": "integer",
+                        "title": "Hints Used",
+                        "default": 0
+                    },
+                    "use_elixir": {
+                        "type": "boolean",
+                        "title": "Use Elixir",
+                        "default": false
+                    }
+                },
+                "type": "object",
+                "title": "CompleteIn"
+            },
+            "EquipIn": {
+                "properties": {
+                    "slot": {
+                        "type": "string",
+                        "title": "Slot"
+                    },
+                    "item_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Item Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "slot"
+                ],
+                "title": "EquipIn"
+            },
+            "GuestIn": {
+                "properties": {
+                    "device_id": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "minLength": 8,
+                        "title": "Device Id",
+                        "description": "stable per-install id"
+                    },
+                    "display_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 40
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Display Name"
+                    },
+                    "timezone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Timezone",
+                        "description": "IANA zone, e.g. Asia/Tehran; days and weeks use it"
+                    },
+                    "level": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "A1",
+                                    "A2",
+                                    "B1",
+                                    "B2",
+                                    "C1"
+                                ]
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Level"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "device_id"
+                ],
+                "title": "GuestIn"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LedgerRow": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "title": "Currency"
+                    },
+                    "delta": {
+                        "type": "integer",
+                        "title": "Delta"
+                    },
+                    "balance_after": {
+                        "type": "integer",
+                        "title": "Balance After"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "title": "Reason"
+                    },
+                    "ref": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Ref"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "currency",
+                    "delta",
+                    "balance_after",
+                    "reason",
+                    "ref",
+                    "created_at"
+                ],
+                "title": "LedgerRow"
+            },
+            "LevelOut": {
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "title": "Code"
+                    },
+                    "ordinal": {
+                        "type": "integer",
+                        "title": "Ordinal"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "world_count": {
+                        "type": "integer",
+                        "title": "World Count"
+                    },
+                    "unlocked": {
+                        "type": "boolean",
+                        "title": "Unlocked"
+                    },
+                    "current": {
+                        "type": "boolean",
+                        "title": "Current"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "code",
+                    "ordinal",
+                    "title",
+                    "world_count",
+                    "unlocked",
+                    "current"
+                ],
+                "title": "LevelOut"
+            },
+            "MeOut": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "display_name": {
+                        "type": "string",
+                        "title": "Display Name"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "title": "Kind"
+                    },
+                    "level": {
+                        "type": "string",
+                        "title": "Level"
+                    },
+                    "timezone": {
+                        "type": "string",
+                        "title": "Timezone"
+                    },
+                    "player_level": {
+                        "type": "integer",
+                        "title": "Player Level"
+                    },
+                    "xp": {
+                        "type": "integer",
+                        "title": "Xp"
+                    },
+                    "xp_to_next": {
+                        "type": "integer",
+                        "title": "Xp To Next"
+                    },
+                    "xp_total": {
+                        "type": "integer",
+                        "title": "Xp Total"
+                    },
+                    "streak": {
+                        "type": "integer",
+                        "title": "Streak"
+                    },
+                    "xp_boost_until": {
+                        "type": "integer",
+                        "title": "Xp Boost Until"
+                    },
+                    "league_opt_in": {
+                        "type": "boolean",
+                        "title": "League Opt In"
+                    },
+                    "created_at": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "display_name",
+                    "kind",
+                    "level",
+                    "timezone",
+                    "player_level",
+                    "xp",
+                    "xp_to_next",
+                    "xp_total",
+                    "streak",
+                    "xp_boost_until",
+                    "league_opt_in",
+                    "created_at"
+                ],
+                "title": "MeOut"
+            },
+            "MePatch": {
+                "properties": {
+                    "display_name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 40
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Display Name"
+                    },
+                    "timezone": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Timezone"
+                    },
+                    "league_opt_in": {
+                        "anyOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "League Opt In"
+                    },
+                    "level": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "enum": [
+                                    "A1",
+                                    "A2",
+                                    "B1",
+                                    "B2",
+                                    "C1"
+                                ]
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Level",
+                        "description": "placement / chosen current level"
+                    }
+                },
+                "type": "object",
+                "title": "MePatch"
+            },
+            "QuestionOut": {
+                "properties": {
+                    "qid": {
+                        "type": "string",
+                        "title": "Qid"
+                    },
+                    "game": {
+                        "type": "string",
+                        "title": "Game"
+                    },
+                    "level": {
+                        "type": "string",
+                        "title": "Level"
+                    },
+                    "difficulty": {
+                        "type": "integer",
+                        "title": "Difficulty"
+                    },
+                    "grammar": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Grammar"
+                    },
+                    "skills": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Skills"
+                    },
+                    "topic": {
+                        "type": "string",
+                        "title": "Topic"
+                    },
+                    "payload": {
+                        "type": "object",
+                        "title": "Payload",
+                        "description": "the pipeline game schema (master_prompt.md section 6)"
+                    },
+                    "source": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Source",
+                        "description": "new | review | fallback"
+                    },
+                    "topic_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Topic Id"
+                    },
+                    "box": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Box"
+                    },
+                    "mastery": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Mastery"
+                    },
+                    "due_at": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Due At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "qid",
+                    "game",
+                    "level",
+                    "difficulty",
+                    "grammar",
+                    "skills",
+                    "topic",
+                    "payload"
+                ],
+                "title": "QuestionOut"
+            },
+            "ReviewIn": {
+                "properties": {
+                    "answers": {
+                        "items": {
+                            "$ref": "#/components/schemas/AnswerIn"
+                        },
+                        "type": "array",
+                        "maxItems": 200,
+                        "title": "Answers"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "answers"
+                ],
+                "title": "ReviewIn"
+            },
+            "StageOut": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "world_id": {
+                        "type": "string",
+                        "title": "World Id"
+                    },
+                    "level": {
+                        "type": "string",
+                        "title": "Level"
+                    },
+                    "index": {
+                        "type": "integer",
+                        "title": "Index"
+                    },
+                    "kind": {
+                        "type": "string",
+                        "title": "Kind"
+                    },
+                    "client_kind": {
+                        "type": "string",
+                        "title": "Client Kind"
+                    },
+                    "variant": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Variant"
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "title": "Required"
+                    },
+                    "topic_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Topic Id"
+                    },
+                    "mini_game": {
+                        "type": "string",
+                        "title": "Mini Game"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "hearts_apply": {
+                        "type": "boolean",
+                        "title": "Hearts Apply"
+                    },
+                    "question_count": {
+                        "type": "integer",
+                        "title": "Question Count"
+                    },
+                    "review_ratio": {
+                        "type": "number",
+                        "title": "Review Ratio"
+                    },
+                    "status": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Status"
+                    },
+                    "stars": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Stars"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "world_id",
+                    "level",
+                    "index",
+                    "kind",
+                    "client_kind",
+                    "variant",
+                    "required",
+                    "topic_id",
+                    "mini_game",
+                    "title",
+                    "hearts_apply",
+                    "question_count",
+                    "review_ratio"
+                ],
+                "title": "StageOut"
+            },
+            "StartOut": {
+                "properties": {
+                    "session_id": {
+                        "type": "string",
+                        "title": "Session Id"
+                    },
+                    "stage": {
+                        "$ref": "#/components/schemas/StageOut"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "title": "Expires At"
+                    },
+                    "review_ratio": {
+                        "type": "number",
+                        "title": "Review Ratio"
+                    },
+                    "questions": {
+                        "items": {
+                            "$ref": "#/components/schemas/QuestionOut"
+                        },
+                        "type": "array",
+                        "title": "Questions"
+                    },
+                    "hearts": {
+                        "type": "integer",
+                        "title": "Hearts"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "session_id",
+                    "stage",
+                    "expires_at",
+                    "review_ratio",
+                    "questions",
+                    "hearts"
+                ],
+                "title": "StartOut"
+            },
+            "TokenOut": {
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "title": "Token"
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "title": "Token Type",
+                        "default": "bearer"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "title": "Expires At"
+                    },
+                    "created": {
+                        "type": "boolean",
+                        "title": "Created"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/MeOut"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "token",
+                    "expires_at",
+                    "created",
+                    "user"
+                ],
+                "title": "TokenOut"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "WalletOut": {
+                "properties": {
+                    "hearts": {
+                        "type": "integer",
+                        "title": "Hearts"
+                    },
+                    "heartsMax": {
+                        "type": "integer",
+                        "title": "Heartsmax"
+                    },
+                    "heartsRefillAt": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Heartsrefillat",
+                        "description": "epoch ms of the next regenerated heart"
+                    },
+                    "potion": {
+                        "type": "integer",
+                        "title": "Potion",
+                        "description": "= elixir (the app's name)"
+                    },
+                    "elixir": {
+                        "type": "integer",
+                        "title": "Elixir"
+                    },
+                    "coins": {
+                        "type": "integer",
+                        "title": "Coins"
+                    },
+                    "gems": {
+                        "type": "integer",
+                        "title": "Gems"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "hearts",
+                    "heartsMax",
+                    "heartsRefillAt",
+                    "potion",
+                    "elixir",
+                    "coins",
+                    "gems"
+                ],
+                "title": "WalletOut"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBearer": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "auth"
+        },
+        {
+            "name": "map"
+        },
+        {
+            "name": "play"
+        },
+        {
+            "name": "review"
+        },
+        {
+            "name": "wallet"
+        },
+        {
+            "name": "shop"
+        },
+        {
+            "name": "inventory"
+        },
+        {
+            "name": "engagement"
+        },
+        {
+            "name": "payments"
+        },
+        {
+            "name": "health"
+        }
+    ]
+}

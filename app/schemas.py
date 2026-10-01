@@ -1,0 +1,148 @@
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
+
+LevelCode = Literal["A1", "A2", "B1", "B2", "C1"]
+
+
+class GuestIn(BaseModel):
+    device_id: str = Field(min_length=8, max_length=128, description="stable per-install id")
+    display_name: str | None = Field(None, max_length=40)
+    timezone: str | None = Field(None, description="IANA zone, e.g. Asia/Tehran; days and weeks use it")
+    level: LevelCode | None = None
+
+
+class MeOut(BaseModel):
+    id: str
+    display_name: str
+    kind: str
+    level: str
+    timezone: str
+    player_level: int
+    xp: int
+    xp_to_next: int
+    xp_total: int
+    streak: int
+    xp_boost_until: int
+    league_opt_in: bool
+    created_at: str | None
+
+
+class TokenOut(BaseModel):
+    token: str
+    token_type: str = "bearer"
+    expires_at: str
+    created: bool
+    user: MeOut
+
+
+class MePatch(BaseModel):
+    display_name: str | None = Field(None, max_length=40)
+    timezone: str | None = None
+    league_opt_in: bool | None = None
+    level: LevelCode | None = Field(None, description="placement / chosen current level")
+
+
+class WalletOut(BaseModel):
+    hearts: int
+    heartsMax: int
+    heartsRefillAt: int | None = Field(description="epoch ms of the next regenerated heart")
+    potion: int = Field(description="= elixir (the app's name)")
+    elixir: int
+    coins: int
+    gems: int
+
+
+class LedgerRow(BaseModel):
+    id: int
+    currency: str
+    delta: int
+    balance_after: int
+    reason: str
+    ref: str | None
+    created_at: str
+
+
+class LevelOut(BaseModel):
+    code: str
+    ordinal: int
+    title: str
+    world_count: int
+    unlocked: bool
+    current: bool
+
+
+class QuestionOut(BaseModel):
+    qid: str
+    game: str
+    level: str
+    difficulty: int
+    grammar: list[str]
+    skills: list[str]
+    topic: str
+    payload: dict[str, Any] = Field(description="the pipeline game schema (master_prompt.md section 6)")
+    source: str | None = Field(None, description="new | review | fallback")
+    topic_id: str | None = None
+    box: int | None = None
+    mastery: int | None = None
+    due_at: str | None = None
+
+
+class StageOut(BaseModel):
+    id: str
+    world_id: str
+    level: str
+    index: int
+    kind: str
+    client_kind: str
+    variant: str | None
+    required: bool
+    topic_id: str | None
+    mini_game: str
+    title: str
+    hearts_apply: bool
+    question_count: int
+    review_ratio: float
+    status: str | None = None
+    stars: int | None = None
+
+
+class StartOut(BaseModel):
+    session_id: str
+    stage: StageOut
+    expires_at: str
+    review_ratio: float
+    questions: list[QuestionOut]
+    hearts: int
+
+
+class AnswerIn(BaseModel):
+    qid: str
+    answer: Any = Field(None, description="game-specific, see API.md 'Grading'")
+    correct: bool | None = Field(None, description="client's own verdict; trusted only for echo")
+    ms: int | None = None
+
+
+class CompleteIn(BaseModel):
+    answers: list[AnswerIn] = Field(default_factory=list, max_length=60)
+    hints_used: int = 0
+    use_elixir: bool = False
+
+
+class ReviewIn(BaseModel):
+    answers: list[AnswerIn] = Field(max_length=200)
+
+
+class BuyIn(BaseModel):
+    item_id: str | None = None
+    offer_id: str | None = None
+
+
+class EquipIn(BaseModel):
+    slot: str
+    item_id: str | None = None
+
+
+class CheckoutIn(BaseModel):
+    sku: str
+    provider: str | None = None
