@@ -1,20 +1,20 @@
-"""Idempotent seed: levels, grammar topics, items, chests, 40 worlds and their stages.
+"""Idempotent seed: levels, grammar topics, items, chests, 45 worlds (40 topic + 5 consolidation) and their stages.
 
     python -m scripts.seed            (inside the runecast-api container)
 
-Re-running updates rows in place (upsert). It never deletes stages, so player progress is safe; it prints stale
-stage ids if the plan ever shrinks.
+Re-running updates rows in place (upsert). Stage ids of existing worlds stay stable (A1-W01-S01 ...). A stage that
+is no longer in the plan is deleted only if no player has progress on it; otherwise it is kept and printed.
 """
 import asyncio
 import json
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from app import catalog, curriculum as C
 from app.db import SessionLocal, engine
-from app.models import ChestType, GrammarTopic, Item, Level, Stage, World, WorldTopic
+from app.models import ChestType, GrammarTopic, Item, Level, Stage, UserProgress, World, WorldTopic
 
 SNAP = Path(__file__).resolve().parent.parent / "app" / "seed_data" / "bingual_grammar_topics.json"
 
@@ -27,7 +27,8 @@ def check_plan(bingual: dict[str, dict]):
     unknown = set(used) - set(bingual) - set(C.MIXED_TOPICS)
     assert not unknown, f"unknown topics: {unknown}"
     counts = {lv: len(ws) for lv, ws in C.WORLDS.items()}
-    assert counts == {"A1": 8, "A2": 8, "B1": 9, "B2": 8, "C1": 7}, counts
+    assert counts == {"A1": 8, "A2": 8, "B1": 9, "B2": 8, "C1": 7}, counts  # + 1 consolidation world each
+    assert set(C.CONSOLIDATION) == set(C.WORLDS)
     for lv, ws in C.WORLDS.items():
         for name, ts in ws:
             assert len(ts) == 3, name
@@ -50,7 +51,7 @@ async def main():
     bingual = {t["id"]: t for t in json.loads(SNAP.read_text())}
     check_plan(bingual)
     async with SessionLocal() as db:
-        await upsert(db, Level, [dict(code=c, ordinal=o, title=t, world_count=len(C.WORLDS[c]))
+        await upsert(db, Level, [dict(code=c, ordinal=o, title=t, world_count=len(C.WORLDS[c]) + 1)
                                  for c, o, t in C.LEVELS], ["code"])
         topics = []
         for tid, t in bingual.items():
@@ -79,11 +80,12 @@ async def main():
         await upsert(db, Item, items, ["id"])
         await upsert(db, ChestType, [dict(c) for c in catalog.CHESTS], ["kind"])
 
-        gi = 0
+        gi = core_n = 0
         worlds, links, stages = [], [], []
         for lv, ws in C.WORLDS.items():
             for wi, (wname, tids) in enumerate(ws, 1):
                 gi += 1
+                core_n += 1
                 pid, pname, accent, rep = C.world_paint(gi)
                 wid = f"{lv}-W{wi:02d}"
                 worlds.append(dict(id=wid, level=lv, index=wi, global_index=gi,
@@ -91,24 +93,50 @@ async def main():
                                    accent=accent,
                                    variant={"tint": C.TINT_BY_LEVEL[lv], "weather": C.WEATHER_BY_LEVEL[lv],
                                             "time": C.TIME_BY_REPEAT[rep]},
-                                   boss_drop_item_id=catalog.BOSS_DROP_BY_WORLD.get(gi)))
+                                   boss_drop_item_id=catalog.BOSS_DROP_BY_WORLD.get(core_n)))
                 tinfo = []
                 for slot, tid in enumerate(tids, 1):
                     links.append(dict(world_id=wid, slot=slot, topic_id=tid))
                     title = bingual[tid]["data"]["title"] if tid in bingual else C.MIXED_TOPICS[tid][1]
                     tinfo.append({"id": tid, "title": title})
-                stages += C.build_stage_plan(lv, wi, wid, tinfo, wi == len(ws), f"{pname}{C.NAME_SUFFIX[rep]}")
+                stages += C.build_stage_plan(lv, wi, wid, tinfo, False, f"{pname}{C.NAME_SUFFIX[rep]}")
+            # the level's consolidation world (no topics, Oracle Gate, boss drops an ex-C2 item)
+            gi += 1
+            wi = len(ws) + 1
+            cname, cdrop = C.CONSOLIDATION[lv]
+            pid, pname, accent, rep = C.world_paint(gi)
+            wid = f"{lv}-W{wi:02d}"
+            worlds.append(dict(id=wid, level=lv, index=wi, global_index=gi,
+                               name=f"{pname}{C.NAME_SUFFIX[rep]}: {cname}", paint_id=pid, paint_name=pname,
+                               accent=accent,
+                               variant={"tint": C.TINT_BY_LEVEL[lv], "weather": C.WEATHER_BY_LEVEL[lv],
+                                        "time": C.TIME_BY_REPEAT[rep]},
+                               boss_drop_item_id=cdrop))
+            stages += C.build_consolidation_plan(lv, wi, wid, f"{pname}{C.NAME_SUFFIX[rep]}")
+        # global_index is unique and shifts when worlds are inserted: park the old values first
+        await db.execute(update(World).values(global_index=-World.global_index))
         await upsert(db, World, worlds, ["id"])
+        for w in worlds:  # boss items record the world that drops them
+            if w["boss_drop_item_id"]:
+                await db.execute(update(Item).where(Item.id == w["boss_drop_item_id"])
+                                 .values(world_drop=w["global_index"], drop_stage_id=None))
         await upsert(db, WorldTopic, links, ["world_id", "slot"])
         for i in range(0, len(stages), 200):
             await upsert(db, Stage, stages[i:i + 200], ["id"])
-        # gate drops: point the item at its stage
+        # bonus-stage drops (none at the moment): point the item at its stage
         for st in stages:
             if st["drop_item_id"]:
                 it = await db.get(Item, st["drop_item_id"])
                 it.drop_stage_id = st["id"]
         plan_ids = {s["id"] for s in stages}
         stale = [s for s in (await db.execute(select(Stage.id))).scalars() if s not in plan_ids]
+        played = set((await db.execute(select(UserProgress.stage_id).where(UserProgress.stage_id.in_(stale))))
+                     .scalars()) if stale else set()
+        removable = [s for s in stale if s not in played]
+        if removable:
+            await db.execute(delete(Stage).where(Stage.id.in_(removable)))
+            print("removed stages no longer in the plan (no progress on them):", removable)
+        stale = [s for s in stale if s in played]
         await db.commit()
     req = sum(1 for s in stages if s["required"])
     print(f"seed ok: levels 5, topics {len(topics)}, items {len(items)}, worlds {len(worlds)}, "

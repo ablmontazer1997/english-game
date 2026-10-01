@@ -63,7 +63,8 @@ _PREMIUM = [
     ("coat_shadow", "Shadow cloak", "coat", "shadow", True, "test-only model, not in the live wardrobe yet"),
     ("palette_shimmer", "Shimmer palette", "palette", "star", False, "future: needs a new shader"),
 ]
-# boss drops: world global index -> (id, name, slot, theme, is_new, base_mesh, recolour)
+# boss drops: topic-world number 1..40 in course order (consolidation worlds not counted; seed maps it to the world
+# and stores the real global index in items.world_drop) -> (id, name, slot, theme, is_new, base_mesh, recolour)
 _BOSS = {
     1: ("shoes_forest", "Forest boots", "shoes", "forest", False, None, None),
     2: ("shoes_crystal", "Crystal boots", "shoes", "crystal", False, None, None),
@@ -106,7 +107,7 @@ _BOSS = {
     39: ("coat_midnight", "Midnight cloak", "coat", "moon / night", False, None, None),
     40: ("coat_frost", "Frost cloak", "coat", "frost", False, None, None),
 }
-# the five drops planned for C2 worlds 41-45 -> Oracle Gate drops (see curriculum.GATE_DROPS)
+# the five drops planned for C2 worlds 41-45 -> boss drops of the 5 consolidation worlds (curriculum.CONSOLIDATION)
 _GATE = [
     ("coat_fire", "Fire cloak", "coat", "fire", False, None, None),
     ("coat_runestone", "Runestone cloak", "coat", "rune", True, "coat_forest", "stone grey"),
@@ -133,7 +134,7 @@ def items() -> list[dict]:
     for iid, name, slot, theme, new, base, rec in _GATE:
         out.append(dict(id=iid, name=name, slot=slot, tier="boss", rarity=None, price_gems=None, theme=theme,
                         is_new=new, base_mesh=base, recolour=rec,
-                        notes="planned for a C2 world; now the Oracle Gate drop (no C2 level)"))
+                        notes="planned for a C2 world; now the boss drop of a consolidation world (no C2 level)"))
     return out
 
 

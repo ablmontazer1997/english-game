@@ -1,4 +1,7 @@
-"""The English Spell course map: 5 levels, 40 worlds, 3 related grammar topics per world, 13 required stages + bonus.
+"""The English Spell course map: 5 levels, 45 worlds = 40 topic worlds (3 related grammar topics each) + one
+consolidation world closing each level (admin msg 3060: the 5 planned C2 worlds move here, one per level:
+A1 9, A2 9, B1 10, B2 9, C1 8). A consolidation world teaches no new topic; its stages mix the level's topics.
+13 required stages per world + bonus.
 
 Grammar topics are Bingual's list (read-only snapshot in seed_data/bingual_grammar_topics.json):
 A1 22, A2 24, B1 26, B2 24, C1 20. A level with a topic count that is not a multiple of 3 gets "mixed" consolidation
@@ -55,7 +58,17 @@ MIXED_TOPICS = {
                     "c1-advanced-passive-reporting"]),
 }
 
-# level -> list of worlds, each = (world title, [topic ids for slots 1..3])
+# level -> the consolidation world appended after its topic worlds (no topics; mixes the whole level). Its boss drops
+# one of the 5 items planned for the dropped C2 worlds 41-45.
+CONSOLIDATION = {
+    "A1": ("Beginner's Grand Review", "coat_fire"),
+    "A2": ("Elementary Grand Review", "coat_runestone"),
+    "B1": ("Intermediate Grand Review", "top_scholar"),
+    "B2": ("Upper-Intermediate Grand Review", "coat_sun"),
+    "C1": ("Advanced Grand Review", "coat_autumn"),
+}
+
+# level -> list of topic worlds, each = (world title, [topic ids for slots 1..3])
 WORLDS = {
     "A1": [
         ("Who Am I", ["a1-verb-to-be", "a1-subject-pronouns", "a1-possessive-adjectives"]),
@@ -301,9 +314,8 @@ STAGE_RULES = {
 }
 TREASURE_GEMS = 10
 
-# The 5 drops planned for the dropped C2 worlds 41-45 move to the Oracle Gate (bonus stage 15 of each level's last
-# world), so all 45 planned boss-tier items stay earnable by learning only.
-GATE_DROPS = {"A1": "coat_fire", "A2": "coat_runestone", "B1": "top_scholar", "B2": "coat_sun", "C1": "coat_autumn"}
+# The Oracle Gate (bonus stage 15) sits in each level's last world = the consolidation world; it has no item drop
+# (the 5 ex-C2 items are the consolidation bosses' drops, admin msg 3060).
 
 
 def short_title(title: str) -> str:
@@ -312,7 +324,7 @@ def short_title(title: str) -> str:
 
 def world_paint(global_index: int):
     pid, pname, accent = PAINTS[(global_index - 1) % 11]
-    repeat = (global_index - 1) // 11
+    repeat = ((global_index - 1) // 11) % len(TIME_BY_REPEAT)  # 45 worlds: the 5th pass reuses "day" (other level)
     return pid, pname, accent, repeat
 
 
@@ -344,7 +356,34 @@ def build_stage_plan(level: str, world_index: int, world_id: str, topics: list[d
        variant="vault", required=False)
     if last_in_level:
         mk(15, "bonus", None, "oracle-trial", "Oracle Gate", GRAMMAR_GAMES, rule_key="bonus_gate", variant="gate",
-           required=False, drop=GATE_DROPS[level])
+           required=False)
+    return stages
+
+
+def build_consolidation_plan(level: str, world_index: int, world_id: str, world_name: str):
+    """The level's closing world: 4 rounds of (mixed practice, other-modality practice, trial) over ALL the level's
+    topics = 12 required stages, then the boss (13), Treasure Vault (14) and the Oracle Gate (15). No topic_id: the
+    selector spreads these stages over the whole level (services/selection.py)."""
+    stages = []
+
+    def mk(idx, kind, mini, title, games, rule_key=None, variant=None, required=True):
+        qc, rr, vr, hearts = STAGE_RULES[rule_key or kind]
+        stages.append(dict(id=f"{world_id}-S{idx:02d}", world_id=world_id, level=level, index=idx,
+                           order_key=world_index * 100 + idx, kind=kind, variant=variant, topic_id=None,
+                           mini_game=mini, games=games, title=title, required=required, question_count=qc,
+                           review_ratio=0.0, vocab_ratio=0.0, hearts_apply=hearts, drop_item_id=None))
+
+    for r in range(4):
+        base = r * 3
+        mk(base + 1, "practice", PRACTICE_GAMES[r % len(PRACTICE_GAMES)], f"Grand Practice {r + 1}", PRACTICE_GAMES)
+        mk(base + 2, "practice2", MODALITY_GAMES[(world_index + r) % len(MODALITY_GAMES)], f"Grand Echoes {r + 1}",
+           MODALITY_GAMES)
+        mk(base + 3, "trial", "oracle-trial", f"Grand Trial {r + 1}", GRAMMAR_GAMES)
+    mk(13, "boss", "boss-battle", f"Boss of {world_name}", GRAMMAR_GAMES)
+    mk(14, "bonus", "curse-breaker", "Treasure Vault", GRAMMAR_GAMES, rule_key="bonus_vault", variant="vault",
+       required=False)
+    mk(15, "bonus", "oracle-trial", "Oracle Gate", GRAMMAR_GAMES, rule_key="bonus_gate", variant="gate",
+       required=False)
     return stages
 
 

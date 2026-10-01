@@ -32,7 +32,8 @@ def main():
     lv = c.get("/v1/levels").json()
     check([x["code"] for x in lv] == ["A1", "A2", "B1", "B2", "C1"], "levels A1..C1")
     m = c.get("/v1/map/A1").json()
-    check(len(m["worlds"]) == 8 and len(m["worlds"][0]["stages"]) == 14, "map A1: 8 worlds, 13+1 stages in W1")
+    check(len(m["worlds"]) == 9 and len(m["worlds"][0]["stages"]) == 14 and m["worlds"][-1]["consolidation"],
+          "map A1: 8 topic worlds + 1 consolidation, 13+1 stages in W1")
     s = c.post("/v1/stages/A1-W01-S01/start").json()
     check(len(s["questions"]) > 0, f"stage start: {len(s['questions'])} questions, games "
                                    f"{sorted({q['game'] for q in s['questions']})}")

@@ -50,9 +50,14 @@ async def test_same_device_resumes(client):
 async def test_map_shape(client, player):
     lv = (await client.get("/v1/levels")).json()
     assert [x["code"] for x in lv] == ["A1", "A2", "B1", "B2", "C1"]
-    assert sum(x["world_count"] for x in lv) == 40
+    assert [x["world_count"] for x in lv] == [9, 9, 10, 9, 8]  # 40 topic worlds + 5 consolidation (msg 3060)
     m = (await client.get("/v1/map/A1")).json()
-    assert len(m["worlds"]) == 8 and m["unlocked"]
+    assert len(m["worlds"]) == 9 and m["unlocked"]
+    assert [w["consolidation"] for w in m["worlds"]] == [False] * 8 + [True]
+    cw = m["worlds"][-1]
+    assert cw["id"] == "A1-W09" and cw["topics"] == [] and cw["boss_drop"]["item_id"] == "coat_fire"
+    assert sum(1 for s in cw["stages"] if s["required"]) == 13 and cw["stages"][-1]["variant"] == "gate"
+    assert all(s["variant"] != "gate" for s in m["worlds"][-2]["stages"])
     w1 = m["worlds"][0]
     assert w1["paint_id"] == "w1" and w1["variant"]["time"] == "day" and len(w1["topics"]) == 3
     assert [s["kind"] for s in w1["stages"]][:5] == ["lesson", "practice", "practice2", "trial", "lesson"]
@@ -66,7 +71,7 @@ async def test_map_shape(client, player):
     for code in ["A1", "A2", "B1", "B2", "C1"]:
         mm = (await client.get(f"/v1/map/{code}")).json()
         total_req += mm["progress"]["required_total"]
-    assert total_req == 40 * 13
+    assert total_req == 45 * 13
     t = (await client.get(f"/v1/topics/{w1['topics'][0]['id']}")).json()
     assert t["rules"] and t["title"]
 
@@ -206,12 +211,13 @@ async def test_shop_chests_inventory(client, player):
 
 
 async def test_streak_quests_freeze(client, player):
-    await play(client, "A1-W01-S01")
     st = (await client.get("/v1/streak")).json()
     assert st["current"] == 0 and not st["today_done"]
-    await play(client, "A1-W01-S02")
+    await play(client, "A1-W01-S01")  # one completed exercise is enough (admin msg 3060)
     st = (await client.get("/v1/streak")).json()
     assert st["current"] == 1 and st["today_done"]
+    await play(client, "A1-W01-S02")  # a second one the same day does not add a day
+    assert (await client.get("/v1/streak")).json()["current"] == 1
     await _set_wallet(player, coins=2000)
     for _ in range(2):
         assert (await client.post("/v1/shop/buy", json={"offer_id": "freeze"})).status_code == 200
@@ -242,7 +248,6 @@ async def test_streak_freeze_covers_missed_day(client, player):
         await db.commit()
     assert (await client.get("/v1/streak")).json()["current"] == 5  # frozen, not broken
     await play(client, "A1-W01-S01")
-    await play(client, "A1-W01-S02")
     st = (await client.get("/v1/streak")).json()
     assert st["current"] == 6 and st["freezes"] == 0
     async with SessionLocal() as db:
@@ -271,15 +276,16 @@ async def test_level_up_on_last_boss(client, player):
     uid = uuid.UUID(player["id"])
     async with SessionLocal() as db:
         ids = (await db.execute(select(Stage.id).where(Stage.level == "A1", Stage.required.is_(True),
-                                                       Stage.id != "A1-W08-S13"))).scalars().all()
+                                                       Stage.id != "A1-W09-S13"))).scalars().all()
         for sid in ids:
             db.add(UserProgress(user_id=uid, stage_id=sid, best_stars=3, attempts=1, best_accuracy=1.0,
                                 completed_at=utcnow()))
         await db.commit()
-    _, res = await play(client, "A1-W08-S13")
+    _, res = await play(client, "A1-W09-S13")  # the consolidation world's boss closes the level
     assert res["level_completed"] and res["me"]["level"] == "A2"
     assert (await client.get("/v1/map/A2")).json()["worlds"][0]["stages"][0]["status"] == "current"
-    # the Oracle Gate opened (stage 12 done) and drops the A1 gate item
+    assert any(i["item_id"] == "coat_fire" for i in res["rewards"]["items"])  # ex-C2 item = consolidation boss drop
+    # the Oracle Gate (in the consolidation world) opened once stage 12 was done
     m = (await client.get("/v1/map/A1")).json()
     gate = m["worlds"][-1]["stages"][-1]
     assert gate["variant"] == "gate" and gate["status"] == "current"
@@ -310,3 +316,34 @@ async def test_import_is_idempotent(tmp_path, seeded):
     with contextlib.redirect_stdout(buf):
         await imp.main(tmp_path / "qdb", False)
     assert json.loads(buf.getvalue())["updated"] == 1
+
+
+async def test_import_topic_id_and_topic_first_selection(tmp_path, seeded):
+    import contextlib
+    import io
+    import uuid
+    from app.services import selection
+    from scripts import import_questions as imp
+    d = tmp_path / "qdb" / "oracle-trial"
+    d.mkdir(parents=True)
+    base = {"game": "oracle-trial", "level": "A1", "difficulty": 2, "grammar": ["A1-G02"], "skills": [],
+            "topic": "home", "data": {"skill": "Grammar", "prompt": "This is ___ bag.", "answer": "my",
+                                      "wrong": ["me", "I", "mine"]}}
+    lines = [{**base, "id": "or-A1-possessive-adjectives-1", "topic_id": "a1-possessive-adjectives"},
+             {**base, "id": "or-A1-subject-pronouns-1", "topic_id": "a1-subject-pronouns"},
+             {**base, "id": "or-A1-bogus-1", "topic_id": "a1-no-such-topic"}]
+    (d / "A1.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines))
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        await imp.main(tmp_path / "qdb", False)
+    st = json.loads(buf.getvalue())
+    assert st["with_topic_id"] == 2 and st["unknown_topic"] == 1
+    uid = uuid.uuid4()
+    async with SessionLocal() as db:
+        exact = await selection._pick(db, uid, 50, topic_ids=["a1-possessive-adjectives"])
+        assert [q.id for q in exact] == ["or-A1-possessive-adjectives-1"]
+        # code-map pass: untagged A1-G02 items and our own topic, never an item generated for another topic
+        via_codes = {q.id for q in await selection._pick(db, uid, 400, codes=["A1-G02"],
+                                                         topic_ids=["a1-possessive-adjectives"])}
+        assert "or-A1-possessive-adjectives-1" in via_codes and "or-A1-bogus-1" in via_codes
+        assert "or-A1-subject-pronouns-1" not in via_codes

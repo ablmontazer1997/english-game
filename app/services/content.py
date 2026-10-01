@@ -102,6 +102,7 @@ async def map_for(db: AsyncSession, user: User, level: str) -> dict:
             "id": w.id, "level": w.level, "index": w.index, "global_index": w.global_index, "name": w.name,
             "paint_id": w.paint_id, "paint_name": w.paint_name, "accent": w.accent, "variant": w.variant,
             "topics": sorted(topics_by_world.get(w.id, []), key=lambda t: t["slot"]),
+            "consolidation": not topics_by_world.get(w.id),  # level's closing review world, no new topics
             "boss_drop": ({"item_id": it.id, "name": it.name, "slot": it.slot, "owned": it.id in owned}
                           if it else None),
             "status": wstatus, "stages": sts})

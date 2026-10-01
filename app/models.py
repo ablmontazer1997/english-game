@@ -51,7 +51,7 @@ class Item(Base):
     tier: Mapped[str] = mapped_column(String(10))  # free | boss | gem | premium
     rarity: Mapped[str | None] = mapped_column(String(10), nullable=True)  # common | rare | epic
     price_gems: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    world_drop: Mapped[int | None] = mapped_column(Integer, nullable=True)  # global world index 1..40
+    world_drop: Mapped[int | None] = mapped_column(Integer, nullable=True)  # global world index 1..45
     drop_stage_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     theme: Mapped[str] = mapped_column(Text, default="")
     base_mesh: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -115,6 +115,8 @@ class Question(Base):
     grammar_codes: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     skills: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     topic: Mapped[str] = mapped_column(Text, default="")
+    # Bingual grammar topic id the pipeline generated this item for (since 2026-10-01); None = only grammar_codes
+    topic_id: Mapped[str | None] = mapped_column(Text, nullable=True, default=None)
     payload: Mapped[dict] = mapped_column(JSONB)
     content_hash: Mapped[str] = mapped_column(String(40))
     source_file: Mapped[str] = mapped_column(Text, default="")
@@ -122,7 +124,8 @@ class Question(Base):
     imported_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
     updated_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
     __table_args__ = (Index("ix_questions_game_level", "game", "level"),
-                      Index("ix_questions_codes", "grammar_codes", postgresql_using="gin"))
+                      Index("ix_questions_codes", "grammar_codes", postgresql_using="gin"),
+                      Index("ix_questions_topic_id", "topic_id"))
 
 
 class Word(Base):

@@ -27,11 +27,12 @@ async def day_stat(db: AsyncSession, user: User, day: date | None = None) -> Use
 
 # ---------------------------------------------------------------- streak
 FREEZES_MAX = 2
-STREAK_RULE = "A day counts when you win 2 stages, or win 1 stage and answer 10 review items correctly."
+# admin msg 3060: ONE completed exercise a day is enough (a won stage, or one submitted review round)
+STREAK_RULE = "A day counts when you complete one exercise: win one stage or finish one review round."
 
 
 def day_qualifies(s: UserDayStat) -> bool:
-    return s.stages_won >= 2 or (s.stages_won >= 1 and s.review_correct >= 10)
+    return (s.stages_won or 0) >= 1 or (s.review_answered or 0) >= 1
 
 
 async def get_streak(db: AsyncSession, user_id) -> Streak:

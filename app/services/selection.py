@@ -1,6 +1,9 @@
 """Pick the question set for a stage.
 
-- main share: the stage's topic (or the world's 3 topics for a boss / vault, the whole level for the Oracle Gate),
+- topic match: items whose topic_id is the topic (or a topic a mixed topic covers) come first; then items found via
+  the topic's pipeline codes (curriculum.QDB_CODES) that are not tagged for a different topic;
+- main share: the stage's topic (or the world's 3 topics for a boss / vault, the whole level in random order for the
+  Oracle Gate and every stage of a level's consolidation world),
   preferred games first, unseen items first;
 - review share (trials and bosses, 30-40%): earlier topics, SRS-due items of this player first; C1 topics pull from
   their B1/B2 precursors first ("deepening");
@@ -10,7 +13,7 @@
 """
 import random
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..curriculum import GRAMMAR_GAMES, LEVEL_ORD, SPELLING_GAMES, VOCAB_GAMES
@@ -36,7 +39,11 @@ def _codes(t: GrammarTopic, all_topics: dict[str, GrammarTopic]) -> list[str]:
     return sorted(set(codes))
 
 
-async def _pick(db, user_id, k, *, codes=None, games=None, level=None, max_level=None, no_grammar=False,
+def _tids(t: GrammarTopic) -> list[str]:
+    return [t.id] + list(t.covers or [])
+
+
+async def _pick(db, user_id, k, *, codes=None, topic_ids=None, games=None, level=None, max_level=None, no_grammar=False,
                 prefer_difficulty=None, exclude=(), due_first=False):
     if k <= 0:
         return []
@@ -46,6 +53,12 @@ async def _pick(db, user_id, k, *, codes=None, games=None, level=None, max_level
         if not codes:
             return []
         q = q.where(Question.grammar_codes.overlap(codes))
+        if topic_ids:  # code-map match, but never an item generated for a different topic
+            q = q.where(or_(Question.topic_id.is_(None), Question.topic_id.in_(topic_ids)))
+    elif topic_ids is not None:
+        if not topic_ids:
+            return []
+        q = q.where(Question.topic_id.in_(topic_ids))
     if games:
         q = q.where(Question.game.in_(games))
     if level:
@@ -84,7 +97,13 @@ async def pick_for_stage(db: AsyncSession, user: User, stage: Stage) -> list[tup
                                 .where(World.level == stage.level))
         main_ids = list(rows.scalars())
     else:
-        main_ids = [stage.topic_id]
+        main_ids = [stage.topic_id] if stage.topic_id else []
+    if not main_ids or (stage.kind == "bonus" and stage.variant == "gate"):
+        # consolidation world (no topics of its own) and the Oracle Gate: the whole level, in random order
+        rows = await db.execute(select(WorldTopic.topic_id).join(World, World.id == WorldTopic.world_id)
+                                .where(World.level == stage.level))
+        main_ids = list(rows.scalars())
+        random.SystemRandom().shuffle(main_ids)
     review_ids: list[str] = []
     if stage.review_ratio > 0:
         slot = None
@@ -120,13 +139,14 @@ async def pick_for_stage(db: AsyncSession, user: User, stage: Stage) -> list[tup
         if not t:
             continue
         want = min(per, main_n - sum(1 for p in picked if p[1] == "new"))
-        codes = _codes(t, topics)
-        got = await _pick(db, user.id, want, codes=codes, games=stage.games, prefer_difficulty=prefer_diff,
-                          exclude=used)
-        take(got, "new", tid)
-        short = want - len(got)
-        if short > 0:
-            take(await _pick(db, user.id, short, codes=codes, games=GRAMMAR_GAMES, exclude=used), "new", tid)
+        codes, tids = _codes(t, topics), _tids(t)
+        for kw in (dict(topic_ids=tids, games=stage.games), dict(codes=codes, topic_ids=tids, games=stage.games),
+                   dict(topic_ids=tids, games=GRAMMAR_GAMES), dict(codes=codes, topic_ids=tids, games=GRAMMAR_GAMES)):
+            short = want - sum(1 for p in picked if p[2] == tid and p[1] == "new")
+            if short <= 0:
+                break
+            take(await _pick(db, user.id, short, exclude=used,
+                             prefer_difficulty=prefer_diff if kw["games"] is stage.games else None, **kw), "new", tid)
     # review share: SRS-due items from earlier topics first
     if review_n:
         per_r = max(1, -(-review_n // min(len(review_ids), 4)))
@@ -134,9 +154,14 @@ async def pick_for_stage(db: AsyncSession, user: User, stage: Stage) -> list[tup
             have = sum(1 for p in picked if p[1] == "review")
             if have >= review_n:
                 break
-            got = await _pick(db, user.id, min(per_r, review_n - have), codes=_codes(topics[tid], topics),
-                              games=GRAMMAR_GAMES, exclude=used, due_first=True)
+            want_r = min(per_r, review_n - have)
+            got = await _pick(db, user.id, want_r, topic_ids=_tids(topics[tid]), games=GRAMMAR_GAMES, exclude=used,
+                              due_first=True)
             take(got, "review", tid)
+            if len(got) < want_r:
+                take(await _pick(db, user.id, want_r - len(got), codes=_codes(topics[tid], topics),
+                                 topic_ids=_tids(topics[tid]), games=GRAMMAR_GAMES, exclude=used, due_first=True),
+                     "review", tid)
     # vocab round
     if vocab_n:
         take(await _pick(db, user.id, vocab_n, games=VOCAB_GAMES, level=stage.level, exclude=used), "new", None)

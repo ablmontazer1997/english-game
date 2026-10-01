@@ -6,6 +6,9 @@
 - new id -> insert; same id + changed content -> update; same content -> untouched.
 - C2 files are skipped (there is no C2 level).
 - Vocabulary items (front/back) also fill the `words` table.
+- `topic_id` (Bingual grammar topic id, set by the pipeline since 2026-10-01 and by its re-tag of older items) is
+  stored in questions.topic_id when it names a known grammar topic; selection prefers it over the code map
+  (curriculum.QDB_CODES). Unknown ids are counted (`unknown_topic`) and stored as NULL.
 """
 import argparse
 import asyncio
@@ -19,7 +22,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app.config import get_settings
 from app.curriculum import LEVEL_ORD
 from app.db import SessionLocal, engine
-from app.models import Question, Word
+from app.models import GrammarTopic, Question, Word
 
 KNOWN_GAMES = {"bubble-pop", "match-blitz", "memory-crystals", "gap-gate", "boss-battle", "oracle-trial", "rune-order",
                "whisper-scroll", "tavern-talk", "echo", "rune-type", "potion-mix", "curse-breaker", "spell-weaver",
@@ -28,6 +31,8 @@ KNOWN_GAMES = {"bubble-pop", "match-blitz", "memory-crystals", "gap-gate", "boss
 
 def chash(d: dict) -> str:
     core = {k: d.get(k) for k in ("game", "level", "difficulty", "grammar", "skills", "topic", "data")}
+    if d.get("topic_id"):  # only when present, so hashes of untagged items stay stable
+        core["topic_id"] = d["topic_id"]
     return hashlib.sha1(json.dumps(core, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
@@ -60,14 +65,21 @@ def read_items(root: Path, stats: dict):
 
 async def main(root: Path, dry: bool):
     stats = {k: 0 for k in ("read", "inserted", "updated", "unchanged", "bad_json", "bad_shape", "unknown_game",
-                            "level_mismatch", "skipped_level", "words_added")}
+                            "level_mismatch", "skipped_level", "words_added", "with_topic_id", "unknown_topic")}
+    async with SessionLocal() as db:
+        known_topics = set((await db.execute(select(GrammarTopic.id))).scalars())
     rows = []
     for f, d in read_items(root, stats):
         stats["read"] += 1
+        tid = d.get("topic_id") if isinstance(d.get("topic_id"), str) else None
+        if tid and tid not in known_topics:
+            stats["unknown_topic"] += 1
+            tid = None
+        stats["with_topic_id"] += bool(tid)
         rows.append(dict(id=d["id"], game=d["game"], level=d["level"], difficulty=int(d.get("difficulty") or 2),
                          grammar_codes=[g for g in d.get("grammar") or [] if isinstance(g, str)],
                          skills=[s for s in d.get("skills") or [] if isinstance(s, str)],
-                         topic=d.get("topic") or "", payload=d["data"], content_hash=chash(d),
+                         topic=d.get("topic") or "", topic_id=tid, payload=d["data"], content_hash=chash(d),
                          source_file=str(f.relative_to(root))))
     rows = list({r["id"]: r for r in rows}.values())  # one row per id (last wins)
     async with SessionLocal() as db:
