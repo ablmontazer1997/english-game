@@ -104,3 +104,40 @@ export function Art({ name, size, className, style }: {
   return <img src={ART[name]} alt="" draggable={false} className={className}
     style={{ width: size, height: 'auto', display: 'block', ...style }} />
 }
+
+// ---- layout standard (theme/layout.css): 9-sliced skins, content-sized ----
+const SKIN: Partial<Record<ArtName, string>> = {
+  pnl_card4: 'sk-card', panel_wide: 'sk-wide', card_stat: 'sk-stat', card_square: 'sk-square', panel_banner: 'sk-banner',
+  pnl_row6: 'sk-row', pnl_row6v: 'sk-row-me', btn_green: 'sk-green', btn_gold: 'sk-gold', btn_edit: 'sk-edit',
+  chip_violet: 'sk-chip', pnl_pill32: 'sk-pill32',
+}
+type Skinned = { name?: ArtName; className?: string; style?: CSSProperties; children?: ReactNode; onClick?: () => void; disabled?: boolean }
+
+/** A painted card that grows with its content (padding from the painted edge). */
+export function Card({ name = 'pnl_card4', className, style, children, onClick, disabled }: Skinned) {
+  const Tag = (onClick ? 'button' : 'div') as 'button'
+  return <Tag data-card="" className={`sk ${SKIN[name]} ui-card${className ? ' ' + className : ''}`} style={style}
+    onClick={onClick} disabled={disabled}>{children}</Tag>
+}
+
+/** A pill-shaped painted list row of fixed height (var(--row-h)). */
+export function Row({ name = 'pnl_row6', className, style, children }: Skinned) {
+  return <div data-card="" className={`sk ${SKIN[name]} ui-row pillrow${className ? ' ' + className : ''}`} style={style}>{children}</div>
+}
+
+/** Standard button: fixed height, label with an inline icon on its left. */
+export function Btn({ name = 'btn_green', className, style, children, onClick, disabled }: Skinned) {
+  return <button className={`sk ${SKIN[name]} ui-btn${className ? ' ' + className : ''}`} style={style}
+    onClick={onClick} disabled={disabled}>{children}</button>
+}
+
+/** Violet chip (timers / counters). */
+export function Chip({ children, className }: { children?: ReactNode; className?: string }) {
+  return <span className={`sk sk-chip ui-chip${className ? ' ' + className : ''}`}>{children}</span>
+}
+
+/** Fixed-size icon slot: the art is contained inside it, never overflowing the card. */
+export function Slot({ src, className, children }: { src?: string; className?: string; children?: ReactNode }) {
+  return <span data-slot="" className={`ui-slot${className ? ' ' + className : ''}`}>
+    {src && <img src={src} alt="" draggable={false} />}{children}</span>
+}

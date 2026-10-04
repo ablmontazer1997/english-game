@@ -53,4 +53,30 @@
   /* motion */
   --ease-magic: cubic-bezier(0.34, 1.56, 0.64, 1); /* back.out-like */
   --dur: 320ms;
+
+  /* ---- layout standard (light pages, HUD, nav, sheets): one set, used everywhere ---- */
+  --gutter: 16px;          /* page side margin on every screen (cards, HUD, nav, headers) */
+  --gap: 12px;             /* between stacked cards */
+  --gap-section: 24px;     /* above a section header */
+  --pad: 12px;             /* card content padding, measured from the PAINTED edge */
+  --skin-in: 4px;          /* painted card art: transparent margin outside the visible edge */
+  --skin-lip: 6px;         /* painted card art: the lavender lip under the face */
+  --slot: 48px;            /* list-row icon slot (art is contained, never overflows) */
+  --slot-lg: 56px;         /* achievement medal slot */
+  --trail: 80px;           /* list-row trailing column (reward / price / claim) */
+  --row-h: 64px;           /* pill-shaped list row */
+  --btn-h: 36px;           /* standard button */
+  --btn-h-lg: 44px;        /* primary / modal button */
+  --btn-px: 14px;          /* button side padding */
+  --btn-ic: 16px;          /* icon inside a button / chip */
+  --btn-ic-gap: 4px;       /* icon -> number */
+  /* type scale (size / line-height) */
+  --fs-display: 22px; --lh-display: 28px;   /* page title */
+  --fs-title: 16px;   --lh-title: 20px;     /* card title, section header */
+  --fs-body: 14px;    --lh-body: 18px;      /* row title, values */
+  --fs-caption: 12px; --lh-caption: 16px;   /* subtitles, notes, chips */
+  --fs-micro: 11px;   --lh-micro: 14px;     /* tags, tiny labels */
+  /* light-page ink */
+  --ink-d: #3c4160; --ink-m: #6b7192; --ink-l: #7d83a2;
+  --scrim: rgba(26, 38, 94, .5);            /* behind text drawn on painted backgrounds */
 }

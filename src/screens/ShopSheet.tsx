@@ -18,7 +18,7 @@ export function ShopSheet({ currency, onClose }: { currency: CurrencyId | null; 
   if (!currency) return null
   const full = !!currencies && currencies.hearts >= currencies.heartsMax
   return (
-    <Sheet open={!!currency} title={TITLES[currency]} onClose={onClose}>
+    <Sheet open={!!currency} title={TITLES[currency]} variant="light" onClose={onClose}>
       <div className="ss-list">
         {currency === 'hearts' && <>
           <OfferRow o={by('hearts_full')} disabled={full} status={full ? 'Hearts are full' : undefined} />

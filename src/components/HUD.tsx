@@ -30,7 +30,7 @@ export function HUD({ onBuy, onSettings }: { onBuy: (c: CurrencyId) => void; onS
       </div>
 
       <button className="hud-gear" aria-label="Settings" onClick={onSettings}>
-        <SkyIcon name="btn_gear" size={37} />
+        <SkyIcon name="btn_gear" size={36} />
       </button>
     </div>
   )
@@ -42,7 +42,7 @@ function Pill({ icon, value, onBuy, wide }: {
   return (
     <div className={`pill${wide ? ' wide' : ''}`}>
       <img className="pill-bg" src={skySrc('pill')} alt="" draggable={false} />
-      <SkyIcon name={icon} size={22} className="pill-ic" />
+      <SkyIcon name={icon} size={20} className="pill-ic" />
       <b className="pill-val">{value}</b>
       <button className="pill-plus" aria-label="Buy more" onClick={onBuy} />
     </div>

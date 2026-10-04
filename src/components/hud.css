@@ -3,15 +3,15 @@
 .hud {
   position: absolute; left: 0; right: 0; top: 0; z-index: 6;
   height: calc(var(--hud-h) + var(--safe-top));
-  padding: calc(var(--safe-top) + 6px) 8px 0;
-  display: flex; align-items: center; gap: 6px;
+  padding: calc(var(--safe-top) + 6px) var(--gutter) 0;
+  display: flex; align-items: center; gap: 8px;
   pointer-events: none;
 }
 .hud > * { pointer-events: auto; }
 
 /* ---- avatar ---- */
 .hud-avatar {
-  position: relative; flex: 0 0 auto; width: 43px; height: 43px;
+  position: relative; flex: 0 0 auto; width: 40px; height: 40px;
   border-radius: 50%; padding: 0;
   background: linear-gradient(180deg, #fff, #e8eefc);
   box-shadow: 0 3px 10px rgba(20, 60, 110, .28), inset 0 0 0 3px #fff;
@@ -31,44 +31,43 @@
   box-shadow: 0 2px 5px rgba(120, 60, 0, .3);
 }
 
-/* ---- currency pills ---- */
-.hud-pills { flex: 1 1 auto; display: flex; align-items: center; gap: 3px; min-width: 0; }
+/* ---- currency pills ----
+   [icon 20][gap 4][value, centred][gap 4][painted "+" disc 30]; each pill is as wide as its
+   content, spare width is shared equally, so the inner spacing is identical on all three */
+.hud-pills { flex: 1 1 auto; display: flex; align-items: center; gap: 4px; min-width: 0; }
 
 .pill {
-  position: relative; flex: 1 1 0; min-width: 0; height: 30px;
-  display: block;
+  position: relative; flex: 1 1 auto; min-width: 0; height: 30px;
+  display: flex; align-items: center; gap: 4px; padding: 0 32px 0 2px;
   filter: drop-shadow(0 3px 7px rgba(20, 60, 110, .20));
 }
-.pill-bg {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: fill; display: block;
-}
-.pill-ic {
-  position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
-  width: 20px; height: 20px;
-}
+.pill-bg { display: none; }
+.pill-ic { position: relative; z-index: 1; flex: none; width: 20px !important; height: 20px !important; }
 .pill-val {
-  position: absolute; left: 21px; right: 21px; top: 50%; transform: translateY(-50%);
-  font-size: 9.5px; font-weight: 800; color: #4a4f68;
+  position: relative; z-index: 1; flex: 1 0 auto; min-width: 0;
+  font-size: var(--fs-micro); line-height: 1; font-weight: 800; color: #4a4f68;
   text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
 }
-.pill.wide { flex: 1.5 1 0; }
 
 /* the painted pill already has a green “+” disc at its right end; this is the hit area */
 .pill-plus {
-  position: absolute; right: 0; top: 0; width: 30px; height: 100%;
+  position: absolute; right: 0; top: 0; width: 32px; height: 100%; z-index: 2;
   border-radius: 99px; background: transparent; padding: 0;
+}
+
+/* narrow phones (360-375): same layout, slightly tighter so values are never cut */
+@media (max-width: 375px) {
+  .hud { gap: 6px; }
+  .hud-pills { gap: 3px; }
+  .pill { gap: 3px; padding-right: 30px; }
+  .pill-val { font-size: 10.5px; }
 }
 
 /* ---- settings ---- */
 .hud-gear {
-  flex: 0 0 auto; width: 37px; height: 37px; padding: 0;
+  flex: 0 0 auto; width: 36px; height: 36px; padding: 0;
   filter: drop-shadow(0 3px 8px rgba(20, 60, 110, .24));
-}
-
-@media (max-width: 380px) {
-  .pill-val { font-size: 9.5px; left: 23px; right: 23px; }
-  .pill-ic { width: 19px; height: 19px; }
 }
 
 /* XP ring around the avatar: gold arc = progress to the next level */
@@ -80,10 +79,9 @@
 
 /* the painted pill is 9-sliced: round left cap and the green “+” disc keep their
    shape at any width, only the flat middle stretches (was: whole art stretched) */
-.pill-bg { display: none; }
 .pill::before {
   content: ""; position: absolute; inset: 0;
   border-style: solid; border-width: 0 30px 0 15px;
   border-image: url(../assets/sky/pill.png) 0 182 0 91 fill / 0 30px 0 15px stretch;
 }
-.pill-val { font-size: 11px; }
+

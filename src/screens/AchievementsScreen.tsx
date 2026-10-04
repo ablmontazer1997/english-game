@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { Panel, PAGE_BG } from '../components/PageArt'
+import { Card as SkCard, Btn, Chip, PAGE_BG } from '../components/PageArt'
 import { RewardChips } from '../components/Rewards'
 import { ACH_CATS } from '../services/progress'
 import type { Achievement, AchievementCat } from '../types/game'
@@ -18,19 +18,21 @@ function Card({ a, onClaim }: { a: Achievement; onClaim: (id: string) => void })
   const ready = a.progress >= a.target && !a.claimed
   const pct = Math.min(100, (a.progress / a.target) * 100)
   return (
-    <Panel name="pnl_card4" inner="ac-row" className={`ac-card${a.claimed ? ' ac-done' : ''}${ready ? ' q-ready' : ''}`}>
-      <span className={`ac-medal t${a.tier}${a.claimed || ready ? '' : ' ac-locked'}`}>
+    <SkCard className={`ui-row ac-card${a.claimed ? ' ac-done' : ''}${ready ? ' q-ready' : ''}`}>
+      <span data-slot="" className={`ui-slot ac-medal t${a.tier}${a.claimed || ready ? '' : ' ac-locked'}`}>
         <img src={medal(a.cat)} alt="" draggable={false} />
         <i>{TIER_NAME[a.tier]}</i>
       </span>
-      <span className="ac-main">
-        <b>{a.title}</b>
-        <small>{a.desc}</small>
+      <span className="ui-main">
+        <b className="ui-t">{a.title}</b>
+        <small className="ui-s">{a.desc}</small>
         {!a.claimed && <span className="q-prog"><span className="bar"><i style={{ width: `${pct}%` }} /></span><b>{a.progress.toLocaleString('en-US')}/{a.target.toLocaleString('en-US')}</b></span>}
       </span>
-      {ready ? <Panel name="btn_gold" className="q-cta" onClick={() => onClaim(a.id)}>Claim</Panel>
-        : a.claimed ? <span className="q-check">✓</span> : <span className="q-rw"><RewardChips reward={a.reward} size={15} /></span>}
-    </Panel>
+      <span className="ui-trail">
+        {ready ? <Btn name="btn_gold" onClick={() => onClaim(a.id)}>Claim</Btn>
+          : a.claimed ? <span className="q-check">✓</span> : <RewardChips reward={a.reward} size={16} />}
+      </span>
+    </SkCard>
   )
 }
 
@@ -57,12 +59,12 @@ export function AchievementsScreen({ onClose }: { onClose: () => void }) {
     <div className="screen pg ac-screen">
       <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
       <div className="pg-scroll ac-scroll">
-        <Panel name="pnl_card4" className="reveal" inner="pg-title">
+        <SkCard className="reveal pg-title">
           <button className="ac-back" onClick={onClose} aria-label="Back">‹</button>
-          <span className="pg-title-t">Achievements</span>
-          <Panel name="chip_violet" className="pg-chip">{done}/{achievements.length}</Panel>
-        </Panel>
-        {ready > 0 && <p className="pg-note ac-ready">{ready} reward{ready > 1 ? 's' : ''} ready to claim!</p>}
+          <h1 className="pg-title-t">Achievements</h1>
+          <Chip>{done}/{achievements.length}</Chip>
+        </SkCard>
+        {ready > 0 && <p className="ui-note ac-ready">{ready} reward{ready > 1 ? 's' : ''} ready to claim!</p>}
 
         <div className="ac-cats">
           <button className={cat === 'all' ? 'on' : ''} onClick={() => setCat('all')}>All</button>

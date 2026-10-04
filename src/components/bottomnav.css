@@ -2,7 +2,7 @@
    The active tab sits in a lit violet cradle that slides between tabs. */
 
 .bnav {
-  position: absolute; left: 10px; right: 10px;
+  position: absolute; left: var(--gutter); right: var(--gutter);
   bottom: calc(var(--safe-bottom) + 10px);
   z-index: 6;
   height: var(--nav-h);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { art, Panel } from './PageArt'
+import { art, Card, Btn } from './PageArt'
 import { skySrc } from './SkyIcon'
 import { CHEST_LABEL } from '../services/progress'
 import type { Reward, ChestKind } from '../types/game'
@@ -37,7 +37,7 @@ export function RewardPopup() {
           {r.chest && <RewardBig img={art(CHEST_ART[r.chest])} n="+1" label={CHEST_LABEL[r.chest]} />}
         </div>
         {r.chest && <p className="rw-note">Open it from your chests in the Shop or Quests.</p>}
-        <Panel name="btn_gold" className="rw-ok" onClick={clearToast}>Great!</Panel>
+        <Btn name="btn_gold" className="lg" onClick={clearToast}>Great!</Btn>
       </div>
     </div>
   )
@@ -63,11 +63,11 @@ export function ChestStrip() {
   return (
     <div className="ch-strip reveal">
       {owned.map((k) => (
-        <Panel key={k} name="card_square" inner="ch-card">
-          <img className={`ch-art${opening === k ? ' ch-shake' : ''}`} src={art(CHEST_ART[k])} alt="" draggable={false} />
-          <span className="ch-n">×{inventory.chests[k]}</span>
-          <Panel name="btn_gold" className="ch-open" onClick={() => open(k)} disabled={!!opening}>Open</Panel>
-        </Panel>
+        <Card key={k} name="card_square" className="sh-card">
+          <img className={`sh-card-art${opening === k ? ' ch-shake' : ''}`} src={art(CHEST_ART[k])} alt="" draggable={false} />
+          <span className="sh-card-n">×{inventory.chests[k]}</span>
+          <Btn name="btn_gold" className="sm" onClick={() => open(k)} disabled={!!opening}>Open</Btn>
+        </Card>
       ))}
     </div>
   )

@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { Panel, Art, art, PAGE_BG } from '../components/PageArt'
+import { Card, Btn, Slot, Art, art, PAGE_BG } from '../components/PageArt'
+import hero2d from '../assets/games/boss2/hero.webp'
 import { usePortrait } from '../components/Portrait'
 import { medal, TIER_NAME } from './AchievementsScreen'
 import type { CurrencyId } from '../types/game'
@@ -9,6 +11,7 @@ import '../components/progression.css'
 export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void; onAchievements: () => void }) {
   const { profile, worlds, currencies, achievements, inventory } = useGame()
   const portrait = usePortrait()
+  const hero = useHero3d()
   if (!profile) return <div className="screen pg" />
   const stars = worlds.reduce((a, w) => a + w.stages.reduce((b, s) => b + s.stars, 0), 0)
   const claimed = achievements.filter((a) => a.claimed)
@@ -22,34 +25,36 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
     <div className="screen pg">
       <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
       <div className="pg-scroll">
+        {/* the hero on the podium: live 3D when the wardrobe page loads, the painted hero until then (or if it can't) */}
         <div className="pf-stage reveal">
-          <iframe className="pf-char3d" src="/runecast-wardrobe/?embed=1" title="character" scrolling="no" />
           <Art name="podium" className="pf-podium" />
-          <Panel name="btn_edit" className="pf-edit" onClick={onCustomize}>Edit</Panel>
+          <img className={`pf-char${hero.ready ? ' off' : ''}`} src={hero2d} alt="" draggable={false} />
+          <iframe ref={hero.ref} className={`pf-char3d${hero.ready ? ' on' : ''}`} src="/runecast-wardrobe/?embed=1" title="character" scrolling="no" />
         </div>
 
-        <Panel name="pnl_card4" inner="pf-name">
-          <img className="pf-face" src={portrait} alt="" draggable={false} />
-          <span className="pf-name-t">{profile.name}<i className="pf-lvl">{profile.level}</i></span>
-        </Panel>
+        <Card className="ui-row pf-name">
+          <Slot className="pf-face-slot"><img className="pf-face" src={portrait} alt="" draggable={false} /></Slot>
+          <span className="pf-name-t"><span className="ui-t">{profile.name}</span><i className="pf-lvl">{profile.level}</i></span>
+          <span className="ui-trail"><Btn name="btn_edit" onClick={onCustomize}>Edit</Btn></span>
+        </Card>
 
         <div className="pf-stats">
-          <Panel name="card_stat" inner="pf-stat">
+          <Card name="card_stat" className="pf-stat">
             <img src={art('qi_flame')} alt="" draggable={false} />
             <b>{profile.streak}</b><span>{inventory?.freezes ? `Streak · ❄${inventory.freezes}` : 'Streak'}</span>
-          </Panel>
-          <Panel name="card_stat" inner="pf-stat">
+          </Card>
+          <Card name="card_stat" className="pf-stat">
             <img src={art('qi_star')} alt="" draggable={false} />
             <b>{stars}</b><span>Stars</span>
-          </Panel>
-          <Panel name="card_stat" inner="pf-stat">
+          </Card>
+          <Card name="card_stat" className="pf-stat">
             <img src={art('gem_s')} alt="" draggable={false} />
             <b>{currencies?.gems ?? 0}</b><span>Gems</span>
-          </Panel>
+          </Card>
         </div>
 
-        <Panel name="panel_wide" inner="pf-ach" onClick={onAchievements}>
-          <span className="pf-ach-t">Achievements <small>{claimed.length}/{achievements.length}</small>{ready > 0 && <em className="pf-ach-new">{ready} to claim</em>}</span>
+        <Card name="panel_wide" className="pf-ach" onClick={onAchievements}>
+          <span className="pf-ach-t"><b>Achievements</b><small>{claimed.length}/{achievements.length}</small>{ready > 0 && <em className="pf-ach-new">{ready} to claim</em>}</span>
           <div className="pf-ach-row">
             {shelf.map((a) => (
               <span key={a.id} className={`ac-medal sm t${a.tier}`} title={`${a.title} · ${TIER_NAME[a.tier]}`}><img src={medal(a.cat)} alt="" draggable={false} /></span>
@@ -57,8 +62,30 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
             {Array.from({ length: Math.max(0, 5 - shelf.length) }, (_, i) => <img key={i} src={art(i % 2 ? 'badge_lock2' : 'badge_lock1')} alt="" draggable={false} />)}
           </div>
           <span className="pf-ach-more">View all ›</span>
-        </Panel>
+        </Card>
       </div>
     </div>
   )
+}
+
+/** Watches the embedded 3D hero (same-origin /runecast-wardrobe/): ready once its loader is gone.
+ *  Offline or failed loads never become ready, so the painted hero stays on the podium. */
+function useHero3d() {
+  const ref = useRef<HTMLIFrameElement>(null)
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    let n = 0
+    const t = setInterval(() => {
+      n++
+      try {
+        const d = ref.current?.contentDocument
+        if (d && d.readyState === 'complete' && d.getElementById('c') && !d.getElementById('ld')) {
+          clearInterval(t); setTimeout(() => setReady(true), 400)   // a beat for the outfit to dress
+        }
+      } catch { /* error page: cross-origin, never ready */ }
+      if (n > 240) clearInterval(t)
+    }, 250)
+    return () => clearInterval(t)
+  }, [])
+  return { ref, ready }
 }

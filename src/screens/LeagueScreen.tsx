@@ -1,5 +1,5 @@
 import { useGame } from '../services/ServiceProvider'
-import { Panel, art, PAGE_BG, type ArtName } from '../components/PageArt'
+import { Card, Row, Btn, Chip, Slot, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import { RewardChips, useCountdown } from '../components/Rewards'
 import { usePortrait } from '../components/Portrait'
 import { leagueReward, TIERS } from '../services/progress'
@@ -40,7 +40,7 @@ export function LeagueScreen() {
         <div className="lg-hero reveal">
           <img className={`lg-trophy${league.tier === 'legend' ? ' lg-legend' : ''}`} src={art(TIER_ART[league.tier])} alt="" draggable={false} />
           <div className="lg-name">{LABEL[league.tier]} League</div>
-          <Panel name="chip_violet" className="pg-chip">Ends in {left.label}</Panel>
+          <Chip>Ends in {left.label}</Chip>
         </div>
 
         {/* the ladder: where you are and what's next */}
@@ -53,10 +53,10 @@ export function LeagueScreen() {
           ))}
         </div>
 
-        <Panel name="pnl_card4" inner="lg-how">
+        <Card className="lg-how">
           <span>Win stages to earn <b>XP</b>. When the week ends, the <b className="up">top 3</b> move up a league{league.demoteCount ? <>, the <b className="down">bottom 3</b> move down</> : null}.</span>
           {boost.ms > 0 && <span className="lg-boost">Double XP · {boost.label}</span>}
-        </Panel>
+        </Card>
 
         <div className="lg-list">
           {league.entries.map((e, i) => {
@@ -64,26 +64,22 @@ export function LeagueScreen() {
             const rw = leagueReward(i + 1)
             return (
               <div key={e.playerId}>
-                {i === league.promoteCount && league.promoteCount > 0 && <div className="lg-cut up">▲ Promotion zone</div>}
-                {i === n - league.demoteCount && <div className="lg-cut down">▼ Demotion zone</div>}
-                <div className={`lg-zone ${zone}`}>
-                  <Panel name={e.isMe ? 'pnl_row6v' : 'pnl_row6'} inner={`lg-row${e.isMe ? ' lg-row-me' : ''}`}>
-                    <span className="lg-rank">
-                      {i < 3 ? <><img src={art(DISC[i])} alt="" draggable={false} /><span>{i + 1}</span></> : i + 1}
-                    </span>
-                    <span className="lg-nm">
-                      {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className="lg-dot" style={{ background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
-                      {e.isMe ? 'You' : e.name}
-                      {i < 10 && Object.keys(rw).length > 0 && <span className="lg-rw"><RewardChips reward={rw} size={13} /></span>}
-                    </span>
-                    <span className="lg-lp">{e.lp.toLocaleString('en-US')} XP</span>
-                  </Panel>
-                </div>
+                {i === league.promoteCount && league.promoteCount > 0 && <div className="lg-cut up"><span>▲ Promotion zone</span></div>}
+                {i === n - league.demoteCount && <div className="lg-cut down"><span>▼ Demotion zone</span></div>}
+                <Row name={e.isMe ? 'pnl_row6v' : 'pnl_row6'} className={`lg-row ${zone}${e.isMe ? ' lg-row-me' : ''}`}>
+                  <Slot src={i < 3 ? art(DISC[i]) : undefined} className="lg-rank"><span>{i + 1}</span></Slot>
+                  <span className="lg-nm">
+                    {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className="lg-dot" style={{ background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
+                    <span className="lg-nm-t">{e.isMe ? 'You' : e.name}</span>
+                    {i < 10 && Object.keys(rw).length > 0 && <span className="lg-rw"><RewardChips reward={rw} size={14} /></span>}
+                  </span>
+                  <span className="ui-trail lg-lp">{e.lp.toLocaleString('en-US')} XP</span>
+                </Row>
               </div>
             )
           })}
         </div>
-        <p className="pg-note">You are #{myRank}. Rewards are paid when the week ends.</p>
+        <p className="ui-note">You are #{myRank}. Rewards are paid when the week ends.</p>
       </div>
 
       {last && (
@@ -94,7 +90,7 @@ export function LeagueScreen() {
             <img className="lg-result-art" src={art(TIER_ART[TIERS[TIERS.indexOf(last.tier) + last.moved]])} alt="" />
             <p className="rw-note">{last.moved > 0 ? `Promoted to ${LABEL[TIERS[TIERS.indexOf(last.tier) + 1]]}!` : last.moved < 0 ? `Moved down to ${LABEL[TIERS[TIERS.indexOf(last.tier) - 1]]}. You'll climb back!` : `You stay in ${LABEL[last.tier]}.`}</p>
             {Object.keys(last.reward).length > 0 && <RewardChips reward={last.reward} size={22} />}
-            <Panel name="btn_gold" className="rw-ok" onClick={collect}>{Object.keys(last.reward).length ? 'Collect' : 'OK'}</Panel>
+            <Btn name="btn_gold" className="lg" onClick={collect}>{Object.keys(last.reward).length ? 'Collect' : 'OK'}</Btn>
           </div>
         </div>
       )}

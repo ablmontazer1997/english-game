@@ -1,0 +1,98 @@
+/* Layout standard: painted skins + list/row/button primitives.
+
+   The painted panels (white card, pill row, green/gold buttons, violet chip) are
+   drawn with border-image 9-slicing instead of one stretched/aspect-locked
+   picture, so a card is exactly as tall as its content and a button is exactly
+   as wide as its label. Corners and the highlight arcs keep their painted shape;
+   only the flat middle stretches. All sizes come from the tokens in tokens.css. */
+
+/* ---------- skins ---------- */
+.sk { border: 0 solid transparent; background: none; position: relative; box-sizing: border-box; }
+/* rounded cards (corner widths = painted slice x ~0.42, so the radius matches the old art) */
+.sk-card   { border-image: url(../assets/pages/pnl_card4.png) 60 60 64 60 fill / 25px 25px 27px 25px; }
+.sk-wide   { border-image: url(../assets/pages/panel_wide.png) 46 46 50 46 fill / 28px 28px 30px 28px; }
+.sk-stat   { border-image: url(../assets/pages/card_stat.png) 66 66 72 66 fill / 23px 23px 25px 23px; }
+.sk-square { border-image: url(../assets/pages/card_square.png) 64 64 70 64 fill / 23px 23px 25px 23px; }
+.sk-banner { border-image: url(../assets/pages/panel_banner.png) 54 54 58 54 fill / 24px 24px 26px 24px; }
+/* pills: the round caps are half the height (--r), the middle stretches */
+.sk-row, .sk-row-me, .sk-green, .sk-gold, .sk-edit, .sk-chip, .sk-pill32 { --r: calc(var(--h, var(--row-h)) / 2); }
+.sk-row    { border-image: url(../assets/pages/pnl_row6.png) 92 fill / 50% var(--r); }
+.sk-row-me { border-image: url(../assets/pages/pnl_row6v.png) 93 fill / 50% var(--r); }
+.sk-green  { border-image: url(../assets/pages/btn_green.png) 75 fill / 50% var(--r); }
+.sk-gold   { border-image: url(../assets/pages/btn_gold.png) 87 fill / 50% var(--r); }
+.sk-edit   { border-image: url(../assets/pages/btn_edit.png) 97 fill / 50% var(--r); }
+.sk-chip   { border-image: url(../assets/pages/chip_violet.png) 87 fill / 50% var(--r); }
+.sk-pill32 { border-image: url(../assets/pages/pnl_pill32.png) 87 fill / 50% var(--r); }
+
+/* card: content padding is measured from the painted face, not from the transparent margin */
+.ui-card {
+  display: block; width: 100%; text-align: left;
+  padding: calc(var(--skin-in) + var(--pad)) calc(var(--skin-in) + var(--pad))
+           calc(var(--skin-lip) + var(--pad));
+  filter: drop-shadow(0 5px 12px rgba(20, 60, 110, .18));
+}
+button.ui-card { cursor: pointer; font: inherit; color: inherit; }
+
+/* ---------- list row: [icon slot][title/subtitle][trailing action] ---------- */
+.ui-row {
+  display: grid; grid-template-columns: var(--slot) minmax(0, 1fr) var(--trail);
+  align-items: center; column-gap: var(--pad);
+}
+/* pill-shaped row: fixed height so the round caps stay round */
+.ui-row.pillrow {
+  --h: var(--row-h); height: var(--h); min-height: var(--h);
+  padding: var(--skin-in) calc(var(--skin-in) + var(--pad)) var(--skin-lip) calc(var(--skin-in) + var(--pad));
+}
+.ui-slot { position: relative; display: block; flex: none; width: var(--slot); height: var(--slot); }
+.ui-slot > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: drop-shadow(0 2px 4px rgba(40, 60, 120, .25)); }
+.ui-main { min-width: 0; display: grid; gap: 4px; align-content: center; text-align: left; }
+.ui-t { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 800; color: var(--ink-d);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.ui-s { font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: 700; color: var(--ink-l);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+/* in a card row the title may take two lines rather than being cut */
+.ui-card.ui-row .ui-t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.ui-trail { display: flex; align-items: center; justify-content: center; min-width: 0; }
+
+/* ---------- buttons: fixed height, label + inline icon, vertically centred ---------- */
+.ui-btn {
+  --h: var(--btn-h);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--btn-ic-gap);
+  height: var(--h); min-width: 72px; padding: 0 var(--btn-px) 2px;   /* 2px: the painted lip under the face */
+  font-family: var(--sans); font-size: var(--fs-body); line-height: 1; font-weight: 900; color: #fff;
+  white-space: nowrap; cursor: pointer;
+  transition: transform 120ms var(--ease-magic, ease-out);
+}
+.ui-btn.lg { --h: var(--btn-h-lg); min-width: 120px; padding: 0 24px 3px; font-size: 15px; }
+.ui-btn.sm { --h: 32px; min-width: 64px; padding: 0 12px 2px; font-size: var(--fs-caption); }
+.ui-btn img { width: var(--btn-ic); height: var(--btn-ic); object-fit: contain; display: block; flex: none; }
+.ui-btn:not(:disabled):active { transform: scale(.95); }
+.ui-btn:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
+.ui-btn.sk-green { text-shadow: 0 1px 3px rgba(20, 90, 20, .5); }
+.ui-btn.sk-gold, .ui-btn.sk-edit { text-shadow: 0 1px 3px rgba(120, 70, 0, .45); }
+
+/* violet chip (timers, counters) */
+.ui-chip {
+  --h: 28px; display: inline-flex; align-items: center; justify-content: center; gap: var(--btn-ic-gap);
+  height: var(--h); padding: 0 12px 1px; white-space: nowrap;
+  font-size: var(--fs-caption); line-height: 1; font-weight: 800; color: #fff;
+  text-shadow: 0 1px 3px rgba(60, 20, 140, .5);
+}
+
+/* ---------- section header, aligned to the painted card edge ---------- */
+.ui-h {
+  margin: calc(var(--gap-section) - var(--gap)) 0 0; padding: 0 var(--skin-in);
+  font-size: var(--fs-title); line-height: var(--lh-title); font-weight: 900; color: #fff;
+  text-shadow: 0 1px 2px rgba(20, 40, 100, .6), 0 2px 8px rgba(20, 40, 100, .45);
+  display: flex; align-items: center; gap: 8px;
+}
+.ui-h::after { content: ''; flex: 1; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, .5); }
+
+/* ---------- text drawn on painted art: always on a scrim ---------- */
+.ui-note {
+  margin: 0; padding: 8px 12px; border-radius: 12px;
+  background: var(--scrim); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: 700; color: #fff;
+  text-align: center; text-shadow: none;
+}

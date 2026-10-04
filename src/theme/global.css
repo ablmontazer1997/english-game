@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './buttons.css';
+@import './layout.css';
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body, #root { height: 100%; }
