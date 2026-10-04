@@ -48,7 +48,7 @@ interface Drag {
   hotKey: string | null
 }
 
-export function MatchBlitz({ items, onFinish }: MiniGameProps) {
+export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
   // Shuffle all items once, then split into consecutive boards so every pair
   // gets attempted; the right column is shuffled again per board.
   const boards = useMemo<SrsItem[][]>(
@@ -298,6 +298,7 @@ export function MatchBlitz({ items, onFinish }: MiniGameProps) {
     if (tgt.dataset.pid === String(d.pid)) {
       // Correct pair.
       const pid = d.pid
+      if (current[pid]) onAnswer?.(current[pid].id, current[pid].back, true)
       const L = d.side === 'L' ? d.cardEl : tgt
       const R = d.side === 'L' ? tgt : d.cardEl
       drawPair(L, R, true)
@@ -311,7 +312,9 @@ export function MatchBlitz({ items, onFinish }: MiniGameProps) {
       setMatchedPids(next)
       if (next.size === current.length) boardCleared()
     } else {
-      // Wrong pair: shake red, break the streak.
+      // Wrong pair: shake red, break the streak (the dragged card's item is answered wrong)
+      const tp = Number(tgt.dataset.pid)
+      if (current[d.pid] && current[tp]) onAnswer?.(current[d.pid].id, current[tp].back, false)
       const k1 = `${d.side}${d.pid}`
       const k2 = `${tgt.dataset.side}${tgt.dataset.pid}`
       setWrongKeys([k1, k2])

@@ -13,6 +13,7 @@ import { ProfileScreen } from './screens/ProfileScreen'
 import { ShopSheet } from './screens/ShopSheet'
 import { ShopScreen } from './screens/ShopScreen'
 import { StageScreen } from './screens/StageScreen'
+import { ServerStage } from './screens/ServerStage'
 import { CharacterScreen } from './screens/CharacterScreen'
 import { WardrobeScreen } from './screens/WardrobeScreen'
 import { AchievementsScreen } from './screens/AchievementsScreen'
@@ -22,7 +23,7 @@ import { setMusic as playMusic } from './services/audio'
 import type { CurrencyId, Stage, MiniGameId } from './types/game'
 
 export function App() {
-  const { ready, quests, achievements, error, refresh } = useGame()
+  const { ready, quests, achievements, error, refresh, mode } = useGame()
   const initialTab = (typeof location !== 'undefined'
     ? (new URLSearchParams(location.search).get('tab') as Tab | null) : null) || 'map'
   const [tab, setTab] = useState<Tab>(initialTab)
@@ -72,7 +73,9 @@ export function App() {
           <AchievementsScreen onClose={() => setAchOpen(false)} />
         </>
       ) : playing ? (
-        <StageScreen stage={playing} onExit={() => setPlaying(null)} onNeedHearts={() => setShop('hearts')} />
+        mode === 'http'
+          ? <ServerStage stage={playing} onExit={() => setPlaying(null)} onNeedHearts={() => setShop('hearts')} />
+          : <StageScreen stage={playing} onExit={() => setPlaying(null)} onNeedHearts={() => setShop('hearts')} />
       ) : (
         <>
           <HUD onBuy={setShop} onSettings={() => setSettings(true)} />
@@ -136,7 +139,7 @@ function SettingsBody() {
   const [music, setMusic] = useState(() => load('music', true))
   const [motion, setMotion] = useState(() => load('motion', false))
   const set = (k: string, sv: (v: boolean) => void) => (v: boolean) => { sv(v); save(k, v) }
-  const reset = () => { try { ['runecast.save.v1', 'es.api.token', 'es.api.device', 'es.ach.claimed', 'es.review.day'].forEach((k) => localStorage.removeItem(k)) } catch {} location.reload() }
+  const reset = () => { try { [...(new URLSearchParams(location.search).has('mock') ? ['runecast.save.v1'] : []), 'es.map.seen.v2', 'es.api.token', 'es.api.device', 'es.ach.claimed', 'es.review.day'].forEach((k) => localStorage.removeItem(k)) } catch {} location.reload() }
   return (
     <div>
       <Toggle label="Sound effects" icon={icSound} on={sound} onChange={set('sound', setSound)} />

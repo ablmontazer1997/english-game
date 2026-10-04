@@ -30,9 +30,10 @@ function shuffle<T>(a: T[]): T[] {
   return b
 }
 
-export function RuneOrder({ onFinish }: MiniGameProps) {
+export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
+  const sents = useMemo(() => srv ? srv.map((q) => String(q.payload.text ?? '').trim()) : SENTENCES, [srv])
   const [round, setRound] = useState(0)
-  const words = useMemo(() => SENTENCES[round].split(' '), [round])
+  const words = useMemo(() => sents[round].split(' '), [round])
   const tiles = useMemo<Tile[]>(() => {
     let t = shuffle(words.map((word, id) => ({ id, word })))
     while (t.every((x, i) => x.id === i)) t = shuffle(t) // never hand over the answer
@@ -61,12 +62,13 @@ export function RuneOrder({ onFinish }: MiniGameProps) {
   function cast() {
     if (placed.length !== words.length || state !== 'play') return
     const sentence = placed.map((id) => tiles.find((t) => t.id === id)!.word).join(' ')
-    const ok = sentence === SENTENCES[round]
+    const ok = sentence === sents[round]
+    if (srv?.[round]) onAnswer?.(srv[round].qid, sentence, ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
       right.current++; combo.current.now++; combo.current.max = Math.max(combo.current.max, combo.current.now)
       setTimeout(() => {
-        if (round + 1 >= SENTENCES.length) onFinish({ correct: right.current, total: SENTENCES.length, maxCombo: combo.current.max })
+        if (round + 1 >= sents.length) onFinish({ correct: right.current, total: sents.length, maxCombo: combo.current.max })
         else setRound(round + 1)
       }, OK_MS)
     } else {
@@ -81,7 +83,7 @@ export function RuneOrder({ onFinish }: MiniGameProps) {
   return (
     <div className={`ro ro-${state}`}>
       <img className="ro-plate" src={bgPlate} alt="" draggable={false} />
-      <GameTitle title="Rune Order" count={`Spell ${round + 1} / ${SENTENCES.length}`} />
+      <GameTitle title="Rune Order" count={`Spell ${round + 1} / ${sents.length}`} />
 
       <div className="ro-gate" aria-hidden>
         <span className="ro-gate-glow" />

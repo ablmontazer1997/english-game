@@ -5,7 +5,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { VISIONS } from './banks/crystal'
-import { hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import bgPlate from '../assets/games/crystal/cr_bg.webp'
 import './scene.css'
 import './crystalball.css'
@@ -17,9 +17,10 @@ import './crystalball.css'
 const VISIONS_PER_STAGE = 2
 const RATE = [0.85, 0.9, 0.95, 1, 1.05]
 
-export function CrystalBall({ onFinish, level }: MiniGameProps) {
+export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const visions = useMemo(() => pick(VISIONS[lv], VISIONS_PER_STAGE), [lv])
+  const visions = useMemo(() => fromSrv(srv, () => pick(VISIONS[lv], VISIONS_PER_STAGE)), [lv, srv])
+  const chosen = useRef<string[]>([])
   const total = visions.reduce((n, v) => n + v.questions.length, 0)
   const [vi, setVi] = useState(0)
   const v = visions[vi]
@@ -51,7 +52,7 @@ export function CrystalBall({ onFinish, level }: MiniGameProps) {
   const stop = () => { playId.current++; hush(); setLine(-1) }
 
   useEffect(() => {
-    setQi(-1); setHeard(false); setPicked(null); setGone([])
+    setQi(-1); setHeard(false); setPicked(null); setGone([]); chosen.current = []
     const t = setTimeout(play, 700)
     return () => { clearTimeout(t); stop() }
   }, [vi]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -69,6 +70,11 @@ export function CrystalBall({ onFinish, level }: MiniGameProps) {
   function choose(o: string, el?: Element) {
     if (!q || picked) return
     setPicked(o)
+    chosen.current[qi] = o
+    if (qi + 1 >= v.questions.length && v._qid) {
+      const right = v.questions.filter((x, i) => chosen.current[i] === x.answer).length
+      onAnswer?.(v._qid, v.questions.map((_, i) => chosen.current[i] ?? ''), right >= Math.max(1, v.questions.length - 1))
+    }
     if (o === q.answer) { score.hit(); burst(el, { color: ['#ffe27a', '#8fe56a', '#ffffff'], n: 14, dist: 70 }) }
     else { score.miss(); shake(el) }
     setTimeout(() => {

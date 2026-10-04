@@ -47,7 +47,7 @@ function buildDeck(items: SrsItem[]): Card[] {
 // Memory Crystals — a concentration game. Each SRS item becomes two face-down
 // crystal tiles (english word + its Persian meaning); flip two, and a shared
 // item.id locks them face-up with a gold glow. A wrong flip breaks the combo.
-export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
+export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
   const deck = useMemo(() => buildDeck(items), [items])
   const pairCount = Math.min(items.length, MAX_PAIRS)
 
@@ -111,6 +111,8 @@ export function MemoryCrystals({ items, onFinish }: MiniGameProps) {
     const a = deck.find((c) => c.key === aKey)!
     const b = deck.find((c) => c.key === bKey)!
 
+    const it = items.find((x) => x.id === a.pairId)
+    if (it) onAnswer?.(it.id, a.pairId === b.pairId ? it.back : (a.face === 'back' ? a.text : b.text), a.pairId === b.pairId)
     if (a.pairId === b.pairId) {
       const nextMatched = new Set(matched)
       nextMatched.add(a.pairId)

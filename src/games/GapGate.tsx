@@ -24,7 +24,7 @@ interface Option {
   correct: boolean
 }
 
-export function GapGate({ items, onFinish }: MiniGameProps) {
+export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
   const [idx, setIdx] = useState(0)
   const [, setCorrect] = useState(0)
   const [combo, setCombo] = useState(0)
@@ -108,6 +108,7 @@ export function GapGate({ items, onFinish }: MiniGameProps) {
     if (locked || !item) return
     setLocked(true)
     setChosen(o)
+    onAnswer?.(item.id, o.text, o.correct)
     if (o.correct) {
       correctRef.current += 1
       comboRef.current += 1

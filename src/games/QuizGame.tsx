@@ -9,7 +9,7 @@ function shuffle<T>(a: T[]): T[] {
 
 // The classic 4-option meaning quiz. Also the fallback for any mini-game not yet
 // given its own implementation.
-export function QuizGame({ items, onFinish }: MiniGameProps) {
+export function QuizGame({ items, onFinish, onAnswer }: MiniGameProps) {
   const [idx, setIdx] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [combo, setCombo] = useState(0)
@@ -23,6 +23,7 @@ export function QuizGame({ items, onFinish }: MiniGameProps) {
     if (picked || !item) return
     setPicked(opt)
     const ok = opt === item.back
+    onAnswer?.(item.id, opt, ok)
     const nextCorrect = ok ? correct + 1 : correct
     if (ok) { setCorrect(nextCorrect); setCombo((c) => { const n = c + 1; setMaxCombo((m) => Math.max(m, n)); return n }) }
     else setCombo(0)

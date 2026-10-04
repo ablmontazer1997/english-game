@@ -4,7 +4,7 @@ import { burst, pop } from './fx'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { RUNE_WORDS } from './banks/runetype'
-import { hush, levelOf, makeScore, pick, speak } from './kit'
+import { fromSrv, hush, levelOf, makeScore, pick, speak } from './kit'
 import bgPlate from '../assets/games/runetype/rt_bg.webp'
 import './scene.css'
 import './runetype.css'
@@ -17,9 +17,9 @@ const ROUNDS = 6
 const TRIES = 3
 const ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
-export function RuneType({ onFinish, level }: MiniGameProps) {
+export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const words = useMemo(() => pick(RUNE_WORDS[lv], ROUNDS), [lv])
+  const words = useMemo(() => fromSrv(srv, () => pick(RUNE_WORDS[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const w = words[round]
   const [typed, setTyped] = useState('')
@@ -37,6 +37,7 @@ export function RuneType({ onFinish, level }: MiniGameProps) {
   const next = () => { if (round + 1 >= words.length) onFinish(score.out(words.length)); else setRound(round + 1) }
 
   function check(s: string) {
+    if (w._qid) onAnswer?.(w._qid, s, s === w.word)
     if (s === w.word) { score.hit(); setState('ok'); speak(w.word); document.querySelectorAll('.rt-slot').forEach((el, i) => setTimeout(() => burst(el, { color: ['#8fe56a', '#ffe27a', '#ffffff'], n: 7, dist: 38, size: 7 }), 60 * i)); setTimeout(next, 1300); return }
     const wrong = [...s].map((c, i) => (c !== w.word[i] ? i : -1)).filter((i) => i >= 0)
     setBad(wrong); setState('bad')

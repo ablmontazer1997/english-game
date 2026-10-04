@@ -16,7 +16,7 @@ import './oracletrial.css'
 // The scene is layered (plate / oracle / pedestal / orb / sparks) so the orb and
 // the oracle can react instead of being a flat picture.
 
-const TOTAL = 12
+const TOTAL_PLACEMENT = 12
 const START_LEVEL = 1 // A2
 const REACT_MS = 1100
 
@@ -43,8 +43,14 @@ function estimate(log: { level: number; ok: boolean }[]): number {
   return best
 }
 
-export function OracleTrial({ onFinish }: MiniGameProps) {
-  const [level, setLevel] = useState(START_LEVEL)
+export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGameProps) {
+  // server mode: the stage's own questions in order, no adaptive placement
+  const srvQs = useMemo<OracleQ[] | null>(() => srv ? srv.map((x) => ({
+    id: x.qid, level: Math.max(0, LEVELS.indexOf(x.level as typeof LEVELS[number])), skill: x.payload.skill ?? 'Grammar',
+    prompt: x.payload.prompt, answer: x.payload.answer, wrong: x.payload.wrong ?? [],
+  })) : null, [srv])
+  const TOTAL = srvQs ? srvQs.length : TOTAL_PLACEMENT
+  const [level, setLevel] = useState(srvQs ? Math.max(0, Math.min(4, lvProp ?? 0)) : START_LEVEL)
   const [n, setN] = useState(0)
   const [q, setQ] = useState<OracleQ | null>(null)
   const [pick, setPick] = useState<string | null>(null)
@@ -99,7 +105,8 @@ export function OracleTrial({ onFinish }: MiniGameProps) {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  const nextQ = (lv: number) => {
+  const nextQ = (lv: number, idx = 0) => {
+    if (srvQs) { setQ(srvQs[idx] ?? null); setPick(null); setVerdict(null); return }
     const pool = ORACLE_BANK.filter((x) => x.level === lv && !used.current.has(x.id))
     const src = pool.length ? pool : ORACLE_BANK.filter((x) => !used.current.has(x.id))
     const next = src[(Math.random() * src.length) | 0]
@@ -113,6 +120,7 @@ export function OracleTrial({ onFinish }: MiniGameProps) {
   function check() {
     if (!q || !pick || verdict) return
     const ok = pick === q.answer
+    onAnswer?.(q.id, pick, ok)
     log.current.push({ level: q.level, ok })
     setVerdict(ok ? 'ok' : 'bad')
     setMood(ok ? 'happy' : 'surprised')
@@ -123,26 +131,29 @@ export function OracleTrial({ onFinish }: MiniGameProps) {
       combo.current.now = 0
       burst(265, 14, 1.2)
     }
-    const nl = Math.max(0, Math.min(LEVELS.length - 1, level + (ok ? 1 : -1)))
+    const nl = srvQs ? level : Math.max(0, Math.min(LEVELS.length - 1, level + (ok ? 1 : -1)))
     setTimeout(() => {
       setMood('idle')
       const nn = n + 1
+      if (nn >= TOTAL && srvQs) { finish(); return }
       if (nn >= TOTAL) {
         const est = estimate(log.current)
         setDone(est); burst(45, 90, 4.5)
         return
       }
-      setN(nn); setLevel(nl); nextQ(nl)
+      setN(nn); setLevel(nl); nextQ(nl, nn)
     }, REACT_MS)
   }
 
   function skip() {
     if (!q || verdict) return
     log.current.push({ level: q.level, ok: false })
-    const nl = Math.max(0, level - 1)
+    onAnswer?.(q.id, '', false)
+    const nl = srvQs ? level : Math.max(0, level - 1)
     const nn = n + 1
+    if (nn >= TOTAL && srvQs) { finish(); return }
     if (nn >= TOTAL) { setDone(estimate(log.current)); return }
-    setN(nn); setLevel(nl); nextQ(nl)
+    setN(nn); setLevel(nl); nextQ(nl, nn)
   }
 
   const finish = () => {
@@ -158,7 +169,7 @@ export function OracleTrial({ onFinish }: MiniGameProps) {
       <img className="ot-plate" src={bgPlate} alt="" draggable={false} />
 
       <div className="ot-head">
-        <div className="ot-ribbon"><img src={ribbon} alt="" draggable={false} /><span>Oracle Trial</span></div>
+        <div className="ot-ribbon"><img src={ribbon} alt="" draggable={false} /><span>{srvQs ? 'Oracle' : 'Oracle Trial'}</span></div>
         <div className="ot-count">{done != null ? 'Complete' : `Question ${n + 1} / ${TOTAL}`}</div>
         <div className="ot-gauge" aria-label={`Level ${LEVELS[shownLevel]}`}>
           <div className="ot-rail">

@@ -44,7 +44,7 @@ interface Phys { x: number; y: number; vx: number; vy: number; ph: number; r: nu
 // an ambient rising bubble
 interface Amb { el: HTMLDivElement; x: number; y: number; r: number; vy: number; ph: number; amp: number; sway: number }
 
-export function BubblePop({ items, onFinish }: MiniGameProps) {
+export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
   const [idx, setIdx] = useState(0)
   const [score, setScore] = useState(0)
   const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS)
@@ -223,6 +223,7 @@ export function BubblePop({ items, onFinish }: MiniGameProps) {
     const pp = phys.current[b.key]
     if (pp) burst(b, pp, px, py)
     setGone((g) => new Set(g).add(b.key))
+    if (item) onAnswer?.(item.id, b.text, !!b.correct)
 
     if (b.correct) {
       lockedRef.current = true
@@ -236,7 +237,7 @@ export function BubblePop({ items, onFinish }: MiniGameProps) {
       comboRef.current = 0
       showFb(false)
     }
-  }, [gone, burst, showFb, later, advance])
+  }, [gone, burst, showFb, later, advance, item, onAnswer])
 
   // hit-test the canvas against the live orbs (topmost first)
   const onCanvasDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {

@@ -65,7 +65,7 @@ function shuffle<T>(a: T[]): T[] {
   return b
 }
 
-export function BossBattle({ items, onFinish }: MiniGameProps) {
+export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
   const total = items.length
   const [idx, setIdx] = useState(0)
   const [picked, setPicked] = useState<{ i: number; ok: boolean } | null>(null)
@@ -280,6 +280,7 @@ export function BossBattle({ items, onFinish }: MiniGameProps) {
   const pick = (i: number, ok: boolean) => {
     if (r.current.busy || r.current.done || !round) return
     r.current.busy = true
+    onAnswer?.(round.item.id, round.opts[i], ok)
     setPicked({ i, ok })
     if (ok) {
       r.current.combo += 1; r.current.maxCombo = Math.max(r.current.maxCombo, r.current.combo)
@@ -358,7 +359,7 @@ export function BossBattle({ items, onFinish }: MiniGameProps) {
         <div className="gs-ui bb2-bottom" ref={bottomEl}>
           <div className="gs-panel bb2-q">
             <span className="bb2-gem" aria-hidden />
-            <p>Choose the meaning of: <b>{round.item.front}</b></p>
+            <p>{round.item.ask ? <>{round.item.ask} <b>{round.item.front}</b></> : <>Choose the meaning of: <b>{round.item.front}</b></>}</p>
             <span className="gt-count">Question {idx + 1} / {total}</span>
           </div>
           <div className="bb2-opts">

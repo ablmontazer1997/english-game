@@ -3,7 +3,7 @@ import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { POTIONS } from './banks/potion'
-import { levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/potion/pm_bg.webp'
 import b1 from '../assets/games/potion/pm_bottle1.webp'
@@ -76,9 +76,9 @@ function PourFx({ f }: { f: Fly }) {
   )
 }
 
-export function PotionMix({ onFinish, level }: MiniGameProps) {
+export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const recipes = useMemo(() => pick(POTIONS[lv], ROUNDS), [lv])
+  const recipes = useMemo(() => fromSrv(srv, () => pick(POTIONS[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const r = recipes[round]
   const shelf = useMemo(() => shuffle([...r.parts, ...r.extra].map((t, id) => ({ id, t }))), [r])
@@ -119,6 +119,7 @@ export function PotionMix({ onFinish, level }: MiniGameProps) {
   function brew() {
     if (state !== 'play' || fly || !poured.length) return
     const ok = poured.length === r.parts.length && poured.every((id, i) => text(id) === r.parts[i])
+    if (r._qid) onAnswer?.(r._qid, ok ? r.answer : poured.map(text).join(''), ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
       score.hit(); sfx('brew'); speak(r.answer)

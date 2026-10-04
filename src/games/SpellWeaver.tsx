@@ -5,7 +5,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { SPELLS } from './banks/weave'
-import { levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/weave/sw_bg.webp'
 import tileRope from '../assets/games/weave/sw_tile_rope.webp'
@@ -19,9 +19,9 @@ import './spellweaver.css'
 
 const ROUNDS = 5
 
-export function SpellWeaver({ onFinish, level }: MiniGameProps) {
+export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const spells = useMemo(() => pick(SPELLS[lv], ROUNDS), [lv])
+  const spells = useMemo(() => fromSrv(srv, () => pick(SPELLS[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const s = spells[round]
   const tiles = useMemo(() => shuffle([...s.answer, ...s.extra].map((t, id) => ({ id, t }))), [s])
@@ -53,6 +53,7 @@ export function SpellWeaver({ onFinish, level }: MiniGameProps) {
   function weave() {
     if (state !== 'play' || woven.length !== s.answer.length) return
     const ok = woven.every((id, i) => text(id) === s.answer[i])
+    if (s._qid) onAnswer?.(s._qid, woven.map(text), ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
       score.hit(); sfx('spell'); speak(s.answer.join(' '))

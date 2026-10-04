@@ -5,7 +5,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { CURSES } from './banks/curse'
-import { levelOf, makeScore, pick, shuffle } from './kit'
+import { fromSrv, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/curse/cb_bg.webp'
 import mirrorClean from '../assets/games/curse/cb_mirror_clean.webp'
@@ -19,9 +19,9 @@ import './cursebreaker.css'
 const ROUNDS = 6
 const MISS_LIMIT = 2
 
-export function CurseBreaker({ onFinish, level }: MiniGameProps) {
+export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const lines = useMemo(() => pick(CURSES[lv], ROUNDS), [lv])
+  const lines = useMemo(() => fromSrv(srv, () => pick(CURSES[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const c = lines[round]
   const tokens = useMemo(() => c.text.split(' '), [c])
@@ -51,12 +51,13 @@ export function CurseBreaker({ onFinish, level }: MiniGameProps) {
     burst(el, { color: '#b9b2cc', n: 6, dist: 30, size: 7 })
     const m = [...misses, i]
     setMisses(m)
-    if (m.length >= MISS_LIMIT) { setFound(true); lose() }
+    if (m.length >= MISS_LIMIT) { setFound(true); if (c._qid) onAnswer?.(c._qid, { bad: i, fix: '' }, false); lose() }
   }
 
   function choose(f: string, btn?: Element) {
     if (state !== 'fix' || picked) return
     setPicked(f)
+    if (c._qid) onAnswer?.(c._qid, { bad: c.bad, fix: f }, f === c.fix && !misses.length)
     const word = document.querySelector(`.cbk [data-w="${c.bad}"]`)
     if (f === c.fix) {
       // the spell flies onto the cursed word and breaks it in a shower of light

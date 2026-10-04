@@ -5,7 +5,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { ECHO } from './banks/echo'
-import { canListen, hush, levelOf, listen, makeScore, norm, pick, speak } from './kit'
+import { fromSrv, canListen, hush, levelOf, listen, makeScore, norm, pick, speak } from './kit'
 import bgPlate from '../assets/games/echo/ec_bg.webp'
 import wisp from '../assets/games/echo/ec_wisp.webp'
 import wispHappy from '../assets/games/echo/ec_wisp_happy.webp'
@@ -34,9 +34,9 @@ function heardWords(target: string[], said: string): boolean[] {
   })
 }
 
-export function EchoCave({ onFinish, level }: MiniGameProps) {
+export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const lines = useMemo(() => pick(ECHO[lv], ROUNDS), [lv])
+  const lines = useMemo(() => fromSrv(srv, () => pick(ECHO[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const line = lines[round]
   const words = useMemo(() => norm(line.text).split(' '), [line])
@@ -79,8 +79,10 @@ export function EchoCave({ onFinish, level }: MiniGameProps) {
     setLit(best)
     const ratio = best.filter(Boolean).length / words.length
     if (ratio >= PASS) {
+      if (line._qid) onAnswer?.(line._qid, said[0] ?? '', true)
       score.hit(); setState('ok'); setTimeout(next, 1400)
     } else if (tries + 1 >= TRIES) {
+      if (line._qid) onAnswer?.(line._qid, said[0] ?? '', false)
       score.miss(); setState('bad'); setNote(`It was: "${line.text}"`)
       setTimeout(next, 2400)
     } else {

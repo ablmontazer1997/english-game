@@ -41,9 +41,10 @@ function speak(text: string, rate: number, onState: (on: boolean) => void) {
   } catch { onState(false) }
 }
 
-export function WhisperScroll({ onFinish }: MiniGameProps) {
+export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
+  const lines = useMemo<Line[]>(() => srv ? srv.map((q) => ({ text: String(q.payload.text ?? ''), gaps: q.payload.gaps ?? [], extra: q.payload.extra ?? [] })) : LINES, [srv])
   const [round, setRound] = useState(0)
-  const line = LINES[round]
+  const line = lines[round]
   const words = useMemo(() => line.text.split(' '), [line])
   const options = useMemo(() => shuffle([...line.gaps.map((g) => words[g]), ...line.extra]), [line, words])
   const [fill, setFill] = useState<string[]>([])
@@ -74,11 +75,12 @@ export function WhisperScroll({ onFinish }: MiniGameProps) {
   function check() {
     if (fill.length !== line.gaps.length || state !== 'play') return
     const ok = line.gaps.every((g, i) => words[g] === fill[i])
+    if (srv?.[round]) onAnswer?.(srv[round].qid, fill, ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
       right.current++; combo.current.now++; combo.current.max = Math.max(combo.current.max, combo.current.now)
       setTimeout(() => {
-        if (round + 1 >= LINES.length) onFinish({ correct: right.current, total: LINES.length, maxCombo: combo.current.max })
+        if (round + 1 >= lines.length) onFinish({ correct: right.current, total: lines.length, maxCombo: combo.current.max })
         else setRound(round + 1)
       }, OK_MS)
     } else {
@@ -91,7 +93,7 @@ export function WhisperScroll({ onFinish }: MiniGameProps) {
   return (
     <div className={`ws ws-${state}${talking ? ' ws-talking' : ''}`}>
       <img className="ws-plate" src={bgPlate} alt="" draggable={false} />
-      <GameTitle title="Whisper Scroll" count={`Scroll ${round + 1} / ${LINES.length}`} />
+      <GameTitle title="Whisper Scroll" count={`Scroll ${round + 1} / ${lines.length}`} />
 
       <div className="ws-scroll" style={{ backgroundImage: `url(${scrollImg})` }}>
         <p className="ws-line">

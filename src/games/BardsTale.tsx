@@ -5,7 +5,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { TALES } from './banks/bard'
-import { hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/bard/bt_bg.webp'
 import bardIdle from '../assets/games/bard/bt_bard_idle.webp'
@@ -20,9 +20,9 @@ import './bardstale.css'
 
 const ROUNDS = 3
 
-export function BardsTale({ onFinish, level }: MiniGameProps) {
+export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const tales = useMemo(() => pick(TALES[lv], ROUNDS), [lv])
+  const tales = useMemo(() => fromSrv(srv, () => pick(TALES[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const t = tales[round]
   const cards = useMemo(() => {
@@ -56,6 +56,7 @@ export function BardsTale({ onFinish, level }: MiniGameProps) {
   function tell() {
     if (state !== 'play' || order.length !== t.lines.length) return
     const ok = order.every((id, i) => id === i)
+    if (t._qid) onAnswer?.(t._qid, order.map((id) => t.lines[id]), ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
       score.hit(); speak(t.lines.join(' '), { voice: 'm' })

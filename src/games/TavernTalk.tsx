@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -74,9 +74,15 @@ function closest(heard: string, choices: Choice[]): number {
   return score >= 0.5 ? best : -1
 }
 
-export function TavernTalk({ onFinish }: MiniGameProps) {
+export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
+  // server mode: one scene per server item, played one after another
+  const scenes = useMemo(() => srv ? srv.map((q) => ({ qid: q.qid as string | undefined, script: q.payload.script as Node[], mission: String(q.payload.mission ?? ''), end: String(q.payload.end ?? 'Goodbye!') }))
+    : [{ qid: undefined as string | undefined, script: SCRIPT, mission: MISSION, end: END_LINE }], [srv])
+  const [si, setSi] = useState(0)
+  const sc = scenes[si]
+  const picks = useRef<number[]>([])
   const [node, setNode] = useState(0)
-  const [log, setLog] = useState<Msg[]>([{ who: 'npc', text: SCRIPT[0].line }])
+  const [log, setLog] = useState<Msg[]>([{ who: 'npc', text: sc.script[0].line }])
   const [mood, setMood] = useState<Mood>('idle')
   const [talking, setTalking] = useState(false)
   const [mouth, setMouth] = useState(false)
@@ -101,21 +107,27 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
     setLog((l) => [...l, { who: 'npc', text }])
     speak(text, setTalking)
   }
-  useEffect(() => { const t = setTimeout(() => speak(SCRIPT[0].line, setTalking), 600); return () => { clearTimeout(t); try { window.speechSynthesis?.cancel() } catch { /* */ } } }, [])
+  useEffect(() => { const t = setTimeout(() => speak(sc.script[0].line, setTalking), 600); return () => { clearTimeout(t); try { window.speechSynthesis?.cancel() } catch { /* */ } } }, [si]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [log])
 
   useEffect(() => setHinted(null), [node])
   // hint: light up the reply a native speaker would give
   useHint(() => {
     if (busy || done) return false
-    const i = SCRIPT[node].choices.findIndex((c) => c.ok)
+    const i = sc.script[node].choices.findIndex((c) => c.ok)
     if (i < 0 || hinted === i) return false
     setHinted(i); return true
   })
 
   function choose(i: number) {
     if (busy || done) return
-    const c = SCRIPT[node].choices[i]
+    const c = sc.script[node].choices[i]
+    picks.current.push(i)
+    if (c.next === 'end' && sc.qid) {
+      // the scene is over: every choice made must have been the right one
+      let nd = 0; const okAll = picks.current.every((k) => { const ch = sc.script[nd]?.choices[k]; if (!ch?.ok) return false; if (typeof ch.next === 'number') nd = ch.next; return true })
+      onAnswer?.(sc.qid, [...picks.current], okAll)
+    }
     asked.current++
     if (c.ok) { right.current++; combo.current.now++; combo.current.max = Math.max(combo.current.max, combo.current.now) } else combo.current.now = 0
     setLog((l) => [...l, { who: 'me', text: c.say }])
@@ -124,9 +136,9 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
       if (c.reply) say(c.reply, c.mood ?? 'idle')
       const go = () => {
         if (c.next === 'end') {
-          say(END_LINE, 'happy'); setDone(true)
+          say(sc.end, 'happy'); setDone(true)
         } else if (c.next !== 'stay') {
-          setNode(c.next); say(SCRIPT[c.next].line, SCRIPT[c.next].mood ?? (c.ok ? 'happy' : 'idle'))
+          setNode(c.next); say(sc.script[c.next].line, sc.script[c.next].mood ?? (c.ok ? 'happy' : 'idle'))
         }
         setBusy(false)
       }
@@ -142,7 +154,7 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
     r.onresult = (e: any) => {
       const heard = Array.from(e.results[0]).map((x: any) => x.transcript)
       let idx = -1
-      for (const h of heard) { idx = closest(h as string, SCRIPT[node].choices); if (idx >= 0) break }
+      for (const h of heard) { idx = closest(h as string, sc.script[node].choices); if (idx >= 0) break }
       if (idx >= 0) choose(idx); else setNote(`I heard: "${heard[0]}". Try one of the replies.`)
     }
     r.onerror = () => setNote('I could not hear you. Try again or tap a reply.')
@@ -151,7 +163,7 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
   }
 
   const art = talking ? (mouth ? kTalk : (mood === 'happy' ? kHappy : kIdle)) : mood === 'happy' ? kHappy : mood === 'think' ? kThink : kIdle
-  const price = SCRIPT[node].price
+  const price = sc.script[node].price
 
   return (
     <div className={`tt${done ? ' tt-done' : ''}`}>
@@ -160,7 +172,7 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
 
       <div className="tt-mission lp">
         <span className="tt-coin">🪙</span>
-        <div><b>Mission</b><p>{MISSION}</p></div>
+        <div><b>Mission</b><p>{sc.mission}</p></div>
         {price != null && <span className={`tt-price${price < 10 ? ' ok' : ''}`}>{price}</span>}
       </div>
 
@@ -178,7 +190,7 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
         {note && <div className="tt-note">{note}</div>}
         {!done ? (
           <div className="tt-choices">
-            {SCRIPT[node].choices.map((c, i) => (
+            {sc.script[node].choices.map((c, i) => (
               <button key={node + ':' + i} className={`tt-choice${hinted === i ? ' hinted' : ''}`} disabled={busy} onClick={() => choose(i)}>{c.say}</button>
             ))}
             <button className={`tt-mic${listening ? ' on' : ''}`} aria-label="Say it" onClick={mic} disabled={busy}>
@@ -186,7 +198,16 @@ export function TavernTalk({ onFinish }: MiniGameProps) {
             </button>
           </div>
         ) : (
-          <button className="cb cb-green tt-finish" onClick={() => onFinish({ correct: right.current, total: asked.current, maxCombo: combo.current.max })}>
+          <button className="cb cb-green tt-finish" onClick={() => {
+            if (si + 1 < scenes.length) {
+              // next scene: a new mission with a new partner line
+              const nx = scenes[si + 1]
+              picks.current = []; setSi(si + 1); setNode(0); setDone(false); setMood('idle'); setNote('')
+              setLog([{ who: 'npc', text: nx.script[0].line }])
+              return
+            }
+            onFinish({ correct: right.current, total: asked.current, maxCombo: combo.current.max })
+          }}>
             Mission complete!
           </button>
         )}

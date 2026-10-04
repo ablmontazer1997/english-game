@@ -145,6 +145,8 @@ export interface SrsItem {
   back: string        // e.g. meaning / answer
   distractors: string[]
   mastery: number     // 0..5
+  /** server boss items made from grammar games: the line to show instead of "Choose the meaning of" */
+  ask?: string
 }
 
 // Result reported by a mini-game back to the host.

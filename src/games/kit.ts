@@ -79,3 +79,9 @@ export function makeScore() {
     out(total: number) { return { correct: s.right, total, maxCombo: s.max } },
   }
 }
+
+/** server mode: the round's server questions as the game's own bank items (each tagged with its qid);
+ *  otherwise the local bank pick. Payloads use the same shapes as banks/types.ts. */
+export function fromSrv<T>(srv: { qid: string; payload: any }[] | undefined, local: () => T[]): (T & { _qid?: string })[] {
+  return srv ? srv.map((q) => ({ ...(q.payload as T), _qid: q.qid })) : (local() as (T & { _qid?: string })[])
+}

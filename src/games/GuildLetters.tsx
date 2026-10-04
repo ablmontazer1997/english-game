@@ -5,7 +5,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { LETTERS } from './banks/guild'
-import { levelOf, makeScore, pick } from './kit'
+import { fromSrv, levelOf, makeScore, pick } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/guild/gl_bg.webp'
 import owl from '../assets/games/guild/gl_owl.webp'
@@ -35,9 +35,9 @@ function review(text: string, minWords: number, keys: string[][]): Check[] {
   ]
 }
 
-export function GuildLetters({ onFinish, level }: MiniGameProps) {
+export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const lv = levelOf(level)
-  const letters = useMemo(() => pick(LETTERS[lv], ROUNDS), [lv])
+  const letters = useMemo(() => fromSrv(srv, () => pick(LETTERS[lv], ROUNDS)), [lv, srv])
   const [round, setRound] = useState(0)
   const l = letters[round]
   const [text, setText] = useState('')
@@ -58,6 +58,7 @@ export function GuildLetters({ onFinish, level }: MiniGameProps) {
   function send() {
     if (checks || sending || !count) return
     const c = review(text, l.minWords, l.keys)
+    if (l._qid) onAnswer?.(l._qid, text, c[0].ok && c[1].ok)
     c.forEach((x) => (x.ok ? score.hit() : score.miss()))
     // the reply folds into a letter and the owl carries it off, then the review opens
     setSending(true); fxSfx('whoosh', .6)
