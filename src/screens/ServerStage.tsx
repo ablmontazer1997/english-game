@@ -17,6 +17,7 @@ import { gameFor } from '../games/registry'
 import { HintCtx, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import { ItemThumb } from '../components/ItemThumb'
+import { SpellLetter, hasLetter } from '../components/SpellLetter'
 import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic } from '../services/api'
 import { planRounds, AnswerSheet, solve, type Round } from '../services/serverPlay'
 import { sfx, enterScene, leaveScene } from '../services/audio'
@@ -170,6 +171,22 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
 
   if (phase === 'intro' && session) {
     const games = [...new Set(rounds.map((r) => r.game))]
+    const meta = (
+      <div className="sl-meta">
+        {games.map((g) => <Chip key={g}>{MG_LABEL[g] ?? g}</Chip>)}
+        {stage.heartsApply && <Chip className="ss-heart"><img src={icHeart} alt="" />{session.hearts}</Chip>}
+      </div>
+    )
+    if (stage.serverKind === 'lesson' && hasLetter(stage.topicId)) return (
+      <div className="stage-host full">
+        <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
+        <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
+        <div className="sl-lobby pop">
+          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''}>{meta}</SpellLetter>
+          <Btn className="lg sl-start" onClick={() => setPhase('play')}>Start</Btn>
+        </div>
+      </div>
+    )
     return (
       <div className="stage-host full">
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />

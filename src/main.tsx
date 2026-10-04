@@ -4,6 +4,10 @@ import './theme/global.css'
 import { GameProvider } from './services/ServiceProvider'
 import { App } from './App'
 import { initAudio } from './services/audio'
+import { SpellLetter } from './components/SpellLetter'
+import { Btn } from './components/PageArt'
+import stageBg from './assets/stage_bg.webp'
+import './screens/stage.css'
 
 initAudio()
 
@@ -22,10 +26,21 @@ if (fontSet) {
   document.head.appendChild(st)
 }
 
+// TEST BUILDS ONLY: ?letter=<topic id>&lv=B2 shows one Spellbook letter on its own (layout checks for all 116 topics)
+const letterId = import.meta.env.BASE_URL.includes('-test') ? new URLSearchParams(location.search).get('letter') : null
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <GameProvider>
-      <App />
-    </GameProvider>
+    {letterId ? (
+      <div className="stage-host full">
+        <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
+        <div className="sl-lobby"><SpellLetter topicId={letterId} level={new URLSearchParams(location.search).get('lv') ?? 'A1'} />
+          <Btn className="lg sl-start">Start</Btn></div>
+      </div>
+    ) : (
+      <GameProvider>
+        <App />
+      </GameProvider>
+    )}
   </StrictMode>,
 )
