@@ -22,7 +22,7 @@ import { setMusic as playMusic } from './services/audio'
 import type { CurrencyId, Stage, MiniGameId } from './types/game'
 
 export function App() {
-  const { ready, quests, achievements } = useGame()
+  const { ready, quests, achievements, error, refresh } = useGame()
   const initialTab = (typeof location !== 'undefined'
     ? (new URLSearchParams(location.search).get('tab') as Tab | null) : null) || 'map'
   const [tab, setTab] = useState<Tab>(initialTab)
@@ -63,7 +63,7 @@ export function App() {
       <div className="sky" />
 
       {!ready ? (
-        <Loader />
+        error ? <Offline message={error} onRetry={refresh} /> : <Loader />
       ) : customizing ? (
         <WardrobeScreen onClose={() => { setCustomizing(false); setPortraitV((v) => v + 1) }} />
       ) : achOpen ? (
@@ -112,6 +112,23 @@ function Loader() {
   )
 }
 
+/** the first load failed: say so and offer a retry instead of a blank screen */
+export function Offline({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const [busy, setBusy] = useState(false)
+  return (
+    <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', zIndex: 1, padding: 24 }}>
+      <div className="gate-card pop" style={{ position: 'relative' }}>
+        <div style={{ fontFamily: 'var(--display)', fontWeight: 900, fontSize: 24, letterSpacing: '.08em', color: 'var(--gold)' }}>ENGLISH SPELL</div>
+        <h2>The realm is out of reach</h2>
+        <p>{message}</p>
+        <button className="btn btn-gold big" disabled={busy} onClick={async () => { setBusy(true); await onRetry(); setBusy(false) }}>
+          {busy ? 'Reaching the realm…' : 'Try again'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function SettingsBody() {
   const load = (k: string, d: boolean) => { try { const v = localStorage.getItem('rc.set.' + k); return v == null ? d : v === '1' } catch { return d } }
   const save = (k: string, v: boolean) => { try { localStorage.setItem('rc.set.' + k, v ? '1' : '0') } catch {} }
@@ -119,7 +136,7 @@ function SettingsBody() {
   const [music, setMusic] = useState(() => load('music', true))
   const [motion, setMotion] = useState(() => load('motion', false))
   const set = (k: string, sv: (v: boolean) => void) => (v: boolean) => { sv(v); save(k, v) }
-  const reset = () => { try { localStorage.removeItem('runecast.save.v1') } catch {} location.reload() }
+  const reset = () => { try { ['runecast.save.v1', 'es.api.token', 'es.api.device', 'es.ach.claimed', 'es.review.day'].forEach((k) => localStorage.removeItem(k)) } catch {} location.reload() }
   return (
     <div>
       <Toggle label="Sound effects" icon={icSound} on={sound} onChange={set('sound', setSound)} />

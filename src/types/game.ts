@@ -43,6 +43,15 @@ export interface Stage {
   miniGame: MiniGameId
   title: string
   cefr?: string       // the world's level, 'A1' ...
+  // ---- server-driven map (runecast-api /v1/map) ----
+  /** server stage kind: lesson | practice | practice2 | trial | boss | bonus */
+  serverKind?: string
+  /** optional (bonus) stage: never blocks the road, never holds the hero */
+  optional?: boolean
+  heartsApply?: boolean
+  topicId?: string | null
+  worldId?: string
+  questionCount?: number
 }
 
 export interface World {
@@ -51,6 +60,16 @@ export interface World {
   cefr: string        // 'A1' ...
   accent: string      // token name for themed glow
   stages: Stage[]
+  // ---- server-driven map ----
+  /** painting index 0..10 (w1..w11) the world is drawn with */
+  paint?: number
+  status?: 'locked' | 'current' | 'done'
+  topics?: { id: string; slot: number; title: string; kind: string }[]
+  consolidation?: boolean
+  bossDrop?: { item_id: string; name: string; slot: string; owned: boolean } | null
+  /** 1..45 across all levels */
+  globalIndex?: number
+  levelLocked?: boolean
 }
 
 export type MiniGameId =
@@ -143,3 +162,19 @@ export interface StageResult {
   /** XP already includes the Double XP boost */
   boosted?: boolean
 }
+
+// ---- server play (runecast-api) ----
+/** one question as the server sends it; payload = the pipeline game schema */
+export interface ServerQuestion {
+  qid: string
+  game: MiniGameId
+  level: string
+  difficulty?: number
+  topic_id?: string | null
+  source?: 'new' | 'review' | 'fallback'
+  payload: any
+  box?: number
+  due_at?: string
+}
+/** one answer in the server's grading shape (API.md "Grading") */
+export interface ServerAnswer { qid: string; answer: unknown; correct: boolean; ms: number }

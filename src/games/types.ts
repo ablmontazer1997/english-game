@@ -1,4 +1,4 @@
-import type { SrsItem } from '../types/game'
+import type { SrsItem, ServerQuestion } from '../types/game'
 
 // Outcome a mini-game reports back to the stage host.
 export interface MiniGameOutcome {
@@ -16,6 +16,11 @@ export interface MiniGameProps {
   onFinish: (o: MiniGameOutcome) => void
   /** the player's CEFR level for this stage: 0..4 = A1..C1 */
   level?: number
+  /** server mode: the questions of this round (payload per game). When set, the game plays exactly
+   *  these instead of its local bank and reports every answer through onAnswer. */
+  srv?: ServerQuestion[]
+  /** server mode: one item answered, in the server's grading shape (API.md "Grading") */
+  onAnswer?: (qid: string, answer: unknown, correct: boolean) => void
 }
 
 export type MiniGameComponent = (props: MiniGameProps) => React.ReactElement
