@@ -36,3 +36,6 @@
 .sl-btns { display: flex; justify-content: center; align-items: center; gap: 10px; width: min(100%, 390px); flex: none; position: sticky; bottom: 0; z-index: 3; }
 .sl-btns .sl-start { position: static; }
 .sl-back { min-width: 96px; }
+/* the letter's main action is a hero button (like the old lobby Start), larger than the 44 px modal standard */
+.ui-btn.lg.sl-start { --h: 58px; font-family: var(--game); font-size: 22px; padding-bottom: 4px; }
+.ui-btn.sl-back { --h: 50px; font-family: var(--game); font-size: 18px; }

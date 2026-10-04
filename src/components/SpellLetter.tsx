@@ -60,7 +60,7 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
       if (host) setMode((md) => {
         if (md !== 'measure') return md
         const cs = getComputedStyle(host)
-        const room = host.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 18 - 14 - 56
+        const room = host.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 18 - 14 - 62
         return cap * 2 + strips * strip <= room ? 'one' : 'two'
       })
     }
