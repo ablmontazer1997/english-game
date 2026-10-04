@@ -1,0 +1,911 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Runecast Wardrobe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+/* ---- soft Runecast look: cream card, lavender/violet accents, gold highlights (light theme only, like the game's soft screens) */
+:root{--bg1:#f7f0ff;--bg2:#ffeee9;--ink:#2a2550;--ink2:#6b7192;--cream:#fffdf6;--cream2:#fbf5ea;--line:#efe4cf;
+  --vio:#8a4fd8;--vio2:#6f3fd0;--vioSoft:#f1e9ff;--vioInk:#5a2fb0;--gold:#f5c451;--goldDeep:#c8963a;
+  --sheetH:clamp(330px,46vh,480px);--font:'Nunito',system-ui,-apple-system,sans-serif;--game:'Baloo 2','Nunito',sans-serif}
+html,body{margin:0;height:100%;overflow:hidden;font-family:var(--font);color:var(--ink);-webkit-tap-highlight-color:transparent}
+body{background:radial-gradient(circle at 50% 30%,var(--bg1),var(--bg2))}
+#c{position:fixed;left:0;right:0;top:0;bottom:0}
+#ld{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ink2)}
+html.editor #c,html.editor #ld{bottom:calc(var(--sheetH) - 14px)}
+html.embed #ed,html.embed #edTop,html.embed #ld{display:none!important}html.embed body{background:transparent}
+button{font-family:inherit;color:inherit;cursor:pointer}
+/* top bar over the stage */
+#edTop{position:fixed;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:max(12px,env(safe-area-inset-top)) 16px 0;pointer-events:none;z-index:3}
+#edTop>*{pointer-events:auto}
+.ttl{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:999px;background:rgba(255,253,246,.82);
+  box-shadow:0 4px 14px rgba(90,47,176,.12);border:1px solid rgba(239,228,207,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ttl i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#a978ff,var(--vio2));color:#fff}
+.ttl b{font-family:var(--game);font-weight:800;font-size:18px;letter-spacing:.2px;line-height:1;color:var(--ink);padding-top:2px}
+.acts{display:flex;gap:8px}
+.ib{display:flex;align-items:center;gap:6px;height:40px;padding:0 14px 0 10px;border-radius:999px;border:1px solid rgba(239,228,207,.95);
+  background:rgba(255,253,246,.9);color:var(--vioInk);font-weight:800;font-size:13px;box-shadow:0 4px 14px rgba(90,47,176,.12);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .15s}
+.ib:active{transform:scale(.94)}
+.ib.gold{background:linear-gradient(180deg,#fff6d8,#ffe7a6);border-color:#f0cf7a;color:#7a4b00}
+.ib svg{width:20px;height:20px}
+/* bottom sheet */
+#ed{position:fixed;left:0;right:0;bottom:0;height:var(--sheetH);z-index:2;display:flex;flex-direction:column;
+  background:var(--cream);border-radius:26px 26px 0 0;box-shadow:0 -12px 34px rgba(90,47,176,.14),0 -1px 0 #f3e6c8;overflow:hidden}
+#ed::before{content:"";position:absolute;left:50%;top:7px;width:38px;height:4px;margin-left:-19px;border-radius:4px;background:#e8dcc4}
+#tabs{display:flex;gap:2px;overflow-x:auto;padding:16px 10px 6px;scrollbar-width:none;flex:0 0 auto;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 18px),transparent)}
+#tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;width:58px;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:2px 0;color:var(--ink2)}
+.tab i{display:grid;place-items:center;width:42px;height:42px;border-radius:15px;background:var(--vioSoft);color:#7a62b0;transition:all .18s}
+.tab svg{width:22px;height:22px}
+.tab span{font-size:11.5px;font-weight:800;letter-spacing:.1px}
+.tab.on i{background:linear-gradient(150deg,#a978ff,var(--vio2));color:#fff;box-shadow:0 5px 12px rgba(111,63,208,.35),inset 0 0 0 2px rgba(245,196,81,.55)}
+.tab.on span{color:var(--vioInk)}
+.rule{height:1px;margin:4px 16px 0;background:linear-gradient(90deg,transparent,#ecd9a8,transparent);flex:0 0 auto}
+#pane{flex:1 1 auto;overflow-y:auto;padding:10px 16px 12px;scrollbar-width:thin;overscroll-behavior:contain}
+html.inapp #pane{padding-bottom:64px} /* the app's floating Done button sits over the sheet's lower right */
+.sec+.sec{margin-top:14px}
+.sh{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 8px}
+.sh h3{margin:0;font-family:var(--game);font-weight:800;font-size:16px;line-height:1.1;color:var(--ink)}
+.sh small{font-size:12px;font-weight:700;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px 10px}
+.card{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:5px;border:0;background:none;padding:0;min-width:0}
+.card .th{position:relative;aspect-ratio:1;border-radius:16px;background:radial-gradient(circle at 50% 40%,#fff 0,#f6f0ff 70%,#efe6fb 100%);
+  border:1.5px solid #eee4f7;box-shadow:0 2px 6px rgba(60,40,120,.07);overflow:hidden;transition:box-shadow .15s,border-color .15s,transform .15s}
+.card:active .th{transform:scale(.95)}
+.card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
+.card img.ok{opacity:1}
+.card .ic{position:absolute;inset:0;display:grid;place-items:center;color:#b7a6d8}
+.card .ic svg{width:44%;height:44%}
+.card img.ok+.ic{display:none}
+.card .lb{font-size:12px;font-weight:800;text-align:center;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.on .th{border-color:var(--vio);box-shadow:0 0 0 2px var(--vio),0 6px 14px rgba(111,63,208,.25)}
+.card.on .lb{color:var(--vioInk)}
+.card .ck{position:absolute;right:-5px;top:-5px;width:22px;height:22px;border-radius:50%;display:none;place-items:center;
+  background:linear-gradient(150deg,#a978ff,var(--vio2));color:#fff;border:2px solid #ffe7a6;box-shadow:0 2px 6px rgba(111,63,208,.35);z-index:1}
+.card .ck svg{width:12px;height:12px}
+.card.on .ck{display:grid}
+.card.none .th{background:repeating-linear-gradient(45deg,#fbf7ff 0 8px,#f6f0ff 8px 16px)}
+.sld{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:16px;background:var(--cream2);border:1px solid var(--line)}
+.sld span{font-size:13px;font-weight:800;color:var(--ink2);min-width:44px}
+.sld input{flex:1;accent-color:var(--vio)}
+/* colour strip under the grid */
+#strip{flex:0 0 auto;border-top:1px solid var(--line);background:linear-gradient(180deg,#fffaf0,var(--cream2));padding:8px 0 max(10px,env(safe-area-inset-bottom))}
+#strip[hidden],#ed[hidden],#edTop[hidden]{display:none}
+#strip .sh{margin:0 18px 6px;justify-content:flex-start;gap:8px}
+#strip .sh small::before{content:"· "}#strip .sh small:empty{display:none}
+.sws{display:flex;gap:10px;overflow-x:auto;padding:4px 18px 4px;scrollbar-width:none}
+.sws::-webkit-scrollbar{display:none}
+.sw{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:3px solid #fff;padding:0;box-shadow:0 2px 6px rgba(60,40,120,.18);position:relative;transition:transform .15s}
+.sw:active{transform:scale(.9)}
+.sw.on{box-shadow:0 0 0 2.5px var(--vio),0 4px 10px rgba(111,63,208,.3)}
+.sw.orig{background:conic-gradient(from 45deg,#f5c451,#e07aa3,#8a4fd8,#2f8fd8,#1f9a63,#f5c451)}
+.sw.orig::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--o,#fff);border:1.5px solid #fff}
+.sw:disabled{opacity:.35;cursor:default}
+.hint{font-size:12px;font-weight:700;color:var(--ink2);padding:4px 18px 6px}
+/* ---- boots-tabs (09-30): phones: all 9 tabs fit the bar (Pants/Shoes/Pose were off-screen with no scroll hint) */
+@media (max-width:560px){#tabs{gap:0;padding:16px 4px 6px;-webkit-mask-image:none;mask-image:none}
+  .tab{flex:1 1 0;width:auto;min-width:0}.tab i{width:min(42px,9.4vw);height:min(42px,9.4vw);border-radius:13px}
+  .tab svg{width:20px;height:20px}.tab span{font-size:min(11.5px,2.9vw);letter-spacing:0}}
+/* ---- /boots-tabs */
+/* wide screens: the sheet becomes a side panel */
+@media (min-width:820px) and (min-aspect-ratio:1/1){
+  #ed{left:auto;right:18px;top:18px;bottom:18px;height:auto;width:400px;border-radius:26px}
+  html.editor #c,html.editor #ld{bottom:0;right:436px}
+  #edTop{right:436px}
+}
+</style><script>{const Q=new URLSearchParams(location.search);const d=document.documentElement;
+  if(Q.get('embed')||Q.get('battle'))d.classList.add('embed');else d.classList.add('editor');
+  try{if(window.parent!==window)d.classList.add('inapp')}catch(e){d.classList.add('inapp')}}</script></head><body>
+<div id="c"></div><div id="ld">Summoning your wizard…</div>
+<header id="edTop"><div class="ttl"><i></i><b>Wardrobe</b></div><div class="acts">
+  <button class="ib gold" id="btnRand" title="Surprise me" aria-label="Surprise me"></button><button class="ib" id="btnReset" title="Reset" aria-label="Reset"></button></div></header>
+<section id="ed" aria-label="Character editor"><nav id="tabs" role="tablist"></nav><div class="rule"></div>
+  <div id="pane" role="tabpanel"></div><div id="strip" hidden></div></section>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/meshopt_decoder.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/environments/RoomEnvironment.js"></script>
+<script>
+const CEL=document.getElementById('c');const W=()=>CEL.clientWidth||innerWidth,H=()=>CEL.clientHeight||innerHeight;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(W(),H());
+r.outputEncoding=THREE.sRGBEncoding;document.getElementById('c').appendChild(r.domElement);
+const sc=new THREE.Scene();
+// soft studio reflections for the vinyl look
+try{const pm=new THREE.PMREMGenerator(r);sc.environment=pm.fromScene(new THREE.RoomEnvironment(),0.04).texture;}catch(e){}
+// LOOK: 'studio' = warm key light with soft shadows, cool fill, pink rim, ACES tone mapping, ground contact shadow
+//       'flat'   = the old even lighting (?look=flat)
+const LOOK=new URLSearchParams(location.search).get('look')||'studio';const STUDIO=LOOK!=='flat';
+if(!STUDIO){sc.add(new THREE.HemisphereLight(0xffffff,0x8a7a90,0.6));
+const d=new THREE.DirectionalLight(0xffffff,0.9);d.position.set(1.2,2,2);sc.add(d);
+const d2=new THREE.DirectionalLight(0xffffff,0.5);d2.position.set(-1.5,1.5,-2);sc.add(d2);}
+else{const TM=new URLSearchParams(location.search).get('tm');if(TM==='aces'){r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=+(new URLSearchParams(location.search).get('exp')||0.85);}
+ r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;
+ sc.add(new THREE.HemisphereLight(0xfff4ee,0x7a6a92,0.55));
+ const key=new THREE.DirectionalLight(0xffe8d2,1.05);key.position.set(2.6,3.0,0.6);key.castShadow=true;
+ key.shadow.mapSize.set(2048,2048);const sc2=key.shadow.camera;sc2.left=-0.8;sc2.right=0.8;sc2.top=0.8;sc2.bottom=-0.8;sc2.near=0.5;sc2.far=8;
+ key.shadow.bias=-0.0004;key.shadow.normalBias=0.012;key.shadow.radius=4;sc.add(key);
+ const fill=new THREE.DirectionalLight(0xc8d6ff,0.35);fill.position.set(0.8,1.0,-2.2);sc.add(fill);
+ const rim=new THREE.DirectionalLight(0xffd4f0,0.8);rim.position.set(-2.4,2.0,0.6);sc.add(rim);
+ const rim2=new THREE.DirectionalLight(0xd8e4ff,0.45);rim2.position.set(-2.0,1.5,-1.4);sc.add(rim2);}
+const cam=new THREE.PerspectiveCamera(30,W()/H(),0.05,50);
+const ctl=new THREE.OrbitControls(cam,r.domElement);ctl.enableDamping=true;ctl.enablePan=false;
+const onStageResize=()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();r.setSize(W(),H());window.dispatchEvent(new Event('rc-stage'));};
+addEventListener('resize',onStageResize);if(window.ResizeObserver)new ResizeObserver(onStageResize).observe(CEL);
+function SkirtSpring(root){
+  // coat skirt springs (v2, 10-01 "the pants must never come through the cloak"):
+  //  - each chain's hem point (tail) is measured from the worn coat itself (the skeleton's tip bones point at the centre line,
+  //    so the old solver collided a point between the legs and never the real hem);
+  //  - the legs are bone-attached proxies fitted to the worn trousers: thigh and calf, radius per (3 stations x 12 directions
+  //    around the bone), so wide hips or a puffy knee are matched without over-inflating the other sides; plus a cloth margin;
+  //  - the skirt collides through ~170 real coat vertices spread over it (with their own spring bones and weights), corrected
+  //    for the 0.8
+  //    spring weight of the cloth, and always pushed to the outer side of the leg (a leg that jumped through is not trapped);
+  //  - the simulation rides with the character (root moves/turns, the walk clip's hip snap at its loop restart) and is
+  //    re-seeded (rest pose + collision pre-solve) when the legs jump (frozen thumbnail poses, clip jumps);
+  //  - the swing angle per segment is limited, so the cloth can never flip.
+  const V=THREE.Vector3,Q=THREE.Quaternion,M4=THREE.Matrix4;const by={};root.traverse(o=>{by[o.name]=o;});
+  const chains=[];for(let k=0;by['skirt_'+k+'_0'];k++)chains.push({b:[0,1,2].map(s=>by['skirt_'+k+'_'+s])});
+  if(!chains.length)return null;
+  const N=chains.length,pel=by.Pelvis;
+  const LEGS=[['L_Thigh','L_Calf',0.058],['L_Calf','L_Foot',0.046],['R_Thigh','R_Calf',0.058],['R_Calf','R_Foot',0.046]].filter(l=>by[l[0]]&&by[l[1]]);
+  const BARE=1.12,MARGIN=0.008,NS=12,NT=3;   // bare-leg radius factor (no trousers) / cloth clearance / directions / stations
+  const caps=LEGS.map(l=>({a:new V(),b:new V(),q:new Q(),u:new V(),e1:new V(),e2:new V(),r:new Float32Array(NS*NT).fill(l[2]*BARE),r0:l[2]}));
+  const P=(o,t)=>o.getWorldPosition(t||new V());
+  const W0=0.8;
+  chains.forEach(ch=>{ch.x=[null,new V(),new V()];ch.px=[null,new V(),new V()];ch.t=[null,new V(),new V()];ch.o=new V();
+    ch.tail=ch.b[2].position.clone();ch.w=[W0,W0,W0];ch.L=[0,0,0];ch.rq=new Q();ch.L2s=1;});
+  const tq=new Q(),pq=new Q(),wq=new Q(),a=new V(),b=new V(),c=new V(),d=new V(),e=new V();
+  const restBones=()=>{for(const ch of chains){ch.b[0].quaternion.set(0,0,0,1);ch.b[1].quaternion.set(0,0,0,1);}};
+  const targets=()=>{for(const sp of samples)sp.rest.copy(sp.loc).applyMatrix4(sp.b.matrixWorld);for(const ch of chains){ch.b[0].updateMatrixWorld(true);P(ch.b[0],ch.o);P(ch.b[1],ch.t[1]);ch.t[2].copy(ch.tail).applyMatrix4(ch.b[1].matrixWorld);
+    ch.L[1]=ch.t[1].distanceTo(ch.o);ch.L[2]=ch.t[2].distanceTo(ch.t[1]);}};
+  function aim(bone,local,to){bone.updateMatrixWorld(true);const o=P(bone);a.copy(local).applyMatrix4(bone.matrixWorld).sub(o).normalize();b.copy(to).sub(o).normalize();
+    if(a.dot(b)>0.999999)return;tq.setFromUnitVectors(a,b);bone.getWorldQuaternion(wq);bone.parent.getWorldQuaternion(pq);
+    bone.quaternion.copy(pq.invert().multiply(tq.multiply(wq)));bone.updateMatrixWorld(true);}
+  // ---- fit to the worn coat (hem tails, spring weights) and trousers (capsule radii); runs when the worn set changes ----
+  const nk=at=>{if(!at.normalized)return 1;const ar=at.array||(at.data&&at.data.array);const C=ar.constructor;return C===Int16Array?1/32767:C===Uint16Array?1/65535:C===Int8Array?1/127:C===Uint8Array?1/255:1;};
+  const visible=o=>{let p=o;while(p){if(!p.visible)return false;p=p.parent;}return true;};
+  function skinned(m,cb){const g=m.geometry,Pa=g.attributes.position,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight;if(!Pa||!SI||!SW)return;
+    m.skeleton.update();const B=m.skeleton.boneMatrices,kp=nk(Pa),kw=nk(SW);const A=new M4().multiplyMatrices(m.matrixWorld,m.bindMatrixInverse);const v=new V(),s=new V(),t=new V(),bm=new M4();
+    const ix=[0,0,0,0],w=[0,0,0,0];
+    for(let i=0;i<Pa.count;i++){v.set(Pa.getX(i)*kp,Pa.getY(i)*kp,Pa.getZ(i)*kp).applyMatrix4(m.bindMatrix);s.set(0,0,0);
+      ix[0]=SI.getX(i);ix[1]=SI.getY(i);ix[2]=SI.getZ(i);ix[3]=SI.getW(i);w[0]=SW.getX(i)*kw;w[1]=SW.getY(i)*kw;w[2]=SW.getZ(i)*kw;w[3]=SW.getW(i)*kw;
+      const sum=w[0]+w[1]+w[2]+w[3]||1;for(let k=0;k<4;k++){if(w[k]<=0)continue;bm.fromArray(B,ix[k]*16);s.addScaledVector(t.copy(v).applyMatrix4(bm),w[k]/sum);}
+      s.applyMatrix4(A);cb(i,s,ix,w,sum);}}
+  let sig='',fitN=0;
+  function wornSig(){const L=[];root.traverse(o=>{if(o.isSkinnedMesh&&/^(coat|cloak|pants)/.test(o.name)&&visible(o))L.push(o.uuid+":"+((o.geometry.attributes.position.data||o.geometry.attributes.position).version));});return L.join(',');}
+  // bind-pose data of a skinned mesh: vertex positions at bind time and each bone's bind matrix (by name)
+  function bindData(m){const g=m.geometry,Pa=g.attributes.position,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight;const kp=nk(Pa),kw=nk(SW);
+    const names=m.skeleton.bones.map(b=>b.name),B={};m.skeleton.boneInverses.forEach((bi,j)=>{const M=bi.clone().invert();const p=new V(),q=new Q(),sc=new V();M.decompose(p,q,sc);B[names[j]]={inv:bi,p,q};});
+    const each=cb=>{const v=new V(),ix=[0,0,0,0],w=[0,0,0,0];for(let i=0;i<Pa.count;i++){v.set(Pa.getX(i)*kp,Pa.getY(i)*kp,Pa.getZ(i)*kp).applyMatrix4(m.bindMatrix);
+      ix[0]=SI.getX(i);ix[1]=SI.getY(i);ix[2]=SI.getZ(i);ix[3]=SI.getW(i);w[0]=SW.getX(i)*kw;w[1]=SW.getY(i)*kw;w[2]=SW.getZ(i)*kw;w[3]=SW.getW(i)*kw;cb(i,v,ix,w,(w[0]+w[1]+w[2]+w[3])||1);}};
+    return {names,B,each};}
+  // The trouser proxies are fitted in the BIND pose (the meshes' own bind data), so they never depend on the animation frame
+  // in which the outfit changed; bind-space lengths are converted with the bone length ratio.
+  function fit(){
+    const coats=[],pants=[];root.traverse(o=>{if(!o.isSkinnedMesh||!visible(o))return;if(/^(coat|cloak)/.test(o.name))coats.push(o);else if(/^pants/.test(o.name))pants.push(o);});
+    root.updateMatrixWorld(true);capFrames();
+    // coat: collision samples = real coat vertices (farthest-point spread over the skirt), each with its spring bones and
+    // weights; a chain's tail (what its middle bone aims) = the mean of the lowest third of the cloth it carries
+    // the coat is measured in the current pose with the skirt at rest (its springs carry it; only ~0.2 follows the legs)
+    const save=chains.map(ch=>[ch.b[0].quaternion.clone(),ch.b[1].quaternion.clone()]);restBones();
+    // ...and with the thighs put back to their bind pose relative to the pelvis, so the ~0.2 thigh share of the cloth is
+    // measured standing, whatever the legs were doing when the outfit changed
+    const thighs=[];if(coats[0]){const sk=coats[0].skeleton,ix=n=>sk.bones.findIndex(b=>b.name===n);
+      for(const n of ['L_Thigh','R_Thigh']){const b=by[n],j=ix(n),pj=b&&b.parent?ix(b.parent.name):-1;if(!b||j<0||pj<0)continue;thighs.push([b,b.position.clone(),b.quaternion.clone(),b.scale.clone()]);
+        const L=sk.boneInverses[pj].clone().multiply(sk.boneInverses[j].clone().invert());L.decompose(b.position,b.quaternion,b.scale);}}
+    root.updateMatrixWorld(true);
+    const per=chains.map(()=>[]),cand=[];const py=P(pel).y+0.02;
+    for(const m of coats){const names=m.skeleton.bones.map(x=>x.name);const kk=names.map(n=>{const r=n.match(/^skirt_(\d+)_1$/);return r?+r[1]:-1;});
+      skinned(m,(i,s,ix,w,sum)=>{if(s.y>py)return;let best=-1,bw=0,tot=0;const ent=[];for(let k=0;k<4;k++){const ch=kk[ix[k]];if(ch<0||w[k]<=0)continue;const ww=w[k]/sum;tot+=ww;if(ww>=0.08)ent.push([ch,ww]);if(ww>bw){bw=ww;best=ch;}}
+        if(best<0||tot<0.25)return;per[best].push(s.y,s.x,s.z);cand.push({p:s.clone(),ent});});}
+    chains.forEach((ch,k)=>{const L=per[k];const n=L.length/3;if(n<8){ch.tail.copy(ch.b[2].position);return;}
+      let y0=1e9,y1=-1e9;for(let i=0;i<n;i++){y0=Math.min(y0,L[i*3]);y1=Math.max(y1,L[i*3]);}const cut=y0+(y1-y0)/3;const m=new V();let c0=0;
+      for(let i=0;i<n;i++)if(L[i*3]<=cut){m.x+=L[i*3+1];m.y+=L[i*3];m.z+=L[i*3+2];c0++;}m.divideScalar(c0);
+      // keep the tail clearly below the joint so the aim is well defined
+      const jw=P(ch.b[1]);if(jw.y-m.y<0.03)m.y=jw.y-0.03;ch.tail.copy(ch.b[1].worldToLocal(m));});
+    samples.length=0;if(cand.length){const NSMP=Math.min(170,cand.length),dmin=new Float32Array(cand.length).fill(1e9);let pick=0;for(let i=1;i<cand.length;i++)if(cand[i].p.y<cand[pick].p.y)pick=i;
+      for(let it=0;it<NSMP;it++){const cp=cand[pick];const ent=cp.ent.map(([k,w])=>({k,w})).sort((a,b)=>b.w-a.w);const W=ent.reduce((s,e)=>s+e.w,0);if(W>0.2)samples.push({rest:new V(),loc:cp.p.clone().applyMatrix4(inv.copy(chains[ent[0].k].b[1].matrixWorld).invert()),b:chains[ent[0].k].b[1],ent,W});
+        dmin[pick]=-1;let bi=-1,bd=-1;for(let i=0;i<cand.length;i++){if(dmin[i]<0)continue;const dd=cand[i].p.distanceToSquared(cp.p);if(dd<dmin[i])dmin[i]=dd;if(dmin[i]>bd){bd=dmin[i];bi=i;}}if(bi<0)break;pick=bi;}}
+    chains.forEach((ch,k)=>{ch.b[0].quaternion.copy(save[k][0]);ch.b[1].quaternion.copy(save[k][1]);});for(const [b,p,q,sc] of thighs){b.position.copy(p);b.quaternion.copy(q);b.scale.copy(sc);}root.updateMatrixWorld(true);
+    // trousers: per leg bone, radius per (station along the bone, direction around it) = 96th percentile of the trouser
+    // vertices nearest that bone, in the bone's own frame (so the proxy turns and bends with the leg)
+    const bins=caps.map(()=>Array.from({length:NS*NT},()=>[]));
+    for(const m of pants){const D=bindData(m);const segs=LEGS.map(l=>[D.B[l[0]],D.B[l[1]]]);if(segs.some(x=>!x[0]||!x[1]))continue;
+      const kw=segs.map((sg,j)=>caps[j].a.distanceTo(caps[j].b)/Math.max(1e-6,sg[0].p.distanceTo(sg[1].p)));   // world per bind unit
+      const iq=segs.map(sg=>sg[0].q.clone().invert());const pr2=new V();
+      D.each((i,s,ix,w,sum)=>{if(i%2)return;let bj=-1,bd=1e9;
+        for(let j=0;j<segs.length;j++){const [A,B]=segs[j];c.subVectors(B.p,A.p);const t=Math.max(0,Math.min(1,d.subVectors(s,A.p).dot(c)/c.lengthSq()));
+          const dd=e.copy(A.p).addScaledVector(c,t).distanceToSquared(s);if(dd<bd){bd=dd;bj=j;}}
+        if(bj<0)return;const leg=LEGS[bj][0][0];
+        // the vertex belongs to the nearest leg; it feeds both of that leg's proxies where it lies along them (knee cap, hip)
+        for(let j=0;j<caps.length;j++){if(LEGS[j][0][0]!==leg)continue;const cp=caps[j],[A,B]=segs[j];pr2.subVectors(s,A.p).applyQuaternion(iq[j]).multiplyScalar(kw[j]);
+          const L=cp.a.distanceTo(cp.b),al=pr2.dot(cp.u),t=al/L;pr2.addScaledVector(cp.u,-al);const rad=pr2.length();if(t<-0.25||t>1.1||rad>0.2)continue;
+          const ph=Math.atan2(pr2.dot(cp.e2),pr2.dot(cp.e1));bins[j][Math.max(0,Math.min(NT-1,Math.floor(t*NT)))*NS+Math.min(NS-1,Math.floor((ph+Math.PI)/(2*Math.PI)*NS))].push(rad);}});}
+    caps.forEach((cp,j)=>{const def=cp.r0*BARE,B=bins[j];if(!pants.length){cp.r.fill(def);return;}
+      const r=B.map(L=>{if(L.length<6)return -1;L.sort((x,y)=>x-y);return L[Math.min(L.length-1,Math.floor(L.length*0.96))];});
+      for(let pass=0;pass<NS;pass++)for(let st=0;st<NT;st++)for(let se=0;se<NS;se++){const k=st*NS+se;if(r[k]>=0)continue;
+        const nb=[st*NS+(se+1)%NS,st*NS+(se+NS-1)%NS].map(x=>r[x]).filter(x=>x>=0);if(nb.length)r[k]=Math.max(...nb);}
+      for(let k=0;k<r.length;k++){if(r[k]<0){const st=Math.floor(k/NS);const o=[0,1,2].filter(x=>x!==st).map(x=>Math.max(...r.slice(x*NS,x*NS+NS))).filter(x=>x>0);r[k]=o.length?Math.max(...o):def;}cp.r[k]=r[k]+MARGIN;}});
+    fitN++;window.RCSKIRT={n:per.map(L=>L.length/3),ns:samples.length,tails:chains.map(ch=>ch.tail.toArray().map(x=>+x.toFixed(4))),caps:caps.map(cp=>Array.from(cp.r).map(x=>+x.toFixed(3))),fitN};
+  }
+  // ---- collision: leg proxies (bone frame, radius by station and direction), outer-side rule ----
+  function capFrames(){let n=0;for(const l of LEGS){const cp=caps[n++];P(by[l[0]],cp.a);P(by[l[1]],cp.b);by[l[0]].getWorldQuaternion(cp.q);
+    // the bone frame: axis u (thigh->knee) and two fixed perpendiculars, all stored in the bone's local orientation
+    if(!cp.ok){const iq=cp.q.clone().invert();cp.u.subVectors(cp.b,cp.a).applyQuaternion(iq).normalize();cp.e1.set(0,0,1);if(Math.abs(cp.u.z)>0.9)cp.e1.set(1,0,0);
+      cp.e1.addScaledVector(cp.u,-cp.e1.dot(cp.u)).normalize();cp.e2.crossVectors(cp.u,cp.e1);cp.ok=true;}}}
+  const pr=new V(),iqT=new Q();
+  // -> [station, sector, radial distance] of a world point relative to a proxy
+  function polar(cp,s){iqT.copy(cp.q).invert();pr.subVectors(s,cp.a).applyQuaternion(iqT);const L=cp.a.distanceTo(cp.b);const al=pr.dot(cp.u);const t=al/L;
+    pr.addScaledVector(cp.u,-al);const ph=Math.atan2(pr.dot(cp.e2),pr.dot(cp.e1));
+    return [Math.max(0,Math.min(NT-1,Math.floor(t*NT))),Math.min(NS-1,Math.floor((ph+Math.PI)/(2*Math.PI)*NS)),pr.length(),t,ph];}
+  function radius(cp,t,ph){const ft=Math.max(0,Math.min(NT-1,t*NT-0.5)),t0=Math.floor(ft),t1=Math.min(NT-1,t0+1),wt=ft-t0;
+    const fs=((ph+Math.PI)/(2*Math.PI)*NS-0.5+NS)%NS,s0=Math.floor(fs)%NS,s1=(s0+1)%NS,ws=fs-Math.floor(fs);const R=cp.r;
+    return (R[t0*NS+s0]*(1-ws)+R[t0*NS+s1]*ws)*(1-wt)+(R[t1*NS+s0]*(1-ws)+R[t1*NS+s1]*ws)*wt;}
+  const capPts=capFrames;
+  const pelX=new V(),wd=new V();
+  // push point m (cloth surface, effective) out of every proxy; returns the correction in out (zero if none)
+  function pushOut(m,ref,out){out.set(0,0,0);const q=c.copy(m);
+    for(const cp of caps){d.subVectors(cp.b,cp.a);const L2=d.lengthSq();let t=e.subVectors(q,cp.a).dot(d)/L2;if(t<-0.25||t>1.1)continue;const tc=Math.max(0,Math.min(1,t));
+      // the proxy is a radial profile around the bone, extended a quarter of its length past the joint above it (hip, knee cap)
+      const ax=e.copy(cp.a).addScaledVector(d,t);const n=a.subVectors(q,ax);const dist=n.length();if(dist>0.2)continue;
+      let r=radius(cp,tc,polar(cp,q)[4]);if(dist>=r)continue;
+      // outer side: away from the body's vertical axis through the pelvis, at the rest point of this piece of cloth
+      b.subVectors(ref,pelX);b.y=0;const dn=wd.copy(d).divideScalar(Math.sqrt(L2));
+      b.addScaledVector(dn,-b.dot(dn));if(b.lengthSq()<1e-10)b.copy(n);b.normalize();
+      if(dist<1e-6||n.dot(b)<-0.2*dist){n.copy(b);r=radius(cp,tc,polar(cp,pr.copy(ax).add(b))[4]);}else n.divideScalar(dist);
+      q.copy(ax).addScaledVector(n,r);}
+    out.subVectors(q,m);return out.lengthSq()>0;}
+  const sm=new V(),sq=new V(),cor=new V(),tmp=new V();
+  // collision samples (coat vertices): the spring part of a vertex follows its chains' middle joints and lower segments,
+  // i.e. per chain ~ (1-f)*x1 + f*x2 (f = the vertex's position along the segment); the skinned cloth = W*spring + (1-W)*rest
+  const samples=[];const qv=new V(),qv2=new V();
+  function collide(){
+    for(const ch of chains){qv.subVectors(ch.t[2],ch.t[1]).normalize();qv2.subVectors(ch.x[2],ch.x[1]).normalize();ch.rq.setFromUnitVectors(qv,qv2);ch.L2s=ch.t[2].distanceToSquared(ch.t[1]);}
+    for(const sp of samples){sm.set(0,0,0);
+      for(const en of sp.ent){const ch=chains[en.k];tmp.subVectors(sp.rest,ch.t[1]);en.f=Math.max(-0.5,Math.min(1.5,tmp.dot(cor.subVectors(ch.t[2],ch.t[1]))/ch.L2s));
+        tmp.applyQuaternion(ch.rq).add(ch.x[1]);sm.addScaledVector(tmp,en.w);}
+      tmp.copy(sm).addScaledVector(sp.rest,1-sp.W);
+      if(!pushOut(tmp,sp.rest,cor))continue;cor.divideScalar(sp.W);
+      for(const en of sp.ent){const ch=chains[en.k],b1=1-en.f,b2=en.f,n2=b1*b1+b2*b2;ch.x[1].addScaledVector(cor,b1/n2);ch.x[2].addScaledVector(cor,b2/n2);}}}
+  const MAXA=[0,0.9,1.25];  // max swing from the rest direction (rad): upper segment ~52 deg, lower ~72 deg
+  function lengths(){for(const ch of chains){
+      a.subVectors(ch.x[1],ch.o);clampDir(a,b.subVectors(ch.t[1],ch.o),MAXA[1]);ch.x[1].copy(ch.o).addScaledVector(a.normalize(),ch.L[1]);
+      // the hem hangs from the middle joint as positioned by the upper segment
+      a.subVectors(ch.x[2],ch.x[1]);clampDir(a,b.subVectors(ch.t[2],ch.t[1]),MAXA[2]);ch.x[2].copy(ch.x[1]).addScaledVector(a.normalize(),ch.L[2]);}}
+  const qa=new Q();
+  function clampDir(v,rest,maxA){const lv=v.length(),lr=rest.length();if(lv<1e-9||lr<1e-9){v.copy(rest);return;}
+    const cosA=v.dot(rest)/(lv*lr);if(cosA>=Math.cos(maxA))return;const ang=Math.acos(Math.max(-1,Math.min(1,cosA)));
+    const ax=tmp.crossVectors(rest,v);if(ax.lengthSq()<1e-12)ax.set(1,0,0).cross(rest);ax.normalize();qa.setFromAxisAngle(ax,maxA);v.copy(rest).normalize().multiplyScalar(lv).applyQuaternion(qa);}
+  function solve(it){for(let i=0;i<it;i++){lengths();collide();}lengths();collide();lengths();}
+  let acc=0;const H=1/60;let inited=false;const lastRoot=new M4(),lastPel=new M4(),dM=new M4(),inv=new M4();
+  const legRel=LEGS.map(()=>new V()),legRel0=LEGS.map(()=>new V());
+  function seed(){restBones();root.updateMatrixWorld(true);targets();capPts();P(pel,pelX);
+    for(const ch of chains)for(let s=1;s<3;s++){ch.x[s].copy(ch.t[s]);}
+    solve(16);for(const ch of chains)for(let s=1;s<3;s++)ch.px[s].copy(ch.x[s]);
+    for(const ch of chains){aim(ch.b[0],ch.b[1].position,ch.x[1]);aim(ch.b[1],ch.tail,ch.x[2]);}}
+  function carry(M){for(const ch of chains)for(let s=1;s<3;s++){ch.x[s].applyMatrix4(M);ch.px[s].applyMatrix4(M);}}
+  function step(){
+    restBones();root.updateMatrixWorld(true);targets();capPts();P(pel,pelX);
+    for(const ch of chains){for(let s=1;s<3;s++){const x=ch.x[s],px=ch.px[s];const vel=a.copy(x).sub(px).multiplyScalar(0.82);px.copy(x);
+        x.add(vel).addScaledVector(b.copy(ch.t[s]).sub(x),0.12);x.y-=0.00004;}}
+    solve(3);
+    for(const ch of chains){aim(ch.b[0],ch.b[1].position,ch.x[1]);aim(ch.b[1],ch.tail,ch.x[2]);}
+  }
+  function update(dt){
+    {const s=wornSig();if(s!==sig){sig=s;fit();if(inited)seed();}}
+    root.updateMatrixWorld(true);
+    if(!inited){seed();inited=true;pel.getWorldQuaternion(wq).invert();P(pel,c);LEGS.forEach((l,i)=>P(by[l[1]],legRel0[i]).sub(c).applyQuaternion(wq));}
+    else{
+      // ride with the character: the root (map yaw turns, placement) and a hip snap (walk loop restart) carry the cloth along
+      dM.multiplyMatrices(root.matrixWorld,inv.copy(lastRoot).invert());carry(dM);
+      const pNow=P(pel,a),pOld=b.setFromMatrixPosition(lastPel).applyMatrix4(dM);const jump=pNow.distanceTo(pOld);
+      if(jump>Math.max(0.03,dt*1.6)){inv.copy(lastPel).premultiply(dM).invert();carry(dM.multiplyMatrices(pel.matrixWorld,inv));}
+      // a leg jump relative to the hips (frozen pose, clip jump) re-seeds the cloth from rest, solved around the new legs
+      let lj=0;pel.getWorldQuaternion(wq).invert();P(pel,c);LEGS.forEach((l,i)=>{P(by[l[1]],legRel[i]).sub(c).applyQuaternion(wq);lj=Math.max(lj,legRel[i].distanceTo(legRel0[i]));legRel0[i].copy(legRel[i]);});
+      if(lj>Math.max(0.03,dt*2.2))seed();
+    }
+    lastRoot.copy(root.matrixWorld);lastPel.copy(pel.matrixWorld);
+    acc=Math.min(acc+dt,0.1);while(acc>=H){acc-=H;step();}}
+  const dbg=()=>{const f=v=>v.toArray().map(x=>+x.toFixed(3));return {chains:chains.map(ch=>({x1:f(ch.x[1]),x2:f(ch.x[2]),t1:f(ch.t[1]),t2:f(ch.t[2])})),samples:samples.map(sp=>f(sp.rest))};};
+  return {update,step,reset:()=>{inited=false;},fit,dbg};
+}
+
+
+// hue rotation for textured garments (keeps shading, swaps colour)
+function hueable(m){m.userData.hue={value:0};const prevH=m.onBeforeCompile;m.onBeforeCompile=(s,r)=>{if(prevH)prevH(s,r);s.uniforms.uHue=m.userData.hue;
+  s.fragmentShader='uniform float uHue;\n'+s.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+  { float a=uHue; vec3 k=vec3(0.57735); float c=cos(a); diffuseColor.rgb=diffuseColor.rgb*c+cross(k,diffuseColor.rgb)*sin(a)+k*dot(k,diffuseColor.rgb)*(1.0-c); }`);};m.needsUpdate=true;}
+// soft vinyl-toy skin: rosy shadows (fake subsurface) + a gentle warm rim at grazing angles
+// vinyl-toy look for all garments/hat/hair: lifted, colour-saturated shadows (no muddy black) + soft white rim
+const TOY={soft:{value:1}};
+function toy(m){if(m.userData.toy)return;m.userData.toy=1;const prev=m.onBeforeCompile;m.onBeforeCompile=(s,r)=>{if(prev)prev(s,r);s.uniforms.uToy=TOY.soft;
+  s.fragmentShader='uniform float uToy;\n'+s.fragmentShader.replace('#include <dithering_fragment>',`#include <dithering_fragment>
+  { float ndv=clamp(dot(normalize(normal),normalize(vViewPosition)),0.0,1.0); float fr=pow(1.0-ndv,2.6);
+    vec3 floorC=diffuseColor.rgb*TOYFLOOR*vec3(1.0,0.95,1.05);
+    gl_FragColor.rgb=mix(gl_FragColor.rgb,max(gl_FragColor.rgb,floorC),uToy);
+    gl_FragColor.rgb+=vec3(1.0,0.95,0.98)*fr*TOYRIM*uToy;
+    { float l=dot(gl_FragColor.rgb,vec3(0.299,0.587,0.114)); gl_FragColor.rgb=max(vec3(0.0),mix(vec3(l),gl_FragColor.rgb,TOYSAT)); gl_FragColor.rgb=(gl_FragColor.rgb-0.5)*TOYCON+0.5; } }`.replace(/TOYFLOOR/g,STUDIO?'0.30':'0.62').replace(/TOYRIM/g,STUDIO?'0.10':'0.22').replace(/TOYSAT/g,STUDIO?(new URLSearchParams(location.search).get('sat')||'1.3'):'1.0').replace(/TOYCON/g,STUDIO?(new URLSearchParams(location.search).get('con')||'1.08'):'1.0'));};
+  m.envMapIntensity=0.3;m.roughness=Math.min(m.roughness??0.6,0.6);m.needsUpdate=true;}
+const SKIN={tone:{value:new THREE.Vector3(1,1,1)},soft:{value:1}};
+function softSkin(m){m.onBeforeCompile=s=>{s.uniforms.uTone=SKIN.tone;s.uniforms.uSoft=SKIN.soft;
+  s.fragmentShader='uniform vec3 uTone;uniform float uSoft;\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n  diffuseColor.rgb=min(diffuseColor.rgb*uTone,vec3(1.0));').replace('#include <dithering_fragment>',`#include <dithering_fragment>
+  { float ndv=clamp(dot(normalize(normal),normalize(vViewPosition)),0.0,1.0); float fr=pow(1.0-ndv,2.2);
+    gl_FragColor.rgb=mix(gl_FragColor.rgb,max(gl_FragColor.rgb,diffuseColor.rgb*vec3(0.80,0.64,0.64)*SKF),uSoft);
+    gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(1.0,0.84,0.84),fr*SKR*uSoft); }`.replace(/SKF/g,STUDIO?'0.62':'1.0').replace(/SKR/g,STUDIO?'0.25':'0.4'));};m.roughness=0.62;m.needsUpdate=true;}
+// ---- living eyes: the painted eye decal is split into layers (eye_layers.py): white, iris (slides for gaze),
+// lash (slides down with the upper lid). Blink / gaze / squint / iris size are per-eye uniforms driven below.
+// iris colours: each one is its own painted iris layer (gpt image repaint of eye_iris.png, runecast_fix/iris/),
+// so blink / gaze / expressions keep working unchanged: only the eIris texture is swapped.
+const IRIS_COLORS=[['Violet','violet','#8a4fd8'],['Blue','blue','#2f6fe0'],['Aqua','aqua','#1fc3c9'],['Green','green','#2fa84f'],['Hazel','hazel','#8a7a34'],
+  ['Amber','amber','#e0a020'],['Brown','brown','#7a4520'],['Grey','grey','#8c97a6'],['Ruby','ruby','#c0243a'],['Pink','pink','#f06aa8']];
+const IRIS={tex:{value:null},cache:{}};const LASH={value:null},LASHES={};
+function setLash(f){if(!LASHES[f]){const t=new THREE.TextureLoader().load('eyes/'+f+'?v=1');t.flipY=false;t.encoding=THREE.sRGBEncoding;t.anisotropy=4;LASHES[f]=t;}LASH.value=LASHES[f];}
+function setIris(i){const c=IRIS_COLORS[i]||IRIS_COLORS[0];let t=IRIS.cache[c[1]];
+  if(!t){t=new THREE.TextureLoader().load('eyes/iris_'+c[1]+'.png?v=1');t.flipY=false;t.encoding=THREE.sRGBEncoding;t.anisotropy=4;IRIS.cache[c[1]]=t;}
+  IRIS.tex.value=t;try{localStorage.setItem('irisColor',i)}catch(e){}}
+// ---- girl body: one smooth warp of the bind-pose space (Y up, Z = left/right, X = front), applied to the body AND to
+// every garment / hair mesh, so the same fitted clothes follow the new shape: slimmer waist, a touch wider hips,
+// slimmer arms and legs. Skinning is untouched (only rest positions move a few mm), so all animations still work.
+const FACE_DEF=0.8,FACE_PARAMS={yE:0.215,yC:0.09,yN0:0.0,yN1:0.07,xB:-0.04,xF:0.16,cz:0,zR:0.2,A:0.26,B:0.2,C:0.05,D:0.1,zI:0.2,zO:0.27,yL0:0.03,yL1:0.08,xLB:-0.02,xLF:0.08,zLI:0.12,zLO:0.2};
+function GirlWarp(root){const G=(y,c,w)=>Math.exp(-((y-c)*(y-c))/(2*w*w)),CZ=-0.005,CX=0.005;
+  const bw=n=>{const b=root.getObjectByName(n);return b?b.getWorldPosition(new THREE.Vector3()):null;};
+  const legs=[['L_Thigh','L_Foot'],['R_Thigh','R_Foot']].map(([a,b])=>[bw(a),bw(b)]).filter(l=>l[0]&&l[1]);
+  const arms=[['L_Upperarm','L_Hand'],['R_Upperarm','R_Hand']].map(([a,b])=>[bw(a),bw(b)]).filter(l=>l[0]&&l[1]);
+  const q=new THREE.Vector3(),t=new THREE.Vector3(),ab=new THREE.Vector3();
+  const rad=(p,a,b,k,lo,hi)=>{ab.subVectors(b,a);let u=t.subVectors(p,a).dot(ab)/ab.lengthSq();if(u<lo||u>hi+0.35)return;
+    q.copy(a).addScaledVector(ab,u);if(q.distanceTo(p)>0.075)return; // only the limb itself, not a hat brim above it
+    const f=1-(1-k)*Math.min(1,Math.max(0,u-lo)/0.25)*Math.min(1,Math.max(0,hi+0.35-u)/0.35);q.copy(a).addScaledVector(ab,u);p.sub(q).multiplyScalar(f).add(q);};
+  const warp=p=>{const y=p.y;
+    // torso: waist in, hips out (sideways), waist a bit shallower front-to-back
+    const L=1-0.10*G(y,-0.115,0.042)+0.075*G(y,-0.205,0.035),D=1-0.06*G(y,-0.115,0.045);
+    if(y<0.0){p.z=CZ+(p.z-CZ)*L;p.x=CX+(p.x-CX)*D;}
+    // limbs: thinner around their bone axis (the root 20% of each limb fades in so the joints stay put)
+    if(y<-0.21)for(const [a,b] of legs){if(Math.abs(p.z-a.z)<0.075){rad(p,a,b,0.9,0.1,0.72);break;}}
+    if(y>-0.08&&Math.abs(p.z-CZ)>0.1)for(const [a,b] of arms){if(Math.sign(p.z-CZ)===Math.sign(a.z-CZ)){rad(p,a,b,0.88,0.12,0.8);break;}}
+  };
+  const meshes=[],seen=new Set();let ON=false,HATP=null;root.updateMatrixWorld(true);
+  // rest-pose frame of a mesh's position data. Item files (wardrobe garments, hairs) are re-bound to the body's bones with
+  // their own inverse bind matrices, which after meshopt quantization also carry the de-quantization, so their
+  // matrixWorld is NOT their rest frame (the warps used to miss them entirely). Their frame is G(item) =
+  // matrixWorld * bindMatrix^-1 * bodyInv_j^-1 * itemInv_j * bindMatrix (the same for every joint j), mapped into the
+  // body's frame through the builtin hair, whose rest frame is known to be its matrixWorld: F = M_hair * G(hair)^-1 * G(item).
+  let BODY=null,HB=null;root.traverse(o=>{if(!o.isSkinnedMesh)return;if(!BODY&&/^tripo_/.test(o.name))BODY=o;if(!HB&&o.name==='hair')HB=o;});
+  const Gm=(o,n)=>{const sk=o.skeleton,bs=BODY.skeleton,j=sk.bones.findIndex(b=>b.name===n),k=bs.bones.findIndex(b=>b.name===n);if(j<0||k<0)return null;
+    return o.matrixWorld.clone().multiply(o.bindMatrixInverse).multiply(bs.boneInverses[k].clone().invert()).multiply(sk.boneInverses[j]).multiply(o.bindMatrix);};
+  const KH=(BODY&&HB)?HB.matrixWorld.clone().multiply(Gm(HB,'Head').invert()):null;
+  const restM=o=>{const M=o.matrixWorld.clone();if(!KH||!o.isSkinnedMesh||!o.userData.item)return M;const g=Gm(o,'Head')||Gm(o,'Hip');return g?KH.clone().multiply(g):M;};
+  // face shape (?face=0..1.5, default FACE_DEF): a smooth warp of the lower face in the same rest space, applied to the
+  // body AND everything on the head (hairs, caps, hat, mouth/nose decals, blush), so items keep fitting. Zero at and above
+  // the eyes (eyes, lids, brows untouched) and below the jaw line (neck seam, collar untouched); strongest at the chin,
+  // strongest at the front of the face and fading to nothing behind the ears. Jaw narrower, chin lifted and set back.
+  let FACE=+(new URLSearchParams(location.search).get('face')??FACE_DEF);if(!(FACE>=0))FACE=0;
+  const SS=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+  const FW=Object.assign({},FACE_PARAMS);try{Object.assign(FW,JSON.parse(new URLSearchParams(location.search).get('fp')||'{}'))}catch(e){}
+  const face=p=>{if(p.y>FW.yE||p.y<Math.min(FW.yN0,FW.yL0))return;const s=FACE;
+    const u=Math.min(1,(FW.yE-p.y)/(FW.yE-FW.yC)),wy=SS(0,1,u);                 // 0 at the eye line, 1 at the chin
+    const dz0=Math.abs(p.z-FW.cz),wf=SS(FW.xB,FW.xF,p.x)*SS(FW.zO,FW.zI,dz0),wn=SS(FW.yN0,FW.yN1,p.y),w=s*wy*wf*wn,wl=s*wy*Math.max(wf,SS(FW.yC,FW.yC-0.03,p.y)*SS(FW.xLB,FW.xLF,p.x)*SS(FW.zLO,FW.zLI,dz0))*SS(FW.yL0,FW.yL1,p.y);if(w<=0&&wl<=0)return; // front of the face / head width; the lift reaches lower (collar follows the chin)
+    const dz=p.z-FW.cz,zr=Math.min(1,Math.abs(dz)/FW.zR);                        // cheeks/jaw pull in more at the sides
+    p.z=FW.cz+dz*(1-FW.A*w*(0.35+0.65*zr));
+    p.y+=(FW.B+FW.D*zr*zr)*(FW.yE-FW.yC)*wl;                                     // lift: shorter lower face, sides more (a U-shaped chin)
+    p.x-=FW.C*Math.max(0,p.x-FW.xB)*w;};                                         // chin a touch back
+
+  // hat tuck: hair inside a hat's profile (fit_hat.mjs: min radius of the hat per 1 cm band around the head axis)
+  const tuck=p=>{const h=HATP;if(!h||p.y<h.y0+0.01)return;const dx=p.x-h.cx,dz=p.z-h.cz,r=Math.hypot(dx,dz);
+    const k=Math.min(h.bins.length-1,Math.max(0,Math.round(p.y*100)-Math.round(h.bins[0][0]*100)));let lim=(h.bins[k]||h.bins[h.bins.length-1])[1]-0.01;
+    if(p.y>h.top-0.012){if(!h.closed)return;p.y=h.top-0.012;}
+    if(r>lim&&r>1e-6){const t=Math.min(1,(p.y-h.y0-0.01)/0.02);const nr=r*(1-t)+lim*t;p.x=h.cx+dx/r*nr;p.z=h.cz+dz/r*nr;}};
+  // quantized (meshopt / KHR_mesh_quantization) items store normalized ints; three r128 getX/setXYZ return the raw ints,
+  // so positions are converted to real units here (without this the warps never reached the quantized garments)
+  const QN={Int8Array:127,Uint8Array:255,Int16Array:32767,Uint16Array:65535};
+  // (the girl body warp keeps its previous reach: body + builtin meshes only, item files are not girl-warped)
+  const put=(P,q,i,x,y,z)=>{if(q)P.setXYZ(i,Math.round(x*q),Math.round(y*q),Math.round(z*q));else P.setXYZ(i,x,y,z);};
+  const apply=m=>{const {P,orig,q}=m;const useHat=HATP&&m.hair;if(!ON&&!useHat&&!FACE){for(let i=0;i<P.count;i++)put(P,q,i,orig[i*3],orig[i*3+1],orig[i*3+2]);(P.data||P).needsUpdate=true;return;}
+    const v=new THREE.Vector3();for(let i=0;i<P.count;i++){v.fromArray(orig,i*3).applyMatrix4(m.M);if(FACE)face(v);if(ON&&!m.item)warp(v);if(useHat)tuck(v);v.applyMatrix4(m.Mi);put(P,q,i,v.x,v.y,v.z);}(P.data||P).needsUpdate=true;};
+  // rest pose world matrix (bindMatrix is not reliable here); a position buffer shared by several meshes is deformed once
+  const reg=o=>{if(!o.isMesh||!o.geometry.attributes.position||/^mesh_[2-9]$/.test(o.name))return; // eyes + brows stay rigid (mouth, nose, blush follow the face)
+    const P=o.geometry.attributes.position,key=P.data||P;if(seen.has(key))return;seen.add(key); // attributes are interleaved
+    const n=P.count,orig=new Float32Array(n*3),arr=(P.data||P).array,q=P.normalized?(QN[arr.constructor.name]||0):0,iq=q?1/q:1;for(let i=0;i<n;i++){orig[i*3]=P.getX(i)*iq;orig[i*3+1]=P.getY(i)*iq;orig[i*3+2]=P.getZ(i)*iq;}
+    const M=restM(o),Mi=M.clone().invert();const m={o,P,orig,q,M,Mi,item:!!o.userData.item,hair:/^hair(?!_cap)/.test(o.name)&&!o.userData.builtinHair};meshes.push(m);if(ON||FACE||(HATP&&m.hair))apply(m);};
+  root.traverse(o=>{if(/^hair/.test(o.name))o.userData.builtinHair=1;});root.traverse(reg);
+  const set=on=>{ON=on;for(const m of meshes)apply(m);};set.add=o=>{o.updateMatrixWorld(true);o.traverse(reg);};
+  set.hat=prof=>{HATP=prof;for(const m of meshes)if(m.hair)apply(m);};
+  set.face=f=>{FACE=+f||0;for(const m of meshes)apply(m);if(typeof BKREG!=='undefined')BKREG.forEach(bakeFill);};set.faceParams=FW;set.getFace=()=>FACE;set.meshes=meshes;return set;}
+// ---- hair colour: a gradient map on the hair texture (its luminance, normalised by the texture's mean, times the
+// picked colour), so every hairstyle keeps its locks and sheen in any colour. Flat-colour hair just takes the colour.
+const HAIRC={on:{value:0},col:{value:new THREE.Color(1,1,1)}};
+const HAIR_COLORS=[['Natural',null],['Black','#2a2226'],['Dark brown','#4a2e1f'],['Chestnut','#7a4526'],['Auburn','#9a3d22'],['Ginger','#c56a33'],
+  ['Blonde','#dcbd7c'],['Platinum','#efe6d6'],['Pink','#f59ac0'],['Lilac','#b48be8'],['Blue','#4f7fe0'],['Mint','#6fd8b8']];
+function hairable(m){if(m.userData.hairc)return;m.userData.hairc={mean:{value:0.4}};const base=m.color.clone();m.userData.hairc.base=base;
+  const tex=m.map;if(tex&&tex.image){try{const cv=document.createElement('canvas');cv.width=cv.height=64;const cx=cv.getContext('2d');cx.drawImage(tex.image,0,0,64,64);
+    const d=cx.getImageData(0,0,64,64).data;let sl=0,n=0;for(let i=0;i<d.length;i+=4){const l=(0.3*d[i]+0.59*d[i+1]+0.11*d[i+2])/255;if(l>0.04){sl+=Math.pow(l,2.2);n++;}}m.userData.hairc.mean.value=(n?sl/n:0.4)*(0.3*base.r+0.59*base.g+0.11*base.b);}catch(e){}}
+  const prev=m.onBeforeCompile;m.onBeforeCompile=(s,r)=>{if(prev)prev(s,r);s.uniforms.uHairOn=HAIRC.on;s.uniforms.uHairCol=HAIRC.col;s.uniforms.uHairMean=m.userData.hairc.mean;
+    s.fragmentShader='uniform float uHairOn,uHairMean;uniform vec3 uHairCol;\n'+s.fragmentShader.replace('#include <color_fragment>','#ifdef USE_COLOR\n if(uHairOn<0.5) diffuseColor.rgb*=vColor.rgb;\n#endif').replace('#include <map_fragment>',`#include <map_fragment>
+  if(uHairOn>0.5){ float hl=dot(diffuseColor.rgb,vec3(0.3,0.59,0.11)); diffuseColor.rgb=uHairCol*clamp(hl/max(uHairMean*${tex?'1.0':'0.0'}+${tex?'0.0':'1.0'}*hl,1e-3),0.0,2.2); }`);};
+  m.needsUpdate=true;}
+function setHairColor(i){const c=HAIR_COLORS[i]||HAIR_COLORS[0];HAIRC.on.value=c[1]?1:0;if(c[1])HAIRC.col.value.set(c[1]).convertSRGBToLinear();try{localStorage.setItem('hairColor',i)}catch(e){}}
+// ---- garment recolour (Sims-style swatches). Works on the albedo, before the baked light (bkLook) and the toy grade, so
+// shading, folds and texture detail stay. Two methods (?tint=mul for the plain one):
+//  'shift' (default): in gamma-space YIQ the garment's dominant colour (measured on the texels its UVs actually use) is moved
+//     onto the swatch: lightness scales by Yswatch/Ydominant, chroma is replaced by the swatch's chroma plus half of each
+//     texel's own deviation. Texels whose chromaticity is far from the dominant one (gold trims, white cuffs, buttons)
+//     fade out of the transfer, so the accents keep their colour, like a Sims swatch.
+//  'mul': albedo * swatch / dominant everywhere (flat multiply; trims shift too).
+const TINT_MODE=new URLSearchParams(location.search).get('tint')==='mul'?1:0;
+const PALETTE=[['original','Original',null],['violet','Violet','#7b4fd6'],['royal','Royal blue','#2f55c8'],['emerald','Emerald','#1f9a63'],
+  ['crimson','Crimson','#b8263e'],['midnight','Midnight','#1b2150'],['ochre','Gold','#d7a032'],['teal','Teal','#1f8f94'],
+  ['rose','Rose','#e07aa3'],['charcoal','Charcoal','#46464f'],['cream','Cream','#efe3c8']];
+const YIQ=c=>[0.299*c[0]+0.587*c[1]+0.114*c[2],0.596*c[0]-0.274*c[1]-0.322*c[2],0.211*c[0]-0.523*c[1]+0.312*c[2]];
+const FROM_YIQ=p=>[p[0]+0.956*p[1]+0.621*p[2],p[0]-0.272*p[1]-0.647*p[2],p[0]-1.106*p[1]+1.703*p[2]];
+const TINT_GLSL=`
+  if(uTintOn>0.5){
+    const mat3 toYIQ=mat3(0.299,0.596,0.211, 0.587,-0.274,-0.523, 0.114,-0.322,0.312);
+    const mat3 toRGB=mat3(1.0,1.0,1.0, 0.956,-0.272,-1.106, 0.621,-0.647,1.703);
+    vec3 tOut;
+    if(TINTMUL>0.5){ tOut=diffuseColor.rgb*uTintMul; }
+    else{
+      vec3 g=pow(max(diffuseColor.rgb,vec3(0.0)),vec3(1.0/2.2)); vec3 p=toYIQ*g;
+      float py=max(p.x,0.04),sy=max(uTintSrc.x,0.04),dy=max(uTintDst.x,0.02);
+      vec2 cp=p.yz/py,cs=uTintSrc.yz/sy,cd=uTintDst.yz/dy;
+      float y2=p.x*dy/sy; y2=y2>0.82?0.82+(y2-0.82)/(1.0+(y2-0.82)*5.0):y2;   // soft shoulder: light swatches keep their highlights
+      vec2 dev=cp-cs; dev*=min(1.0,0.3/max(length(dev),1e-4));   // own variation, capped (dark texels have noisy chroma)
+      vec3 o=toRGB*vec3(y2,(cd+dev*0.5)*y2);
+      float w=max(uTintForce,1.0-smoothstep(uTintRad,uTintRad+0.18,length(cp-cs)));
+      w=max(w,1.0-smoothstep(0.08,0.18,p.x));   // deep shade / dark lining follows the new colour (its hue is unreliable)
+      tOut=mix(diffuseColor.rgb,pow(clamp(o,0.0,1.0),vec3(2.2)),w);
+    }
+    diffuseColor.rgb=tOut;
+  }`.replace('TINTMUL',TINT_MODE?'1.0':'0.0');
+// every garment material gets the (off) recolour stage when it loads, so picking a swatch only changes uniforms
+function tintable(m,force){if(!m||m.userData.tint)return;const U={on:{value:0},src:{value:new THREE.Vector3(0.5,0,0)},dst:{value:new THREE.Vector3(0.5,0,0)},
+    mul:{value:new THREE.Vector3(1,1,1)},force:{value:force?1:0},rad:{value:0.16}};m.userData.tint=U;const prev=m.onBeforeCompile;
+  m.onBeforeCompile=(s,r)=>{if(prev)prev(s,r);s.uniforms.uTintOn=U.on;s.uniforms.uTintSrc=U.src;s.uniforms.uTintDst=U.dst;s.uniforms.uTintMul=U.mul;s.uniforms.uTintForce=U.force;s.uniforms.uTintRad=U.rad;
+    s.fragmentShader='uniform float uTintOn,uTintForce,uTintRad;uniform vec3 uTintSrc,uTintDst,uTintMul;\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TINT_GLSL);};
+  // the chain of shader patches decides the program: key it on the patches this material has, not on the outer closure text
+  const u=m.userData;m.customProgramCacheKey=()=>'rc|'+[u.soft,u.toy,u.hairc?1:0,u.bk,1,TINT_MODE].join(',');m.needsUpdate=true;}
+// dominant albedo colour of a garment (gamma sRGB 0..1): sample the colour texture (and vertex colours) at each triangle's
+// centre, weighted by the triangle's surface area (dense seams and trims must not outvote big panels), bin by chromaticity
+// and average the heaviest bin
+function dominantColor(meshes){const S=[];
+  const nrm=a=>!a||!a.normalized?1:a.array instanceof Uint8Array?255:a.array instanceof Int8Array?127:a.array instanceof Uint16Array?65535:a.array instanceof Int16Array?32767:1;
+  const A=new THREE.Vector3(),B=new THREE.Vector3(),C=new THREE.Vector3(),v2=new THREE.Vector2();
+  for(const o of meshes){const m=o.material,g=o.geometry;if(!m||!g)continue;const base=[m.color.r,m.color.g,m.color.b];
+    const P=g.attributes.position,uv=g.attributes.uv,col=g.attributes.color,idx=g.index,nt=idx?idx.count/3:P.count/3,step=Math.max(1,Math.floor(nt/20000));
+    let px=null,tw=256,th=256;const tex=m.map;
+    if(tex&&tex.image&&uv){try{const cv=document.createElement('canvas');cv.width=tw;cv.height=th;const cx=cv.getContext('2d');cx.drawImage(tex.image,0,0,tw,th);px=cx.getImageData(0,0,tw,th).data;tex.updateMatrix();}catch(e){px=null;}}
+    const kp=nrm(P),ku=nrm(uv),kc=nrm(col);
+    for(let t=0;t<nt;t+=step){const i0=idx?idx.getX(t*3):t*3,i1=idx?idx.getX(t*3+1):t*3+1,i2=idx?idx.getX(t*3+2):t*3+2;
+      A.fromBufferAttribute(P,i0);B.fromBufferAttribute(P,i1);C.fromBufferAttribute(P,i2);const w=B.sub(A).cross(C.sub(A)).length()/(kp*kp);if(!(w>0))continue;
+      const c=base.slice();
+      if(px){v2.set((uv.getX(i0)+uv.getX(i1)+uv.getX(i2))/(3*ku),(uv.getY(i0)+uv.getY(i1)+uv.getY(i2))/(3*ku)).applyMatrix3(tex.matrix);
+        let x=v2.x-Math.floor(v2.x),y=v2.y-Math.floor(v2.y);if(tex.flipY)y=1-y;
+        const j=(Math.min(th-1,Math.floor(y*th))*tw+Math.min(tw-1,Math.floor(x*tw)))*4;for(let k=0;k<3;k++)c[k]*=Math.pow(px[j+k]/255,2.2);}
+      if(col){const cc=[col.getX(i0)+col.getX(i1)+col.getX(i2),col.getY(i0)+col.getY(i1)+col.getY(i2),col.getZ(i0)+col.getZ(i1)+col.getZ(i2)];for(let k=0;k<3;k++)c[k]*=cc[k]/(3*kc);}
+      S.push([c.map(v=>Math.pow(Math.max(v,0),1/2.2)),w]);}}
+  if(!S.length)return [0.5,0.5,0.5];
+  const bins=new Map();for(const [c,w] of S){const p=YIQ(c);if(p[0]<0.05)continue;const k=Math.round(p[1]/p[0]/0.16)+','+Math.round(p[2]/p[0]/0.16);
+    const b=bins.get(k)||{n:0,s:[0,0,0]};b.n+=w;b.s[0]+=c[0]*w;b.s[1]+=c[1]*w;b.s[2]+=c[2]*w;bins.set(k,b);}
+  // score = area, with a bonus for coloured clusters: on the knight top the dyed cloth wins over the larger grey chainmail
+  let best=null,bs=0;for(const [k,b] of bins){const [i,q]=k.split(',').map(v=>+v*0.16),sc=b.n*(0.3+Math.min(Math.hypot(i,q),0.5));if(sc>bs){bs=sc;best=b;}}if(!best)return [0.5,0.5,0.5];const dom=best.s.map(v=>v/best.n);
+  // transfer radius from the spread of the garment's colours (a busy print like the doublet's needs a wider band than a
+  // plain coat); texels beyond it (trims, embroidery in other hues) keep their colour
+  const pd=YIQ(dom),cs=[pd[1]/Math.max(pd[0],0.04),pd[2]/Math.max(pd[0],0.04)];let tot=0;
+  const ds=S.map(([c,w])=>{const p=YIQ(c),y=Math.max(p[0],0.04);tot+=w;return [Math.hypot(p[1]/y-cs[0],p[2]/y-cs[1]),w];}).sort((a,b)=>a[0]-b[0]);
+  let acc=0,r40=0;for(const [d,w] of ds){acc+=w;if(acc>=0.4*tot){r40=d;break;}}
+  dom.rad=Math.min(0.42,Math.max(0.16,r40*2.5));return dom;}
+const TINTS={};   // item id -> {mats,meshes,dom}
+function tintRegister(id,meshes){const ms=[];if(TINTS[id]){for(const o of meshes)if(o.material){tintable(o.material,!o.material.map&&!(o.geometry&&o.geometry.attributes.color));TINTS[id].mats.push(o.material);TINTS[id].meshes.push(o);}return;}for(const o of meshes)if(o.material){tintable(o.material,!o.material.map&&!(o.geometry&&o.geometry.attributes.color));ms.push(o.material);}
+  TINTS[id]={mats:ms,meshes,dom:null};}
+// key colours measured offline on the OUTSIDE of closed shells (boots3d/dom_hint.py): the boot interior (cuff colour)
+// would otherwise outvote the visible panels
+const TINTDOM={"shoes_alch":[0.3375,0.183,0.1206,0.16],"shoes_crystal":[0.3284,0.2114,0.408,0.24],"shoes_curl":[0.2851,0.1405,0.3379,0.174],"shoes_fire":[0.5588,0.0585,0.1332,0.42],"shoes_forest":[0.2633,0.305,0.0575,0.228],"shoes_frost":[0.5142,0.5584,0.6952,0.16],"shoes_royal":[0.447,0.0398,0.2556,0.42],"shoes_star":[0.1453,0.1662,0.2759,0.16],"shoes_wing":[0.8821,0.8531,0.8122,0.16]};
+function tintDominant(id){const t=TINTS[id];if(!t)return null;if(!t.dom&&TINTDOM[id]){const h=TINTDOM[id];t.dom=h.slice(0,3);t.dom.rad=h[3];}if(!t.dom){const main=t.meshes.filter(o=>o.material&&(o.material.map||(o.geometry&&o.geometry.attributes.color)));t.dom=dominantColor(main.length?main:t.meshes);}return t.dom;}
+function applyTint(id,key){const t=TINTS[id];if(!t)return;const sw=PALETTE.find(p=>p[0]===key);
+  if(!sw||!sw[2]){t.mats.forEach(m=>m.userData.tint.on.value=0);return;}
+  const dom=tintDominant(id),dst=new THREE.Color(sw[2]),d=[dst.r,dst.g,dst.b];const S=YIQ(dom),D=YIQ(d);
+  const lin=v=>Math.pow(v,2.2),mul=d.map((v,k)=>lin(v)/Math.max(lin(dom[k]),0.02));
+  t.mats.forEach(m=>{const U=m.userData.tint;U.src.value.set(...S);U.dst.value.set(...D);U.mul.value.set(...mul);U.rad.value=dom.rad||0.16;U.on.value=1;});}
+function Eyes(by,cam){const P0=new URLSearchParams(location.search);
+  const names=['mesh_2','mesh_3'].filter(n=>by[n]);if(names.length<2)return null;
+  const tl=new THREE.TextureLoader(),T=(f,srgb)=>{const t=tl.load('eyes/'+f+'?v=1');t.flipY=false;if(srgb)t.encoding=THREE.sRGBEncoding;t.anisotropy=4;return t;};
+  const tex={eBase:T('eye_base.png',1),eCols:T('eye_cols.png',0)};if(!LASH.value)setLash('eye_lash.png');
+  const eyes=names.map(n=>{const m=by[n];const U={eLook:{value:new THREE.Vector2()},eBlink:{value:0},eSq:{value:0},eIsc:{value:1}};
+    for(const k in tex)U[k]={value:tex[k]};if(!IRIS.tex.value)setIris(0);U.eIris=IRIS.tex;U.eLash=LASH;
+    m.material=m.material.clone();m.material.onBeforeCompile=s=>{Object.assign(s.uniforms,U);
+      s.fragmentShader='uniform sampler2D eBase,eIris,eLash,eCols;uniform vec2 eLook;uniform float eBlink,eSq,eIsc;\n'+s.fragmentShader.replace('#include <map_fragment>',`
+  { vec2 uv=vUv; vec4 cc=texture2D(eCols,vec2(uv.x,0.5)); float top=cc.r,bot=cc.g;
+    float cl=top+0.32*(bot-top); float lid=bot-eBlink*(bot-cl); float low=top+max(eSq*0.45,eBlink*eBlink*0.32)*(bot-top);
+    float vis=smoothstep(lid+0.004,lid-0.004,uv.y)*smoothstep(low-0.004,low+0.004,uv.y);
+    vec4 b=mapTexelToLinear(texture2D(eBase,uv));
+    vec2 cu=vec2(0.55,0.5)+(uv-vec2(0.55,0.5)-eLook)/eIsc; vec4 ir=mapTexelToLinear(texture2D(eIris,cu));
+    ir.a*=step(0.0,cu.x)*step(cu.x,1.0)*step(0.0,cu.y)*step(cu.y,1.0);
+    vec3 col=mix(b.rgb,ir.rgb,ir.a*b.a);
+    col*=1.0-0.28*clamp((uv.y-(lid-0.09))/0.09,0.0,1.0);
+    float a=b.a*vis;
+    float ll=clamp(1.0-abs(uv.y-low)/0.008,0.0,1.0)*step(0.05,eSq)*step(0.5,cc.b)*0.5*step(uv.y,lid);
+    col=mix(col,vec3(0.48,0.16,0.14),ll); a=max(a,ll);
+    float dd=bot-lid; vec2 lu=uv+vec2(0.0,dd); vec4 ls=mapTexelToLinear(texture2D(eLash,lu)); ls.a*=step(lu.y,1.0);
+    ls.a*=max(1.0-eBlink*3.0,smoothstep(lid-0.06,lid-0.03,uv.y));
+    col=mix(col,ls.rgb,ls.a); a=max(a,ls.a);
+    if(EDBG>0.5){col=ls.rgb;a=1.0;} if(EDBG>1.5){col=vec3(ls.a,b.a,ir.a);}
+    diffuseColor.rgb*=col; diffuseColor.a*=a; }`.replace(/EDBG/g,(P0.get('edbg')||'0')+'.0'));};
+    m.material.needsUpdate=true;return {m,U};});
+  const brows=['mesh_4','mesh_5'].filter(n=>by[n]).map(n=>({o:by[n],y0:by[n].position.y}));
+  const P=new URLSearchParams(location.search);let mode=P.get('eyes')||'auto';
+  const R=(a,b)=>a+Math.random()*(b-a),v=new THREE.Vector3();
+  let t=0,nextBlink=R(1.5,4),blinkT=-1,dbl=false,nextSac=R(0.4,1.5),gz=new THREE.Vector2(),gzT=new THREE.Vector2(),glance=0,wink=-1;
+  const cur={sq:0,isc:1,open:0,brow:0,look:new THREE.Vector2()};const GX=+(P.get('gx')||-0.1);
+  // bind pose: the face looks along world +X; keep that direction and world up in the head's frame
+  const head=by.mesh_2.parent;head.updateWorldMatrix(true,false);const iq0=head.getWorldQuaternion(new THREE.Quaternion()).invert();
+  const ref=new THREE.Vector3(1,0,0).applyQuaternion(iq0),up0=new THREE.Vector3(0,1,0).applyQuaternion(iq0);
+  // expression per animation clip / per button
+  const EXP={neutral:{sq:0,isc:1,open:0,brow:0},happy:{sq:0.8,isc:1,open:0.12,brow:0.004},surprised:{sq:0,isc:0.84,open:0,brow:0.009},
+    sad:{sq:0.1,isc:1,open:0.3,brow:-0.004,look:[0,-0.05]},focus:{sq:0.25,isc:0.95,open:0.12,brow:-0.003},sleepy:{sq:0.15,isc:1,open:0.55,brow:-0.002}};
+  const byAnim={clap:'happy',bow:'happy',afraid:'surprised',scared_01:'surprised',cry:'sad',cast_a_spell:'focus',box_03:'focus'};
+  const blinkCurve=x=>x<0.07?x/0.07:x<0.1?1:x<0.24?1-(x-0.1)/0.14:0;   // 70 ms close, 30 ms hold, 140 ms open
+  function update(dt,anim){t+=dt;
+    const ex=EXP[mode==='auto'?(byAnim[anim]||'neutral'):mode]||EXP.neutral;
+    const k=1-Math.exp(-dt*6);cur.sq+=(ex.sq-cur.sq)*k;cur.isc+=(ex.isc-cur.isc)*k;cur.open+=(ex.open-cur.open)*k;cur.brow+=(ex.brow-cur.brow)*k;
+    // gaze: look at the camera most of the time, with saccades and glances away (scared eyes dart faster)
+    const scared=ex===EXP.surprised;
+    if(t>nextSac){if(Math.random()<(scared?0.6:0.25)){glance=R(0.4,1.2);gzT.set(R(-0.09,0.09),R(-0.035,0.04));}else{glance=0;gzT.set(R(-0.012,0.012),R(-0.008,0.008));}
+      nextSac=t+(scared?R(0.25,0.7):R(0.6,2.2));if(Math.abs(gzT.x-gz.x)>0.08&&Math.random()<0.5&&blinkT<0)blinkT=0;}
+    if(glance>0)glance-=dt;
+    const e=eyes[0].m;e.updateMatrixWorld();
+    // the painted iris is right for a viewer straight in front of the face (+X of the head); gaze = camera angle relative to that
+    const hp=head.getWorldPosition(new THREE.Vector3()),hq=head.getWorldQuaternion(new THREE.Quaternion()).invert();
+    v.copy(cam.position).sub(hp).applyQuaternion(hq).normalize();
+    const ay=Math.atan2(v.clone().cross(ref).dot(up0),v.dot(ref)-v.dot(up0)*ref.dot(up0)),ap=Math.asin(THREE.MathUtils.clamp(v.dot(up0),-1,1));
+    const camL=new THREE.Vector2(THREE.MathUtils.clamp(ay*GX,-0.085,0.085),THREE.MathUtils.clamp(ap*0.08,-0.04,0.04));
+    const want=glance>0?gzT.clone():camL.add(gzT);if(ex.look)want.add(new THREE.Vector2(...ex.look));
+    gz.lerp(want,1-Math.exp(-dt*28));   // saccades are fast
+    // blinks: every 2-6 s, sometimes double
+    if(blinkT<0&&t>nextBlink){blinkT=0;}
+    let bl=0;if(blinkT>=0){blinkT+=dt;bl=blinkCurve(blinkT);if(blinkT>0.24){blinkT=-1;if(!dbl&&Math.random()<0.2){dbl=true;nextBlink=t+0.12;}else{dbl=false;nextBlink=t+R(2,6);}}}
+    let wk=0;if(wink>=0){wink+=dt;wk=wink<0.12?wink/0.12:wink<0.5?1:wink<0.65?1-(wink-0.5)/0.15:0;if(wink>0.65)wink=-1;}
+    if(hold){if(hold.bl!=null)bl=hold.bl;if(hold.look)gz.set(...hold.look);}
+    eyes.forEach((E,i)=>{E.U.eLook.value.copy(gz);E.U.eIsc.value=cur.isc;E.U.eSq.value=cur.sq;
+      E.U.eBlink.value=Math.min(1,Math.max(bl,cur.open,i===0?wk:0));});
+    brows.forEach(b=>{b.o.position.y=b.y0+cur.brow-(bl>0.5?0.002:0);});
+  }
+  let hold=null;return {update,setMode:m=>{mode=m;},getMode:()=>mode,wink:()=>{wink=0;},blink:()=>{blinkT=0;},hold:h=>{hold=h;},modes:['auto','happy','surprised','sad','sleepy']};
+}
+// ---- baked lighting (bake_vl.py: the approved Blender "L2" look baked per vertex, runecast_fix/vl): the live materials
+// keep their albedo tweaks (skin tone, hue, hair colour) and only the lighting changes: out = look(albedo * bakedLight),
+// look = AgX + Punchy + the approved grade (sat 1.3, contrast 1.12). ?lit=live shows the old realtime lighting.
+const BKQ=new URLSearchParams(location.search);const BATTLE=!!BKQ.get('battle');const LITE=BATTLE&&BKQ.get('lite')!=='0'?'lite/':'';const BK=BKQ.get('lit')!=='live';
+const BKP={exp:{value:+(BKQ.get('bkexp')||1.8)},sat:{value:+(BKQ.get('bksat')||1.2)},con:{value:+(BKQ.get('bkcon')||1.12)}};
+const VLMAN=BK?fetch('light/manifest.json?v=10').then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);
+const BK_GLSL=(`
+vec3 bkSig(vec3 x){vec3 x2=x*x;vec3 x4=x2*x2;return 15.5*x4*x2-40.14*x4*x+31.96*x4-6.868*x2*x+0.4298*x2+0.1191*x-0.00232;}
+vec3 bkLook(vec3 c){
+  const mat3 I=mat3(vec3(0.856627153315983,0.137318972929847,0.11189821299995),vec3(0.0951212405381588,0.761241990602591,0.0767994186031903),vec3(0.0482516061458583,0.101439036467562,0.811302368396859));
+  const mat3 O=mat3(vec3(1.1271005818144368,-0.1413297634984383,-0.14132976349843826),vec3(-0.11060664309660323,1.157823702216272,-0.11060664309660294),vec3(-0.016493938717834573,-0.016493938717834257,1.2519364065950405));
+  const mat3 S2R=mat3(vec3(0.6274,0.0691,0.0164),vec3(0.3293,0.9195,0.0880),vec3(0.0433,0.0113,0.8956));
+  const mat3 R2S=mat3(vec3(1.6605,-0.1246,-0.0182),vec3(-0.5876,1.1329,-0.1006),vec3(-0.0728,-0.0083,1.1187));
+  c=I*(S2R*max(c,vec3(0.0))); c=clamp((log2(max(c,vec3(1e-10)))+12.47393)/16.5,0.0,1.0);
+  c=pow(c,vec3(BKPOW)); float l=dot(c,vec3(0.2126,0.7152,0.0722)); c=max(vec3(0.0),vec3(l)+(c-l)*BKLS);
+  c=pow(max(O*bkSig(c),vec3(0.0)),vec3(2.2)); c=clamp(R2S*c,0.0,1.0);
+  c=mix(c*12.92,1.055*pow(c,vec3(1.0/2.4))-0.055,step(0.0031308,c));
+  l=dot(c,vec3(0.2126,0.7152,0.0722)); c=vec3(l)+(c-l)*uBkSat; c=(c-0.5)*uBkCon+0.5; return clamp(c,0.0,1.0);}
+`).replace('BKPOW',(+(BKQ.get('bkpow')||1.35)).toFixed(3)).replace('BKLS',(+(BKQ.get('bkls')||1.1)).toFixed(3));
+function bakeMat(m){if(!m||m.userData.bk)return;m.userData.bk=1;const prev=m.onBeforeCompile;m.onBeforeCompile=(s,r)=>{if(prev)prev(s,r);
+  s.uniforms.uBkExp=BKP.exp;s.uniforms.uBkSat=BKP.sat;s.uniforms.uBkCon=BKP.con;
+  s.vertexShader='attribute vec3 bakeL;\nvarying vec3 vBakeL;\n'+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n  vBakeL=bakeL*bakeL*4.0;');
+  const f=s.fragmentShader,k=f.lastIndexOf('}');
+  s.fragmentShader='varying vec3 vBakeL;\nuniform float uBkExp;uniform float uBkSat;uniform float uBkCon;\n'+BK_GLSL+f.slice(0,k)+'  gl_FragColor.rgb=bkLook(diffuseColor.rgb*vBakeL*uBkExp);\n'+f.slice(k);};
+  m.needsUpdate=true;}
+// Blender kept only the vertices the triangles use (in index order), so its k-th vertex is the k-th sorted used index.
+// Meshes under the coat also have a ".nc" bake (coat off); bakeCoat() switches between them.
+const BKREG=[],BKS={coat:true,hair:'short',hat:true};let BKMAN=null;
+function bkSfx(e){const nc=BKS.coat?'':'.nc';if(e.key!=='base_m__tripo')return [nc,''];const hv='.'+BKS.hair+'.'+(BKS.hat?'hat':'nohat');return [hv+nc,hv,nc,''];}
+// face shape (GirlWarp face warp): garments whose light changes when the chin moves (coat / shirt / tops collar) also have a
+// bake on the warped geometry at the default strength (light_f08/, bake_vl_face.py); the two are blended by the strength.
+const F08MAN=BK?fetch('light_f08/manifest.json?v=1').then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);let F08={};F08MAN.then(m=>{F08=m||{};BKREG.forEach(bakeFill);});
+const faceT=()=>{const f=window.GW&&GW.getFace?GW.getFace():0;return Math.min(1,Math.max(0,f/0.8));};
+const bkLoad=(e,dir,x,slot)=>{const k=slot+x;if(!e.pend[k])e.pend[k]=fetch(dir+'/'+e.key+x+'.bin?v='+(dir==='light'?10:2)).then(r=>r.arrayBuffer()).then(b=>{const v=new Uint8Array(b);
+      if(e.gain!==1){const q=Math.sqrt(e.gain);for(let j=0;j<v.length;j++)v[j]=Math.min(255,Math.round(v[j]*q));}e.data[k]=v;bakeFill(e);});};
+function bakeFill(e){const x=bkSfx(e).find(s=>BKMAN&&BKMAN[e.key+s+'.bin']);if(x==null)return;let v=e.data[x];
+  if(!v){bkLoad(e,'light',x,'');return;}
+  const t=faceT();if(t>0&&F08[e.key+x+'.bin']){const v8=e.data['f'+x];if(!v8){bkLoad(e,'light_f08',x,'f');return;}
+    if(v8.length===v.length){const m=new Uint8Array(v.length);for(let j=0;j<v.length;j++)m[j]=Math.round(v[j]+(v8[j]-v[j])*t);v=m;}}
+  const a=e.a,n=v.length/3,u=e.used;
+  if(u&&u.length===n){for(let k=0;k<n;k++){const i=u[k]*3,j=k*3;a[i]=v[j];a[i+1]=v[j+1];a[i+2]=v[j+2];}}
+  else if(n*3===a.length)a.set(v);else{console.warn('bake: vertex mismatch',e.key,n,a.length/3,u&&u.length);return;}
+  e.attr.needsUpdate=true;}
+window.bakeCoat=on=>{if(BKS.coat===!!on)return;BKS.coat=!!on;BKREG.forEach(bakeFill);window.HAIRAPPLY&&HAIRAPPLY();};
+window.bakeHair=(hair,hat)=>{hat=!!hat;if(BKS.hair===hair&&BKS.hat===hat)return;BKS.hair=hair;BKS.hat=hat;BKREG.forEach(e=>e.key==='base_m__tripo'&&bakeFill(e));};
+function bakeMesh(file,o){if(!BK||!o.geometry)return;const g=o.geometry,nv=g.attributes.position.count;
+  const a=new Uint8Array(nv*3).fill(128),attr=new THREE.BufferAttribute(a,3,true);g.setAttribute('bakeL',attr);bakeMat(o.material);
+  const gain=/^tripo_|^scalp/.test(o.name)?+(BKQ.get('bkskin')||1.5):1;   // skin reads darker than Blender's (subsurface): lift it
+  const base=file+'__'+(/^tripo_/.test(o.name)?'tripo':o.name);
+  const e={key:base,a,attr,gain,used:g.index?Uint32Array.from(new Set(g.index.array)).sort():null,data:{},pend:{}};
+  VLMAN.then(man=>{if(!man)return;BKMAN=man;if(!man[base+'.bin']&&!man[base+'.nc.bin'])return;BKREG.push(e);bakeFill(e);});}
+// ---- Create-a-Wizard editor (bottom sheet): category tabs, thumbnail cards, colour strip. Hidden in ?embed / ?battle.
+const SVG=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON={
+  body:SVG('<circle cx="12" cy="6.5" r="3.2"/><path d="M5.5 20.5c.7-4.8 3.2-7.3 6.5-7.3s5.8 2.5 6.5 7.3"/>'),
+  eyes:SVG('<path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.8"/>'),
+  hair:SVG('<path d="M5 20c-1-2.5-1.4-5-1.2-7.4C4.3 7 7.6 3.5 12 3.5s7.7 3.5 8.2 9.1c.2 2.4-.2 4.9-1.2 7.4"/><path d="M7.5 12.5c1.6-1.1 2.7-2.8 3.2-5 1.3 2.4 3.6 4 6.3 4.6"/><path d="M8 20c-.6-1.8-.8-3.8-.5-6M16 20c.6-1.8.8-3.8.5-6"/>'),
+  hat:SVG('<path d="M2.5 19.5c3 1.3 16 1.3 19 0"/><path d="M5.5 19.2 10.8 4.3c.3-.9 1.6-1 2 0l1.6 4.2-1.7 1.2 3 .6 2.9 8.9"/><path d="M8.3 15.6c2.4.6 5.1.6 7.5 0"/>'),
+  top:SVG('<path d="M8.5 3.5 3.5 6.3l2 4.2 2-.9v10.9h9V9.6l2 .9 2-4.2-5-2.8c-.5 1.6-1.9 2.6-3.5 2.6S9 5.1 8.5 3.5z"/>'),
+  coat:SVG('<path d="M9 3.5 4.3 6.2l1.6 4 1.6-.8-1.3 11.1h11.6L16.5 9.4l1.6.8 1.6-4L15 3.5"/><path d="M9 3.5 12 8l3-4.5M12 8v12.5"/><circle cx="10.4" cy="11.5" r=".4"/><circle cx="10.4" cy="14.5" r=".4"/>'),
+  pants:SVG('<path d="M6.5 3.5h11l1.5 17h-4.6L12 10.5l-2.4 10h-4.6z"/><path d="M6.5 6.5h11"/>'),
+  shoes:SVG('<path d="M7.5 3.5h5.2v8.8l5.6 2.3c1.4.6 2.2 1.6 2.2 3v2.4H4.2v-3.2c0-1.5.6-2.8 1.6-3.8l1.7-1.7z"/><path d="M4.2 17.4h16.3"/>'),
+  pose:SVG('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>'),
+  wand:SVG('<path d="M4 20 14.5 9.5"/><path d="M13 8l3 3"/><path d="M18 2.8v3.4M16.3 4.5h3.4M20.3 9.3v2.4M19.1 10.5h2.4M9.8 2.8v2.4M8.6 4h2.4"/>'),
+  reset:SVG('<path d="M4.5 12a7.5 7.5 0 1 0 2.3-5.4"/><path d="M4.5 4.5v4h4"/>'),
+  none:SVG('<circle cx="12" cy="12" r="8.5"/><path d="M6 18 18 6"/>'),
+  check:SVG('<path d="M5 12.5l4.5 4.5L19 7.5" stroke-width="3"/>'),
+  star:SVG('<path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/>')};
+function buildEditor(E){
+  const $=id=>document.getElementById(id),TH=n=>'thumbs/'+n+'.png?v=4',el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+  document.querySelector('.ttl i').innerHTML=ICON.star;
+  $('btnRand').innerHTML=ICON.wand+'<span>Surprise</span>';$('btnReset').innerHTML=ICON.reset+'<span>Reset</span>';
+  const ITEM_LABEL={shirt:'Shirt',top_tabard:'Knight',top_elf:'Elf tunic',top_doublet:'Doublet',top_blouse:'Blouse',coat:'Wizard coat',pants:'Pants',shoes:'Boots',shoes_alch:'Alchemist boots',shoes_crystal:'Crystal boots',shoes_curl:'Curled-toe slippers',shoes_fire:'Fire boots',shoes_forest:'Forest boots',shoes_frost:'Frost boots',shoes_royal:'Royal boots',shoes_star:'Star boots',shoes_wing:'Winged boots'};
+  const bound=[];   // [element, isOn()] pairs refreshed by sync()
+  const card=o=>{const b=el('button','card'+(o.none?' none':''));b.type='button';b.setAttribute('aria-label',o.label);
+    const th=el('span','th');if(o.th){const im=new Image();im.alt='';im.loading='lazy';im.decoding='async';im.onload=()=>im.classList.add('ok');im.src=TH(o.th);th.appendChild(im);}
+    th.appendChild(el('span','ic',o.none?ICON.none:(o.icon||ICON.star)));b.appendChild(th);b.appendChild(el('span','ck',ICON.check));b.appendChild(el('span','lb',o.label));
+    b.onclick=()=>{o.pick();sync();};if(o.on)bound.push([b,o.on]);return b;};
+  const sec=(title,sub,body)=>{const s=el('div','sec');const h=el('div','sh');h.appendChild(el('h3','',title));if(sub)h.appendChild(el('small','',sub));s.appendChild(h);s.appendChild(body);return s;};
+  const grid=cards=>{const g=el('div','grid');cards.forEach(c=>g.appendChild(card(c)));return g;};
+  // colour strips
+  const hex=a=>'#'+a.map(v=>Math.round(Math.max(0,Math.min(1,v))*255).toString(16).padStart(2,'0')).join('');
+  const garmentStrip=id=>{if(!id)return {title:'Colour',hint:'Pick an item to give it a colour.'};const dom=window.ED&&ED.tintDominant(id);
+    return {title:'Colour',items:PALETTE.map(([k,n,c])=>({name:n,color:c,orig:!c,origCol:dom?hex(dom):null,on:()=>(E.LOOK.tint[id]||'original')===k,pick:()=>E.setTint(id,k)}))};};
+  const slotTab=(id,label,slot,part)=>({id,label,part,sections:()=>{const opts=E.OUTFIT.find(o=>o[0]===slot)[1];
+      return [sec(label==='Coat'?'Coat & robe':label,null,grid(opts.map(([l,iid],i)=>({label:iid?ITEM_LABEL[iid]||l:'None',none:!iid,th:iid?'item_'+iid:null,
+        on:()=>E.LOOK.outfit[slot]===i,pick:()=>{E.wear(slot,i).then(()=>sync());}}))))];},
+    strip:()=>garmentStrip(E.worn[slot]),sig:()=>{const w=E.worn[slot];return (w||'')+(w&&TINTS[w]?'+':'');}});
+  const TABS=[
+    {id:'body',label:'Body',part:'full',sections:()=>{const sl=el('label','sld');sl.innerHTML='<span>Blush</span><input type="range" min="0" max="100">';const inp=sl.querySelector('input');inp.value=E.LOOK.blush;
+        inp.oninput=()=>{E.setBlush(+inp.value);E.LS.set('blush',inp.value);};bound.push([inp,()=>{inp.value=E.LOOK.blush;return false;}]);
+        return [sec('Body type',null,grid([{label:'Boy',th:'body_boy',on:()=>!E.LOOK.girl,pick:()=>E.setGirl(false,true)},{label:'Girl',th:'body_girl',on:()=>E.LOOK.girl,pick:()=>E.setGirl(true,true)}])),sec('Cheeks',null,sl)];},
+      strip:()=>({title:'Skin tone',items:E.tones.map(([n,c],i)=>({name:n,color:`rgb(${c})`,on:()=>E.LOOK.tone===i,pick:()=>E.setTone(i)}))})},
+    {id:'eyes',label:'Eyes',part:'face',noHat:true,sections:()=>{const lab={auto:'Natural',happy:'Happy',surprised:'Surprised',sad:'Sad',sleepy:'Sleepy'};
+        const cs=(E.eyes?E.eyes.modes:[]).map(m=>({label:lab[m]||m,th:'eyes_'+m,on:()=>E.eyes.getMode()===m,pick:()=>E.setExpr(m)}));
+        return [sec('Expression','preview only',grid(cs))];},
+      strip:()=>({title:'Eye colour',items:IRIS_COLORS.map(([n,k,c],i)=>({name:n,color:c,on:()=>E.LOOK.iris===i,pick:()=>E.pickIris(i)}))})},
+    {id:'hair',label:'Hair',part:'hair',noHat:true,sections:()=>[sec('Hairstyle',null,grid(E.HAIRS.map(([n],i)=>({label:n,th:'hair_'+i,on:()=>E.LOOK.hair===i,pick:()=>E.setHair(i)}))))],
+      strip:()=>({title:'Hair colour',items:HAIR_COLORS.map(([n,c],i)=>({name:n,color:c,orig:!c,on:()=>E.LOOK.hairColor===i,pick:()=>E.pickHairColor(i)}))})},
+    {id:'hat',label:'Hat',part:'head',sections:()=>[sec('Hat',null,grid([{label:'None',none:true,on:()=>!E.LOOK.hat,pick:()=>E.setHat(false)},{label:'Wizard hat',th:'item_hat',on:()=>E.LOOK.hat,pick:()=>E.setHat(true)}]))],
+      strip:()=>garmentStrip(E.LOOK.hat?'hat':null),sig:()=>E.LOOK.hat?'hat':''},
+    slotTab('top','Top','Top','torso'),slotTab('coat','Coat','Outer','torso'),slotTab('pants','Pants','Legs','legs'),slotTab('shoes','Shoes','Feet','feet'),
+    {id:'pose',label:'Pose',part:'full',sections:()=>[sec('Animation',null,grid(E.order.map(n=>({label:E.nice[n]||n,th:'pose_'+n,on:()=>E.getAnim()===n,pick:()=>E.play(n)}))))]}];
+  const tabsEl=$('tabs'),pane=$('pane'),strip=$('strip');let curTab=null,stripSig=null,stripBound=[];
+  TABS.forEach(t=>{const b=el('button','tab');b.type='button';b.setAttribute('role','tab');b.innerHTML=`<i>${ICON[t.id]}</i><span>${t.label}</span>`;b.onclick=()=>show(t.id);t.btn=b;tabsEl.appendChild(b);});
+  const renderStrip=()=>{const t=curTab;stripBound=[];strip.innerHTML='';const d=t.strip&&t.strip();stripSig=t.sig?t.sig():null;
+    if(!d){strip.hidden=true;return;}strip.hidden=false;const h=el('div','sh');h.appendChild(el('h3','',d.title));const nm=el('small','','');h.appendChild(nm);strip.appendChild(h);
+    if(d.hint){strip.appendChild(el('div','hint',d.hint));return;}
+    const row=el('div','sws');d.items.forEach(it=>{const b=el('button','sw'+(it.orig?' orig':''));b.type='button';b.title=it.name;b.setAttribute('aria-label',it.name);
+      if(it.color)b.style.background=it.color;if(it.origCol)b.style.setProperty('--o',it.origCol);
+      b.onclick=()=>{it.pick();sync();};stripBound.push([b,it.on,it.name,nm]);row.appendChild(b);});strip.appendChild(row);};
+  const show=id=>{const t=TABS.find(x=>x.id===id)||TABS[0];curTab=t;bound.length=0;TABS.forEach(x=>{x.btn.classList.toggle('on',x===t);x.btn.setAttribute('aria-selected',x===t);});
+    pane.innerHTML='';t.sections().forEach(s=>pane.appendChild(s));pane.scrollTop=0;E.previewNoHat(!!t.noHat);E.focus(t.part);renderStrip();sync();
+    t.btn.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});try{sessionStorage.setItem('rc.edTab',t.id)}catch(e){}};
+  function sync(){for(const [b,on] of bound)b.classList.toggle('on',!!on());if(curTab&&curTab.sig&&curTab.sig()!==stripSig)renderStrip();
+    for(const [b,on,name,nm] of stripBound){const o=!!on();b.classList.toggle('on',o);if(o)nm.textContent=name;}}
+  $('btnRand').onclick=()=>{E.randomize();show(curTab.id);setTimeout(sync,400);};
+  $('btnReset').onclick=()=>{E.reset();show(curTab.id);setTimeout(sync,400);};
+  let t0='body';try{t0=new URLSearchParams(location.search).get('tab')||sessionStorage.getItem('rc.edTab')||'body'}catch(e){}
+  show(t0);window.EDUI={show,sync};
+}
+(()=>{const L=new THREE.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);return L;})().load(new URLSearchParams(location.search).get('f')||LITE+'base_m.glb?v=6',g=>{
+  document.getElementById('ld').remove();
+  const root=g.scene;sc.add(root);const by={};
+  root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;by[o.name]=o;if(o.material)o.material.metalness=0;}});
+  root.traverse(o=>{if(o.isMesh&&/^tripo_|^body_under|^scalp/.test(o.name)&&o.material&&!o.material.userData.soft){o.material.userData.soft=1;softSkin(o.material);}});
+  if(by.blush){by.blush.material.depthWrite=false;by.blush.renderOrder=2;}
+  // builtin Short hair nape cap (hair_base / hair_base_hat = back-of-head body triangles in the hair material, mk_nape.py):
+  // it lies on the skin, so it draws with a depth offset, and it takes the body's baked light (same vertex pool)
+  ['hair_base','hair_base_hat'].forEach(n=>{const o=by[n];if(!o||!o.material)return;o.material=o.material.clone();
+    o.material.polygonOffset=true;o.material.polygonOffsetFactor=-2;o.material.polygonOffsetUnits=-2;o.renderOrder=1;});
+  root.traverse(o=>{if(o.isMesh&&!/^mesh_\d$|^blush$|^Icosphere|^hair_base/.test(o.name))bakeMesh('base_m',o);});
+  {let bodyM=null;root.traverse(o=>{if(!bodyM&&/^tripo_/.test(o.name)&&o.isMesh)bodyM=o;});
+   ['hair_base','hair_base_hat'].forEach(n=>{const o=by[n];if(!o||!bodyM||!bodyM.geometry.attributes.bakeL)return;
+     o.geometry.setAttribute('bakeL',bodyM.geometry.attributes.bakeL);bakeMat(o.material);});}
+  root.traverse(o=>{if(o.isMesh&&o.material&&!o.material.userData.soft&&o.name!=='blush'&&!/^mesh_\d$/.test(o.name))toy(o.material);});
+  sc.traverse(o=>{if(o.isMesh&&o.material&&o.material.userData.soft)o.material.envMapIntensity=0.2;});
+  const box=new THREE.Box3().setFromObject(root),c=box.getCenter(new THREE.Vector3()),s=box.getSize(new THREE.Vector3());
+  if(STUDIO){root.traverse(o=>{if(o.isMesh&&o.name!=='blush'&&!/^mesh_\d$/.test(o.name)){o.castShadow=!/^(hat|hair|hair_hat|hair_base|hair_base_hat)$/.test(o.name);o.receiveShadow=!/^tripo_|^body_under|^scalp|^hair/.test(o.name);}});
+    const gp=new THREE.Mesh(new THREE.CircleGeometry(0.5,48),new THREE.ShadowMaterial({opacity:0.28}));gp.rotation.x=-Math.PI/2;gp.position.set(c.x,box.min.y+0.002,c.z);gp.receiveShadow=true;sc.add(gp);
+    // materials per cloth: velvet coat (soft sheen via rim), matte cotton, satin-ish leather boots
+    const mt=(n,f)=>{if(by[n]&&by[n].material)f(by[n].material);};
+    mt('coat',m=>{m.roughness=0.85;m.envMapIntensity=0.35;});mt('shirt',m=>{m.roughness=0.95;m.envMapIntensity=0.25;});
+    mt('pants',m=>{m.roughness=0.95;m.envMapIntensity=0.25;});mt('shoes',m=>{m.roughness=0.42;m.envMapIntensity=0.9;});
+    mt('hat',m=>{m.envMapIntensity=0.45;});}
+  ctl.target.set(c.x,c.y,c.z);
+  // model faces +X
+  const Q=new URLSearchParams(location.search);const EMBED=!!Q.get('embed'),EDITOR=!EMBED&&!Q.get('battle');
+  const FK=()=>Math.max(1,0.75/cam.aspect);const EL=BATTLE&&BKQ.get('el')?Math.tan(+BKQ.get('el')*Math.PI/180)*3.29:0.12;const fit=()=>{const k=FK();cam.position.set(c.x+s.y*3.1*k,c.y+s.y*EL*k,c.z+s.y*1.1*k);ctl.update();};
+  fit();if(!EDITOR)addEventListener('resize',()=>setTimeout(fit,0));
+  // ---- editor camera: each tab frames its body part (a vertical band of the rest pose), the user can still orbit / zoom
+  root.updateMatrixWorld(true);const boneY=(n,d)=>{const b=root.getObjectByName(n);return b?b.getWorldPosition(new THREE.Vector3()).y:d;};
+  const YB={foot:box.min.y,top:box.max.y,head:boneY('Head',c.y),pelvis:boneY('Pelvis',c.y-s.y*0.2),calf:boneY('L_Calf',box.min.y+s.y*0.15)};
+  const FRAMES={full:[YB.foot-s.y*0.11,YB.top+s.y*0.02,s.z*1.3],head:[YB.head-s.y*0.06,YB.top+s.y*0.01,s.z*0.9],
+    hair:[YB.head-s.y*0.08,YB.head+s.y*0.42,s.z*0.9],face:[YB.head-s.y*0.01,YB.head+s.y*0.33,s.z*0.6],
+    torso:[YB.pelvis-s.y*0.12,YB.head+s.y*0.05,s.z*1.05],legs:[YB.foot-s.y*0.04,YB.pelvis+s.y*0.08,s.z*0.8],feet:[YB.foot-s.y*0.05,YB.calf+s.y*0.02,s.z*0.7],bust:[YB.pelvis,YB.head+s.y*0.45,s.z*0.9]};
+  window.RC_YB={YB,s:s.toArray(),c:c.toArray()};
+  const DIR0=new THREE.Vector3(3.1,0.12,1.1).normalize(),FOC={part:'full',goal:null};
+  // the editor's top bar covers the upper strip of the stage: frame the band in the space below it
+  const frameOf=part=>{const [y0,y1,wz]=FRAMES[part]||FRAMES.full,t=Math.tan(cam.fov*Math.PI/360),Hs=H(),inset=EDITOR?Math.min(64,Hs*0.14):0,fr=(Hs-inset)/Hs;
+    const d=Math.max((y1-y0)/2/(t*fr),wz/2/(t*cam.aspect))*(cam.aspect>1.2?1.4:1.08);/* wide stages: a little more air */return {tgt:new THREE.Vector3(c.x,(y0+y1)/2+d*t*inset/Hs,c.z),d};};
+  const focus=(part,instant)=>{FOC.part=part;const g=frameOf(part);FOC.goal=g;if(!instant)return;
+    const dir=cam.position.clone().sub(ctl.target);if(dir.lengthSq()<1e-8)dir.copy(DIR0);dir.normalize();
+    ctl.target.copy(g.tgt);cam.position.copy(g.tgt).addScaledVector(dir,g.d);FOC.goal=null;ctl.update();};
+  const focusStep=dt=>{const g=FOC.goal;if(!g)return;const k=1-Math.exp(-dt*7),off=cam.position.clone().sub(ctl.target),d=off.length();
+    ctl.target.lerp(g.tgt,k);const nd=d+(g.d-d)*k;cam.position.copy(ctl.target).addScaledVector(off.normalize(),nd);
+    if(ctl.target.distanceTo(g.tgt)<s.y*1e-4&&Math.abs(nd-g.d)<s.y*1e-4)FOC.goal=null;};
+  if(EDITOR){ctl.target.copy(frameOf('full').tgt);cam.position.copy(ctl.target).addScaledVector(DIR0,1);focus('full',true);
+    ctl.minDistance=s.y*0.5;ctl.maxDistance=s.y*8;addEventListener('rc-stage',()=>focus(FOC.part,true));
+    // a soft lilac podium with a thin gold rim under the feet (the contact shadow stays on the transparent shadow disc)
+    const R=s.y*0.27,ph=s.y*0.045,M=(col,ro,me)=>new THREE.MeshStandardMaterial({color:col,roughness:ro,metalness:me||0,envMapIntensity:0.6});
+    const pTop=new THREE.Mesh(new THREE.CylinderGeometry(R,R*1.03,ph,72),M(0xf1e8ff,0.6));pTop.position.set(c.x,box.min.y-ph/2-0.002,c.z);
+    const pRim=new THREE.Mesh(new THREE.TorusGeometry(R*1.004,ph*0.12,10,120),M(0xe9c46a,0.32,0.65));pRim.rotation.x=Math.PI/2;pRim.position.set(c.x,box.min.y-0.002,c.z);
+    const pBase=new THREE.Mesh(new THREE.CylinderGeometry(R*1.07,R*1.13,ph*0.8,72),M(0xdccbf6,0.7));pBase.position.set(c.x,box.min.y-ph*1.4-0.002,c.z);
+    sc.add(pTop,pRim,pBase);}
+  // the saved eye colour is read before Eyes() runs: Eyes() sets (and so saves) the default iris when none is loaded yet
+  let iris0=0;try{iris0=+(localStorage.getItem('irisColor')||0)||0;}catch(e){}if(!IRIS_COLORS[iris0])iris0=0;
+  const mix=new THREE.AnimationMixer(root);let cur=null,curName='';const eyes=Eyes(by,cam);window.EYES=eyes;
+  // ---- the look: the page's existing localStorage keys (girl, hairPick, hairColor, irisColor, skinTone2, outfit) keep their
+  // meaning; new optional keys: hatOn ('0'/'1', default on), tint ({itemId: swatch}), blush (0..100). Old saves load unchanged.
+  const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+  const LOOK={girl:false,hair:0,hairColor:0,iris:0,tone:1,hat:true,outfit:{},tint:{},blush:80};
+  try{const t=JSON.parse(LS.get('tint','{}'));if(t&&typeof t==='object')LOOK.tint=t;}catch(e){}
+  if(eyes){setIris(iris0);LOOK.iris=iris0;}
+  const pickIris=i=>{setIris(i);LOOK.iris=i;};
+  const girl=GirlWarp(root);window.GW=girl;if(typeof BKREG!=='undefined')BKREG.forEach(bakeFill);
+  // ---- wardrobe items as separate files (make_item.mjs): each is a skinned mesh bound to the same joint names,
+  // re-bound here to this model's skeleton and parented like in its source (under the body node)
+  let bodyObj=null;root.traverse(o=>{if(!bodyObj&&/^tripo_/.test(o.name)&&o.isSkinnedMesh)bodyObj=o;});
+  const boneBy={};root.traverse(o=>{if(o.isBone)boneBy[o.name]=o;});
+  const IL=new THREE.GLTFLoader();if(window.MeshoptDecoder)IL.setMeshoptDecoder(MeshoptDecoder);const itemCache={};
+  const loadItem=f=>itemCache[f]||(itemCache[f]=new Promise(res=>IL.load(f,g=>{const out={};const list=[];g.scene.traverse(o=>{if(o.isSkinnedMesh)list.push(o);});
+    const id=(f.match(/items\/([^.?\/]+)\.glb/)||[])[1];
+    for(const m of list){const bones=m.skeleton.bones.map(b=>boneBy[b.name]);m.bind(new THREE.Skeleton(bones,m.skeleton.boneInverses),m.bindMatrix);
+      m.frustumCulled=false;m.castShadow=STUDIO&&!/^hair/.test(m.name);if(m.material){m.material.metalness=0;toy(m.material);if(/^hair/.test(m.name))hairable(m.material);else if(m.name==='clip'){const mm=m.material;mm.customProgramCacheKey=()=>'clip|'+mm.onBeforeCompile.toString();}}
+      bodyObj.add(m);m.visible=false;m.userData.item=1;girl.add(m);out[m.name]=m;bakeMesh(id,m);}
+    if(id&&!/^hair_/.test(id)){const tid=id==='pants_tuck'?'pants':id;tintRegister(tid,list);applyTint(tid,LOOK.tint[tid]||'original');}res(out);})));
+  const HAIRS=[['Short',null],['Long',LITE+'items/hair_girllong.glb?v=2'],['Ponytail',LITE+'items/hair_pony.glb?v=15'],['Twin tails',LITE+'items/hair_twin.glb?v=16'],['Bob',LITE+'items/hair_bob.glb?v=15'],['Space buns',LITE+'items/hair_twobuns.glb?v=2'],['Curly',LITE+'items/hair_curly.glb?v=15'],['Spiky',LITE+'items/hair_spiky.glb?v=15'],['Quiff',LITE+'items/hair_quiff.glb?v=15'],['Braid',LITE+'items/hair_braid.glb?v=16']];let hairItem=null;
+  let setHair=()=>{};
+  const setGirl=(on,user)=>{on=!!on;girl(on);setLash(on?'lash_none.png':'eye_lash.png');if(user)setHair(on?1:0);LOOK.girl=on;LS.set('girl',on?1:0);};
+  {let g0=Q.get('g')==='f';if(LS.get('girl',null)==='1')g0=true;if(g0)setGirl(true);window.GIRL=setGirl;}
+  const nice={idle:'Idle',walk:'Walk',cast_a_spell:'Cast',bow:'Bow',clap:'Clap',box_03:'Box',fold_arms:'Fold arms',afraid:'Afraid',scared_01:'Scared',cry:'Cry'};
+  const order=['idle','walk','cast_a_spell','bow','clap','box_03','fold_arms','afraid','scared_01','cry'].filter(n=>g.animations.some(a=>a.name===n));
+  const play=n=>{const clip=g.animations.find(a=>a.name===n);if(!clip)return;const a=mix.clipAction(clip);a.paused=false;
+    if(cur&&cur!==a){a.reset().play();cur.crossFadeTo(a,0.3,false);}else a.play();cur=a;curName=n;};
+  // freeze one frame of a clip (thumbnail renders)
+  const pose=(n,t)=>{const clip=g.animations.find(a=>a.name===n);if(!clip)return;mix.stopAllAction();const a=mix.clipAction(clip);a.reset().play();a.time=t||0;a.paused=true;cur=a;curName=n;mix.update(0);};
+  play(Q.get('a')||'idle');if(EMBED){ctl.enableZoom=false;}
+  if(BATTLE){const BY=+(BKQ.get('yaw')??0),MAXF=+(BKQ.get('maxf')||999);root.rotation.y=BY;ctl.enabled=false;
+    // battle hooks (boss fix 09-30): one-shot clips that fall back to idle (with a release mark), and screen positions for the host page
+    const once=(n,o)=>{const clip=g.animations.find(a=>a.name===n);if(!clip)return;const a=mix.clipAction(clip);a.reset();a.paused=false;a.setLoop(THREE.LoopOnce,1);a.clampWhenFinished=true;
+      a.timeScale=o.speed||1;a.time=o.from||0;a.play();if(cur&&cur!==a)cur.crossFadeTo(a,o.fade||0.2,false);cur=a;curName=n;a.userData={until:o.until||0,back:o.back||'idle',mark:o.mark||0};};
+    const toIdle=a=>{const n=a.userData.back;a.userData.until=-1;play(n);try{parent.postMessage({type:'rc-anim-done',name:a.getClip().name},'*')}catch(e){}};
+    mix.addEventListener('finished',e=>{if(e.action===cur&&e.action.userData&&e.action.userData.until>=0)toIdle(e.action);});
+    const PV=new THREE.Vector3();const prj=o=>{o.getWorldPosition(PV);PV.project(cam);return [+((PV.x+1)/2).toFixed(4),+((1-PV.y)/2).toFixed(4)];};
+    const where=()=>{root.updateMatrixWorld(true);cam.updateMatrixWorld();const out={t:cur?+cur.time.toFixed(3):0,clip:curName};
+      ['L_Hand','R_Hand','L_Foot','R_Foot','L_ToeBase','R_ToeBase','Head','L_Upperarm','R_Upperarm'].forEach(n=>{if(boneBy[n])out[n]=prj(boneBy[n]);});
+      const w=n=>boneBy[n]?boneBy[n].getWorldPosition(new THREE.Vector3()):null,l=w('L_Upperarm'),r=w('R_Upperarm');
+      if(l&&r){const cd=new THREE.Vector3();cam.getWorldDirection(cd);const sx=r.x-l.x,sz=r.z-l.z;
+        // facing = shoulder line turned 90deg; angle vs the direction towards the camera (0 = facing camera, +90 = facing screen-right)
+        const f1=[-sz,sx],f2=[sz,-sx],tc=[-cd.x,-cd.z],ang=f=>Math.atan2(f[0]*tc[1]-f[1]*tc[0],f[0]*tc[0]+f[1]*tc[1])*180/Math.PI;
+        out.face=[+ang(f1).toFixed(1),+ang(f2).toFixed(1)];}
+      return out;};
+    setInterval(()=>{const u=cur&&cur.userData;if(!u)return;if(u.mark>0&&cur.time>=u.mark){u.mark=0;try{parent.postMessage(Object.assign({type:'rc-mark',name:curName},where()),'*')}catch(e){}}if(u.until>0&&cur.time>=u.until)toIdle(cur);},30);
+    addEventListener('message',e=>{const d=e.data||{};if(d.type==='rc-anim'){if(d.once)once(d.name,d);else play(d.name);}
+      if(d.type==='rc-where')try{e.source.postMessage(Object.assign({type:'rc-where',id:d.id},where()),'*')}catch(x){}});
+    window.RCW=where;window.RCMASK=()=>{root.traverse(o=>{if(o.isMesh){const sk=/^tripo_|^body_under|^blush$|^mesh_\d$/.test(o.name);o.material=new THREE.MeshBasicMaterial({color:sk?0xffffff:0x000000,skinning:!!o.isSkinnedMesh,toneMapped:false});}});return 1;};window.RCCAM=(k,el)=>{root.updateMatrixWorld(true);const hp=boneBy.Head.getWorldPosition(new THREE.Vector3());hp.y+=+(BKQ.get('hy')||0.03);const d=cam.position.clone().sub(ctl.target);const hz=Math.hypot(d.x,d.z);if(el!=null)d.y=hz*Math.tan(el*Math.PI/180);d.multiplyScalar(k);ctl.target.copy(hp);cam.position.copy(hp).add(d);cam.lookAt(hp);ctl.update();return where();};let yawOff=0,clampOn=true;window.RCY=y=>{root.rotation.y=y;clampOn=false;return where();};
+    // keep the body open to the camera: some clips (the cast spins) turn the back to us; limit the facing to MAXF deg (screen-right)
+    const facing=()=>{const w=n=>boneBy[n]&&boneBy[n].getWorldPosition(new THREE.Vector3());root.updateMatrixWorld(true);const l=w('L_Upperarm'),r=w('R_Upperarm');if(!l||!r)return 0;
+      const cd=new THREE.Vector3();cam.getWorldDirection(cd);const f=[r.z-l.z,-(r.x-l.x)],tc=[-cd.x,-cd.z];return Math.atan2(f[0]*tc[1]-f[1]*tc[0],f[0]*tc[0]+f[1]*tc[1])*180/Math.PI;};
+    window.RCCLAMP=dt=>{if(!clampOn)return;const fb=facing()-yawOff*57.2958;const want=Math.min(0,(MAXF-fb)/57.2958);const k=Math.min(1,dt*10);yawOff+=(want-yawOff)*k;root.rotation.y=BY+yawOff;};window.RCT=(n,t)=>{pose(n,t);if(cur)cur.userData={until:-1};return where();};
+    const clips={};g.animations.forEach(a=>clips[a.name]=+a.duration.toFixed(2));
+    try{parent.postMessage(Object.assign({type:'rc-ready',clips},where()),'*')}catch(e){}}
+  // wardrobe state -> which meshes are visible (hidden body pieces come back when the garment covering them is off)
+  const st={hat:LS.get('hatOn','1')!=='0',hair:true,robe:true};LOOK.hat=st.hat;const PREV={noHat:false};
+  const vis=(n,on)=>{if(by[n])by[n].visible=on;};
+  const apply=()=>{const H=st.hat&&!PREV.noHat,R=st.hair;window.bakeHair&&bakeHair(hairItem&&window.HAIRTAG||'short',H);
+    vis('hat',H);vis('scalp',!!hairItem&&R&&/^hair_(twobuns|girllong)$/.test(window.HAIRTAG));   // twobuns: skin skull (bald-lit bake) under the open forehead   // dark scalp layer removed (admin 09-29: it showed as a black cap)
+    const C=!!hairItem;vis('hair',R&&!H&&!C);vis('hair_base',R&&!H&&!C);vis('hair_hat',R&&H&&!C);vis('hair_base_hat',R&&H&&!C);vis('under_hair',!R);
+    for(const [f,it] of Object.entries(itemCache))if(/hair_/.test(f))it.then(o=>{for(const k in o)o[k].visible=false;if(hairItem&&R){const hi=hairItem;hi.then(o=>{if(hairItem!==hi||!st.hair)return;for(const k in o)o[k].visible=false;const m=(BKS.coat&&o[H?'hair_hat_coat':'hair_coat'])||o[H?'hair_hat':'hair']||o.hair;if(m)m.visible=true;if(o.clip)o.clip.visible=!H;});}});
+    ['suit','robe','hood','capelet','cloak','coat','shirt','pants','shoes','suit_rim','cuff_trim','boots'].forEach(n=>vis(n,st.robe));vis('body_under',!st.robe);};
+  const setHat=on=>{st.hat=!!on;LOOK.hat=st.hat;LS.set('hatOn',on?1:0);apply();};
+  const previewNoHat=on=>{if(PREV.noHat===!!on)return;PREV.noHat=!!on;apply();};window.HAIRAPPLY=apply;
+  const MODULAR=!by.coat&&!by.pants&&!by.suit;
+  apply();
+  if(by.hat&&by.hat.material){tintRegister('hat',[by.hat]);applyTint('hat',LOOK.tint.hat||'original');}
+  const setTint=(id,key)=>{if(!id)return;if(!key||key==='original')delete LOOK.tint[id];else LOOK.tint[id]=key;LS.set('tint',JSON.stringify(LOOK.tint));applyTint(id,key||'original');};
+  // ---- modular outfit: garments are item files; the body shows only the triangles no worn garment covers
+  // (cover_mask.mjs bitsets over the full triangle list = body node's triangles + body_under's)
+  const TUCKV={pants:'pants_tuck'},TUCK=new Set(['shoes_alch','shoes_crystal','shoes_curl','shoes_fire','shoes_forest','shoes_frost','shoes_royal','shoes_star','shoes_wing']);
+  const GARMENT_FILES=()=>[...new Set(OUTFIT.flatMap(o=>o[1].map(x=>x[1])).filter(Boolean).concat(Object.values(TUCKV)))];
+  const IV={pants_tuck:"b2",shoes_alch:'b1',shoes_crystal:'b1',shoes_curl:'b1',shoes_fire:'b1',shoes_forest:'b1',shoes_frost:'b1',shoes_royal:'b1',shoes_star:'b1',shoes_wing:'b2'};const IURL=id=>LITE+'items/'+id+'.glb?v='+(IV[id]||7);
+  const OUTFIT=[['Top',[['—',null],['Shirt','shirt'],['Knight','top_tabard'],['Elf','top_elf'],['Doublet','top_doublet'],['Blouse','top_blouse']]],['Outer',[['—',null],['Coat','coat']]],['Legs',[['—',null],['Pants','pants']]],['Feet',[['—',null],['Boots','shoes'],['Alchemist boots','shoes_alch'],['Crystal boots','shoes_crystal'],['Curled-toe slippers','shoes_curl'],['Fire boots','shoes_fire'],['Forest boots','shoes_forest'],['Frost boots','shoes_frost'],['Royal boots','shoes_royal'],['Star boots','shoes_star'],['Winged boots','shoes_wing']]]];
+  // ---- coats3d (09-29): 9 Hunyuan3D wizard cloaks in the Coat tab; fitted outside the live coat envelope, weights (incl. skirt spring chains) from the live coat ----
+  OUTFIT.find(o=>o[0]==='Outer')[1].push(['Fire cloak','coat_fire'],['Forest cloak','coat_forest'],['Frost cloak','coat_frost'],['Midnight cloak','coat_midnight'],['Royal ermine cloak','coat_royal'],['Sea cloak','coat_sea'],['Sun cloak','coat_sun']);Object.assign(IV,{coat_fire:'c2',coat_forest:'c2',coat_frost:'c2',coat_midnight:'c2',coat_royal:'c2',coat_sea:'c2',coat_shadow:'c2',coat_star:'c2',coat_sun:'c2'});
+  // ---- /coats3d ----
+  // ---- pants3d (09-29): 9 Hunyuan3D wizard pants in the Legs tab; knee cuffs sit above every boot collar, so no tucked variant ----
+  OUTFIT.find(o=>o[0]==='Legs')[1].push(['Alchemist pants','pants_alch'],['Fire pants','pants_fire'],['Forest pants','pants_forest'],['Frost pants','pants_frost'],['Royal velvet pants','pants_royal'],['Rune pants','pants_rune'],['Shadow pants','pants_shadow'],['Starry night pants','pants_star'],['Sun pants','pants_sun']);Object.assign(IV,{pants_alch:'p2',pants_fire:'p2',pants_forest:'p2',pants_frost:'p2',pants_royal:'p2',pants_rune:'p2',pants_shadow:'p2',pants_star:'p2',pants_sun:'p2'});
+  // ---- /pants3d ----
+  // ---- waist (09-30): belly/waist warp baked into base_m + all torso/leg items, shirt+tops refit, live pants hips slimmed ----
+  Object.assign(IV,{coat_fire:'w1',coat_forest:'w1',coat_frost:'w1',coat:'w1',coat_midnight:'w1',coat_royal:'w1',coat_sea:'w1',coat_sun:'w1',hair_braid:'w1',hair_girllong:'w1',hair_long:'w1',hair_twin:'w1',pants_alch:'w1',pants_fire:'w1',pants_forest:'w1',pants_frost:'w1',pants:'w1',pants_royal:'w1',pants_rune:'w1',pants_shadow:'w1',pants_star:'w1',pants_sun:'w1',pants_tuck:'w1',shirt:'w1',top_blouse:'w1',top_doublet:'w1',top_elf:'w1',top_tabard:'w1'});
+  // ---- /waist ----
+  // ---- tops3d (09-30): 9 Hunyuan3D wizard tops (closed shells, design pixels projected) replace the old TRELLIS shirt + tops;
+  //      the default (option 1) is the plain cream Apprentice tunic, the closest design to the old holey shirt ----
+  {const T=OUTFIT.find(o=>o[0]==='Top')[1];T.splice(1,T.length-1,['Apprentice tunic','top_apprentice'],['Alchemist vest','top_alchemist'],['Crystal tunic','top_crystal'],['Fire tunic','top_fire'],['Forest tunic','top_forest'],['Frost tunic','top_frost'],['Rune tunic','top_rune'],['Scholar tunic','top_scholar'],['Star tunic','top_star']);
+   Object.assign(IV,{top_alchemist:'t1',top_apprentice:'t1',top_crystal:'t1',top_fire:'t1',top_forest:'t1',top_frost:'t1',top_rune:'t1',top_scholar:'t1',top_star:'t1'});}
+  // ---- /tops3d ----
+  // ---- coatsD (09-30): the 7 live Hunyuan cloaks tapered at waist/hips (inner wall ~12 mm over the thickest top), hem flare kept ----
+  Object.assign(IV,{coat_fire:'d1',coat_forest:'d1',coat_frost:'d1',coat_midnight:'d1',coat_royal:'d1',coat_sea:'d1',coat_sun:'d1'});
+  // ---- /coatsD ----
+  const worn={};let wear=async()=>{};const outfitReady=[];
+  if(MODULAR&&bodyObj&&by.body_under){const ga=bodyObj.geometry,ia=ga.index.array,ib=by.body_under.geometry.index.array;
+    const full=new Uint32Array(ia.length+ib.length);full.set(ia);full.set(ib,ia.length);const NT=full.length/3;by.body_under.visible=false;
+    const covers={};const getCover=id=>covers[id]||(covers[id]=fetch(LITE+'items/cover_'+id+'.json?v='+(IV[id]||2)).then(r=>r.json()).then(j=>{const b=atob(j.bits),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}).catch(()=>null));
+    const loaded=new Set();let refSeq=0;
+    // tall boots (TUCK) wear the pants tucked in: the Legs slot then shows the pants_tuck variant of the same pants
+    const FILE=(slot,id)=>id&&slot==='Legs'&&TUCKV[id]&&TUCK.has(worn.Feet)?TUCKV[id]:id;
+    const shownFiles=()=>Object.entries(worn).map(([sl,id])=>{const f=FILE(sl,id);if(!f)return null;if(loaded.has(f))return f;
+      if(f!==id){if(!itemCache[IURL(f)])loadItem(IURL(f)).then(()=>{loaded.add(f);refresh();});return loaded.has(id)?id:null;}return null;}).filter(Boolean);
+    const refresh=async()=>{const seq=++refSeq;window.bakeCoat&&bakeCoat(!!worn.Outer);const ids=shownFiles(); /* only garments already on screen hide skin */const cs=(await Promise.all(ids.map(getCover))).filter(Boolean);
+      if(seq!==refSeq)return;   // a newer change is already on its way
+      const keep=[];for(let t=0;t<NT;t++){let hid=false;for(const u of cs)if(u[t>>3]&(1<<(t&7))){hid=true;break;}if(!hid)keep.push(full[t*3],full[t*3+1],full[t*3+2]);}
+      ga.setIndex(new THREE.BufferAttribute(new Uint32Array(keep),1));
+      for(const f of GARMENT_FILES())if(itemCache[IURL(f)])itemCache[IURL(f)].then(o=>{if(seq!==refSeq)return;for(const k in o)o[k].visible=ids.includes(f);});};
+    let saved={};try{saved=JSON.parse(localStorage.getItem('outfit')||'{}')||{};}catch(e){}
+    wear=async(slot,i)=>{const row=OUTFIT.find(o=>o[0]===slot);if(!row)return;const opts=row[1];if(!opts[i])i=0;const id=opts[i][1],prev=worn[slot];
+      worn[slot]=id;LOOK.outfit[slot]=i;try{const o=JSON.parse(localStorage.getItem('outfit')||'{}');o[slot]=i;localStorage.setItem('outfit',JSON.stringify(o));}catch(e){}
+      if(id){await loadItem(IURL(id));loaded.add(id);}await refresh();};
+    OUTFIT.forEach(([slot,opts])=>{let oi=1;if(saved[slot]!=null&&opts[+saved[slot]])oi=+saved[slot];outfitReady.push(wear(slot,oi));});
+    window.REFRESH=refresh;window.WEAR=(slot,i)=>wear(slot,i);}
+  // keep the current hair on screen until the new one has loaded (swapping first left only the dark scalp visible)
+  let hairSeq=0;
+  setHair=i=>{if(!HAIRS[i])i=0;const f=HAIRS[i][1],seq=++hairSeq;LOOK.hair=i;LS.set('hairPick',i);
+    const go=p=>{if(seq!==hairSeq)return;hairItem=p;window.HAIRTAG=f?(f.match(/(hair_[a-z]+)/)||[])[1]:'short';apply();window.REFRESH&&REFRESH();};
+    if(!f){go(null);return Promise.resolve();}
+    const p=loadItem(f);return p.then(()=>go(p));};
+  setHair(+LS.get('hairPick',0)||0);window.HAIR=setHair;
+  ['hair','hair_hat','hair_base','hair_base_hat'].forEach(n=>{if(by[n]&&by[n].material)hairable(by[n].material);});
+  const pickHairColor=i=>{if(!HAIR_COLORS[i])i=0;setHairColor(i);LOOK.hairColor=i;};pickHairColor(+LS.get('hairColor',0)||0);
+  // skin tone presets (multiplier on the original texture, whose mean skin is rgb 248,187,149)
+  const SRC=[248,187,149];const tones=[['Original',[248,187,149]],['Warm peach',[252,200,170]],['Soft peach',[253,210,186]],['Rosy',[252,206,196]],['Light rosy',[254,219,207]],['Porcelain',[255,231,219]],['Honey',[240,182,140]],['Tan',[222,160,120]]];
+  const setTone=i=>{if(!tones[i])i=1;const t=tones[i][1];SKIN.tone.value.set(...t.map((v,k)=>Math.pow(v/255,2.2)/Math.pow(SRC[k]/255,2.2)));LOOK.tone=i;LS.set('skinTone2',i);};
+  {const v=LS.get('skinTone2',null);setTone(v!==null?Math.min(+v||0,tones.length-1):1);}
+  const setBlush=v=>{LOOK.blush=v;if(by.blush)by.blush.material.opacity=v/100;};
+  if(by.blush){by.blush.material.transparent=true;let b0=+LS.get('blush',80);if(!(b0>=0&&b0<=100))b0=80;setBlush(b0);}
+  const setExpr=m=>{if(eyes)eyes.setMode(m);};
+  const rnd=n=>Math.floor(Math.random()*n),SW=PALETTE.slice(1).map(p=>p[0]);
+  const randomize=()=>{setGirl(Math.random()<0.5,false);setHair(rnd(HAIRS.length));pickHairColor(rnd(HAIR_COLORS.length));pickIris(rnd(IRIS_COLORS.length));setTone(rnd(tones.length));
+    const tw=id=>setTint(id,Math.random()<0.3?'original':SW[rnd(SW.length)]);setHat(Math.random()<0.75);tw('hat');
+    for(const [slot,pNone] of [['Top',0],['Outer',0.25],['Legs',0],['Feet',0]]){const opts=OUTFIT.find(o=>o[0]===slot)[1];const i=Math.random()<pNone?0:1+rnd(opts.length-1);if(opts[i][1])tw(opts[i][1]);wear(slot,i);}};
+  const reset=()=>{setGirl(false,false);setHair(0);pickHairColor(0);pickIris(0);setTone(1);setHat(true);setBlush(80);LS.set('blush',80);
+    LOOK.tint={};LS.set('tint','{}');Object.keys(TINTS).forEach(id=>applyTint(id,'original'));OUTFIT.forEach(([slot])=>wear(slot,1));setExpr('auto');play('idle');};
+  window.ED={root,LOOK,worn,OUTFIT,HAIRS,tones,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,setExpr,play,pose,focus,previewNoHat,randomize,reset,
+    ready:Promise.all(outfitReady),clips:g.animations.map(a=>[a.name,a.duration]),frames:FRAMES,tintDominant};
+  if(EDITOR)buildEditor({LOOK,worn,OUTFIT,HAIRS,tones,eyes,order,nice,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,LS,setExpr,play,focus,previewNoHat,randomize,reset,getAnim:()=>curName});
+  // hold the arms a little away from the body so the hands don't sink into the robe
+  const bones={};root.traverse(o=>{if(o.isBone||o.type==='Bone'||/Upperarm$/.test(o.name))bones[o.name]=o;});
+  const SPREAD=+(new URLSearchParams(location.search).get('sp')??0.5),qa=new THREE.Quaternion(),qp=new THREE.Quaternion(),qw=new THREE.Quaternion();
+  // the mixer only writes a bone when its animated value changes (a frozen pose, a clip without an arm track), so the offset
+  // is applied on top of the stored animated rotation, which is put back before the next mixer update
+  const unspread=()=>{for(const n of ['L_Upperarm','R_Upperarm']){const b=bones[n];if(b&&b.userData.q0)b.quaternion.copy(b.userData.q0);}};
+  const spread=()=>{for(const [n,s] of [['L_Upperarm',SPREAD],['R_Upperarm',-SPREAD]]){const b=bones[n];if(!b)continue;b.userData.q0=(b.userData.q0||new THREE.Quaternion()).copy(b.quaternion);b.parent.updateMatrixWorld(true);
+    b.getWorldQuaternion(qw);b.parent.getWorldQuaternion(qp);qa.setFromAxisAngle(new THREE.Vector3(1,0,0),s);b.quaternion.copy(qp.invert().multiply(qa.multiply(qw)));}};
+  const spring=SkirtSpring(root);
+  // ?portrait=1 (hidden iframe in the game): frame the head, snap a 256px avatar twice (after the outfit settles) and hand it to the parent
+  const PORTRAIT=!!new URLSearchParams(location.search).get('portrait');let snapT=0,snaps=0;const PV=new THREE.Vector3(),PT=new THREE.Vector3();
+  const PZ=+(new URLSearchParams(location.search).get('pz')||1.05),PY=+(new URLSearchParams(location.search).get('py')||0.1);
+  if(PORTRAIT){ctl.enabled=false;cam.fov=30;cam.aspect=1;cam.updateProjectionMatrix();}
+  const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),0.05);if(EDITOR)focusStep(dt);unspread();mix.update(dt);if(window.RCCLAMP)RCCLAMP(dt);if(eyes){root.updateMatrixWorld(true);eyes.update(dt,curName);}spread();if(spring){root.updateMatrixWorld(true);spring.update(dt);}
+    if(PORTRAIT&&bones.Head){bones.Head.getWorldPosition(PV);PT.set(PV.x,PV.y+s.y*PY,PV.z);cam.position.set(PT.x+s.y*PZ,PT.y+s.y*0.03,PT.z+s.y*0.12);cam.lookAt(PT);}else ctl.update();
+    r.render(sc,cam);
+    if(PORTRAIT){snapT+=clk.elapsedTime-(window.__pt||0);window.__pt=clk.elapsedTime;window.__pf=(window.__pf||0)+1;if(window.__pf>12&&((snaps===0&&snapT>2.5)||(snaps===1&&snapT>7))){snaps++;const cv=document.createElement('canvas');cv.width=cv.height=256;const el=r.domElement,m=Math.min(el.width,el.height);
+      cv.getContext('2d').drawImage(el,(el.width-m)/2,(el.height-m)/2,m,m,0,0,256,256);const d=cv.toDataURL('image/webp',0.9);
+      try{localStorage.setItem('rc.portrait',d)}catch(e){}try{parent.postMessage({type:'rc-portrait',data:d,final:snaps===2},'*')}catch(e){}window.PORTRAIT_DONE=snaps;}}})();
+});
+</script></body></html>

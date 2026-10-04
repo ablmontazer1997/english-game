@@ -1,0 +1,21 @@
+{
+"coat__coat.bin": 43542,
+"shirt__shirt.bin": 29570,
+"top_blouse__shirt.bin": 40607,
+"top_blouse__shirt_liner.bin": 7395,
+"top_doublet__shirt.bin": 48410,
+"top_doublet__shirt_liner.bin": 7366,
+"top_elf__shirt.bin": 42857,
+"top_elf__shirt_liner.bin": 7878,
+"top_tabard__shirt_liner.bin": 7410,
+"top_tabard__shirt.bin": 63086,
+"shirt__shirt.nc.bin": 29570,
+"top_blouse__shirt.nc.bin": 40607,
+"top_blouse__shirt_liner.nc.bin": 7395,
+"top_doublet__shirt.nc.bin": 48410,
+"top_doublet__shirt_liner.nc.bin": 7366,
+"top_elf__shirt.nc.bin": 42857,
+"top_elf__shirt_liner.nc.bin": 7878,
+"top_tabard__shirt_liner.nc.bin": 7410,
+"top_tabard__shirt.nc.bin": 63086
+}
