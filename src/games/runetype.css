@@ -18,15 +18,19 @@
 @keyframes rt-yay { 40% { transform: translateY(-9px) } }
 .rt-reveal .rt-slot { color: #fff; background: linear-gradient(180deg, #c9a8ff, #a77cf5); }
 
-.rt-kb { top: 73.5%; left: 1%; right: 1%; display: grid; gap: 1.9cqh; }
-.rt-row { display: flex; justify-content: center; gap: 1.2cqw; }
+.rt-kb {
+  /* key width from the widest row (10 keys + 9 gaps) so every row fits the frame at any phone width */
+  --kgap: 1.2cqw; --kw: min(calc((98cqw - 9 * var(--kgap)) / 10), 50px);
+  top: 73.5%; left: 1%; right: 1%; display: grid; gap: 1.9cqh;
+}
+.rt-row { display: flex; justify-content: center; gap: var(--kgap); }
 .rt-key {
-  width: 9.2cqw; max-width: 50px; aspect-ratio: .88; border: 2px solid #fff; padding: 0; border-radius: 10px;
+  width: var(--kw); flex: none; aspect-ratio: .88; border: 2px solid #fff; padding: 0; border-radius: 10px;
   background: linear-gradient(180deg, #fffdf8, #f1e6cf); color: #3a2a8c; font: inherit; font-size: min(6.2cqw, 27px); font-weight: 900; text-transform: uppercase;
   box-shadow: 0 4px 0 #cdbb95, 0 6px 10px rgba(60, 40, 20, .25);
 }
 .rt-key:active { transform: translateY(3px); box-shadow: 0 1px 0 #cdbb95; }
-.rt-back { width: 14cqw; max-width: 72px; aspect-ratio: auto; font-size: min(6cqw, 26px); }
+.rt-back { width: calc(var(--kw) * 1.45); aspect-ratio: auto; font-size: min(6cqw, 26px); }
 
 /* motion: a carved rune flashes gold as it lands */
 .rt-slot.full { animation: rt-carve .35s ease-out; }

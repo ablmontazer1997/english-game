@@ -135,7 +135,10 @@
 .atlas-btn img { width: 78px; height: auto; display: block; animation: atlas-bob 3.6s ease-in-out infinite; }
 .atlas-btn span {
   margin-top: -10px; max-width: 110px; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800;
-  color: #4a3f66; background: #fffdf6; box-shadow: 0 2px 0 #d9c9a3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #4a3f66; background: #fffdf6; box-shadow: 0 2px 0 #d9c9a3;
+  /* long world names wrap to a second line inside the label instead of being cut */
+  white-space: normal; text-align: center; line-height: 12px; border-radius: 12px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .atlas-btn:active img { transform: scale(.94); }
 

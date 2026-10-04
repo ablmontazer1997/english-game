@@ -118,7 +118,7 @@ export function WorldAtlas({ worlds, current, onPick, onClose }: {
                 )}
                 <span className="atlas-tag">
                   <b className="atlas-cefr">{wd.cefr}</b>
-                  <span className="atlas-name">{wd.name}</span>
+                  <span className="atlas-name">{wd.name.split(':')[0]}</span>
                   {open
                     ? <span className="atlas-stars">★ {stars(i)}/{maxStars(i)}</span>
                     : <span className="atlas-lock">🔒</span>}

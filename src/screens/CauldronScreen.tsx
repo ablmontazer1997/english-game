@@ -4,7 +4,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { Panel, art } from '../components/PageArt'
+import { Panel, Card, Chip, art } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import stageBg from '../assets/stage_bg.webp'
 import icHeart from '../assets/sky/ic_heart.png'
@@ -74,45 +74,51 @@ export function CauldronScreen({ onClose, level }: { onClose: () => void; level:
   )
 
   if (phase === 'loading' || phase === 'sending') return frame(<>
-    <div className="ss-spinner" aria-hidden />
-    <p className="lobby-sub">{phase === 'sending' ? 'The cauldron bubbles…' : 'Stirring the cauldron…'}</p>
+    <Card className="ss-card ss-card-c">
+      <div className="ss-spinner" aria-hidden />
+      <p className="ss-card-p">{phase === 'sending' ? 'The cauldron bubbles…' : 'Stirring the cauldron…'}</p>
+    </Card>
   </>)
   if (phase === 'error') return frame(<>
     <h2 className="lobby-title ss-title">The fire went out</h2>
-    <p className="lobby-sub">{err}</p>
-    <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in" onClick={load}>Try again</Panel>
-    <button className="ss-link" onClick={onClose}>Back to the map</button>
+    <Card className="ss-card ss-card-c"><p className="ss-card-p">{err}</p></Card>
+    <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={load}>Try again</Panel>
+    <button className="cb cb-white ss-sec" onClick={onClose}>Back to the map</button>
   </>)
   if (phase === 'empty') return frame(<>
     <img className="cd-pot" src={art('qi_potion')} alt="" draggable={false} />
     <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">Overnight Cauldron</Panel>
     <h2 className="lobby-title ss-title">Nothing to brew today</h2>
-    <p className="lobby-sub">Every spell you learn comes back here on the day you are about to forget it.{today?.new_tomorrow ? ` ${today.new_tomorrow} will be ready tomorrow.` : ''}</p>
-    <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in" onClick={onClose}>To the map</Panel>
+    <Card className="ss-card ss-card-c"><p className="ss-card-p">Every spell you learn comes back here on the day you are about to forget it.{today?.new_tomorrow ? ` ${today.new_tomorrow} will be ready tomorrow.` : ''}</p></Card>
+    <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={onClose}>To the map</Panel>
   </>)
   if (phase === 'intro' && today) return frame(<>
     <img className="cd-pot" src={art('qi_potion')} alt="" draggable={false} />
     <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">Overnight Cauldron</Panel>
     <h2 className="lobby-title ss-title">{today.due_count} spell{today.due_count === 1 ? '' : 's'} to remember</h2>
-    <p className="lobby-sub">First, today's review: the spells you are about to forget. Every 10 right answers brew a heart{streak && !streak.today_done ? ', and one round lights your Hearthfire' : ''}.</p>
-    <div className="ss-games">
-      <span className="ss-chip">{today.items.length} now</span>
-      {[...new Set(rounds.map((r) => r.game))].map((g) => <span key={g} className="ss-chip">{MG_LABEL[g] ?? g}</span>)}
-    </div>
-    <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in" onClick={() => setPhase('play')}>Brew</Panel>
-    <button className="ss-link" onClick={onClose}>Later</button>
+    <Card className="ss-card ss-card-c">
+      <p className="ss-card-p">First, today's review: the spells you are about to forget. Every 10 right answers brew a heart{streak && !streak.today_done ? ', and one round lights your Hearthfire' : ''}.</p>
+      <div className="ss-games">
+        <Chip>{today.items.length} now</Chip>
+        {[...new Set(rounds.map((r) => r.game))].map((g) => <Chip key={g}>{MG_LABEL[g] ?? g}</Chip>)}
+      </div>
+    </Card>
+    <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={() => setPhase('play')}>Brew</Panel>
+    <button className="cb cb-white ss-sec" onClick={onClose}>Later</button>
   </>)
   if (phase === 'result' && out) return frame(<>
     <img className="cd-pot" src={art('qi_potion')} alt="" draggable={false} />
     <h2 className="result-title">{out.correct >= out.graded * 0.8 ? 'Well remembered!' : 'Brewed!'}</h2>
-    <p className="result-sub">{out.correct} of {out.graded} remembered</p>
-    <div className="result-rewards">
+    <Card className="ss-card ss-card-c">
+    <p className="ss-card-p ss-strong">{out.correct} of {out.graded} remembered</p>
+    <div className="result-rewards ss-rw">
       {out.hearts_gained > 0 && <span className="rwd"><img src={icHeart} alt="" /><b>+{out.hearts_gained}</b></span>}
       <span className="rwd"><img src={art('qi_flame')} alt="" /><b>{out.streak.current}</b><small>day{out.streak.current === 1 ? '' : 's'}</small></span>
     </div>
-    <p className="ss-extra"><span>The ones you missed come back tomorrow; the rest wait longer each time.</span></p>
-    <Panel name="btn_gold" className="result-continue btn-h" inner="lobby-start-in" onClick={onClose}>To the map</Panel>
-    {(today?.due_count ?? 0) > (today?.items.length ?? 0) && <button className="ss-link" onClick={load}>Brew more</button>}
+    <p className="ss-card-p">The ones you missed come back tomorrow; the rest wait longer each time.</p>
+    </Card>
+    <Panel name="btn_gold" className="result-continue" inner="lobby-start-in" onClick={onClose}>To the map</Panel>
+    {(today?.due_count ?? 0) > (today?.items.length ?? 0) && <button className="cb cb-white ss-sec" onClick={load}>Brew more</button>}
   </>)
 
   if (!round) return null
@@ -123,7 +129,7 @@ export function CauldronScreen({ onClose, level }: { onClose: () => void; level:
       <button className="stage-close" onClick={onClose} aria-label="Close">✕</button>
       <div className="play-top">
         <div className="play-hearts"><img src={skySrc('ic_heart')} alt="" /><b>{currencies?.hearts ?? 0}</b></div>
-        <span className="play-mg">Cauldron · {ri + 1} / {rounds.length}</span>
+        {rounds.length > 1 && <span className="ss-pips" aria-label={`Round ${ri + 1} of ${rounds.length}`}>{rounds.map((_, k) => <i key={k} className={k < ri ? 'done' : k === ri ? 'on' : ''} />)}</span>}
       </div>
       <div className="game-host bleed">
         <HintCtx.Provider value={registerHint}>

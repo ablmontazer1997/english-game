@@ -75,7 +75,7 @@ export interface InventoryOut {
 export interface ServerQuest extends Quest { claimable?: boolean }
 export type ServerLeague = League & { scoring?: string; week_start?: string; my_points?: number; entries: (League['entries'][number] & { bot?: boolean })[] }
 export interface LedgerRow { id: number; currency: string; delta: number; balance_after: number; reason: string; ref: string | null; created_at: string }
-export interface CatalogItem { id: string; name: string; slot: string; tier: string; rarity: string | null; price_gems: number | null; world_drop: number | null; theme?: string; is_default?: boolean }
+export interface CatalogItem { id: string; name: string; slot: string; tier: string; rarity: string | null; price_gems: number | null; world_drop: number | null; theme?: string; is_default?: boolean; base_mesh?: string | null }
 
 // ------------------------------------------------------------------ transport
 const ls = {

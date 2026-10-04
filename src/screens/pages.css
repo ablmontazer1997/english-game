@@ -69,7 +69,8 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
 
 /* ---------- shop ---------- */
 /* deal of the day: [ribbon / title / price / Buy][art] inside the card, nothing on the border */
-.sh-banner { display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: center; column-gap: var(--pad); }
+.sh-banner { display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: center; column-gap: var(--pad);
+  padding-bottom: calc(var(--skin-lip) + var(--pad) + 6px); }
 .sh-banner-main { min-width: 0; display: grid; gap: 8px; justify-items: start; align-content: center; }
 .sh-banner-t { font-size: 18px; line-height: 22px; font-weight: 900; color: var(--ink-d); }
 .sh-banner-l { display: inline-flex; align-items: center; gap: var(--btn-ic-gap); font-size: var(--fs-body); line-height: var(--lh-body);
@@ -83,13 +84,16 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
 /* square cards (chests, gem packs): art / label / button, all centred */
 .sh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
 .sh-grid3, .ch-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.sh-card { --pad: 8px; display: grid; justify-items: center; align-content: start; gap: 4px; text-align: center; }
+/* square shop card: art, name, then the price button pinned to the card floor with a clear band of face under it,
+   so buttons line up across a row and never sit on the painted rim */
+.sh-card { --pad: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding-bottom: calc(var(--skin-lip) + var(--pad) + 8px); }
 .sh-card-art { width: 100%; height: 64px; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(40, 60, 120, .25)); }
 .sh-grid .sh-card-art { height: 88px; }
 .sh-card-n { display: inline-flex; align-items: center; gap: var(--btn-ic-gap); font-size: var(--fs-body); line-height: var(--lh-body);
   font-weight: 900; color: var(--ink-d); }
 .sh-card-n img { width: var(--btn-ic); height: var(--btn-ic); object-fit: contain; }
-.sh-card .ui-btn { margin-top: 4px; }
+.sh-card .ui-btn { margin-top: auto; flex: none; }
 
 /* ---------- league ---------- */
 .lg-hero { display: grid; justify-items: center; gap: 8px; }

@@ -125,7 +125,7 @@ export function MapScreen({ onPlay, onCauldron, onHearth }: { onPlay: (s: Stage)
 
         <button className="atlas-btn reveal" onClick={() => setAtlas(true)} aria-label="Open the world map">
           <img src={atlasIcon} alt="" draggable={false} />
-          <span>{world ? world.name : 'World Map'}</span>
+          <span>{world ? world.name.split(':')[0] : 'World Map'}</span>
         </button>
 
         {mode === 'http' && onCauldron && (

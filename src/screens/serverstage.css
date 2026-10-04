@@ -1,13 +1,13 @@
 /* server stages (ServerStage.tsx): spellbook lobby, round banner, result extras. Same palette as stage.css. */
 .ss-lobby { gap: 10px; max-height: calc(100% - 40px); }
 .ss-title { font-size: clamp(24px, 7.5vw, 32px); line-height: 1.1; }
-.ss-book {
-  width: 100%; max-height: 42vh; overflow-y: auto; text-align: left;
-  padding: 14px 16px; border-radius: 18px;
-  background: linear-gradient(180deg, #fffdf6, #f6ecd8); border: 3px solid #e8c674;
-  box-shadow: 0 8px 20px rgba(20, 40, 110, .3), inset 0 0 0 2px #fff;
-  font-family: var(--game); color: #4a3a2a; font-size: 14px; line-height: 1.4;
-}
+/* every text block in the stage lobby / result / cauldron sits on the app's painted card (Card = pnl_card4) */
+.ss-card { --pad: 12px; display: grid; gap: 10px; text-align: left; font-family: var(--game); color: var(--ink-d, #3c4160); }
+.ss-card-c { text-align: center; justify-items: center; }
+.ss-card-p { margin: 0; font-size: 14px; line-height: 19px; font-weight: 700; color: #4f5578; }
+.ss-card-p.ss-strong { font-size: 16px; font-weight: 900; color: #3c4160; }
+.ss-c { text-align: center; }
+.ss-book { max-height: 34vh; overflow-y: auto; font-size: 14px; line-height: 1.4; color: #4a3a2a; }
 .ss-book p { margin: 0 0 8px; }
 .ss-sum { font-weight: 700; color: #4a2f6b; }
 .ss-rules { margin: 0 0 8px; padding-left: 18px; }
@@ -20,33 +20,10 @@
 .ss-mis s { color: #c0485a; }
 .ss-mis b { color: #2f8a5a; }
 .ss-games { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.ss-chip {
-  display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 999px;
-  font-family: var(--game); font-weight: 800; font-size: 12px; color: #fff; letter-spacing: .02em;
-  background: rgba(20, 30, 90, .45); border: 1px solid rgba(255, 255, 255, .35); text-shadow: 0 1px 3px rgba(0, 0, 0, .4);
-}
-.ss-chip img { width: 16px; height: 16px; }
-.ss-link { background: none; border: 0; color: #eaf3ff; font-family: var(--game); font-weight: 700; font-size: 14px;
-  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-shadow: 0 1px 4px rgba(0, 0, 0, .5); padding: 6px; }
-.ss-spinner { width: 54px; height: 54px; border-radius: 50%; border: 5px solid rgba(255, 255, 255, .25); border-top-color: var(--gold);
-  animation: ssspin 900ms linear infinite; }
-@keyframes ssspin { to { transform: rotate(360deg) } }
-.ss-extra { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px; margin: 0; font-family: var(--game);
-  font-weight: 700; font-size: 13px; color: #eaf3ff; text-shadow: 0 2px 8px rgba(10, 30, 80, .6); }
-.ss-between { position: absolute; inset: 0; margin: auto; z-index: 30; width: fit-content; height: fit-content;
-  display: grid; justify-items: center; gap: 2px; padding: 16px 30px; border-radius: 22px;
-  background: linear-gradient(180deg, #fffdf6, #f1e8ff); border: 4px solid #f3c95a; box-shadow: 0 12px 40px rgba(40, 20, 100, .45);
-  font-family: var(--game); }
-.ss-between span { font-size: 12px; font-weight: 800; color: #7d83a2; text-transform: uppercase; letter-spacing: .08em; }
-.ss-between b { font-size: 22px; font-weight: 900; color: #4a2f6b; }
-.ss-modal-btn { width: 70%; }
-.ss-drop img { width: 74px; height: 74px; }
-.cd-pot { width: 96px; height: auto; filter: drop-shadow(0 8px 16px rgba(60, 20, 120, .45)); animation: atlas-bob 3.6s ease-in-out infinite; }
-/* map chrome: the Overnight Cauldron and the Hearthfire, under the atlas button (same look as .atlas-btn) */
-.cauldron-btn, .hearth-btn {
-  position: absolute; left: 10px; display: grid; justify-items: center; gap: 2px; padding: 0; width: 86px;
-  background: none; border: 0; filter: drop-shadow(0 6px 12px rgba(20, 60, 110, .25)); cursor: pointer;
-}
+.ss-card .ss-games { margin-top: 2px; }
+.ss-games .ui-chip img { width: 16px; height: 16px; }
+/* secondary action under the main gold button: the in-game white candy button, not bare text on the scene */
+.cb.ss-sec { min-height: 40px; font-size: 15px; padding: 0 22px; width: auto; }
 .cauldron-btn { top: calc(var(--safe-top, 0px) + var(--hud-h, 64px) + 168px); }
 .hearth-btn { top: calc(var(--safe-top, 0px) + var(--hud-h, 64px) + 252px); }
 .cauldron-btn img, .hearth-btn img { width: 58px; height: 58px; object-fit: contain; display: block; }
@@ -71,7 +48,9 @@
   background: #e8ecf8; color: #b8c0dc; box-shadow: inset 0 0 0 2px #d4dbef; }
 .hf-wards span.on { background: linear-gradient(180deg, #e6f6ff, #b9e4ff); color: #2b8fd6; box-shadow: inset 0 0 0 2px #8fd0ff; }
 .sh-odds { display: grid; gap: 1px; font-size: 10.5px; font-weight: 800; color: #5d6390; line-height: 1.25; }
-.sh-item-n { font-size: 12px !important; line-height: 1.2 !important; min-height: 2.4em; }
+/* wardrobe item name: two lines at most, same block height in every card of a row */
+.sh-card-n.sh-item-n { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: var(--fs-caption); line-height: var(--lh-caption); min-height: calc(2 * var(--lh-caption)); }
 .it-list { max-height: 62vh; overflow-y: auto; }
 .it-slot { display: grid; gap: 6px; margin-bottom: 12px; }
 .it-h { font-size: 13px; font-weight: 900; color: #7d83a2; text-transform: uppercase; letter-spacing: .06em; }
@@ -82,6 +61,13 @@
 .it-row span b { font-size: 14px; color: #3c4160; }
 .it-row span small { font-size: 11px; font-weight: 700; color: #7d83a2; }
 .it-row em { font-style: normal; font-size: 12px; font-weight: 900; color: #b07a10; padding: 0 8px; }
-.lg-bot { font-size: 10px; font-weight: 700; opacity: .6; }
-.ss-auto { position: absolute; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom, 0px) + 96px); padding: 8px 16px; border-radius: 99px; border: 2px solid #fff; background: linear-gradient(180deg, #8f6bff, #6a46e6); color: #fff; font-weight: 800; font-size: 13px; white-space: nowrap; }
-.ss-auto2 { bottom: calc(var(--safe-bottom, 0px) + 140px); }
+.lg-dot.lg-dot-bot { background: linear-gradient(#c9cede, #9aa1ba); }
+.ss-auto { position: absolute; z-index: 40; left: calc(8px + var(--safe-left)); top: 30%; padding: 6px 10px; border-radius: 12px; border: 2px solid #fff;
+  background: linear-gradient(180deg, #8f6bff, #6a46e6); color: #fff; font-weight: 800; font-size: 11px; line-height: 1.1; max-width: 70px; white-space: normal; }
+.ss-auto2 { top: calc(30% + 52px); }
+/* round progress: a narrow column of pips under the hearts, clear of every game's title ribbon */
+.play-top:has(.ss-pips) { flex-direction: column; align-items: flex-start; gap: 4px; }
+.ss-pips { display: flex; flex-direction: column; gap: 4px; padding: 5px 3px; margin-left: 6px; border-radius: 99px; background: rgba(16, 12, 40, .35); }
+.ss-pips i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .45); }
+.ss-pips i.done { background: #ffd45a; }
+.ss-pips i.on { background: #fff; box-shadow: 0 0 0 2px #ffd45a; }

@@ -2,7 +2,8 @@
 // The 3D wardrobe (Edit) still keeps its own look; this is the server's record of owned and equipped items.
 import { useEffect, useState } from 'react'
 import { Sheet } from '../components/Sheet'
-import { Btn, art } from '../components/PageArt'
+import { Btn } from '../components/PageArt'
+import { ItemThumb } from '../components/ItemThumb'
 import { api, errorText, type InventoryOut, type CatalogItem } from '../services/api'
 import './pages.css'
 import './serverstage.css'
@@ -40,8 +41,7 @@ export function ItemsSheet({ open, onClose }: { open: boolean; onClose: () => vo
               const on = inv!.equipped[slot] === i.item_id
               return (
                 <div key={i.item_id} className={`it-row${on ? ' on' : ''}`}>
-                  <img src={`/runecast-wardrobe/thumbs/item_${i.item_id}.png`} alt="" draggable={false}
-                    onError={(e) => { (e.target as HTMLImageElement).src = art('qi_star') }} />
+                  <ItemThumb id={i.item_id} />
                   <span><b>{cat[i.item_id]?.name ?? i.item_id}</b><small>{SOURCE[i.source] ?? i.source}</small></span>
                   {on ? <em>Worn</em> : <Btn className="sm" disabled={!!busy} onClick={() => equip(slot, i.item_id)}>Wear</Btn>}
                 </div>

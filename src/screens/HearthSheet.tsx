@@ -9,7 +9,7 @@ import './pages.css'
 import './serverstage.css'
 import '../components/progression.css'
 
-const WARD: Offer = { id: 'freeze', title: 'Frost Ward', note: 'Covers one missed day. Hold up to 2.', icon: 'flame', price: { coins: 300 } }
+const WARD: Offer = { id: 'freeze', title: 'Frost Ward', note: 'Covers one missed day', icon: 'flame', price: { coins: 300 } }
 
 export function HearthSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { streak } = useGame()
@@ -30,7 +30,7 @@ export function HearthSheet({ open, onClose }: { open: boolean; onClose: () => v
           <small>Frost Wards cover a missed day by themselves.</small>
         </div>
         <OfferRow o={WARD} disabled={streak.freezes >= streak.freezes_max || streak.current === 0}
-          status={streak.freezes >= streak.freezes_max ? 'You hold the most (2)' : streak.current === 0 ? 'Light your Hearthfire first' : `You hold ${streak.freezes} / ${streak.freezes_max}`} />
+          status={streak.freezes >= streak.freezes_max ? 'You hold 2 / 2' : streak.current === 0 ? 'Needs a lit Hearthfire' : `You hold ${streak.freezes} / ${streak.freezes_max}`} />
       </div>
     </Sheet>
   )

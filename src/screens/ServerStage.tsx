@@ -6,7 +6,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { HeartIcon } from '../components/Icon'
-import { Panel, Art, Btn, art } from '../components/PageArt'
+import { Panel, Art, Btn, Card, Chip } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import stageBg from '../assets/stage_bg.webp'
 import icEnergy from '../assets/sky/ic_energy.png'
@@ -16,6 +16,7 @@ import type { Stage, ServerQuestion } from '../types/game'
 import { gameFor } from '../games/registry'
 import { HintCtx, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
+import { ItemThumb } from '../components/ItemThumb'
 import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic } from '../services/api'
 import { planRounds, AnswerSheet, solve, type Round } from '../services/serverPlay'
 import { sfx, enterScene, leaveScene } from '../services/audio'
@@ -153,14 +154,16 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="lobby pop">
         {phase === 'error' ? <>
-          <h2 className="lobby-title" style={{ fontSize: 28 }}>The spell fizzled</h2>
-          <p className="lobby-sub">{err}</p>
-          <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in" onClick={() => { setErr(''); setAttempt((n) => n + 1) }}>Try again</Panel>
-          <button className="ss-link" onClick={onExit}>Back to the map</button>
-        </> : <>
-          <div className="ss-spinner" aria-hidden />
-          <p className="lobby-sub">{phase === 'sending' ? 'The runes are being judged…' : 'Opening the stage…'}</p>
-        </>}
+          <h2 className="lobby-title ss-title">The spell fizzled</h2>
+          <Card className="ss-card ss-card-c"><p className="ss-card-p">{err}</p></Card>
+          <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={() => { setErr(''); setAttempt((n) => n + 1) }}>Try again</Panel>
+          <button className="cb cb-white ss-sec" onClick={onExit}>Back to the map</button>
+        </> : (
+          <Card className="ss-card ss-card-c">
+            <div className="ss-spinner" aria-hidden />
+            <p className="ss-card-p">{phase === 'sending' ? 'The runes are being judged…' : 'Opening the stage…'}</p>
+          </Card>
+        )}
       </div>
     </div>
   )
@@ -176,6 +179,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
             {KIND_LABEL[stage.serverKind ?? ''] ?? 'Stage'} · {stage.cefr}
           </Panel>
           <h2 className="lobby-title ss-title">{stage.title.replace(/^(Spellbook|Practice|Echoes|Trial): /, '')}</h2>
+          <Card className="ss-card">
           {topic ? (
             <div className="ss-book">
               <p className="ss-sum"><Rich text={topic.summary ?? ''} /></p>
@@ -188,13 +192,14 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
               ))}
             </div>
           ) : (
-            <p className="lobby-sub">{session.questions.length} runes to cast{session.review_ratio > 0 ? ' · some from earlier spells' : ''}</p>
+            <p className="ss-card-p ss-c">{session.questions.length} runes to cast{session.review_ratio > 0 ? ', some from earlier spells' : ''}</p>
           )}
           <div className="ss-games">
-            {games.map((g) => <span key={g} className="ss-chip">{MG_LABEL[g] ?? g}</span>)}
-            {stage.heartsApply && <span className="ss-chip ss-heart"><img src={icHeart} alt="" />{session.hearts}</span>}
+            {games.map((g) => <Chip key={g}>{MG_LABEL[g] ?? g}</Chip>)}
+            {stage.heartsApply && <Chip className="ss-heart"><img src={icHeart} alt="" />{session.hearts}</Chip>}
           </div>
-          <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in" onClick={() => setPhase('play')}>
+          </Card>
+          <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={() => setPhase('play')}>
             {boss ? 'Fight' : 'Start'}
           </Panel>
         </div>
@@ -227,8 +232,9 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
           ))}
         </div>
         <h2 className="result-title">{out.stars === 3 ? 'Perfect!' : out.stars >= 1 ? 'Nice!' : 'Try again'}</h2>
-        <p className="result-sub">{out.correct} of {out.total} runes cast{out.first_clear ? ' · first clear' : ''}</p>
-        <div className="result-rewards">
+        <Card className="ss-card ss-card-c">
+        <p className="ss-card-p ss-strong">{out.correct} of {out.total} runes cast{out.first_clear ? ' · first clear' : ''}</p>
+        <div className="result-rewards ss-rw">
           <span className="rwd"><img src={icEnergy} alt="" /><b>{out.rewards.xp}</b><small>{out.rewards.boosted ? 'XP ×2' : 'XP'}</small></span>
           <span className="rwd"><img src={icCoin} alt="" /><b>{out.rewards.coins}</b></span>
           {!!out.rewards.gems && <span className="rwd"><img src={skySrc('ic_gem')} alt="" /><b>{out.rewards.gems}</b></span>}
@@ -239,11 +245,12 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
           {out.hearts_lost > 0 && <span>−{out.hearts_lost} ❤️</span>}
           {out.elixir_used && <span>🧪 elixir used, heart kept</span>}
         </p>
+        </Card>
         {out.rewards.items?.length ? <Art name="chest_open" className="result-chest" /> : null}
-        <Panel name="btn_gold" className="result-continue btn-h" inner="lobby-start-in" onClick={() => { refreshReview(); onExit() }}>
+        <Panel name="btn_gold" className="result-continue" inner="lobby-start-in" onClick={() => { refreshReview(); onExit() }}>
           Continue
         </Panel>
-        {out.stars < 3 && <button className="ss-link" onClick={() => setAttempt((n) => n + 1)}>Play again</button>}
+        {out.stars < 3 && <button className="cb cb-white ss-sec" onClick={() => setAttempt((n) => n + 1)}>Play again</button>}
       </div>
       {modal && <RewardModal kind={modal} out={out} stage={stage} onClose={() => setModal(modal === 'drop' && out.level_completed ? 'done' : modal === 'drop' && out.level_up ? 'level' : null)} />}
     </div>
@@ -258,7 +265,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="play-top">
         <div className="play-hearts"><img src={icHeart} alt="" /><b>{currencies?.hearts ?? session?.hearts ?? 0}</b></div>
-        {rounds.length > 1 && <span className="play-mg">Round {ri + 1} / {rounds.length}</span>}
+        {rounds.length > 1 && <span className="ss-pips" aria-label={`Round ${ri + 1} of ${rounds.length}`}>{rounds.map((_, k) => <i key={k} className={k < ri ? 'done' : k === ri ? 'on' : ''} />)}</span>}
       </div>
       <div className={`game-host${FULL_BLEED.has(round.game) ? ' bleed' : ''}`}>
         <HintCtx.Provider value={registerHint}>
@@ -276,7 +283,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
       )}
       {AUTOPLAY && ri + 1 < rounds.length && <button className="ss-auto ss-auto2" onClick={roundDone}>Test: next round</button>}
       {phase === 'between' && (
-        <div className="ss-between pop"><span>Round {ri + 2}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
+        <div className="ss-between pop"><span>Round {ri + 2} of {rounds.length}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
       )}
       <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint} free />
     </div>
@@ -294,8 +301,7 @@ function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | '
           <div className="rw-title">{stage.kind === 'boss' ? 'The boss dropped a treasure!' : 'Treasure found!'}</div>
           <div className="rw-items">
             {out.rewards.items.map((it) => (
-              <div key={it.item_id} className="rw-big ss-drop"><img src={`/runecast-wardrobe/thumbs/item_${it.item_id}.png`} alt="" draggable={false}
-                onError={(e) => { (e.target as HTMLImageElement).src = art('chest_epic') }} /><b>{it.name}</b><span>New for your wardrobe</span></div>
+              <div key={it.item_id} className="rw-big ss-drop"><ItemThumb id={it.item_id} fallback="chest_epic" /><b>{it.name}</b><span>New for your wardrobe</span></div>
             ))}
           </div>
           <p className="rw-note">Wear it from your profile: Edit.</p>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ItemThumb } from '../components/ItemThumb'
 import './serverstage.css'
 import type { ShopOut, ChestInfo, ShopItem } from '../services/api'
 import type { Currencies } from '../types/game'
@@ -62,9 +63,15 @@ function useServerShop() {
   }, [http, currencies?.gems])
   return { shop, chests, http }
 }
+/** one-line notes written for the row width (the server's longer notes do not fit a list row) */
+const SHORT_NOTE: Record<string, string> = {
+  hearts_full: 'Refill all hearts now', elixir_1: 'Keeps your heart on a lost boss', elixir_3: 'Best value for rescues',
+  xp_boost: 'Faster levels, no league effect', freeze: 'Covers one missed day', coin_sack: '1,000 coins',
+  chest_wood: 'Odds shown', chest_silver: 'Odds shown', chest_epic: 'Odds shown',
+}
 const withServer = (o: Offer, shop: ShopOut | null): Offer => {
   const so = shop?.offers.find((x) => x.id === o.id)
-  return so ? { ...o, title: so.title.replace('Double XP - ', 'Double XP · '), note: so.note ?? o.note, price: so.price } : o
+  return so ? { ...o, title: o.id === 'freeze' ? 'Frost Ward' : o.title, note: SHORT_NOTE[o.id] ?? o.note, price: so.price } : o
 }
 
 export function ShopScreen() {
@@ -182,7 +189,6 @@ function ItemCard({ it, onBuy }: { it: ShopItem; onBuy: (id: string) => Promise<
   const { currencies, setCurrencies } = useGame()
   const [msg, setMsg] = useState<string | null>(null)
   const [owned, setOwned] = useState(it.owned)
-  const [img, setImg] = useState(`/runecast-wardrobe/thumbs/item_${it.id}.png`)
   const short = (it.price_gems ?? 0) > (currencies?.gems ?? 0)
   const go = async () => {
     const r = await onBuy(it.id)
@@ -191,8 +197,8 @@ function ItemCard({ it, onBuy }: { it: ShopItem; onBuy: (id: string) => Promise<
   }
   return (
     <Card name="card_square" className="reveal sh-card">
-      <img className="sh-card-art" src={img} alt="" draggable={false} onError={() => setImg(art(SLOT_ART[it.slot] ?? 'qi_star'))} />
-      <span className="sh-card-n sh-item-n">{msg ?? it.name}</span>
+      <ItemThumb className="sh-card-art" id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />
+      <span className="sh-card-n sh-item-n" title={it.name}>{msg ?? it.name.replace(/\s*\(.*\)\s*$/, '')}</span>
       {owned ? <Btn className="sm" disabled>Owned</Btn>
         : <Btn className={`sm${short ? ' short' : ''}`} onClick={go}><img src={skySrc('ic_gem')} alt="" />{it.price_gems}</Btn>}
     </Card>

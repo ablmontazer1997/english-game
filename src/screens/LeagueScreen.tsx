@@ -73,8 +73,9 @@ export function LeagueScreen() {
                 <Row name={e.isMe ? 'pnl_row6v' : 'pnl_row6'} className={`lg-row ${zone}${e.isMe ? ' lg-row-me' : ''}`}>
                   <Slot src={i < 3 ? art(DISC[i]) : undefined} className="lg-rank"><span>{i + 1}</span></Slot>
                   <span className="lg-nm">
-                    {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className="lg-dot" style={{ background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
-                    <span className="lg-nm-t">{e.isMe ? 'You' : e.name}{(e as { bot?: boolean }).bot && <small className="lg-bot"> · bot</small>}</span>
+                    {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className={`lg-dot${(e as { bot?: boolean }).bot ? ' lg-dot-bot' : ''}`} title={(e as { bot?: boolean }).bot ? 'practice rival' : undefined}
+                      style={(e as { bot?: boolean }).bot ? undefined : { background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
+                    <span className="lg-nm-t">{e.isMe ? 'You' : e.name}</span>
                     {i < 10 && Object.keys(rw).length > 0 && <span className="lg-rw"><RewardChips reward={rw} size={14} /></span>}
                   </span>
                   <span className="ui-trail lg-lp">{e.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</span>
@@ -83,7 +84,7 @@ export function LeagueScreen() {
             )
           })}
         </div>
-        <p className="ui-note">You are #{myRank}. Rewards are paid when the week ends.</p>
+        <p className="ui-note">You are #{myRank}. Rewards are paid when the week ends.{server && league.entries.some((e) => (e as { bot?: boolean }).bot) ? ' Grey crests are practice rivals until more players join.' : ''}</p>
       </div>
 
       {last && (
