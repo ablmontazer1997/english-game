@@ -31,9 +31,22 @@
    feet sit a touch higher in its canvas */
 .mhero[data-view="front"] .mhero-front,
 .mhero[data-view="cheer"] .mhero-cheer,
-.mhero[data-view="back"] .mhero-back,
-.mhero[data-view="frame"] .mhero-frame { display: block; }
+.mhero[data-view="back"] .mhero-back { display: block; }
 .mhero-back { bottom: calc(var(--hero-h) * -.05); }
+
+/* the 3D hero: one small transparent frame whose feet point sits on the hero point.
+   The painted sprite stands in until the 3D has drawn, then they cross-fade. */
+.mhero-sprites { position: absolute; left: 0; top: 0; transition: opacity 380ms ease; }
+.mhero-3d {
+  position: absolute; left: calc(var(--f3w, 100px) * -.5); top: var(--f3y, -100px);
+  width: var(--f3w, 100px); height: var(--f3h, 125px);
+  border: 0; background: transparent; color-scheme: normal; pointer-events: none;
+  opacity: 0; transition: opacity 380ms ease;
+}
+.mhero.is-3d .mhero-3d { opacity: 1; }
+.mhero.is-3d .mhero-sprites { opacity: 0; }
+/* the 3D page draws its own soft contact shadow under the feet; keep a faint ambient one */
+.mhero.is-3d .mhero-shadow { opacity: calc(var(--shadow) * .55); }
 
 /* ---------- the pad breaking ---------- */
 .rtoken.is-ruined .rtoken-btn { filter: drop-shadow(0 7px 10px rgba(20, 60, 110, .26)); }

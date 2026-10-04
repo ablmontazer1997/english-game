@@ -105,7 +105,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
                 width={sceneW * padW * damp(n.scale) * PAD_OVER} onPlay={onPlay} />
             )
           })}
-          {tall && adv.showHero && <MapHero heroRef={adv.heroRef} />}
+          {tall && <MapHero heroRef={adv.heroRef} hero3d={adv.hero3d} ready={adv.hero3dReady} hidden={!adv.showHero} />}
           {gateAt && <span className="mgate-flash" style={{ left: gateAt.x, top: gateAt.y }} />}
         </div>
       </div>

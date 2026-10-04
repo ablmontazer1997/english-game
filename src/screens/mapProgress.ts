@@ -7,7 +7,7 @@
  *    hero, the rest are locked. While an advance is playing, the pad being left
  *    breaks and the pad ahead stays dark until the hero gets there.
  *  - Advance: when the player's place on the road moves on (a stage was finished)
- *    the map plays: cheer -> the pad cracks -> the hero hops off as it bursts ->
+ *    the map plays: cheer (a clap) -> the pad cracks -> the hero hops off as it bursts ->
  *    walks the road to the next pad (through the clouds at a join) -> the next
  *    pad lights up. At the end of a world the hero walks on into the gate and the
  *    next world opens with the hero dropping onto its first pad.
@@ -55,6 +55,9 @@ export type Beat =
 
 export type Plan = { world: number; beats: Beat[] }
 
+/** the cheer on a finished pad: one clap clip of the 3D hero */
+export const CHEER_MS = 1500
+
 /**
  * What to play to go from the place last shown to the player's place now. Only
  * the last step is animated; pads skipped over (several stages finished while
@@ -68,7 +71,7 @@ export function planAdvance(seen: Cursor, now: Cursor, stageCounts: number[], re
     const from = now.stage - 1
     return [{
       world: now.world, beats: [
-        { kind: 'cheer', pad: from, ms: t(650) },
+        { kind: 'cheer', pad: from, ms: t(CHEER_MS) },
         { kind: 'crack', pad: from, ms: t(520) },
         { kind: 'burst', pad: from, ms: t(560) },
         { kind: 'walk', from, to: now.stage },
@@ -82,7 +85,7 @@ export function planAdvance(seen: Cursor, now: Cursor, stageCounts: number[], re
   return [
     {
       world: now.world - 1, beats: [
-        { kind: 'cheer', pad: fromPad, ms: t(650) },
+        { kind: 'cheer', pad: fromPad, ms: t(CHEER_MS) },
         { kind: 'crack', pad: fromPad, ms: t(520) },
         { kind: 'burst', pad: fromPad, ms: t(560) },
         { kind: 'walk', from: fromPad, to: -1 },
@@ -192,19 +195,42 @@ export function facingFor(dx: number, dy: number, prev?: Facing): Facing {
   return { view, flip }
 }
 
-/** walking timing: an ease in and out of a steady pace (scene px per second) */
-export function walkDuration(dist: number, pace: number) {
-  return Math.max(0.9, dist / pace + 0.35)
+/**
+ * A walk at a steady CADENCE: the 3D walk cycle plays at a fixed rate, so the hero's
+ * speed on screen follows the heading (the ground is foreshortened: a step up the
+ * screen covers fewer pixels than a step across it). speedAt(s) is the full-pace
+ * speed in scene px per second at arc length s; the walk eases in and out over
+ * `ramp` px. Returns the duration, where the hero is at time t, and the walk
+ * cycle's rate there (0..1 of full pace), so the feet never slide.
+ */
+export function walkTable(s0: number, s1: number, speedAt: (s: number) => number, ramp: number) {
+  const n = Math.max(2, Math.ceil(Math.abs(s1 - s0) / 2))
+  const ds = (s1 - s0) / n
+  const rate = (s: number) => {
+    const d = Math.min(Math.abs(s - s0), Math.abs(s1 - s)) / Math.max(1, ramp)
+    const k = Math.min(1, d)
+    return 0.35 + 0.65 * k * k * (3 - 2 * k)
+  }
+  const ts = [0]
+  for (let i = 1; i <= n; i++) {
+    const sm = s0 + ds * (i - 0.5)
+    ts.push(ts[i - 1] + Math.abs(ds) / Math.max(1, speedAt(sm) * rate(sm)))
+  }
+  const T = ts[n]
+  const at = (t: number) => {
+    if (t <= 0) return { s: s0, rate: rate(s0) }
+    if (t >= T) return { s: s1, rate: 0 }
+    let lo = 0, hi = n
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (ts[m] < t) lo = m; else hi = m }
+    const s = s0 + ds * (lo + (t - ts[lo]) / (ts[hi] - ts[lo]))
+    return { s, rate: rate(s) }
+  }
+  return { T, at }
 }
-/** distance walked at time t of a walk lasting T (ease in for 0.3s, ease out for 0.3s) */
-export function walkProgress(t: number, T: number) {
-  const e = Math.min(0.3, T / 3)
-  const v = 1 / (T - e) // peak speed in fractions per second with linear ramps
-  if (t <= 0) return 0
-  if (t >= T) return 1
-  if (t < e) return (v * t * t) / (2 * e)
-  if (t > T - e) { const r = T - t; return 1 - (v * r * r) / (2 * e) }
-  return (v * e) / 2 + v * (t - e)
+
+/** a screen heading's length on the ground: across the screen 1:1, up/down stretched by the foreshortening (gel = the map ground's elevation) */
+export function groundStretch(dx: number, dy: number, gelDeg: number) {
+  return Math.hypot(dx, dy / Math.max(0.2, Math.sin((gelDeg * Math.PI) / 180)))
 }
 
 /**
