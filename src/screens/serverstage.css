@@ -24,6 +24,28 @@
 .ss-games .ui-chip img { width: 16px; height: 16px; }
 /* secondary action under the main gold button: the in-game white candy button, not bare text on the scene */
 .cb.ss-sec { min-height: 40px; font-size: 15px; padding: 0 22px; width: auto; }
+.ss-spinner { width: 54px; height: 54px; border-radius: 50%; border: 5px solid rgba(110, 90, 170, .2); border-top-color: var(--gold);
+  animation: ssspin 900ms linear infinite; }
+@keyframes ssspin { to { transform: rotate(360deg) } }
+.ss-extra { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; margin: 0; font-family: var(--game);
+  font-weight: 800; font-size: 13px; color: #6a5a8a; }
+.ss-extra:empty { display: none; }
+/* reward pills on the light card */
+.result-rewards.ss-rw { margin: 0; }
+.result-rewards.ss-rw .rwd { background: #fff6dc; border: 2px solid #f0cf7a; color: #7a4a10; box-shadow: 0 2px 0 #e2c27a; }
+.ss-between { position: absolute; inset: 0; margin: auto; z-index: 30; width: fit-content; height: fit-content;
+  display: grid; justify-items: center; gap: 2px; padding: 16px 30px; border-radius: 22px;
+  background: linear-gradient(180deg, #fffdf6, #f1e8ff); border: 4px solid #f3c95a; box-shadow: 0 12px 40px rgba(40, 20, 100, .45);
+  font-family: var(--game); }
+.ss-between span { font-size: 12px; font-weight: 800; color: #7d83a2; text-transform: uppercase; letter-spacing: .08em; }
+.ss-between b { font-size: 22px; font-weight: 900; color: #4a2f6b; }
+.ss-drop img { width: 74px; height: 74px; object-fit: contain; }
+.cd-pot { width: 96px; height: auto; filter: drop-shadow(0 8px 16px rgba(60, 20, 120, .45)); animation: atlas-bob 3.6s ease-in-out infinite; }
+/* map chrome: the Overnight Cauldron and the Hearthfire, under the atlas button (same look as .atlas-btn) */
+.cauldron-btn, .hearth-btn {
+  position: absolute; left: 10px; display: grid; justify-items: center; gap: 2px; padding: 0; width: 86px;
+  background: none; border: 0; filter: drop-shadow(0 6px 12px rgba(20, 60, 110, .25)); cursor: pointer;
+}
 .cauldron-btn { top: calc(var(--safe-top, 0px) + var(--hud-h, 64px) + 168px); }
 .hearth-btn { top: calc(var(--safe-top, 0px) + var(--hud-h, 64px) + 252px); }
 .cauldron-btn img, .hearth-btn img { width: 58px; height: 58px; object-fit: contain; display: block; }
