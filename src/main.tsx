@@ -5,7 +5,6 @@ import { GameProvider } from './services/ServiceProvider'
 import { App } from './App'
 import { initAudio } from './services/audio'
 import { SpellLetter } from './components/SpellLetter'
-import { Btn } from './components/PageArt'
 import stageBg from './assets/stage_bg.webp'
 import './screens/stage.css'
 
@@ -34,8 +33,7 @@ createRoot(document.getElementById('root')!).render(
     {letterId ? (
       <div className="stage-host full">
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
-        <div className="sl-lobby"><SpellLetter topicId={letterId} level={new URLSearchParams(location.search).get('lv') ?? 'A1'} />
-          <Btn className="lg sl-start">Start</Btn></div>
+        <div className="sl-lobby"><SpellLetter topicId={letterId} level={new URLSearchParams(location.search).get('lv') ?? 'A1'} /></div>
       </div>
     ) : (
       <GameProvider>

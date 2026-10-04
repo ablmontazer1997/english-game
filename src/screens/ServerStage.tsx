@@ -182,8 +182,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="sl-lobby pop">
-          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''}>{meta}</SpellLetter>
-          <Btn className="lg sl-start" onClick={() => setPhase('play')}>Start</Btn>
+          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={() => setPhase('play')}>{meta}</SpellLetter>
         </div>
       </div>
     )
