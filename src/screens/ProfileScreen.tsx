@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ItemsSheet } from './ItemsSheet'
 import { useGame } from '../services/ServiceProvider'
 import { Card, Btn, Slot, Art, art, PAGE_BG } from '../components/PageArt'
 import hero2d from '../assets/games/boss2/hero.webp'
@@ -9,7 +10,8 @@ import './pages.css'
 import '../components/progression.css'
 
 export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void; onAchievements: () => void }) {
-  const { profile, worlds, currencies, achievements, inventory } = useGame()
+  const { profile, worlds, currencies, achievements, inventory, mode, streak } = useGame()
+  const [items, setItems] = useState(false)
   const portrait = usePortrait()
   const hero = useHero3d()
   if (!profile) return <div className="screen pg" />
@@ -41,7 +43,7 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
         <div className="pf-stats">
           <Card name="card_stat" className="pf-stat">
             <img src={art('qi_flame')} alt="" draggable={false} />
-            <b>{profile.streak}</b><span>{inventory?.freezes ? `Streak · ❄${inventory.freezes}` : 'Streak'}</span>
+            <b>{streak?.current ?? profile.streak}</b><span>{inventory?.freezes ? `Hearthfire · ❄${inventory.freezes}` : mode === 'http' ? 'Hearthfire' : 'Streak'}</span>
           </Card>
           <Card name="card_stat" className="pf-stat">
             <img src={art('qi_star')} alt="" draggable={false} />
@@ -52,6 +54,15 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
             <b>{currencies?.gems ?? 0}</b><span>Gems</span>
           </Card>
         </div>
+
+        {mode === 'http' && (
+          <Card className="ui-row pf-name" onClick={() => setItems(true)}>
+            <Slot src={art('chest_epic')} />
+            <span className="pf-name-t"><span className="ui-t">My Items</span></span>
+            <span className="ui-trail"><span className="pf-ach-more">Wear ›</span></span>
+          </Card>
+        )}
+        <ItemsSheet open={items} onClose={() => setItems(false)} />
 
         <Card name="panel_wide" className="pf-ach" onClick={onAchievements}>
           <span className="pf-ach-t"><b>Achievements</b><small>{claimed.length}/{achievements.length}</small>{ready > 0 && <em className="pf-ach-new">{ready} to claim</em>}</span>

@@ -41,3 +41,45 @@
 .ss-between b { font-size: 22px; font-weight: 900; color: #4a2f6b; }
 .ss-modal-btn { width: 70%; }
 .ss-drop img { width: 74px; height: 74px; }
+.cd-pot { width: 96px; height: auto; filter: drop-shadow(0 8px 16px rgba(60, 20, 120, .45)); animation: atlas-bob 3.6s ease-in-out infinite; }
+/* map chrome: the Overnight Cauldron and the Hearthfire, under the atlas button (same look as .atlas-btn) */
+.cauldron-btn, .hearth-btn {
+  position: absolute; left: 10px; display: grid; justify-items: center; gap: 2px; padding: 0; width: 86px;
+  background: none; border: 0; filter: drop-shadow(0 6px 12px rgba(20, 60, 110, .25)); cursor: pointer;
+}
+.cauldron-btn { top: calc(var(--safe-top, 0px) + var(--hud-h, 64px) + 168px); }
+.hearth-btn { top: calc(var(--safe-top, 0px) + var(--hud-h, 64px) + 252px); }
+.cauldron-btn img, .hearth-btn img { width: 58px; height: 58px; object-fit: contain; display: block; }
+.cauldron-btn span, .hearth-btn span {
+  margin-top: -6px; max-width: 110px; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800;
+  color: #4a3f66; background: #fffdf6; box-shadow: 0 2px 0 #d9c9a3; white-space: nowrap;
+}
+.cauldron-btn.has-due img { animation: atlas-bob 2.4s ease-in-out infinite; }
+.cauldron-btn em { position: absolute; top: -2px; right: 10px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+  background: var(--rose); color: #fff; font-style: normal; font-size: 11px; font-weight: 900; display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .3); }
+.hearth-btn.is-out img { filter: grayscale(.8) brightness(.85); }
+@media (prefers-reduced-motion: reduce) { .cd-pot, .cauldron-btn.has-due img { animation: none; } }
+.hf-top { display: flex; align-items: center; gap: 12px; }
+.hf-top img { width: 64px; height: 64px; object-fit: contain; }
+.hf-top img.hf-out { filter: grayscale(.8) brightness(.85); }
+.hf-top div { display: grid; }
+.hf-n { font-size: 24px; font-weight: 900; color: #3c4160; }
+.hf-top small, .hf-wards small { font-size: 12px; font-weight: 700; color: #7d83a2; }
+.hf-wards { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; }
+.hf-wards span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 18px;
+  background: #e8ecf8; color: #b8c0dc; box-shadow: inset 0 0 0 2px #d4dbef; }
+.hf-wards span.on { background: linear-gradient(180deg, #e6f6ff, #b9e4ff); color: #2b8fd6; box-shadow: inset 0 0 0 2px #8fd0ff; }
+.sh-odds { display: grid; gap: 1px; font-size: 10.5px; font-weight: 800; color: #5d6390; line-height: 1.25; }
+.sh-item-n { font-size: 12px !important; line-height: 1.2 !important; min-height: 2.4em; }
+.it-list { max-height: 62vh; overflow-y: auto; }
+.it-slot { display: grid; gap: 6px; margin-bottom: 12px; }
+.it-h { font-size: 13px; font-weight: 900; color: #7d83a2; text-transform: uppercase; letter-spacing: .06em; }
+.it-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 14px; background: #f4f1fb; }
+.it-row.on { background: #fff5d9; box-shadow: inset 0 0 0 2px #f3c95a; }
+.it-row img { width: 42px; height: 42px; object-fit: contain; }
+.it-row span { flex: 1; display: grid; }
+.it-row span b { font-size: 14px; color: #3c4160; }
+.it-row span small { font-size: 11px; font-weight: 700; color: #7d83a2; }
+.it-row em { font-style: normal; font-size: 12px; font-weight: 900; color: #b07a10; padding: 0 8px; }
+.lg-bot { font-size: 10px; font-weight: 700; opacity: .6; }

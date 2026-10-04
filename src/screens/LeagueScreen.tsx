@@ -1,4 +1,5 @@
 import { useGame } from '../services/ServiceProvider'
+import './serverstage.css'
 import { Card, Row, Btn, Chip, Slot, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import { RewardChips, useCountdown } from '../components/Rewards'
 import { usePortrait } from '../components/Portrait'
@@ -17,7 +18,8 @@ const LABEL: Record<LeagueTier, string> = {
 const DISC: ArtName[] = ['rank_gold', 'rank_silver', 'rank_bronze']
 
 export function LeagueScreen() {
-  const { league, inventory, seenLeagueResult, showReward } = useGame()
+  const { league, inventory, seenLeagueResult, showReward, mode } = useGame()
+  const server = mode === 'http'
   const portrait = usePortrait()
   const left = useCountdown(league?.endsAt ?? 0)
   const boost = useCountdown(inventory?.xpBoostUntil ?? 0)
@@ -54,8 +56,10 @@ export function LeagueScreen() {
         </div>
 
         <Card className="lg-how">
-          <span>Win stages to earn <b>XP</b>. When the week ends, the <b className="up">top 3</b> move up a league{league.demoteCount ? <>, the <b className="down">bottom 3</b> move down</> : null}.</span>
-          {boost.ms > 0 && <span className="lg-boost">Double XP · {boost.label}</span>}
+          {server
+            ? <span>Every stage earns <b>points</b> for what you answer right (10 × correct × accuracy, up to 400 a day). Boosts and purchases never count. When the week ends, the <b className="up">top 3</b> move up{league.demoteCount ? <>, the <b className="down">bottom 3</b> move down</> : null}.</span>
+            : <span>Win stages to earn <b>XP</b>. When the week ends, the <b className="up">top 3</b> move up a league{league.demoteCount ? <>, the <b className="down">bottom 3</b> move down</> : null}.</span>}
+          {!server && boost.ms > 0 && <span className="lg-boost">Double XP · {boost.label}</span>}
         </Card>
 
         <div className="lg-list">
@@ -70,10 +74,10 @@ export function LeagueScreen() {
                   <Slot src={i < 3 ? art(DISC[i]) : undefined} className="lg-rank"><span>{i + 1}</span></Slot>
                   <span className="lg-nm">
                     {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className="lg-dot" style={{ background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
-                    <span className="lg-nm-t">{e.isMe ? 'You' : e.name}</span>
+                    <span className="lg-nm-t">{e.isMe ? 'You' : e.name}{(e as { bot?: boolean }).bot && <small className="lg-bot"> · bot</small>}</span>
                     {i < 10 && Object.keys(rw).length > 0 && <span className="lg-rw"><RewardChips reward={rw} size={14} /></span>}
                   </span>
-                  <span className="ui-trail lg-lp">{e.lp.toLocaleString('en-US')} XP</span>
+                  <span className="ui-trail lg-lp">{e.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</span>
                 </Row>
               </div>
             )

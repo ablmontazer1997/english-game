@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import './serverstage.css'
+import type { ShopOut, ChestInfo, ShopItem } from '../services/api'
+import type { Currencies } from '../types/game'
 import { useGame } from '../services/ServiceProvider'
 import { Card, Row, Btn, Slot, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
@@ -48,9 +51,28 @@ export function OfferRow({ o, status, disabled, onDone }: { o: Offer; status?: s
   )
 }
 
+/** http mode: the server's shop (offer notes, wardrobe items for gems) and chests (published odds) */
+function useServerShop() {
+  const { http, currencies } = useGame()
+  const [shop, setShop] = useState<ShopOut | null>(null)
+  const [chests, setChests] = useState<ChestInfo[] | null>(null)
+  useEffect(() => {
+    if (!http) return
+    http.shop().then(setShop).catch(() => {}); http.chests().then(setChests).catch(() => {})
+  }, [http, currencies?.gems])
+  return { shop, chests, http }
+}
+const withServer = (o: Offer, shop: ShopOut | null): Offer => {
+  const so = shop?.offers.find((x) => x.id === o.id)
+  return so ? { ...o, title: so.title.replace('Double XP - ', 'Double XP · '), note: so.note ?? o.note, price: so.price } : o
+}
+
 export function ShopScreen() {
-  const { currencies, inventory } = useGame()
-  const deal = dealOfTheDay()
+  const { currencies, inventory, mode } = useGame()
+  const { shop, chests, http } = useServerShop()
+  const server = mode === 'http'
+  // the server has no daily discount: the banner features one offer at its normal price
+  const deal = server ? (() => { const d = dealOfTheDay(); const base = withServer({ ...d, id: d.id.replace(/^deal:/, ''), was: undefined }, shop); return { ...base, note: 'Featured today' } })() : dealOfTheDay()
   const dealLeft = useCountdown(dayEnd())
   const boost = useCountdown(inventory?.xpBoostUntil ?? 0)
   const fullHearts = !!currencies && currencies.hearts >= currencies.heartsMax
@@ -62,13 +84,13 @@ export function ShopScreen() {
         {/* deal of the day */}
         <Card name="panel_banner" className="reveal sh-banner">
           <div className="sh-banner-main">
-            <span className="sk sk-ribbon sh-ribbon">Deal · {dealLeft.label}</span>
+            <span className="sk sk-ribbon sh-ribbon">{server ? 'Featured' : `Deal · ${dealLeft.label}`}</span>
             <span className="sh-banner-t">{deal.title}</span>
             <span className="sh-banner-l">
               {deal.was && <s>{priceLabel(deal.was)}</s>}
               <img src={skySrc(deal.price.gems != null ? 'ic_gem' : 'ic_coin')} alt="" />{priceLabel(deal.price)}
             </span>
-            <DealBuy deal={deal} bought={!!inventory?.dealBought} />
+            <DealBuy deal={deal} bought={!server && !!inventory?.dealBought} />
           </div>
           <img className="sh-banner-art" src={ICON_ART[deal.icon]} alt="" draggable={false} />
         </Card>
@@ -76,13 +98,13 @@ export function ShopScreen() {
         <ChestStrip />
 
         <div className="ui-h">Essentials</div>
-        {ESSENTIALS.map((o) => (
+        {ESSENTIALS.map((o) => withServer(o, shop)).map((o) => (
           <OfferRow key={o.id} o={o} disabled={o.id === 'hearts_full' && fullHearts}
             status={o.id === 'hearts_full' && fullHearts ? 'Hearts are full' : o.id.startsWith('elixir') ? `You have ${currencies?.potion ?? 0}` : undefined} />
         ))}
 
         <div className="ui-h">Boosts</div>
-        {BOOSTS.map((o) => (
+        {BOOSTS.map((o) => withServer(o, shop)).map((o) => (
           <OfferRow key={o.id} o={o}
             status={o.id === 'xp_boost' && boost.ms > 0 ? `Active · ${boost.label} left`
               : o.id === 'freeze' ? `You hold ${inventory?.freezes ?? 0} / 2` : undefined} />
@@ -90,8 +112,17 @@ export function ShopScreen() {
 
         <div className="ui-h">Chests</div>
         <div className="sh-grid3">
-          {CHEST_OFFERS.map((o) => <ChestCard key={o.id} o={o} />)}
+          {CHEST_OFFERS.map((o) => withServer(o, shop)).map((o) => <ChestCard key={o.id} o={o} odds={chests?.find((c) => 'chest_' + c.kind === o.id)?.odds} />)}
         </div>
+        {server && <p className="ui-note">Tap a chest's name to see its odds. Chests hold coins, gems and elixirs, never wardrobe items.</p>}
+
+        {server && shop && shop.items.length > 0 && <>
+          <div className="ui-h">Wardrobe</div>
+          <div className="sh-grid3">
+            {shop.items.filter((it) => it.tier === 'gem').map((it) => <ItemCard key={it.id} it={it} onBuy={(id) => http!.buyItem(id)} />)}
+          </div>
+          <p className="ui-note">Looks only: nothing here changes your score. Boss treasures cannot be bought; win them.</p>
+        </>}
 
         <div className="ui-h">Gems</div>
         <div className="sh-grid">
@@ -122,9 +153,10 @@ function DealBuy({ deal, bought }: { deal: Offer; bought: boolean }) {
   )
 }
 
-function ChestCard({ o }: { o: Offer }) {
+function ChestCard({ o, odds }: { o: Offer; odds?: { reward: string; min?: number; max?: number; amount?: number; chance: number }[] }) {
   const { buy, showReward } = useGame()
   const [msg, setMsg] = useState<string | null>(null)
+  const [show, setShow] = useState(false)
   const go = async () => {
     const r = await buy(o.id)
     if (!r.ok) { setMsg(r.reason ?? 'Not possible'); setTimeout(() => setMsg(null), 2200); return }
@@ -133,8 +165,36 @@ function ChestCard({ o }: { o: Offer }) {
   return (
     <Card name="card_square" className="reveal sh-card">
       <img className="sh-card-art" src={ICON_ART[o.icon]} alt="" draggable={false} />
-      <span className="sh-card-n">{msg ?? o.title.replace(' Chest', '')}</span>
+      <span className="sh-card-n" onClick={() => odds && setShow(!show)} role={odds ? 'button' : undefined}>{msg ?? o.title.replace(' Chest', '')}{odds ? ' ⓘ' : ''}</span>
+      {show && odds && (
+        <span className="sh-odds">{odds.map((x, i) => (
+          <small key={i}>{Math.round(x.chance * 100)}% · {x.min != null ? `${x.min}–${x.max}` : x.amount} {x.reward === 'elixir' ? 'elixir' : x.reward}</small>
+        ))}</span>
+      )}
       <PriceBtn o={o} onBuy={go} small />
+    </Card>
+  )
+}
+
+const SLOT_ART: Record<string, ArtName> = { hair: 'qi_crystal', haircolor: 'qi_potion', eyes: 'qi_star', palette: 'qi_potion' }
+/** a wardrobe item for gems (server catalogue); the 3D wardrobe's own thumbnail when it has one */
+function ItemCard({ it, onBuy }: { it: ShopItem; onBuy: (id: string) => Promise<{ ok: boolean; reason?: string; currencies?: Currencies }> }) {
+  const { currencies, setCurrencies } = useGame()
+  const [msg, setMsg] = useState<string | null>(null)
+  const [owned, setOwned] = useState(it.owned)
+  const [img, setImg] = useState(`/runecast-wardrobe/thumbs/item_${it.id}.png`)
+  const short = (it.price_gems ?? 0) > (currencies?.gems ?? 0)
+  const go = async () => {
+    const r = await onBuy(it.id)
+    if (!r.ok) { setMsg(r.reason ?? 'Not possible'); setTimeout(() => setMsg(null), 2200); return }
+    setOwned(true); if (r.currencies) setCurrencies(r.currencies)
+  }
+  return (
+    <Card name="card_square" className="reveal sh-card">
+      <img className="sh-card-art" src={img} alt="" draggable={false} onError={() => setImg(art(SLOT_ART[it.slot] ?? 'qi_star'))} />
+      <span className="sh-card-n sh-item-n">{msg ?? it.name}</span>
+      {owned ? <Btn className="sm" disabled>Owned</Btn>
+        : <Btn className={`sm${short ? ' short' : ''}`} onClick={go}><img src={skySrc('ic_gem')} alt="" />{it.price_gems}</Btn>}
     </Card>
   )
 }

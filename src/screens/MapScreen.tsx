@@ -2,6 +2,8 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import type { Stage } from '../types/game'
 import { skySrc } from '../components/SkyIcon'
+import { art } from '../components/PageArt'
+import './serverstage.css'
 import { sceneFor } from './worlds'
 import { layoutTall } from './tallMap'
 import { MapLife } from '../components/MapLife'
@@ -17,8 +19,8 @@ import { padLook, pointAt, type PadLook, type Beat } from './mapProgress'
 const PAD_OVER = 0.74
 const damp = (s: number) => 0.6 + 0.4 * s
 
-export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
-  const { worlds, quests, submitResult, mode } = useGame()
+export function MapScreen({ onPlay, onCauldron, onHearth }: { onPlay: (s: Stage) => void; onCauldron?: () => void; onHearth?: () => void }) {
+  const { worlds, quests, submitResult, mode, reviewDue, streak } = useGame()
   const [worldIdx, setWorldIdx] = useState(0)
   const [atlas, setAtlas] = useState(false)
   // the world the map opens on (the one the hero is in) is picked by useMapAdvance below
@@ -73,6 +75,8 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
     if (n) el.scrollTop = Math.max(0, Math.min(sceneH - box.h, n.y * sceneH - box.h * 0.58))
   })
   const daily = quests.find((q) => q.period === 'daily')
+  const dailies = quests.filter((q) => q.period === 'daily')
+  const dailyAll = dailies.length || 4, dailyDone = dailies.filter((q) => q.done).length
   const dailyPct = daily ? Math.min(100, Math.round((daily.progress / daily.target) * 100)) : 0
 
   return (
@@ -124,6 +128,20 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
           <span>{world ? world.name : 'World Map'}</span>
         </button>
 
+        {mode === 'http' && onCauldron && (
+          <button className={`cauldron-btn reveal${reviewDue ? ' has-due' : ''}`} onClick={onCauldron} aria-label={`Overnight Cauldron, ${reviewDue} to review`}>
+            <img src={art('qi_potion')} alt="" draggable={false} />
+            {reviewDue > 0 && <em>{reviewDue > 99 ? '99+' : reviewDue}</em>}
+            <span>Cauldron</span>
+          </button>
+        )}
+        {mode === 'http' && onHearth && streak && (
+          <button className={`hearth-btn reveal${streak.today_done ? '' : ' is-out'}`} onClick={onHearth} aria-label={`Hearthfire streak ${streak.current} days`}>
+            <img src={art('qi_flame')} alt="" draggable={false} />
+            <span>{streak.current} day{streak.current === 1 ? '' : 's'}{streak.freezes ? ` · ❄${streak.freezes}` : ''}</span>
+          </button>
+        )}
+
         {DEMO && mode === 'mock' && (() => {
           const cs = worlds.flatMap((w) => w.stages).find((s) => s.status === 'current')
           return (
@@ -136,7 +154,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
 
         <div className="chest-widget reveal">
           <img className="chest-widget-bg" src={skySrc('widget_chest')} alt="" draggable={false} />
-          <span className="chest-widget-txt">1 / 4</span>
+          <span className="chest-widget-txt">{dailyDone} / {dailyAll}</span>
         </div>
       </div>
       {atlas && <WorldAtlas worlds={worlds} current={worldIdx % Math.max(1, worlds.length)}
