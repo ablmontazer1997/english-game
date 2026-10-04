@@ -82,7 +82,8 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
       </div>
       <div className="gs-title"><GameTitle title="Curse Breaker" count={`Curse ${round + 1} / ${lines.length}`} /></div>
 
-      <div className="gs-ui gs-panel cbk-card">
+      <div className="gs-ui cbk-low">
+      <div className="gs-panel cbk-card">
         {tokens.map((t, i) => {
           const isBad = i === c.bad
           const cls = ['gs-chip cbk-w',
@@ -94,14 +95,15 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
           </button>
         })}
       </div>
-      <div className={`gs-ui cbk-fixes${state === 'fix' ? ' on' : ''}`}>
+      <div className={`cbk-fixes${state === 'fix' ? ' on' : ''}`}>
         {fixes.map((f) => (
           <button key={f} className={`gs-gold cbk-fix${picked === f ? (f === c.fix ? ' right' : ' wrong') : ''}`} disabled={state !== 'fix' || !!picked} onClick={(e) => choose(f, e.currentTarget)}>
             {f || '(remove it)'}
           </button>
         ))}
       </div>
-      <p className="gs-ui cbk-tip">{tip}</p>
+      {tip && <p className="cbk-tip">{tip}</p>}
+      </div>
     </div>
   )
 }

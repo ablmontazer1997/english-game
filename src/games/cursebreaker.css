@@ -6,7 +6,11 @@
 .cbk-s-ok .cbk-flash { animation: cbk-flash 1s ease-out; }
 @keyframes cbk-flash { 30% { opacity: 1 } to { opacity: 0; transform: scale(1.4) } }
 
-.cbk-card { top: 61%; left: 2.5%; right: 2.5%; min-height: 13.5%; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 8px; padding: 10px; }
+/* card, fixes and tip flow in one column: a two-row sentence (narrow phones) pushes the fixes down instead of under them */
+/* bottom-anchored above the safe area; min-height keeps the top at 61% (mockup) and a 3-row sentence grows upward */
+.cbk-low { top: auto; bottom: calc(2.5% + var(--safe-bottom, 0px)); left: 2.5%; right: 2.5%; min-height: calc(36.5% - var(--safe-bottom, 0px));
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 2.2cqh; }
+.cbk-card { min-height: 13.5cqh; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 8px; padding: 10px; }
 .cbk-w:disabled { opacity: 1; }
 .cbk-w.miss { color: #a39cb8; background: #eee9f5; border-color: #e0d8ee; animation: gs-no .35s; }
 .cbk-w.cursed { color: #fff; border-color: #b58cff; background: radial-gradient(circle at 50% 40%, #8a4dff, #4a1a8c 70%);
@@ -15,12 +19,13 @@
 .cbk-w.fixed { color: #fff; border-color: #d8ffb9; background: linear-gradient(180deg, #8fe56a, #4fbf34); box-shadow: 0 0 0 2px #2f8a1f, 0 0 16px rgba(120, 220, 80, .9); animation: none; }
 .cbk-w s { opacity: .7; }
 
-.cbk-fixes { top: 77.5%; left: 3%; right: 3%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4cqw; opacity: .55; transition: opacity .3s; }
+.cbk-fixes { margin: 0 .5%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4cqw; opacity: .55; transition: opacity .3s; }
 .cbk-fixes.on { opacity: 1; }
 .cbk-fix { padding: 0 6px; font-size: clamp(15px, 4.4cqw, 19px); }
 .cbk-fix.right { color: #fff; border-color: #d8ffb9; background: linear-gradient(180deg, #8fe56a, #4fbf34); box-shadow: 0 0 0 2px #2f8a1f, 0 5px 0 #26731a; }
 .cbk-fix.wrong { color: #fff; border-color: #ffd0c8; background: linear-gradient(180deg, #ff9d8f, #e0523f); box-shadow: 0 0 0 2px #a8382a, 0 5px 0 #8a2a1e; }
-.cbk-tip { top: 86.5%; margin: 0; text-align: center; font-size: clamp(15px, 4.6cqw, 19px); font-weight: 900; color: #2a2550; text-shadow: 0 0 6px rgba(255, 255, 255, .95), 0 0 2px #fff; }
+.cbk-tip { align-self: center; max-width: 100%; margin: 0; padding: 6px 16px; border-radius: 18px; text-align: center; font-size: clamp(14px, 4.2cqw, 17px); font-weight: 900; color: #2a2550;
+  background: #fffdf6; box-shadow: 0 0 0 2px #e7c47a, 0 4px 10px rgba(40, 30, 90, .18); }
 
 /* motion: the mirror shudders when the curse is found, darkens on failure, a light sweep crosses it when a curse breaks */
 .cbk-s-fix .cbk-mirror { animation: cbk-shudder .55s ease-out; }
