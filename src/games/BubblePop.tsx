@@ -2,6 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { MiniGameProps } from './types'
 import { BurstFx, FRAME_REACH, ORB_COLORS, drawFrame, drawOrb, drawWord, loadFrame, type OrbColor } from './bubbleOrb'
 import frameUrl from '../assets/games/bubble_frame.webp'
+import { GameTitle } from '../components/GameTitle'
+import './scene.css'
 import './bubblepop.css'
 
 /* Bubble Pop — a real bubble field, not fixed slots.
@@ -419,14 +421,11 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
         <div className="bp-cloud" style={{ top: 70, right: -30, width: 150, height: 56 }} />
         <div className="bp-bushes" />
 
-        <div className="bp-qbar">
-          <div className="q">?</div>
-          <div className="qt">Pop the right bubble: <b lang="en">{item.front}</b></div>
-        </div>
-
-        <div className="bp-stat">
-          <span className="st">&#9733;</span><span>{score}</span>
-          <span className="dv" /><span className="s2">{idx + 1}/{items.length}</span>
+        {/* admin 3697: same crest + cream prompt panel as every other mini-game */}
+        <div className="bp-crest"><GameTitle title="Bubble Pop" count={`Bubble ${idx + 1} / ${items.length}`} /></div>
+        <div className="bp-prompt gs-panel">
+          <span className="bp-pq">Pop the bubble for</span>
+          <b lang="en">{item.front}</b>
         </div>
 
         <div className="bp-ring">

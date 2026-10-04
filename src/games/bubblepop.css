@@ -17,12 +17,9 @@
 .bubblepop .bp-stage {
   position: relative;
   width: 100%;
-  max-width: 440px;
   height: 100%;
-  margin: 0 auto;
   overflow: hidden;
   background: #57b0ec;
-  border-radius: 20px;
 }
 
 /* ---- background ---------------------------------------------------------- */
@@ -358,3 +355,13 @@
   cursor: pointer;
   z-index: 3;
 }
+
+/* ---- shared kit (admin 3697): full screen, the common crest and a cream prompt panel, readable words ---- */
+.bubblepop { font-family: var(--sans); }
+.bubblepop .bp-crest { position: absolute; left: 0; right: 0; top: calc(6px + var(--safe-top, 0px)); z-index: 5; }
+.bubblepop .bp-prompt { position: absolute; z-index: 4; left: 4%; right: calc(4% + 78px); top: calc(122px + var(--safe-top, 0px));
+  min-height: 66px; padding: 8px 16px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0; }
+.bubblepop .bp-pq { font-size: 14px; font-weight: 800; color: #7d6a4a; }
+.bubblepop .bp-prompt b { font-size: clamp(20px, 6.2vw, 26px); font-weight: 900; color: #5a2fc0; line-height: 1.1; overflow-wrap: anywhere; }
+.bubblepop .bp-ring { top: calc(122px + var(--safe-top, 0px)); right: 4%; }
+.bubblepop .bp-field { top: calc(200px + var(--safe-top, 0px)); bottom: calc(10px + var(--safe-bottom, 0px)); }

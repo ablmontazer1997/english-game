@@ -42,6 +42,7 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
   const [fit, setFit] = useState({ strips: 2, top: 0 })
   const [mode, setMode] = useState<'measure' | 'one' | 'two'>('measure')
   const [page, setPage] = useState(0)
+  const guard = useRef(0)
   useLayoutEffect(() => { setMode('measure'); setPage(0) }, [topicId])
   // web fonts can add lines after the first layout: decide again once they are in
   useEffect(() => { document.fonts?.ready.then(() => setMode('measure')) }, [topicId])
@@ -63,6 +64,12 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
         const room = host.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 18 - 14 - 62
         return cap * 2 + strips * strip <= room ? 'one' : 'two'
       })
+      // last guard (admin 3697): a one-letter page must never scroll; if it still overflows, split it
+      // (checked once the layout has settled, so a transient frame mid-measure never splits a letter that fits)
+      clearTimeout(guard.current)
+      guard.current = window.setTimeout(() => {
+        if (host && host.scrollHeight > host.clientHeight + 2) setMode((md) => (md === 'one' ? 'two' : md))
+      }, 700)
     }
     measure()
     const ro = new ResizeObserver(measure)

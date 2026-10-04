@@ -8,7 +8,7 @@ import { CURSES } from './banks/curse'
 import { fromSrv, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/curse/cb_bg.webp'
-import mirrorClean from '../assets/games/curse/cb_mirror_clean.webp'
+import bgClean from '../assets/games/curse/cb_bg_clean.webp'
 import './scene.css'
 import './cursebreaker.css'
 
@@ -75,8 +75,10 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
     <div className={`gs cbk cbk-s-${state}`} style={{ '--clear': cleared / lines.length } as React.CSSProperties}>
       <div className="gs-scene">
         <img className="gs-plate" src={bgPlate} alt="" draggable={false} />
+        {/* admin 3697: no second mirror on top of the painted one; when every curse is broken the same scene
+            fades to its cleansed version (same plate, thorns gone, clear glass) */}
+        <img className={`gs-plate cbk-clean${cleared >= lines.length && lines.length > 0 ? ' on' : ''}`} src={bgClean} alt="" draggable={false} />
         <div className="gs-at cbk-mirror" aria-hidden>
-          <img className="clean" src={mirrorClean} alt="" draggable={false} />
           <span className="cbk-flash" />
         </div>
       </div>

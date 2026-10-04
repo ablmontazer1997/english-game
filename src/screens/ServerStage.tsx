@@ -171,18 +171,12 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
 
   if (phase === 'intro' && session) {
     const games = [...new Set(rounds.map((r) => r.game))]
-    const meta = (
-      <div className="sl-meta">
-        {games.map((g) => <Chip key={g}>{MG_LABEL[g] ?? g}</Chip>)}
-        {stage.heartsApply && <Chip className="ss-heart"><img src={icHeart} alt="" />{session.hearts}</Chip>}
-      </div>
-    )
     if (stage.serverKind === 'lesson' && hasLetter(stage.topicId)) return (
       <div className="stage-host full">
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="sl-lobby pop">
-          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={() => setPhase('play')}>{meta}</SpellLetter>
+          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={() => setPhase('play')} />
         </div>
       </div>
     )

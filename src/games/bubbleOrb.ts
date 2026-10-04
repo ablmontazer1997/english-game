@@ -89,17 +89,44 @@ export function drawOrb(ctx: CanvasRenderingContext2D, x: number, y: number, r: 
 }
 
 export function drawWord(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, word: string, alpha = 1) {
+  // admin 3697: words must read at a glance on the glossy bubbles -> heavy font, dark outline under white,
+  // and phrases wrap onto 2-3 centred lines inside the bubble instead of shrinking to a sliver
   ctx.save()
   ctx.globalAlpha = alpha
-  let size = Math.max(12, r * 0.38)
-  ctx.font = `700 ${size}px Fredoka, system-ui, sans-serif`
-  const maxW = r * 1.72
-  const w = ctx.measureText(word).width
-  if (w > maxW) { size = Math.max(10, size * maxW / w); ctx.font = `700 ${size}px Fredoka, system-ui, sans-serif` }
+  const FONT = (px: number) => `900 ${px}px 'Baloo 2', Nunito, system-ui, sans-serif`
+  const maxW = r * 1.55, maxH = r * 1.35
+  const parts = word.split(/\s+/)
+  const wrap = (px: number, n: number): string[] => {
+    // greedy split of the words into n lines of similar width
+    ctx.font = FONT(px)
+    const total = ctx.measureText(word).width, lines: string[] = []
+    let cur = ''
+    for (const w of parts) {
+      const t = cur ? cur + ' ' + w : w
+      if (cur && ctx.measureText(t).width > total / n + px * 0.6 && lines.length < n - 1) { lines.push(cur); cur = w } else cur = t
+    }
+    lines.push(cur)
+    return lines
+  }
+  let best: { px: number; lines: string[] } | null = null
+  for (let px = Math.max(16, r * 0.46); px >= 11 && !best; px -= 1) {
+    for (let n = 1; n <= Math.min(3, parts.length); n++) {
+      const lines = wrap(px, n)
+      if (lines.every((l) => ctx.measureText(l).width <= maxW) && lines.length * px * 1.05 <= maxH) { best = { px, lines }; break }
+    }
+  }
+  if (!best) best = { px: 11, lines: wrap(11, Math.min(3, parts.length)) }
+  ctx.font = FONT(best.px)
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-  ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = 3; ctx.shadowOffsetY = 2
-  ctx.fillStyle = '#fff'
-  ctx.fillText(word, x, y + 1)
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(3, best.px * 0.22); ctx.strokeStyle = 'rgba(28, 30, 80, .85)'
+  const lh = best.px * 1.02, y0 = y + 1 - (best.lines.length - 1) * lh / 2
+  best.lines.forEach((l, k) => {
+    ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2
+    ctx.strokeText(l, x, y0 + k * lh)
+    ctx.shadowColor = 'transparent'
+    ctx.fillStyle = '#fff'
+    ctx.fillText(l, x, y0 + k * lh)
+  })
   ctx.restore()
 }
 

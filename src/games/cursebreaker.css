@@ -1,7 +1,9 @@
 /* Curse Breaker: positions follow the mockup (c_curse); the cursed mirror is part of the painting,
  * the clean mirror fades in over it as curses are broken */
 .cbk-mirror { left: 25%; top: 7%; width: 51%; }
-.cbk-mirror img { width: 100%; display: block; opacity: calc(var(--clear, 0) * .9); transition: opacity .8s; }
+.cbk-mirror { aspect-ratio: 480 / 869; }
+.gs-scene > .gs-plate.cbk-clean { opacity: 0; transition: opacity 1.2s ease; }
+.gs-scene > .gs-plate.cbk-clean.on { opacity: 1; }
 .cbk-flash { position: absolute; inset: 10%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 240, 180, .95), transparent); opacity: 0; }
 .cbk-s-ok .cbk-flash { animation: cbk-flash 1s ease-out; }
 @keyframes cbk-flash { 30% { opacity: 1 } to { opacity: 0; transform: scale(1.4) } }

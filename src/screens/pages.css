@@ -152,3 +152,6 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
 .wd-done { position: absolute; right: var(--gutter); bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 2;
   border: 0; border-radius: 999px; height: var(--btn-h-lg); padding: 0 24px; font-size: 15px; line-height: 1; font-weight: 900; color: #fff;
   background: linear-gradient(#9b6cf0, #6f3fd0); box-shadow: 0 4px 12px rgba(80, 40, 160, 0.35); cursor: pointer; }
+/* admin 3699: the tab pages keep their painted island backgrounds under a faint white veil, so cards and text read calmly */
+.screen.pg::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .42), rgba(255, 252, 246, .3)); }
