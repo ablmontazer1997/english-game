@@ -39,3 +39,5 @@
 /* the letter's main action is a hero button (like the old lobby Start), larger than the 44 px modal standard */
 .ui-btn.lg.sl-start { --h: 58px; font-family: var(--game); font-size: 22px; padding-bottom: 4px; }
 .ui-btn.sl-back { --h: 50px; font-family: var(--game); font-size: 18px; }
+/* page number of a two-letter topic: inked at the foot of the paper, between the quill and the lavender */
+.sl-pg { position: absolute; z-index: 2; left: 50%; bottom: 7.5%; transform: translateX(-50%); font-family: var(--game); font-weight: 800; font-size: 15px; color: #8a6a48; letter-spacing: .1em; }

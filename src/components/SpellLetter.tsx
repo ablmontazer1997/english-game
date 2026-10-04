@@ -87,8 +87,9 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
         <img className="sl-seal" src={seal} alt="" draggable={false} />
         <img className="sl-quill" src={quill} alt="" draggable={false} />
         <img className="sl-lav" src={lavender} alt="" draggable={false} />
+        {two && <span className="sl-pg">{page + 1} / 2</span>}
         <div className="sl-body" ref={body} style={{ top: fit.top }}>
-          <Panel name="ribbon_gold" className="sl-tag" inner="lobby-tag-in">Spellbook · {level}{two ? ` · ${page + 1}/2` : ''}</Panel>
+          <Panel name="ribbon_gold" className="sl-tag" inner="lobby-tag-in">Spellbook · {level}</Panel>
           <h2 className={`sl-title${head ? '' : ' sm'}`}>{main}</h2>
           {head && sub && <p className="sl-subt">{sub}</p>}
           {head && <p className="sl-sum"><Ink text={pg.s} /></p>}
