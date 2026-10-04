@@ -6,7 +6,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { HeartIcon } from '../components/Icon'
-import { Panel, Art, art } from '../components/PageArt'
+import { Panel, Art, Btn, art } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import stageBg from '../assets/stage_bg.webp'
 import icEnergy from '../assets/sky/ic_energy.png'
@@ -268,12 +268,13 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
         </HintCtx.Provider>
       </div>
       {AUTOPLAY && session && (
-        <button className="mapdemo-btn ss-auto" onClick={() => {
+        <button className="ss-auto" onClick={() => {
           // keep ~2 s per item so the server's minimum play time is met
           const wait = Math.max(0, session.questions.length * 2000 - sheet.current.elapsed)
           setTimeout(() => { session.questions.forEach((q) => sheet.current.record(q.qid, solve(q), true)); send(false) }, wait)
         }}>Test: answer all</button>
       )}
+      {AUTOPLAY && ri + 1 < rounds.length && <button className="ss-auto ss-auto2" onClick={roundDone}>Test: next round</button>}
       {phase === 'between' && (
         <div className="ss-between pop"><span>Round {ri + 2}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
       )}
@@ -293,7 +294,8 @@ function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | '
           <div className="rw-title">{stage.kind === 'boss' ? 'The boss dropped a treasure!' : 'Treasure found!'}</div>
           <div className="rw-items">
             {out.rewards.items.map((it) => (
-              <div key={it.item_id} className="rw-big ss-drop"><img src={art('chest_epic')} alt="" draggable={false} /><b>{it.name}</b><span>New for your wardrobe</span></div>
+              <div key={it.item_id} className="rw-big ss-drop"><img src={`/runecast-wardrobe/thumbs/item_${it.item_id}.png`} alt="" draggable={false}
+                onError={(e) => { (e.target as HTMLImageElement).src = art('chest_epic') }} /><b>{it.name}</b><span>New for your wardrobe</span></div>
             ))}
           </div>
           <p className="rw-note">Wear it from your profile: Edit.</p>
@@ -309,7 +311,7 @@ function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | '
           <div className="rw-title">{stage.cefr} complete!</div>
           <p className="rw-note">A new grimoire opens: level {out.me.level}. Your journey goes on.</p>
         </>}
-        <Panel name="btn_gold" className="ss-modal-btn btn-h" inner="lobby-start-in" onClick={onClose}>Great!</Panel>
+        <Btn name="btn_gold" className="lg" onClick={onClose}>Great!</Btn>
       </div>
     </div>
   )

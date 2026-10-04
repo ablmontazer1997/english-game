@@ -83,4 +83,5 @@
 .it-row span small { font-size: 11px; font-weight: 700; color: #7d83a2; }
 .it-row em { font-style: normal; font-size: 12px; font-weight: 900; color: #b07a10; padding: 0 8px; }
 .lg-bot { font-size: 10px; font-weight: 700; opacity: .6; }
-.ss-auto { position: absolute; z-index: 40; left: 50%; transform: translateX(-50%); top: calc(var(--safe-top, 0px) + 56px); }
+.ss-auto { position: absolute; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(var(--safe-bottom, 0px) + 96px); padding: 8px 16px; border-radius: 99px; border: 2px solid #fff; background: linear-gradient(180deg, #8f6bff, #6a46e6); color: #fff; font-weight: 800; font-size: 13px; white-space: nowrap; }
+.ss-auto2 { bottom: calc(var(--safe-bottom, 0px) + 140px); }
