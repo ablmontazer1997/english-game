@@ -97,10 +97,11 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
 
 /* ---------- league ---------- */
 .lg-hero { display: grid; justify-items: center; gap: 8px; }
-.lg-trophy { width: 128px; height: auto; filter: drop-shadow(0 8px 18px rgba(20, 50, 110, .35)); }
+.lg-trophy { width: 84px; height: auto; filter: drop-shadow(0 8px 18px rgba(20, 50, 110, .35)); }
 .lg-name { font-size: 26px; line-height: 32px; font-weight: 900; color: #fff;
   text-shadow: 0 3px 10px rgba(30, 50, 130, .6), 0 1px 0 rgba(90, 60, 160, .5); }
-.lg-list { display: grid; gap: 8px; }
+.lg-list { display: grid; gap: 2px; }
+.ui-row.pillrow.lg-row { --h: 56px; }  /* admin 3706: tighter ladder */
 /* compact row: 40px rank slot */
 .lg-row { --slot: 40px; }
 .lg-rank { font-size: var(--fs-body); font-weight: 900; color: var(--ink-m); }
@@ -154,4 +155,9 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
   background: linear-gradient(#9b6cf0, #6f3fd0); box-shadow: 0 4px 12px rgba(80, 40, 160, 0.35); cursor: pointer; }
 /* admin 3699: the tab pages keep their painted island backgrounds under a faint white veil, so cards and text read calmly */
 .screen.pg::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .42), rgba(255, 252, 246, .3)); }
+  background: linear-gradient(180deg, rgba(255, 255, 255, .64), rgba(255, 252, 246, .55)); }
+/* on the white veil, headings switch from white-on-shadow to the app's dark violet ink */
+.screen.pg .ui-h { color: #3d2f72; text-shadow: 0 1px 0 rgba(255, 255, 255, .8); }
+.screen.pg .ui-h::after { background: rgba(90, 70, 160, .22); }
+.screen.pg .lg-name { color: #3d2f72; text-shadow: 0 1px 0 rgba(255, 255, 255, .9), 0 2px 10px rgba(255, 255, 255, .8); }
+.screen.pg .lg-step small { color: #4a3d80; text-shadow: 0 1px 0 rgba(255, 255, 255, .8); }
