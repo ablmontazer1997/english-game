@@ -17,7 +17,7 @@ import { gameFor } from '../games/registry'
 import { HintCtx, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic } from '../services/api'
-import { planRounds, AnswerSheet, type Round } from '../services/serverPlay'
+import { planRounds, AnswerSheet, solve, type Round } from '../services/serverPlay'
 import { sfx, enterScene, leaveScene } from '../services/audio'
 import '../components/gametitle.css'
 import './stage.css'
@@ -35,6 +35,9 @@ export const MG_LABEL: Record<string, string> = {
 }
 const KIND_LABEL: Record<string, string> = { lesson: 'Spellbook', practice: 'Practice', practice2: 'Echoes', trial: 'Trial', boss: 'Boss Fight', bonus: 'Treasure' }
 const LV = ['A1', 'A2', 'B1', 'B2', 'C1']
+// TEST BUILDS ONLY (base path contains -test) with ?autoplay: a button that answers every item right,
+// to check the whole loop (server grading, rewards, modals) end to end. Never in a live build.
+const AUTOPLAY = import.meta.env.BASE_URL.includes('-test') && typeof location !== 'undefined' && new URLSearchParams(location.search).has('autoplay')
 
 function SceneAudio({ id }: { id: string }) {
   useEffect(() => { enterScene(id); return () => leaveScene() }, [id])
@@ -264,6 +267,13 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
           </Suspense>
         </HintCtx.Provider>
       </div>
+      {AUTOPLAY && session && (
+        <button className="mapdemo-btn ss-auto" onClick={() => {
+          // keep ~2 s per item so the server's minimum play time is met
+          const wait = Math.max(0, session.questions.length * 2000 - sheet.current.elapsed)
+          setTimeout(() => { session.questions.forEach((q) => sheet.current.record(q.qid, solve(q), true)); send(false) }, wait)
+        }}>Test: answer all</button>
+      )}
       {phase === 'between' && (
         <div className="ss-between pop"><span>Round {ri + 2}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
       )}

@@ -7,6 +7,10 @@ import type { MiniGameId, ServerQuestion, ServerAnswer, SrsItem } from '../types
 /** games that take SrsItem cards (front / back / distractors) */
 export const SRS_GAMES = new Set<MiniGameId>(['bubble-pop', 'match-blitz', 'memory-crystals', 'gap-gate', 'boss-battle'])
 
+/** games the app has a component for (games/registry.ts); anything else is asked as a choice quiz */
+const KNOWN = new Set<string>(['bubble-pop', 'match-blitz', 'memory-crystals', 'gap-gate', 'oracle-trial', 'rune-order', 'whisper-scroll',
+  'tavern-talk', 'echo', 'rune-type', 'potion-mix', 'curse-breaker', 'spell-weaver', 'crystal-ball', 'bards-tale', 'guild-letters', 'boss-battle'])
+
 export interface Round {
   game: MiniGameId
   /** the server questions this round plays */
@@ -112,7 +116,13 @@ export function planRounds(qs: ServerQuestion[], boss: boolean): { rounds: Round
   const rounds: Round[] = []
   const byGame = new Map<MiniGameId, ServerQuestion[]>()
   const bossItems: SrsItem[] = [], bossQs: ServerQuestion[] = []
+  const quiz: SrsItem[] = [], quizQs: ServerQuestion[] = []
   for (const q of qs) {
+    if (!KNOWN.has(q.game)) {
+      const c = bossCard(q)
+      if (c) { quiz.push(c.item); quizQs.push(q); answerMap.set(q.qid, c.toAnswer) }
+      continue   // a game this app cannot show and cannot ask: left unanswered
+    }
     if (boss) {
       const c = bossCard(q)
       if (c) { bossItems.push(c.item); bossQs.push(q); answerMap.set(q.qid, c.toAnswer); continue }
@@ -123,6 +133,7 @@ export function planRounds(qs: ServerQuestion[], boss: boolean): { rounds: Round
   for (const [game, list] of byGame) {
     rounds.push({ game, qs: list, items: SRS_GAMES.has(game) ? list.map(srsOf) : [] })
   }
+  if (quiz.length) rounds.push({ game: 'portal-run', qs: quizQs, items: quiz })   // unmapped id: gameFor() falls back to the quiz
   if (bossItems.length) rounds.push({ game: 'boss-battle', qs: bossQs, items: bossItems })
   return { rounds, answerMap }
 }
@@ -145,4 +156,33 @@ export class AnswerSheet {
   get answers(): ServerAnswer[] { return [...this.got.values()] }
   get correct() { return this.answers.filter((a) => a.correct).length }
   get elapsed() { return Date.now() - this.t0 }
+}
+
+/** the right answer to an item in the server's grading shape (test builds: the "answer all" check of the
+ *  whole loop, and a self-test that every game's answer shape grades as correct on the server) */
+export function solve(q: ServerQuestion): unknown {
+  const p = q.payload ?? {}
+  switch (q.game) {
+    case 'gap-gate': return p.front
+    case 'bubble-pop': case 'match-blitz': case 'memory-crystals': case 'boss-battle': return p.back
+    case 'oracle-trial': case 'potion-mix': return p.answer
+    case 'rune-order': case 'echo': return p.text
+    case 'rune-type': return p.word
+    case 'whisper-scroll': { const w = String(p.text).split(' '); return (p.gaps ?? []).map((g: number) => w[g]) }
+    case 'curse-breaker': return { bad: p.bad, fix: p.fix }
+    case 'spell-weaver': return p.answer
+    case 'crystal-ball': return (p.questions ?? []).map((x: { answer: string }) => x.answer)
+    case 'bards-tale': return p.lines
+    case 'guild-letters': return p.sample
+    case 'tavern-talk': {
+      const out: number[] = []; let node: unknown = 0
+      for (let k = 0; k < 20 && typeof node === 'number'; k++) {
+        const ch = p.script?.[node]?.choices ?? []; const i = ch.findIndex((c: { ok: boolean }) => c.ok)
+        if (i < 0) break
+        out.push(i); node = ch[i].next
+      }
+      return out
+    }
+    default: return null
+  }
 }
