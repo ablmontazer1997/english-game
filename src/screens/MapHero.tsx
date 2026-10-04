@@ -22,6 +22,8 @@ import './maphero.css'
  * drawing when the hero is idle off screen. Until the 3D is ready (models in,
  * first frames drawn) the painted sprite stands in, then cross-fades out.
  */
+// ?no3d keeps the painted hero (light previews / software-rendered screenshots)
+const NO3D = typeof location !== 'undefined' && new URLSearchParams(location.search).has('no3d')
 const HERO3D_SRC = (import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-maphero/' : '/runecast-hero/')
   + '?embed=1&battle=1&map=1&el=14&fps=30&gel=40'
 
@@ -138,7 +140,7 @@ function useHero3d() {
  * screen) and the refs for the hero element.
  */
 export function useMapAdvance(opts: {
-  worlds: { stages: { status: StageStatus }[] }[]
+  worlds: { stages: { status: StageStatus; optional?: boolean }[] }[]
   worldIdx: number
   setWorldIdx: (i: number) => void
   frame: RefObject<HTMLDivElement | null>
@@ -495,7 +497,7 @@ export function MapHero({ heroRef, hero3d, ready, hidden }: {
           <img className="mhero-img mhero-cheer" src={heroCheer} alt="" draggable={false} />
           <img className="mhero-img mhero-back" src={heroBack} alt="" draggable={false} />
         </span>
-        <iframe ref={hero3d} className="mhero-3d" src={HERO3D_SRC} title="hero" scrolling="no" tabIndex={-1} />
+        {!NO3D && <iframe ref={hero3d} className="mhero-3d" src={HERO3D_SRC} title="hero" scrolling="no" tabIndex={-1} />}
       </span>
     </div>
   )

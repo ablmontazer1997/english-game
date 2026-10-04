@@ -24,10 +24,11 @@ export type Cursor = { world: number; stage: number }
 export const cmpCursor = (a: Cursor, b: Cursor) => a.world - b.world || a.stage - b.stage
 
 /** the player's place from the stage statuses of every world (null before any data) */
-export function cursorOf(worlds: { stages: { status: StageStatus }[] }[]): Cursor | null {
+export function cursorOf(worlds: { stages: { status: StageStatus; optional?: boolean }[] }[]): Cursor | null {
   if (!worlds.length) return null
   for (let w = 0; w < worlds.length; w++) {
-    const s = worlds[w].stages.findIndex((x) => x.status === 'current')
+    // optional (bonus) stages can be open beside the road's current stage: they never hold the hero
+    const s = worlds[w].stages.findIndex((x) => x.status === 'current' && !x.optional)
     if (s >= 0) return { world: w, stage: s }
   }
   // everything finished: the hero stays on the last pad of the last world
@@ -256,7 +257,7 @@ export function seamCrossed(road: RoadPt[], s0: number, s1: number, seams: { y: 
 
 /** the last place the map showed, so an advance plays once. The view passes its storage in. */
 export type KV = { get(k: string): string | null; set(k: string, v: string): void }
-const KEY = 'runecast.map.seen.v1'
+const KEY = 'es.map.seen.v2'   // the server map (45 worlds); not the live app's runecast.map.seen.v1
 export function loadSeen(kv: KV): Cursor | null {
   try {
     const v = JSON.parse(kv.get(KEY) || 'null')

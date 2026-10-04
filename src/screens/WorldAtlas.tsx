@@ -110,7 +110,7 @@ export function WorldAtlas({ worlds, current, onPick, onClose }: {
                 aria-label={open ? `${wd.name}, ${wd.cefr}, ${stars(i)} of ${maxStars(i)} stars` : `${wd.name} locked`}>
                 {cur && <span className="atlas-halo" aria-hidden />}
                 <span className="atlas-isle-art">
-                  {ISLANDS[i] && <img src={ISLANDS[i]} alt="" draggable={false} />}
+                  {ISLANDS.length > 0 && <img src={ISLANDS[(wd.paint ?? i) % ISLANDS.length]} alt="" draggable={false} />}
                   {!open && <span className="atlas-veil" aria-hidden />}
                 </span>
                 {here && face && (

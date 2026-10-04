@@ -18,7 +18,7 @@ const PAD_OVER = 0.74
 const damp = (s: number) => 0.6 + 0.4 * s
 
 export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
-  const { worlds, quests, submitResult } = useGame()
+  const { worlds, quests, submitResult, mode } = useGame()
   const [worldIdx, setWorldIdx] = useState(0)
   const [atlas, setAtlas] = useState(false)
   // the world the map opens on (the one the hero is in) is picked by useMapAdvance below
@@ -26,7 +26,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
   const [box, setBox] = useState({ w: 0, h: 0 })
 
   const world = worlds[worldIdx % Math.max(1, worlds.length)]
-  const scene = sceneFor(worldIdx)
+  const scene = sceneFor(world?.paint ?? worldIdx)
   const { aspect: MAP_ASPECT, padW: MAP_PAD_W, nodes: MAP_NODES } = scene.map
   const stages = world?.stages ?? []
 
@@ -124,7 +124,7 @@ export function MapScreen({ onPlay }: { onPlay: (s: Stage) => void }) {
           <span>{world ? world.name : 'World Map'}</span>
         </button>
 
-        {DEMO && (() => {
+        {DEMO && mode === 'mock' && (() => {
           const cs = worlds.flatMap((w) => w.stages).find((s) => s.status === 'current')
           return (
             <button className="mapdemo-btn" disabled={!cs || adv.playing}
@@ -182,7 +182,7 @@ function RoadToken({ stage, node, width, onPlay, look, beat }: {
       {current && (
         <span className="rtoken-current">
           <img src={skySrc('pill_current')} alt="" draggable={false} />
-          <b>Current</b>
+          <b>{stage.optional ? 'Bonus' : stage.kind === 'boss' ? 'Boss' : 'Current'}</b>
         </span>
       )}
     </div>
