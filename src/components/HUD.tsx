@@ -19,7 +19,7 @@ export function HUD({ onBuy, onSettings }: { onBuy: (c: CurrencyId) => void; onS
     <div className="hud">
       <button className="hud-avatar" aria-label={`Level ${profile.level}, ${profile.xp} of ${profile.xpToNext} XP`} onClick={onSettings}
         style={{ '--xp': `${Math.min(100, (profile.xp / Math.max(1, profile.xpToNext)) * 100)}%` } as React.CSSProperties}>
-        <img src={face} alt="" className="hud-avatar-img" draggable={false} style={face.startsWith('data:') ? { objectPosition: '50% 50%' } : undefined} />
+        <img src={face} alt="" className="hud-avatar-img" draggable={false} />
         <span className="hud-avatar-lvl">{profile.level}</span>
       </button>
 

@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import mage from '../assets/character/body/mage_m.webp'
+// default avatar until the player's own portrait exists (fresh player, capture not done or failed):
+// the wardrobe's ?portrait=1 frame of the DEFAULT 3D character (look face1), boy and girl body type
+import defBoy from '../assets/character/portrait_default_m.webp'
+import defGirl from '../assets/character/portrait_default_f.webp'
 
 // The player's avatar picture is a close-up of THEIR 3D character. The
 // wardrobe (same origin, /runecast-wardrobe/) already restores the outfit,
@@ -10,6 +13,8 @@ const KEY = 'rc.portrait'
 export const LOOK_VER = 'face1'
 export const portraitStale = () => { try { return !localStorage.getItem(KEY) || localStorage.getItem(KEY + '.look') !== LOOK_VER } catch { return true } }
 const read = () => { try { return localStorage.getItem(KEY) } catch { return null } }
+// the wardrobe stores the body type as localStorage girl=1
+const fallback = () => { try { return localStorage.getItem('girl') === '1' ? defGirl : defBoy } catch { return defBoy } }
 
 export function usePortrait() {
   const [src, setSrc] = useState<string | null>(read)
@@ -20,7 +25,7 @@ export function usePortrait() {
     addEventListener('message', onMsg); addEventListener('storage', onStore); addEventListener('rc-portrait', onLocal)
     return () => { removeEventListener('message', onMsg); removeEventListener('storage', onStore); removeEventListener('rc-portrait', onLocal) }
   }, [])
-  return src ?? mage
+  return src ?? fallback()
 }
 
 /**

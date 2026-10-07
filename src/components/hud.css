@@ -19,7 +19,7 @@
 }
 .hud-avatar-img {
   width: 100%; height: 100%; border-radius: 50%;
-  object-fit: cover; object-position: 50% 12%;
+  object-fit: cover; object-position: 50% 50%;
 }
 .hud-avatar-lvl {
   position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
