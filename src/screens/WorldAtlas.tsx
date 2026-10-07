@@ -1,24 +1,24 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { World } from '../types/game'
 import { usePortrait } from '../components/Portrait'
 import './worldatlas.css'
 
 /* The World Atlas: an old parchment map. Every world is a small floating island,
-   joined by a dotted route from the first world (top) to the last (bottom). The
-   walked part of the route turns into golden dots that run in when the map opens,
+   joined by a dotted route that climbs from the first world (bottom) to the last (top),
+   like a saga map. The walked part of the route turns into golden dots that run up when the map opens,
    locked worlds are faded sepia. Tapping an open island travels there. */
 
 const ISLANDS = Object.values(import.meta.glob('../assets/atlas/isl_*.webp', { eager: true, import: 'default' }) as Record<string, string>)
   .sort()
 
-// island centres on the atlas (x: 0..1 of width, y: 0..1 of height, top = first world, reading down like a scroll)
+// island centres on the atlas (x: 0..1 of width, y: 0..1 of height, bottom = first world, the route climbs up)
 function layout(n: number) {
   const pts: { x: number; y: number }[] = []
   for (let i = 0; i < n; i++) {
     const t = n === 1 ? 0 : i / (n - 1)
     const side = i % 2 === 0 ? -1 : 1
     const wob = [0.0, 0.05, -0.04, 0.03, -0.02][i % 5]
-    pts.push({ x: 0.5 + side * 0.19 + wob * 0.4, y: 0.05 + t * 0.9 })
+    pts.push({ x: 0.5 + side * 0.19 + wob * 0.4, y: 0.95 - t * 0.9 })
   }
   return pts
 }
@@ -43,11 +43,11 @@ export function WorldAtlas({ worlds, current, onPick, onClose }: {
     return () => ro.disconnect()
   }, [])
 
-  // open on the player's current world, centred on screen
-  useEffect(() => {
+  // open on the player's current world, centred on screen (before paint, so it never flashes the far, locked end first)
+  useLayoutEffect(() => {
     const sc = scroller.current
     if (!sc || !w) return
-    const y = pts[current]?.y ?? 1
+    const y = pts[current]?.y ?? 0
     sc.scrollTop = Math.max(0, y * boardH - sc.clientHeight * 0.55)
   }, [w, boardH, current, pts])
 
@@ -90,7 +90,7 @@ export function WorldAtlas({ worlds, current, onPick, onClose }: {
                   <path d={d} className="atlas-trail-reveal" stroke="#fff" fill="none" strokeWidth={w * 0.06} pathLength={1}
                     style={{ ['--walk' as string]: walked }} />
                 </mask>
-                <linearGradient id="atlas-walk" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="atlas-walk" x1="0" y1="1" x2="0" y2="0">
                   <stop offset="0" stopColor="#e0a22c" /><stop offset="1" stopColor="#c8561f" />
                 </linearGradient>
               </defs>
