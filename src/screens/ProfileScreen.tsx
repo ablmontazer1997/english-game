@@ -7,6 +7,10 @@ import { usePortrait } from '../components/Portrait'
 import { medal, TIER_NAME } from './AchievementsScreen'
 import type { CurrencyId } from '../types/game'
 import './pages.css'
+import { ProfileHeroStage, ProfileHeroCard } from './ProfileHero'
+
+// TEST: two showcase directions under review (?pf=a stage, ?pf=b card, ?pf=0 the old podium)
+const PF = new URLSearchParams(typeof location !== 'undefined' ? location.search : '').get('pf') ?? 'a'
 import '../components/progression.css'
 
 export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void; onAchievements: () => void }) {
@@ -23,24 +27,8 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
   for (const a of claimed) { const f = a.id.split('.')[0]; if (!best[f] || best[f].tier < a.tier) best[f] = a }
   const shelf = Object.values(best).sort((a, b) => b.tier - a.tier).slice(0, 5)
 
-  return (
-    <div className="screen pg">
-      <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
-      <div className="pg-scroll">
-        {/* the hero on the podium: live 3D when the wardrobe page loads, the painted hero until then (or if it can't) */}
-        <div className="pf-stage reveal">
-          <Art name="podium" className="pf-podium" />
-          <img className={`pf-char${hero.ready ? ' off' : ''}`} src={hero2d} alt="" draggable={false} />
-          <iframe ref={hero.ref} className={`pf-char3d${hero.ready ? ' on' : ''}`} src="/runecast-wardrobe/?embed=1" title="character" scrolling="no" />
-        </div>
-
-        <Card className="ui-row pf-name">
-          <Slot className="pf-face-slot"><img className="pf-face" src={portrait} alt="" draggable={false} /></Slot>
-          <span className="pf-name-t"><span className="ui-t">{profile.name}</span><i className="pf-lvl">{profile.level}</i></span>
-          <span className="ui-trail"><Btn name="btn_edit" onClick={onCustomize}>Edit</Btn></span>
-        </Card>
-
-        <div className="pf-stats">
+  const statsRow = (
+<div className="pf-stats">
           <Card name="card_stat" className="pf-stat">
             <img src={art('qi_flame')} alt="" draggable={false} />
             <b>{streak?.current ?? profile.streak}</b><span>{inventory?.freezes ? `Hearthfire · ❄${inventory.freezes}` : mode === 'http' ? 'Hearthfire' : 'Streak'}</span>
@@ -54,6 +42,38 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
             <b>{currencies?.gems ?? 0}</b><span>Gems</span>
           </Card>
         </div>
+  )
+
+  return (
+    <div className="screen pg">
+      <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
+      <div className="pg-scroll">
+        {PF === 'b' ? (
+          <ProfileHeroCard name={profile.name} level={profile.level} onEdit={onCustomize} stats={[
+            { icon: art('qi_flame'), value: streak?.current ?? profile.streak, label: mode === 'http' ? 'Hearthfire' : 'Streak' },
+            { icon: art('qi_star'), value: stars, label: 'Stars' },
+            { icon: art('gem_s'), value: currencies?.gems ?? 0, label: 'Gems' },
+          ]} />
+        ) : PF === 'a' ? (
+          <ProfileHeroStage name={profile.name} level={profile.level} onEdit={onCustomize}>{statsRow}</ProfileHeroStage>
+        ) : <>
+        {/* the hero on the podium: live 3D when the wardrobe page loads, the painted hero until then (or if it can't) */}
+        <div className="pf-stage reveal">
+          <Art name="podium" className="pf-podium" />
+          <img className={`pf-char${hero.ready ? ' off' : ''}`} src={hero2d} alt="" draggable={false} />
+          <iframe ref={hero.ref} className={`pf-char3d${hero.ready ? ' on' : ''}`} src="/runecast-wardrobe/?embed=1" title="character" scrolling="no" />
+        </div>
+
+        <Card className="ui-row pf-name">
+          <Slot className="pf-face-slot"><img className="pf-face" src={portrait} alt="" draggable={false} /></Slot>
+          <span className="pf-name-t"><span className="ui-t">{profile.name}</span><i className="pf-lvl">{profile.level}</i></span>
+          <span className="ui-trail"><Btn name="btn_edit" onClick={onCustomize}>Edit</Btn></span>
+        </Card>
+
+        {statsRow}
+        </>}
+
+        
 
         {mode === 'http' && (
           <Card className="ui-row pf-name" onClick={() => setItems(true)}>

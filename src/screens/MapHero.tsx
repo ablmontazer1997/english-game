@@ -24,8 +24,10 @@ import './maphero.css'
  */
 // ?no3d keeps the painted hero (light previews / software-rendered screenshots)
 const NO3D = typeof location !== 'undefined' && new URLSearchParams(location.search).has('no3d')
-const HERO3D_SRC = (import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-maphero/' : '/runecast-hero/')
-  + '?embed=1&battle=1&map=1&el=14&fps=30&gel=40'
+/** the small 3D hero page (lite models, transparent, map hooks); extra = more query, e.g. &el=14 */
+export const hero3dPage = (extra = '') => (import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-maphero/' : '/runecast-hero/')
+  + '?embed=1&battle=1&map=1' + extra
+const HERO3D_SRC = hero3dPage('&el=14&fps=30&gel=40')
 
 export const PAD_ASPECT = 379 / 490 // pad_base.png
 /** the token box sits at translate(-50%, -62%) from its node; the hero stands just in front of the top face centre (35% of the pad height) */

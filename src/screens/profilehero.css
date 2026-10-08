@@ -1,0 +1,86 @@
+/* Profile hero showcase (ProfileHero.tsx). Two directions under test: .ph-stage and .ph-card. */
+.ph { position: relative; }
+.ph-show, .ph-frame { position: relative; overflow: clip; }
+.ph-podium { position: absolute; left: 50%; bottom: var(--pod-b, 0px); height: auto; transform: translateX(-50%); z-index: 2;
+  filter: drop-shadow(0 10px 14px rgba(40, 20, 90, .35)); }
+.ph-2d, .ph-3d, .ph-tap { position: absolute; left: 50%; transform: translateX(-50%); }
+.ph-2d { width: auto; z-index: 3; margin-bottom: var(--pod-b, 0px); filter: drop-shadow(0 8px 12px rgba(20, 50, 110, .3)); transition: opacity 350ms ease; }
+.ph-2d.off { opacity: 0; }
+.ph-3d { z-index: 4; border: 0; background: transparent; color-scheme: normal; pointer-events: none; margin-bottom: var(--pod-b, 0px);
+  opacity: 0; transition: opacity 450ms ease; }
+.ph-3d.on { opacity: 1; }
+.ph-tap { z-index: 5; margin-bottom: var(--pod-b, 0px); border: 0; padding: 0; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+/* ---- the light: rays from above, a warm glow behind the hero, a turning rune ring on the floor, rising sparks */
+.ph-light { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.ph-rays { position: absolute; left: 50%; top: -12%; width: 160%; height: 125%; transform: translateX(-50%);
+  background: repeating-conic-gradient(from 160deg at 50% 0%, rgba(255, 246, 214, .0) 0deg 5deg, rgba(255, 224, 150, .5) 7deg 9deg, rgba(255, 246, 214, 0) 11deg 14deg);
+  -webkit-mask-image: radial-gradient(ellipse 46% 90% at 50% 0%, #000 30%, transparent 75%);
+          mask-image: radial-gradient(ellipse 46% 90% at 50% 0%, #000 30%, transparent 75%);
+  animation: ph-rays 9s ease-in-out infinite alternate; }
+@keyframes ph-rays { from { opacity: .7; transform: translateX(-50%) rotate(-3deg); } to { opacity: 1; transform: translateX(-50%) rotate(3deg); } }
+.ph-glow { position: absolute; left: 50%; bottom: 8%; width: 380px; height: 380px; transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(255, 238, 186, .95), rgba(255, 214, 150, .55) 45%, rgba(214, 170, 255, .25) 70%, rgba(214, 170, 255, 0));
+  animation: ph-breathe 4.5s ease-in-out infinite; }
+@keyframes ph-breathe { 50% { transform: translateX(-50%) scale(1.06); opacity: .85; } }
+.ph-ring { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 50%;
+  background: repeating-conic-gradient(from var(--ph-a, 0deg), rgba(255, 214, 110, .95) 0deg 6deg, rgba(255, 214, 110, 0) 6deg 15deg);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 80%, #000 82%, #000 96%, transparent 98%);
+          mask-image: radial-gradient(closest-side, transparent 80%, #000 82%, #000 96%, transparent 98%);
+  filter: drop-shadow(0 0 6px rgba(255, 196, 80, .9)); animation: ph-turn 24s linear infinite; }
+.ph-ring::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 226, 150, .55), rgba(255, 226, 150, .18) 60%, transparent 75%); }
+@property --ph-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes ph-turn { to { --ph-a: 360deg; } }
+.ph-spark { position: absolute; bottom: 22%; left: calc(18% + var(--i) * 8%); width: 6px; height: 6px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, rgba(255, 220, 130, .9) 45%, rgba(255, 220, 130, 0) 70%);
+  animation: ph-rise calc(3.2s + var(--i) * .37s) ease-in infinite; animation-delay: calc(var(--i) * -.83s); opacity: 0; }
+@keyframes ph-rise { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-220px) scale(1.2); opacity: 0; } }
+
+/* ---------------- direction A: spotlight stage ---------------- */
+.ph-stage .ph-show { height: 410px; margin: -8px calc(var(--gutter) * -1) 0; --pod-b: 46px; }
+.ph-stage .ph-edit { position: absolute; top: 8px; right: var(--gutter); z-index: 6; --h: 40px; }
+.ph-plate { position: relative; z-index: 6; width: 300px; aspect-ratio: 2.595; margin: -74px auto 0; display: grid; place-items: center; }
+.ph-ribbon { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 6px 10px rgba(110, 60, 0, .3)); }
+.ph-plate-t { position: relative; margin: -22px 0 0 44px; max-width: 150px; display: flex; align-items: center; justify-content: center; }
+.ph-plate-t b { font-family: var(--game); font-size: 22px; line-height: 26px; font-weight: 900; color: #6b3a06;
+  text-shadow: 0 1px 0 rgba(255, 246, 200, .8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ph-lvl { display: grid; place-items: center; align-content: center; width: 46px; height: 46px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #b98cff, #7a3fd0 60%, #5a2aa8); border: 3px solid #ffd76a;
+  box-shadow: 0 4px 10px rgba(60, 20, 120, .4), inset 0 2px 0 rgba(255, 255, 255, .35);
+  color: #fff; font-family: var(--game); font-weight: 900; font-size: 18px; line-height: 16px; }
+.ph-lvl small { font-size: 9px; line-height: 9px; letter-spacing: .08em; opacity: .9; }
+.ph-plate .ph-lvl { position: absolute; left: 21%; top: 13%; width: 40px; height: 40px; border-width: 2px; font-size: 16px; }
+.ph-stage > .pf-stats { margin-top: 2px; }
+
+/* ---------------- direction B: hero card + stat column ---------------- */
+.ph-card { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 10px; align-items: stretch; }
+.ph-frame { height: 392px; border-radius: 24px; --pod-b: 64px;
+  background: linear-gradient(160deg, #ffe9a6, #e3a93b 40%, #fff1c2 60%, #c98a22) border-box;
+  box-shadow: 0 10px 22px rgba(40, 20, 90, .3); }
+.ph-sky { position: absolute; inset: 4px; border-radius: 20px; z-index: 0;
+  background:
+    radial-gradient(1.5px 1.5px at 20% 18%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 72% 12%, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 84% 34%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 12% 44%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 40% 8%, #fff 50%, transparent 51%), radial-gradient(2px 2px at 60% 28%, #ffe8a8 50%, transparent 51%),
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(255, 200, 240, .55), transparent),
+    linear-gradient(180deg, #2a1e5e 0%, #4b3393 45%, #8a5cc4 78%, #d9a6e6 100%); }
+.ph-card .ph-glow { width: 260px; height: 260px; bottom: 14%; }
+.ph-card .ph-rays { top: -8%; }
+.ph-foot { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 6; height: 46px; padding: 0 12px 0 4px;
+  display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; border-radius: 16px;
+  background: linear-gradient(180deg, #fffaf0, #f3e6cf); box-shadow: 0 3px 0 #d8b979, 0 6px 12px rgba(30, 10, 70, .3); }
+.ph-foot .ph-lvl { width: 38px; height: 38px; border-width: 2px; font-size: 15px; }
+.ph-foot-t { font-family: var(--game); font-size: 19px; line-height: 22px; font-weight: 900; color: var(--ink-d);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ph-side { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)) auto; gap: 8px; }
+.ph-sstat { --pad: 6px; display: grid; justify-items: center; align-content: center; text-align: center; gap: 2px; min-height: 0; }
+.ph-sstat img { width: 38px; height: 38px; object-fit: contain; }
+.ph-sstat span { display: grid; }
+.ph-sstat b { font-size: 20px; line-height: 22px; font-weight: 900; color: var(--ink-d); }
+.ph-sstat small { font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: 700; color: var(--ink-l); white-space: nowrap; }
+.ph-edit2 { --h: 42px; width: 100%; min-width: 0; padding: 0 6px 2px; font-size: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ph-rays, .ph-glow, .ph-ring, .ph-spark { animation: none; }
+}
