@@ -10,6 +10,8 @@ import { fromSrv, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/curse/cb_bg.webp'
 import bgClean from '../assets/games/curse/cb_bg_clean.webp'
+// the clean mirror scaled onto the cursed mirror's glass (registered by hand: glass 365-590 x 430-860 in cb_bg) for the in-between steps
+import bgMid from '../assets/games/curse/cb_bg_clean_mid.webp'
 import './scene.css'
 import './cursebreaker.css'
 
@@ -75,13 +77,14 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
 
   const tip = state === 'find' ? 'Find the cursed word' : state === 'fix' ? 'Choose the spell that breaks the curse' : state === 'ok' ? 'Curse broken!' : c.why
   return (
-    <div className={`gs cbk cbk-s-${state}`} style={{ '--clear': cleared / lines.length, '--cbr': `${cleared <= 0 ? 0 : cleared >= lines.length ? 170 : Math.round(5 + 26 * cleared / lines.length)}%` } as React.CSSProperties}>
+    <div className={`gs cbk cbk-s-${state}`} style={{ '--clear': cleared / lines.length, '--cbr': `${cleared <= 0 ? 0 : cleared >= lines.length ? 170 : Math.round(1 + 27 * cleared / lines.length)}%` } as React.CSSProperties}>
       <div className="gs-scene">
         <img className="gs-plate" src={bgPlate} alt="" draggable={false} />
         {/* admin 3697: no second mirror on top of the painted one; when every curse is broken the same scene
             fades to its cleansed version (same plate, thorns gone, clear glass) */}
         {/* admin 4343: the curse lifts bit by bit, one step per broken curse: the clean plate shows through a glow that grows out
             from the mirror in proportion to cleared / total; the last one clears it all (wrong answers do not undo progress) */}
+        <img className="gs-plate cbk-mid" src={bgMid} alt="" draggable={false} />
         <img className={`gs-plate cbk-clean${cleared >= lines.length && lines.length > 0 ? ' on' : ''}`} src={bgClean} alt="" draggable={false} />
         <div className="gs-at cbk-mirror" aria-hidden>
           <span className="cbk-flash" />
