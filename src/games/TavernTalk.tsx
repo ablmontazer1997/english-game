@@ -171,6 +171,14 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       <img className="tt-plate" src={bgPlate} alt="" draggable={false} />
       <GameTitle title="Tavern Talk" />
 
+      {/* admin 4364: task + mission at the top again; the innkeeper is sized to the space left between it and the chat */}
+      <div className="tt-mission lp">
+        <Task className="gtask-row" icon="speak" text="Pick what you would say" sub="Or tap the mic and say it" first={si === 0 && node === 0} />
+        <span className="tt-coin">🪙</span>
+        <div><b>Mission</b><p>{sc.mission}</p></div>
+        {price != null && <span className={`tt-price${price < 10 ? ' ok' : ''}`}>{price}</span>}
+      </div>
+
       <div className="tt-keeper" aria-hidden>
         <div className="tt-keeper-float">
           {[kIdle, kTalk, kHappy, kThink].map((src) => <img key={src} src={src} alt="" draggable={false} className={src === art ? 'on' : ''} />)}
@@ -178,13 +186,6 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="tt-ui">
-        {/* admin 4351: the task and the mission sit right above the innkeeper's line, never over her face */}
-        <div className="tt-mission lp">
-          <Task className="gtask-row" icon="speak" text="Pick what you would say" sub="Or tap the mic and say it" first={si === 0 && node === 0} />
-          <span className="tt-coin">🪙</span>
-          <div><b>Mission</b><p>{sc.mission}</p></div>
-          {price != null && <span className={`tt-price${price < 10 ? ' ok' : ''}`}>{price}</span>}
-        </div>
         <div className="tt-chat">
           {log.slice(-2).map((m, i) => <div key={log.length - 2 + i} className={`tt-msg ${m.who}`}>{m.text}</div>)}
           <div ref={chatEnd} />

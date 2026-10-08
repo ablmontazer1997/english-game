@@ -54,7 +54,7 @@
 .rt:has(.gtask) .rt-clue { top: 13%; }
 .rt:has(.gtask) .rt-slots { top: calc(13% + 152px); }
 /* Tavern (admin 4351): task + mission are the top of the bottom stack (above the innkeeper's line); compact so the stack never grows into her face */
-.tt-ui .tt-mission { margin-top: 0; padding: 6px 8px; gap: 2px 8px; }
+.tt .tt-mission:has(.gtask) { margin-top: 6px; padding: 6px 8px; gap: 2px 8px; }
 .tt-mission:has(.gtask) .gtask-b { margin-bottom: 2px; }
 .tt-mission:has(.gtask) .tt-coin { font-size: 16px; line-height: 1; }
 .tt-mission:has(.gtask) > div:not(.gtask) { display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0; }
@@ -66,9 +66,13 @@
   .tt .tt-chat { max-height: 112px; }
 }
 @media (max-height: 680px) {
-  .tt .tt-keeper { width: min(53vw, 210px, 30vh); top: 17%; }
   .tt .tt-chat { max-height: 64px; }
   .tt .tt-ui { gap: 6px; }
 }
 /* Memory Crystals on short phones: the card grid leaves a right gutter for the booster tray (it has no other free spot) */
 @media (max-height: 700px) { .mc-root .mc-grid { margin-right: 58px; } }
+/* admin 4364: the innkeeper sits in the flow between the top panel and the chat stack, scaled to fit (never under a panel) */
+.tt .tt-keeper { position: relative; left: auto; top: auto; transform: none; align-self: center; flex: 1 1 0; min-height: 0;
+  width: min(48vw, 190px); max-height: calc(min(48vw, 190px) / .675); aspect-ratio: auto; margin: 4px 0 0; }
+.tt .tt-keeper img { object-position: center bottom; }
+.bubblepop .bp-trow { padding-right: 2px; }

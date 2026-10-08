@@ -384,7 +384,7 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
 
   const ring = (
     <div className="bp-ring">
-      <svg width="66" height="66">
+      <svg width="66" height="66" viewBox="0 0 66 66">
         <circle cx="33" cy="33" r="28" fill="#fff" stroke="#E3E9F5" strokeWidth="6" />
         <circle className="arc" cx="33" cy="33" r="28" fill="none" stroke="#3FA9E6" strokeWidth="6"
           strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={ringOffset} transform="rotate(-90 33 33)" />
