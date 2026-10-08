@@ -2,8 +2,13 @@
  * the clean mirror fades in over it as curses are broken */
 .cbk-mirror { left: 25%; top: 7%; width: 51%; }
 .cbk-mirror { aspect-ratio: 480 / 869; }
-.gs-scene > .gs-plate.cbk-clean { opacity: 0; transition: opacity 1.2s ease; }
-.gs-scene > .gs-plate.cbk-clean.on { opacity: 1; }
+/* admin 4343: progressive cleansing. --cbr (0% .. 170%) is the size of the clean area around the mirror */
+@property --cbr { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+.cbk { transition: --cbr 1.4s cubic-bezier(.3, .7, .3, 1); }
+.gs-scene > .gs-plate.cbk-clean { opacity: 1;
+  -webkit-mask-image: radial-gradient(ellipse var(--cbr) calc(var(--cbr) * 1.05) at 50% 34%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse var(--cbr) calc(var(--cbr) * 1.05) at 50% 34%, #000 62%, transparent 100%); }
+.gs-scene > .gs-plate.cbk-clean.on { -webkit-mask-image: none; mask-image: none; }
 .cbk-flash { position: absolute; inset: 10%; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 240, 180, .95), transparent); opacity: 0; }
 .cbk-s-ok .cbk-flash { animation: cbk-flash 1s ease-out; }
 @keyframes cbk-flash { 30% { opacity: 1 } to { opacity: 0; transform: scale(1.4) } }

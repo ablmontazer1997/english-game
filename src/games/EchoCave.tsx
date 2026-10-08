@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, pop } from './fx'
 import { sfx as fxSfx } from '../services/audio'
@@ -118,6 +119,7 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
 
       {note && <div className="gs-ui ec-note">{note}</div>}
       <div className="gs-ui gs-panel ec-card">
+        <Task className="gtask-row" icon="speak" text={mic ? "Listen, then say it" : "Listen, then type it"} sub="Tap the speaker to hear it" first={round === 0} />
         <p className="ec-line">
           {line.text.split(' ').map((w, i) => <span key={i} className={lit[i] ? 'on' : ''}>{w} </span>)}
         </p>

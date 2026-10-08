@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { CSSProperties } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
 import sceneBg from '../assets/pages/bg_profile.webp'
@@ -161,6 +162,8 @@ export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
           <span className="mc-stat-num">{attempts}</span>
         </div>
       </div>
+
+      <div className="gs-panel mc-taskp"><Task icon="match" text="Find the matching pairs" sub="Flip two crystals at a time" first={attempts === 0} /></div>
 
       <div
         className="mc-grid"

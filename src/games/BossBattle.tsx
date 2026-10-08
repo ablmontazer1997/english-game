@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
 import { sfx } from '../services/audio'
@@ -358,6 +359,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
       {round && (
         <div className="gs-ui bb2-bottom" ref={bottomEl}>
           <div className="gs-panel bb2-q">
+            <Task className="gtask-row" icon="tap" text="Pick the right answer" sub="Each right answer hits the boss" first={idx === 0} />
             <span className="bb2-gem" aria-hidden />
             <p>{round.item.ask ? <>{round.item.ask} <b>{round.item.front}</b></> : <>Choose the meaning of: <b>{round.item.front}</b></>}</p>
             <span className="gt-count">Question {idx + 1} / {total}</span>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 
 function shuffle<T>(a: T[]): T[] {
@@ -39,7 +40,7 @@ export function QuizGame({ items, onFinish, onAnswer }: MiniGameProps) {
     <div className="quiz">
       {combo >= 2 && <div className="combo-flag pop" key={combo}>Combo ×{combo}</div>}
       <div className="quiz-prompt reveal" key={item.id}>
-        <span className="prompt-sub">What does this word mean?</span>
+        <Task className="gtask-row" icon="tap" text="Pick the meaning of:" first={idx === 0} />
         <b className="prompt-word">{item.front}</b>
       </div>
       <div className="quiz-options">

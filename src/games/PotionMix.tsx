@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -141,7 +142,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Potion Mix" count={`Potion ${round + 1} / ${recipes.length}`} /></div>
 
-      <div className="gs-ui gs-panel pm-goal"><b>Make a word that means:</b><p>{r.clue}</p></div>
+      <div className="gs-ui gs-panel pm-goal"><Task className="gtask-row" icon="build" text="Brew a word that means:" sub="Pour the right bottles in" first={round === 0} /><p>{r.clue}</p></div>
 
       <div className="gs-ui pm-mix">
         {state === 'ok'

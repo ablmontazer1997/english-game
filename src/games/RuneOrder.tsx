@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -93,6 +94,7 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
 
       <div className="ro-ui">
         <div className="ro-slots lp" aria-label="Your sentence">
+          <Task className="gtask-row" icon="order" text="Put the words in order" sub="Tap them to build the sentence" first={round === 0} />
           {words.map((_, i) => {
             const id = placed[i]
             return id === undefined

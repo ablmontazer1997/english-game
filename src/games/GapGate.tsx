@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import { GameTitle } from '../components/GameTitle'
 import type { MiniGameProps } from './types'
 import gateImg from '../assets/sky/portal.png'
@@ -163,6 +164,7 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="gg-tablet">
+        <Task className="gtask-row" icon="tap" text="Pick the missing word" sub="Its meaning is below" first={idx === 0} />
         <p className="gg-clue">
           Spell for <span className="gg-mean">{item.back}</span>
         </p>
@@ -184,7 +186,6 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
           )}
         </div>
 
-        <span className="gg-hint">Pick the word to open the gate</span>
       </div>
 
       <div className="gg-options">

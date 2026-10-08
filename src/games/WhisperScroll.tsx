@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -94,6 +95,8 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
     <div className={`ws ws-${state}${talking ? ' ws-talking' : ''}`}>
       <img className="ws-plate" src={bgPlate} alt="" draggable={false} />
       <GameTitle title="Whisper Scroll" count={`Scroll ${round + 1} / ${lines.length}`} />
+
+      <div className="gs-panel ws-taskp"><Task icon="listen" text="Listen and fill the gaps" sub="Tap the words that you hear" first={round === 0} /></div>
 
       <div className="ws-scroll" style={{ backgroundImage: `url(${scrollImg})` }}>
         <p className="ws-line">

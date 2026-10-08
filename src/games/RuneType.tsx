@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, pop } from './fx'
 import { GameTitle } from '../components/GameTitle'
@@ -85,6 +86,7 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-title"><GameTitle title="Rune Type" count={`Rune ${round + 1} / ${words.length}`} /></div>
 
       <div className="gs-ui gs-panel rt-clue">
+        <Task className="gtask-row" icon="type" text="Spell the word" sub="Listen, then tap the letters" first={round === 0} />
         <p>{w.clue}</p>
         <button className="gs-orb rt-say" aria-label="Hear the word" onClick={() => speak(w.word)}>
           <svg viewBox="0 0 24 24" width="30" height="30"><path fill="#fff" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" /></svg>

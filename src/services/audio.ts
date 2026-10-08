@@ -19,8 +19,9 @@ import card from '../assets/audio/card.mp3'
 import star from '../assets/audio/star.mp3'
 import pour from '../assets/audio/pour.mp3'
 import bubble from '../assets/audio/bubble.mp3'
+import confirm from '../assets/audio/confirm.mp3'
 
-const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble }
+const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble, confirm }
 export type Sfx = keyof typeof SFX
 
 const MUSIC_VOL = 0.35
@@ -109,6 +110,8 @@ export function sfx(name: Sfx, vol = 0.8) {
   } catch { /* no audio */ }
 }
 
+const CONFIRM_BTNS = '.gs-go, .cb-green, .ot-check, .result-continue, .lobby-start, [data-confirm]'
+
 /** call once at startup: unlock audio on the first gesture, tap sound on buttons */
 export function initAudio() {
   const first = () => {
@@ -119,7 +122,8 @@ export function initAudio() {
   window.addEventListener('pointerdown', first)
   window.addEventListener('pointerdown', (e) => {
     const b = (e.target as HTMLElement | null)?.closest?.('button')
-    if (b && !b.disabled) sfx('tap', 0.5)
+    // admin 4343: the main action buttons in a game (Weave, Cast, Check, Continue, Start...) get a confirm sound instead of the tap
+    if (b && !b.disabled) { if (b.matches(CONFIRM_BTNS)) sfx('confirm', 0.7); else sfx('tap', 0.5) }
   })
   // pause the theme while the app is in the background
   document.addEventListener('visibilitychange', () => {

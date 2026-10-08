@@ -5,7 +5,8 @@ import './task.css'
 
 export type TaskIcon = 'tap' | 'build' | 'find' | 'fix' | 'listen' | 'speak' | 'type' | 'order' | 'match'
 const Q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('ask') : null
-export const ASK: 'a' | 'b' | null = import.meta.env.BASE_URL.includes('-test') && (Q === 'a' || Q === 'b') ? Q : null
+// admin 4343: option B chosen (flat violet label); ?ask=a still shows A on test builds
+export const ASK: 'a' | 'b' = import.meta.env.BASE_URL.includes('-test') && Q === 'a' ? 'a' : 'b'
 
 const P: Record<TaskIcon, string> = {
   tap: 'M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-.5a1.5 1.5 0 0 1 3 0V11m0-.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.6-2.2L4.2 15.5a1.5 1.5 0 0 1 2.3-1.9L9 16',

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst } from './fx'
 import { sfx as fxSfx } from '../services/audio'
@@ -86,6 +87,7 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
       {!checks ? (
         <>
           <div className="gs-ui gs-panel gl-write">
+            <Task className="gtask-row" icon="type" text="Write a reply" sub="Answer the letter above" first={round === 0} />
             <b className="gl-task">{l.task}</b>
             {tip > 0 && <p className="gl-tips">Try: {l.keys.slice(0, tip).map((g) => g.join(' / ')).join('  ·  ')}</p>}
             <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Write your reply…" spellCheck={false} />

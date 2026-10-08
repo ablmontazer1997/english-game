@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps, SrsItem } from './types'
 import matchBg from '../assets/games/mb_bg2.webp'
 import './matchblitz.css'
@@ -414,6 +415,8 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
           <div className="mb-fill" style={{ width: `${fillPct}%` }} />
           <div className="mb-tt">{timeText}</div>
         </div>
+
+        <div className="gs-panel mb-taskp"><Task className="" icon="match" text="Match the pairs" sub="Tap a word, then its meaning" first={true} /></div>
 
         <div className="mb-board" ref={boardRef}>
           <svg className="mb-lines" ref={linesRef} />

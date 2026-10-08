@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import bgPlate from '../assets/games/oracle/bg_plate.webp'
 import orbImg from '../assets/games/oracle/orb.webp'
@@ -204,6 +205,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGame
       {done == null && q && (
         <div className="ot-ui">
           <div className="ot-q">
+            <Task className="gtask-row" icon="tap" text="Choose the right answer" sub="Then tap Check" first={n === 0} />
             <span className="ot-skill">{q.skill}</span>
             <p>{q.prompt}</p>
           </div>

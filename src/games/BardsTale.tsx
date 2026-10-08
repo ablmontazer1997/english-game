@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, pop } from './fx'
 import { sfx as fxSfx } from '../services/audio'
@@ -80,6 +81,7 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-title"><GameTitle title="Bard's Tale" count={`Tale ${round + 1} / ${tales.length}`} /></div>
 
       <div className="gs-ui gs-panel bdt-panel">
+        <Task className="gtask-row" icon="order" text="Put the story in order" sub="Tap the lines from first to last" first={round === 0} />
         <p className="bdt-title">“{t.title}”</p>
         {cards.map((c) => {
           const n = order.indexOf(c.id)

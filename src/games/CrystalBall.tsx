@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
 import { sfx as fxSfx } from '../services/audio'
@@ -109,12 +110,14 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-ui gs-panel cr-q">
         {!q ? (
           <>
+            <Task className="gtask-row" icon="listen" text="Listen to the vision" sub="Questions come after it" first={true} />
             <p className="cr-ask">{v.title}</p>
             <p className="cr-sub">{heard ? 'Ready? The oracle has questions.' : 'Listen to the vision…'}</p>
             <button className="gs-go" disabled={!heard} onClick={() => { stop(); fxSfx('whoosh', .5); setQi(0) }}>I'm ready</button>
           </>
         ) : (
           <>
+            <Task className="gtask-row" icon="tap" text="Answer the question" first={qi === 0} />
             <p className="cr-ask">{q.q}</p>
             {opts.map((o) => (
               <button key={o} className={`gs-pill cr-opt${picked && o === q.answer ? ' right' : ''}${picked === o && o !== q.answer ? ' wrong' : ''}${gone.includes(o) ? ' gone' : ''}`}

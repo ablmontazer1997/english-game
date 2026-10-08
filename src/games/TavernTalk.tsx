@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -171,6 +172,7 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       <GameTitle title="Tavern Talk" />
 
       <div className="tt-mission lp">
+        <Task className="gtask-row" icon="speak" text="Pick what you would say" sub="Or tap the mic and say it" first={si === 0 && node === 0} />
         <span className="tt-coin">🪙</span>
         <div><b>Mission</b><p>{sc.mission}</p></div>
         {price != null && <span className={`tt-price${price < 10 ? ' ok' : ''}`}>{price}</span>}
