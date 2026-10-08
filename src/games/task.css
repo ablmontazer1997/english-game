@@ -70,3 +70,5 @@
   .tt .tt-chat { max-height: 64px; }
   .tt .tt-ui { gap: 6px; }
 }
+/* Memory Crystals on short phones: the card grid leaves a right gutter for the booster tray (it has no other free spot) */
+@media (max-height: 700px) { .mc-root .mc-grid { margin-right: 58px; } }

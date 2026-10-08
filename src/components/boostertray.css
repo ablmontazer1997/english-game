@@ -1,8 +1,9 @@
 /* booster tray: fixed right edge, same place in every mini-game */
 .bt {
   position: absolute; right: calc(8px + var(--safe-right)); top: 38%; z-index: 20;
-  display: grid; gap: 10px; justify-items: end;
+  display: grid; gap: 10px; justify-items: end; transition: top .25s ease;
 }
+.bt.flat { grid-auto-flow: column; }
 .bt-btn {
   position: relative; width: 50px; height: 50px; padding: 0; border-radius: 16px; border: 3px solid #fff;
   display: grid; place-items: center; background: linear-gradient(180deg, #fff, #efeaff);

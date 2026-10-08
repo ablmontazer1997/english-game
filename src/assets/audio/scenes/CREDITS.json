@@ -178,13 +178,12 @@
    "url": "https://pixabay.com/sound-effects/film-special-effects-juicy-bubble-pop-sfx-mrstokes302-419513/"
   },
   "confirm": {
-   "id": 422516,
-   "name": "Menu FX 03 (ascending)",
-   "by": "Nightflame",
-   "source": "freesound",
-   "license": "CC0",
-   "url": "https://freesound.org/people/Nightflame/sounds/422516/",
-   "note": "placeholder btn_a2 until the admin picks"
+   "id": 38129,
+   "name": "button pressed",
+   "by": "freesound_community",
+   "source": "pixabay",
+   "url": "https://pixabay.com/sound-effects/",
+   "note": "admin pick (msg 4354)"
   }
  }
 }
