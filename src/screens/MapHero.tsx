@@ -40,6 +40,8 @@ const CADENCE = 2.5
 const F3 = { aspect: 0.8, gnd: 0.7578, top: 0.2231, hu: 1.2788, v: 0.46 }
 /** idle on a pad: face the camera, turned a little to screen right like the painted hero */
 const IDLE_OFF = 0.25
+/** how long an advance waits for the 3D hero to load before it plays with the painted stand-in (ms) */
+const ADVANCE_WAIT_MS = +(new URLSearchParams(typeof location !== "undefined" ? location.search : "").get("herowait") || 12000)
 
 export function useReducedMotion() {
   const read = () => {
@@ -180,7 +182,16 @@ export function useMapAdvance(opts: {
 
   const plan = play ? play.plans[play.p] : null
   const beat: Beat | null = plan && play ? plan.beats[play.k] ?? null : null
+  // an advance waits for the 3D hero (so the walk is the real walk cycle, not the painted stand-in), but not forever
+  const [waited, setWaited] = useState(NO3D)
+  useEffect(() => {
+    if (waited || !play) return
+    const t = setTimeout(() => setWaited(true), ADVANCE_WAIT_MS)
+    return () => clearTimeout(t)
+  }, [waited, !!play])
   const live = !!plan && plan.world === worldIdx && !!geo.tall
+  /** the advance is on screen but holds at its first beat until the 3D hero is in */
+  const go = live && (h3.ready || waited)
   const beatStart = useRef(0)
   const walkRef = useRef<Walk | null>(null)
   const beatKey = useRef('')
@@ -212,11 +223,11 @@ export function useMapAdvance(opts: {
 
   // ---- a timed beat ends on a timer (the walk ends itself when it gets there)
   useEffect(() => {
-    if (!live || !beat || beat.kind === 'walk') return
+    if (!go || !beat || beat.kind === 'walk') return
     const t = setTimeout(next, beat.ms)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [live, play?.p, play?.k])
+  }, [go, play?.p, play?.k])
 
   // ---- where the hero is, written straight to the DOM (no render per frame)
   const place = (now: number) => {
@@ -230,12 +241,12 @@ export function useMapAdvance(opts: {
     let view: 'front' | 'back' | 'cheer' = 'front', flip = false
     let want: Want = { anim: 'idle', snap: reduced }
     // a new beat: start its clock (and lay out the walk) the first time it is drawn
-    const key = live && play ? `${play.p}:${play.k}` : ''
+    const key = go && play ? `${play.p}:${play.k}` : ''
     if (key !== beatKey.current) {
       beatKey.current = key
       beatStart.current = now
-      walkRef.current = live && beat?.kind === 'walk' ? buildWalk(beat, G.current, reduced, H) : null
-      if (live && beat?.kind === 'cheer' && !reduced) h3.clap()
+      walkRef.current = go && beat?.kind === 'walk' ? buildWalk(beat, G.current, reduced, H) : null
+      if (go && beat?.kind === 'cheer' && !reduced) h3.clap()
       if (walkRef.current) el.dataset.walkT = walkRef.current.T.toFixed(2)
     }
     const t = (now - beatStart.current) / 1000
@@ -277,11 +288,11 @@ export function useMapAdvance(opts: {
     } else if (hp >= 0) {
       const a = padTop(hp)
       x = a.x; y = a.y
-      const cheer = live && beat?.kind === 'cheer'
-      view = live && (cheer || beat?.kind === 'arrive') ? 'cheer' : 'front'
+      const cheer = go && beat?.kind === 'cheer'
+      view = go && (cheer || beat?.kind === 'arrive') ? 'cheer' : 'front'
       if (cheer && !reduced && !h3.ready) lift = Math.abs(Math.sin(Math.min(1, t / 0.5) * Math.PI)) * 0.16 * padPx
       // the cheer is the 3D clap, started with the beat; it runs on through the crack
-      want = live && !reduced && (cheer || beat?.kind === 'crack') ? { anim: 'keep' } : { anim: 'idle', snap: reduced }
+      want = go && !reduced && (cheer || beat?.kind === 'crack') ? { anim: 'keep' } : { anim: 'idle', snap: reduced }
     } else {
       el.style.opacity = '0'
       h3.power(true, false)
@@ -354,17 +365,17 @@ export function useMapAdvance(opts: {
 
   // ---- while an advance plays in the world on screen: a frame loop
   useEffect(() => {
-    if (!live) { cam.current = null; stir(null); return }
+    if (!go) { cam.current = null; stir(null); return }
     let raf = 0
     const tick = (now: number) => { placeRef.current(now); raf = requestAnimationFrame(tick) }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [live])
+  }, [go])
 
   return {
     plan: live ? plan : null,
     beatIdx: live && play ? play.k : -1,
-    beat: live ? beat : null,
+    beat: go ? beat : null,
     heroRef,
     hero3d: h3.ifr,
     hero3dReady: h3.ready,
