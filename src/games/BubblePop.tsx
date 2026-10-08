@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Task, ASK } from './Task'
+import { sfx } from '../services/audio'
 import type { MiniGameProps } from './types'
 import { BurstFx, FRAME_REACH, ORB_COLORS, drawFrame, drawOrb, drawWord, loadFrame, type OrbColor } from './bubbleOrb'
 import frameUrl from '../assets/games/bubble_frame.webp'
@@ -177,41 +179,8 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
     }
   }, [idx, items.length, finish, later])
 
-  // ---- pop sound: a wet body-thump plus a bright film snap ----------------
-  const playPop = useCallback(() => {
-    try {
-      const W = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }
-      const Ctor = W.AudioContext || W.webkitAudioContext
-      if (!Ctor) return
-      const ac = new Ctor()
-      const t = ac.currentTime
-      const o = ac.createOscillator()
-      const g = ac.createGain()
-      o.type = 'sine'
-      o.frequency.setValueAtTime(rnd(360, 470), t)
-      o.frequency.exponentialRampToValueAtTime(80, t + 0.05)
-      g.gain.setValueAtTime(0.3, t)
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1)
-      o.connect(g).connect(ac.destination)
-      o.start(t)
-      o.stop(t + 0.11)
-      const len = Math.floor(ac.sampleRate * 0.03)
-      const buf = ac.createBuffer(1, len, ac.sampleRate)
-      const dd = buf.getChannelData(0)
-      for (let i = 0; i < len; i++) dd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3)
-      const n = ac.createBufferSource()
-      n.buffer = buf
-      const hp = ac.createBiquadFilter()
-      hp.type = 'highpass'
-      hp.frequency.value = 1800
-      const ng = ac.createGain()
-      ng.gain.setValueAtTime(0.45, t)
-      ng.gain.exponentialRampToValueAtTime(0.001, t + 0.045)
-      n.connect(hp).connect(ng).connect(ac.destination)
-      n.start(t)
-      setTimeout(() => ac.close().catch(() => {}), 260)
-    } catch { /* best-effort */ }
-  }, [])
+  // ---- pop sound: the admin's Pixabay bubble pop (#419513, msg 4333), replaces the synthesized thump
+  const playPop = useCallback(() => { sfx('bubble', 0.9) }, [])
 
   // ---- burst an orb at a field-local point (tap point drives the film tear)
   const burst = useCallback((b: Bubble, p: Phys, px: number, py: number) => {
@@ -424,7 +393,7 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
         {/* admin 3697: same crest + cream prompt panel as every other mini-game */}
         <div className="bp-crest"><GameTitle title="Bubble Pop" count={`Bubble ${idx + 1} / ${items.length}`} /></div>
         <div className="bp-prompt gs-panel">
-          <span className="bp-pq">Pop the bubble for</span>
+          {ASK ? <Task icon="tap" text="Pop the bubble that means" sub="Tap it before the time runs out" first={idx === 0} /> : <span className="bp-pq">Pop the bubble for</span>}
           <b lang="en">{item.front}</b>
         </div>
 

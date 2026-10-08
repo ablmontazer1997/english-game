@@ -118,10 +118,11 @@ export function drawWord(ctx: CanvasRenderingContext2D, x: number, y: number, r:
   if (!best) best = { px: 11, lines: wrap(11, Math.min(3, parts.length)) }
   ctx.font = FONT(best.px)
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(3, best.px * 0.22); ctx.strokeStyle = 'rgba(28, 30, 80, .85)'
+  // admin 4333: thinner, softer outline (about 1.3 px outside the letters at the usual size, deep navy-plum, not black)
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(2.2, best.px * 0.12); ctx.strokeStyle = 'rgba(46, 36, 88, .78)'
   const lh = best.px * 1.02, y0 = y + 1 - (best.lines.length - 1) * lh / 2
   best.lines.forEach((l, k) => {
-    ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2
+    ctx.shadowColor = 'rgba(30,20,70,.28)'; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1.5
     ctx.strokeText(l, x, y0 + k * lh)
     ctx.shadowColor = 'transparent'
     ctx.fillStyle = '#fff'

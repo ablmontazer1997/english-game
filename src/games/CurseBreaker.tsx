@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Task, ASK } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, flyTo, shake } from './fx'
 import { sfx as fxSfx } from '../services/audio'
@@ -86,6 +87,8 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
 
       <div className="gs-ui cbk-low">
       <div className="gs-panel cbk-card">
+        {ASK && (state === 'find' || state === 'fix') && <Task className="cbk-task" icon={state === 'find' ? 'find' : 'fix'}
+          text={state === 'find' ? 'Tap the wrong word' : 'Pick the right word'} sub={state === 'find' ? 'One word in this sentence is wrong' : undefined} first={round === 0} />}
         {tokens.map((t, i) => {
           const isBad = i === c.bad
           const cls = ['gs-chip cbk-w',
@@ -104,7 +107,7 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
           </button>
         ))}
       </div>
-      {tip && <p className="cbk-tip">{tip}</p>}
+      {tip && !(ASK && (state === 'find' || state === 'fix')) && <p className="cbk-tip">{tip}</p>}
       </div>
     </div>
   )

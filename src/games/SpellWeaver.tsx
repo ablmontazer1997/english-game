@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Task, ASK } from './Task'
+const cap = (t: string) => { const l = t.trim().toLowerCase(); return l.charAt(0).toUpperCase() + l.slice(1) }
 import type { MiniGameProps } from './types'
 import { burst, flyTo, pop } from './fx'
 import { sfx as fxSfx } from '../services/audio'
@@ -81,9 +83,10 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Spell Weaver" count={`Spell ${round + 1} / ${spells.length}`} /></div>
 
-      <div className="gs-ui gs-panel swv-source">
+      <div className={`gs-ui gs-panel swv-source${ASK ? ' has-task' : ''}`}>
+        {ASK && <Task icon="build" text={cap(s.cmd)} sub="Tap the words in the right order" first={round === 0} />}
         <p>{s.source}</p>
-        <span className="swv-cmd">{s.cmd}</span>
+        {!ASK && <span className="swv-cmd">{s.cmd}</span>}
       </div>
 
       <div className="gs-ui swv-pool">

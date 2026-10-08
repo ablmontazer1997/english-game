@@ -1,0 +1,32 @@
+/* task line (admin msg 4333): Fredoka, warm cream/gold kit, always on a panel (never floating text) */
+.gtask { display: flex; align-items: center; gap: 10px; font-family: var(--sans); text-align: left; }
+.gtask-ic { flex: none; display: grid; place-items: center; border-radius: 50%; }
+.gtask-ic svg { width: 62%; height: 62%; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.gtask-t { display: flex; flex-direction: column; min-width: 0; }
+.gtask .gtask-t b { font-weight: 800; line-height: 1.15; }
+.gtask-t small { font-weight: 600; font-size: 12.5px; line-height: 1.2; margin-top: 2px; }
+
+/* A: header row inside the cream panel, gold coin icon, dark warm brown text, thin divider under it */
+.gtask-a { width: 100%; padding: 0 0 8px; margin: 0 0 8px; border-bottom: 2px dashed rgba(201, 150, 60, .45); }
+.gtask-a .gtask-ic { width: 34px; height: 34px; color: #fff; border: 2px solid #fff;
+  background: radial-gradient(circle at 35% 30%, #ffe48f, #f5b636 60%, #dd8f17); box-shadow: 0 2px 0 #b8741a, 0 3px 8px rgba(150, 90, 10, .35); }
+.gtask.gtask-a .gtask-t b { font-size: 18px; color: #4a2c0c; }
+.gtask-a .gtask-t small { color: #8a6a3e; }
+
+/* B: violet header pill across the top of the panel, white icon disc, white text */
+.gtask-b { position: relative; z-index: 2; align-self: stretch; width: 100%; box-sizing: border-box; margin: 0 0 10px; padding: 6px 14px 6px 6px; border-radius: 18px;
+  background: linear-gradient(180deg, #a77bff, #7b45f0); border: 2.5px solid #fff; box-shadow: 0 4px 0 #5a24c0, 0 6px 14px rgba(90, 40, 200, .35); }
+.gtask-b .gtask-ic { width: 30px; height: 30px; color: #7b45f0; background: #fff; }
+.gtask.gtask-b .gtask-t b { font-size: 16.5px; color: #fff; text-shadow: 0 1px 0 rgba(60, 20, 140, .45); }
+.gtask-b .gtask-t small { color: #efe6ff; }
+
+/* first round: the icon nudges and the line glows twice, then it rests */
+.gtask.first .gtask-ic { animation: gtask-nudge 1.1s ease-in-out .5s 3; }
+.gtask-a.first { animation: gtask-glow-a 1.4s ease-in-out .3s 2; border-radius: 12px; }
+.gtask-b.first { animation: gtask-glow-b 1.4s ease-in-out .3s 2; }
+@keyframes gtask-nudge { 0%, 100% { transform: none } 25% { transform: scale(1.18) rotate(-10deg) } 50% { transform: scale(1) } 70% { transform: scale(1.1) rotate(6deg) } }
+@keyframes gtask-glow-a { 50% { background: rgba(255, 214, 110, .35) } }
+@keyframes gtask-glow-b { 50% { box-shadow: 0 4px 0 #5a24c0, 0 0 0 6px rgba(190, 150, 255, .45), 0 6px 14px rgba(90, 40, 200, .35) } }
+@media (prefers-reduced-motion: reduce) { .gtask.first, .gtask.first .gtask-ic { animation: none } }
+.cbk-card .cbk-task { flex-basis: 100%; }
+.swv-source.has-task { justify-items: stretch; }

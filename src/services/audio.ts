@@ -18,8 +18,9 @@ import brew from '../assets/audio/brew.mp3'
 import card from '../assets/audio/card.mp3'
 import star from '../assets/audio/star.mp3'
 import pour from '../assets/audio/pour.mp3'
+import bubble from '../assets/audio/bubble.mp3'
 
-const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour }
+const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble }
 export type Sfx = keyof typeof SFX
 
 const MUSIC_VOL = 0.35
