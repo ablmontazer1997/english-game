@@ -33,9 +33,8 @@ function useShowcase3d() {
       const d = e.data || {}
       if (d.type === 'rc-ready' && Array.isArray(d.gnd)) setFrame({ gnd: d.gnd[1], top: d.top[1] })
       if (d.type === 'rc-shown') {
-        // face the viewer, turned a little to the light; a bow to greet
+        // face the viewer, turned a little to the light (no greeting bow: its 6 s hide the face behind the hat)
         post({ type: 'rc-map', yaw: 'cam', off: 0.32, snap: 1, fps: 40 })
-        post({ type: 'rc-anim', name: 'bow', once: 1, speed: 1, fade: 0.25 })
         setReady(true)
       }
     }
