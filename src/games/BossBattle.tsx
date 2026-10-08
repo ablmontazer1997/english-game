@@ -3,6 +3,7 @@ import { use3dFallback } from '../components/use3dFallback'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
+import { BossFx } from './bossFx'
 import { sfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -91,6 +92,32 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
   const hudEl = useRef<HTMLDivElement>(null)
   const bottomEl = useRef<HTMLDivElement>(null)
   const scale = useRef(1)
+  // natural breathing idle (admin 4412): slow sine cycles, gentle scale + bob + sway; no high-frequency motion
+  useEffect(() => {
+    let raf = 0
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+    const tick = (now: number) => {
+      const t = now / 1000
+      const g = golemEl.current?.querySelector('.bb2-bob') as HTMLElement | null
+      if (g && !reduce) {
+        const b = 0.5 - 0.5 * Math.cos((t * Math.PI * 2) / 3.6)   // 3.6 s breath, ease-in-out by construction
+        g.style.transform = `translateY(${(-0.6 * b).toFixed(3)}%) rotate(${(0.5 * Math.sin((t * Math.PI * 2) / 7.2)).toFixed(3)}deg) scale(${(1 + 0.012 * b).toFixed(4)}, ${(1 + 0.018 * b).toFixed(4)})`
+      }
+      const h = heroEl.current?.querySelector('.bb2-bob') as HTMLElement | null
+      if (h && !reduce) { const b = 0.5 - 0.5 * Math.cos((t * Math.PI * 2) / 3); h.style.transform = `scale(${(1 + 0.01 * b).toFixed(4)}, ${(1 + 0.016 * b).toFixed(4)})` }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  // pooled canvas effects (bolt, impact, shockwave, numbers, shake): one rAF loop, only while something is alive
+  const bfx = useRef<BossFx | null>(null)
+  useEffect(() => {
+    if (!fxEl.current) return
+    const f = new BossFx(fxEl.current, () => scale.current); bfx.current = f
+    return () => { f.destroy(); bfx.current = null }
+  }, [])
 
   // ---- anchor the plate: cover the screen, keep the fight band between the HUD and the question panel
   useLayoutEffect(() => {
@@ -111,6 +138,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
       scale.current = S
       Object.assign(scene.style, { left: `${ox}px`, top: `${oy}px`, width: `${w}px`, height: `${PH * S}px` })
       scene.style.setProperty('--s', String(S))
+      bfx.current?.fit()
     }
     fit()
     const ro = new ResizeObserver(fit)
@@ -177,6 +205,9 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
       { transform: `translateX(${-dx / 3}%)`, offset: 0.55 }, { transform: 'translateX(0)' }], { duration: 480, easing: 'ease-out' })
   }
 
+  const heroTip = (d?: any): number[] =>
+    hero3d && d?.tip ? [H3D_BOX.x + d.tip[0] * H3D_BOX.w, H3D_BOX.y + d.tip[1] * H3D_BOX.h] : heroHand(d)
+  const PP = (p: number[]) => P(p[0], p[1]) as [number, number]
   const heroHand = (d?: any): number[] => {
     if (hero3d && d?.R_Hand) return [H3D_BOX.x + d.R_Hand[0] * H3D_BOX.w, H3D_BOX.y + d.R_Hand[1] * H3D_BOX.h]
     if (hero3d) return [H3D_BOX.x + H3D.hand[0] * H3D_BOX.w, H3D_BOX.y + H3D.hand[1] * H3D_BOX.h]
@@ -212,32 +243,46 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
   // right answer: cast -> bolt -> impact on the boss
   const cast = () => {
     sfx('spell')
+    const crit = r.current.combo >= 3
     let launched = false
     const launch = (d?: any) => {
       if (launched) return; launched = true
-      const from = heroHand(d)
-      pop('bb2-charge', from[0], from[1], 110, 420)
-      fly('bb2-orb', from, bossChest, 96, 460, 60).then(impact)
+      const from = heroTip(d), F = bfx.current
+      if (F) F.bolt(PP(from), PP(bossChest), crit).then(() => impact(crit))
+      else { pop('bb2-charge', from[0], from[1], 110, 420); fly('bb2-orb', from, bossChest, 96, 460, 60).then(() => impact(crit)) }
     }
     if (hero3d) {
-      // cast_a_spell: only the thrust (2.0-2.6 s clip time; the clip then spins the back to the camera), release at 2.4
+      // procedural wand cast in the hero page (anticipation -> flick -> follow-through); it posts rc-mark at the release
       onMark.current = launch
-      anim3d({ name: 'cast_a_spell', once: true, from: 2.0, speed: 1.0, until: 2.62, mark: 2.4, fade: 0.15 })
-      later(() => { onMark.current = null; launch() }, 1100) // slow device: don't wait for the arm forever
+      heroFrame.current?.contentWindow?.postMessage({ type: 'rc-cast', crit }, '*')
+      bfx.current?.punch(sceneEl.current, PP(heroChest), crit ? 1.08 : 1.06, 1.0)
+      later(() => { onMark.current = null; launch() }, 2200) // slow device / old hero page: don't wait for the arm forever
     } else {
       setHero('cheer')
       later(launch, 220)
     }
   }
-  const impact = () => {
+  const impact = (crit = false) => {
     r.current.correct += 1
     const h = r.current.correct
     setHits(h)
     sfx('correct')
-    pop('bb2-boom', bossChest[0], bossChest[1], 230, 520)
-    burst(golemEl.current?.querySelector('.bb2-core'), { color: ['#c9a3ff', '#ffe27a', '#fff'], n: 18, dist: 110 * scale.current * 2, size: 12 })
-    react(golemEl.current, 'hit', 5)
-    number('-100', 'boss', BOSS_AT.x - 20, BOSS_BOX.y + 30)
+    const F = bfx.current
+    if (F) {
+      // hit-stop: a few frozen frames on the hit (this layer + the hero), then the camera eases back out
+      F.freeze(0.08); F.release(0.3)
+      heroFrame.current?.contentWindow?.postMessage({ type: 'rc-hitstop', ms: 80 }, '*')
+      F.impact(PP(bossChest), crit)
+      F.hit(golemEl.current, crit ? 0.55 : 0.42)
+      F.knock(golemEl.current, (crit ? 34 : 22) * scale.current)
+      F.shake(sceneEl.current, crit ? 9 : 5, crit ? 0.45 : 0.32)
+      F.number('-100', PP([BOSS_AT.x - 20, BOSS_BOX.y + 40]), crit ? 'crit' : 'boss')
+    } else {
+      pop('bb2-boom', bossChest[0], bossChest[1], 230, 520)
+      burst(golemEl.current?.querySelector('.bb2-core'), { color: ['#c9a3ff', '#ffe27a', '#fff'], n: 18, dist: 110 * scale.current * 2, size: 12 })
+      react(golemEl.current, 'hit', 5)
+      number('-100', 'boss', BOSS_AT.x - 20, BOSS_BOX.y + 30)
+    }
     const dead = h >= total
     setGolem(dead ? 'beaten' : 'hurt')
     if (dead) {
@@ -257,19 +302,26 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
     golemEl.current?.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(3%) rotate(2deg)', offset: 0.35 },
       { transform: 'translateX(-7%) rotate(-3deg)', offset: 0.7 }, { transform: 'translateX(0)' }], { duration: 620, easing: 'ease-in-out' })
     later(() => {
-      fly('bb2-rock', bossFist, heroChest, 62, 440, 90, -300).then(() => {
+      const F = bfx.current
+      ;(F ? F.rock(PP(bossFist), PP(heroChest)) : fly('bb2-rock', bossFist, heroChest, 62, 440, 90, -300)).then(() => {
         r.current.lives -= 1
         setLives(r.current.lives)
         setHero('hurt')
-        if (hero3d) anim3d({ name: 'afraid', once: true, from: 0.25, speed: 1.3, until: 1.75, fade: 0.1 })
-        pop('bb2-boom red', heroChest[0], heroChest[1], 170, 480)
-        react(heroEl.current, 'hurt', -6)
-        shake(rootEl.current, 7)
-        burst(heroEl.current?.querySelector('.bb2-core'), { color: ['#ffffff', '#ffb3b3', '#d9c7a8'], n: 10, dist: 70, size: 10 })
-        number('-1 ♥', 'hero', HERO_AT.x, HERO_AT.y - HERO_AT.h - 10)
+        if (hero3d) heroFrame.current?.contentWindow?.postMessage({ type: 'rc-hurt' }, '*')
+        if (F) {
+          F.smack(PP(heroChest)); F.hurt(heroEl.current); F.shake(sceneEl.current, 7, 0.4)
+          if (!hero3d) F.knock(heroEl.current, -26 * scale.current)
+          F.number('-1 ♥', PP([HERO_AT.x, HERO_AT.y - HERO_AT.h - 10]), 'hero')
+        } else {
+          pop('bb2-boom red', heroChest[0], heroChest[1], 170, 480)
+          react(heroEl.current, 'hurt', -6)
+          shake(rootEl.current, 7)
+          burst(heroEl.current?.querySelector('.bb2-core'), { color: ['#ffffff', '#ffb3b3', '#d9c7a8'], n: 10, dist: 70, size: 10 })
+          number('-1 ♥', 'hero', HERO_AT.x, HERO_AT.y - HERO_AT.h - 10)
+        }
         if (r.current.lives <= 0) {
           say('The monster wins…', 'bad', 1800); sfx('lose')
-          if (hero3d) later(() => anim3d({ name: 'cry' }), 900)
+          if (hero3d) later(() => heroFrame.current?.contentWindow?.postMessage({ type: 'rc-cry' }, '*'), 700)
           later(finish, 1900)
         } else {
           say('Ouch!', 'bad')

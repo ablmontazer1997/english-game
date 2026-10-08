@@ -15,8 +15,9 @@
 .bb2-bob { position: absolute; inset: 0; }
 .bb2-bob img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .15s ease; }
 .bb2-bob img.on { opacity: 1; }
-.bb2-golem .bb2-bob { animation: bb2-breathe 3.2s ease-in-out infinite; transform-origin: 55% 99%; }
-.bb2-hero .bb2-bob { animation: bb2-breathe 2.6s ease-in-out infinite; transform-origin: 56% 98%; }
+/* breathing is driven from JS (requestAnimationFrame) in BossBattle: smooth on any fps, follows the page clock */
+.bb2-golem .bb2-bob { transform-origin: 55% 99%; will-change: transform; }
+.bb2-hero .bb2-bob { transform-origin: 56% 98%; will-change: transform; }
 @keyframes bb2-breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.012, 1.022) } }
 .bb2-core { position: absolute; width: 0; height: 0; }
 /* contact shadows on the marble, flattened like the arena rings (b/a = .18) */
@@ -36,6 +37,7 @@
 
 /* effects layer (px inside the plate frame) */
 .bb2-fx { position: absolute; inset: 0; z-index: 5; }
+.bb2-fx > .bb2-fxc { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .bb2-fx > i { position: absolute; display: block; border-radius: 50%; pointer-events: none; }
 .bb2-orb { background: radial-gradient(circle at 42% 40%, #fff, #f0e2ff 22%, #b27bff 50%, rgba(138, 77, 255, 0) 72%);
   box-shadow: 0 0 calc(40px * var(--s, .5)) calc(16px * var(--s, .5)) rgba(170, 110, 255, .6); }
