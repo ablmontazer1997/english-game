@@ -54,10 +54,18 @@
 .ph-stage > .pf-stats { margin-top: 2px; }
 
 /* ---------------- direction B: hero card + stat column ---------------- */
-.ph-card { display: grid; grid-template-columns: minmax(0, 1fr) 108px; gap: 10px; align-items: stretch; }
-.ph-frame { height: 392px; border-radius: 24px; --pod-b: 64px;
-  background: linear-gradient(160deg, #ffe9a6, #e3a93b 40%, #fff1c2 60%, #c98a22) border-box;
-  box-shadow: 0 10px 22px rgba(40, 20, 90, .3); }
+.ph-card { display: grid; grid-template-columns: minmax(0, 1fr) clamp(96px, 28vw, 116px); gap: 10px; align-items: stretch; }
+.ph-frame { border-radius: 24px; --pod-b: 66px;
+  background: linear-gradient(160deg, #fff3c4, #e3a93b 38%, #fff1c2 58%, #c98a22) border-box;
+  box-shadow: 0 0 0 1px rgba(150, 95, 10, .35), 0 0 22px rgba(255, 200, 90, .55), 0 12px 24px rgba(40, 20, 90, .28);
+  animation: ph-cardglow 4.5s ease-in-out infinite; }
+@keyframes ph-cardglow { 50% { box-shadow: 0 0 0 1px rgba(150, 95, 10, .35), 0 0 30px rgba(255, 210, 110, .8), 0 12px 24px rgba(40, 20, 90, .28); } }
+/* inner bevel: a thin light line inside the gold frame */
+.ph-frame::after { content: ""; position: absolute; inset: 4px; border-radius: 20px; z-index: 7; pointer-events: none;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 244, 205, .55), inset 0 -30px 40px -30px rgba(30, 10, 70, .35); }
+/* while the 3D loads the painted hero waits in a softer light */
+.ph-frame.is-loading .ph-2d { animation: ph-wait 1.6s ease-in-out infinite; }
+@keyframes ph-wait { 50% { filter: drop-shadow(0 0 14px rgba(255, 226, 150, .9)) brightness(1.06); } }
 .ph-sky { position: absolute; inset: 4px; border-radius: 20px; z-index: 0;
   background:
     radial-gradient(1.5px 1.5px at 20% 18%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 72% 12%, #fff 50%, transparent 51%),
@@ -71,9 +79,9 @@
   display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; border-radius: 16px;
   background: linear-gradient(180deg, #fffaf0, #f3e6cf); box-shadow: 0 3px 0 #d8b979, 0 6px 12px rgba(30, 10, 70, .3); }
 .ph-foot .ph-lvl { width: 38px; height: 38px; border-width: 2px; font-size: 15px; }
-.ph-foot-t { font-family: var(--game); font-size: 19px; line-height: 22px; font-weight: 900; color: var(--ink-d);
+.ph-foot-t { font-family: var(--game); font-size: clamp(17px, 4.9vw, 20px); line-height: 22px; font-weight: 900; color: var(--ink-d);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ph-side { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)) auto; gap: 8px; }
+.ph-side { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)) auto; gap: 8px; min-width: 0; }
 .ph-sstat { --pad: 6px; display: grid; justify-items: center; align-content: center; text-align: center; gap: 2px; min-height: 0; }
 .ph-sstat img { width: 38px; height: 38px; object-fit: contain; }
 .ph-sstat span { display: grid; }
@@ -84,3 +92,15 @@
 @media (prefers-reduced-motion: reduce) {
   .ph-rays, .ph-glow, .ph-ring, .ph-spark { animation: none; }
 }
+
+/* the podium's shadow on the floor, and the sparks of a tap */
+.ph-shadow { position: absolute; left: 50%; z-index: 1; aspect-ratio: 3.2; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(20, 6, 50, .55), rgba(20, 6, 50, .25) 60%, rgba(20, 6, 50, 0)); }
+.ph-burst { position: absolute; left: 50%; width: 0; height: 0; z-index: 6; pointer-events: none; }
+.ph-burst i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, rgba(255, 216, 120, .95) 45%, rgba(255, 216, 120, 0) 72%);
+  animation: ph-pop 700ms cubic-bezier(.2, .7, .3, 1) both; --a: calc(var(--k) * 45deg); }
+@keyframes ph-pop {
+  0% { transform: rotate(var(--a)) translateX(6px) scale(.4); opacity: 1; }
+  100% { transform: rotate(var(--a)) translateX(64px) scale(1.1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ph-frame, .ph-frame.is-loading .ph-2d, .ph-burst i { animation: none; } .ph-burst { display: none; } }

@@ -9,8 +9,8 @@ import type { CurrencyId } from '../types/game'
 import './pages.css'
 import { ProfileHeroStage, ProfileHeroCard } from './ProfileHero'
 
-// TEST: two showcase directions under review (?pf=a stage, ?pf=b card, ?pf=0 the old podium)
-const PF = new URLSearchParams(typeof location !== 'undefined' ? location.search : '').get('pf') ?? 'a'
+// TEST: two showcase directions under review (admin msg 4267 picked B, the default; ?pf=a stage, ?pf=0 the old podium)
+const PF = new URLSearchParams(typeof location !== 'undefined' ? location.search : '').get('pf') ?? 'b'
 import '../components/progression.css'
 
 export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void; onAchievements: () => void }) {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import hero2d from '../assets/games/boss2/hero.webp'
 import { art } from '../components/PageArt'
 import { hero3dPage } from './MapHero'
@@ -42,9 +42,23 @@ function useShowcase3d() {
     addEventListener('message', on)
     return () => removeEventListener('message', on)
   }, [])
+  // a tap plays the next gesture (one at a time: taps during a gesture only sparkle) and bursts a few sparks
   const g = useRef(0)
-  const gesture = () => { post({ type: 'rc-anim', name: GESTURES[g.current++ % GESTURES.length], once: 1, fade: 0.2 }) }
-  return { ref, ready, frame, gesture }
+  const busy = useRef(false)
+  const [burst, setBurst] = useState(0)
+  useEffect(() => {
+    const on = (e: MessageEvent) => { if (e.source === ref.current?.contentWindow && e.data?.type === 'rc-anim-done') busy.current = false }
+    addEventListener('message', on)
+    return () => removeEventListener('message', on)
+  }, [])
+  const gesture = () => {
+    setBurst((b) => b + 1)
+    if (!ready || busy.current) return
+    busy.current = true
+    post({ type: 'rc-anim', name: GESTURES[g.current++ % GESTURES.length], once: 1, fade: 0.2 })
+    setTimeout(() => { busy.current = false }, 6000) // never stuck if a done message is missed
+  }
+  return { ref, ready, frame, gesture, burst }
 }
 
 /** heroH: the model's height (feet to hat tip) in px; podiumW: the podium's width in px */
@@ -61,6 +75,12 @@ function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: Re
         style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
       <iframe ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
         style={{ width: fw, height: fh, bottom: feetY - fh * (1 - frame.gnd) }} />
+      <span className="ph-shadow" style={{ width: podiumW * 1.08, bottom: `calc(var(--pod-b) - ${Math.round(podiumW * 0.05)}px)` }} />
+      {h3.burst > 0 && (
+        <span key={h3.burst} className="ph-burst" aria-hidden style={{ bottom: feetY + heroH * 0.55 }}>
+          {Array.from({ length: 8 }, (_, i) => <i key={i} style={{ ['--k' as string]: i }} />)}
+        </span>
+      )}
       <button className="ph-tap" aria-label="Your hero: tap for a gesture" onClick={h3.gesture}
         style={{ height: heroH, bottom: feetY, width: heroH * 0.55 }} />
     </>
@@ -105,12 +125,24 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
   stats: { icon: string; value: ReactNode; label: string }[]
 }) {
   const h3 = useShowcase3d()
+  // everything in the card scales with the card's width (210 px on a 360 phone, 264 px at 414)
+  const box = useRef<HTMLDivElement>(null)
+  const [w, setW] = useState(240)
+  useLayoutEffect(() => {
+    const el = box.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setW(el.clientWidth || 240))
+    ro.observe(el); setW(el.clientWidth || 240)
+    return () => ro.disconnect()
+  }, [])
+  const heroH = Math.round(Math.min(250, w * 1.0))
+  const podiumW = Math.round(w * 0.66)
   return (
     <section className="ph ph-card reveal">
-      <div className="ph-frame">
+      <div className={`ph-frame${h3.ready ? '' : ' is-loading'}`} ref={box} style={{ height: Math.round(Math.max(340, Math.min(420, w * 1.68))) }}>
         <span className="ph-sky" aria-hidden />
-        <Spotlight ringY={50} ringW={220} />
-        <Hero3d heroH={236} podiumW={150} h3={h3} />
+        <Spotlight ringY={Math.round(podiumW * 0.36)} ringW={Math.round(w * 0.92)} />
+        <Hero3d heroH={heroH} podiumW={podiumW} h3={h3} />
         <div className="ph-foot">
           <span className="ph-lvl"><small>LV</small>{level}</span>
           <b className="ph-foot-t">{name}</b>
