@@ -14,7 +14,7 @@ import { BoosterTray } from '../components/BoosterTray'
 import '../components/gametitle.css'
 import type { MiniGameOutcome } from '../games/types'
 import './stage.css'
-import { sfx, enterScene, leaveScene } from '../services/audio'
+import { sfx, enterScene, leaveScene, quietStage, VOICE_GAMES } from '../services/audio'
 
 type Phase = 'gate' | 'intro' | 'play' | 'rescue' | 'result'
 // the placement test must be fair: no boosters, no rescue
@@ -58,6 +58,8 @@ export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { sta
     : null)
 
   useEffect(() => { service.getStageItems(stage.id, stage.miniGame).then(setItems) }, [stage, service])
+  // speaking / listening games: no music for the whole stage (admin msg 4310)
+  useEffect(() => { quietStage(VOICE_GAMES.has(stage.miniGame)); return () => quietStage(false) }, [stage.miniGame])
   // fanfare or a soft sad chord when the result card appears
   useEffect(() => { if (phase === 'result' && result && !previewPhase) sfx(result.stars > 0 ? 'win' : 'lose') }, [phase, result, previewPhase])
 

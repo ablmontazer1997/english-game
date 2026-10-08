@@ -46,13 +46,24 @@ const SCENE_VOL = 0.32, AMB_VOL = 0.55
 let scene: { id: string; mus: HTMLAudioElement | null; amb: HTMLAudioElement | null } | null = null
 let ducked = false
 
+/** games where a character speaks (speech synthesis) or the player speaks (mic): their stages are silent, no music and
+ *  no ambience for the whole stage, not just ducked (admin msg 4310). Sound effects still play. */
+export const VOICE_GAMES = new Set(['echo', 'whisper-scroll', 'tavern-talk', 'crystal-ball', 'bards-tale', 'rune-type', 'potion-mix', 'spell-weaver'])
+let quiet = false
+/** a stage with any voice game in it: silence the music from its lobby to its result */
+export function quietStage(on: boolean) {
+  if (quiet === on) return
+  quiet = on
+  if (on) { themeEl().pause(); sceneEls().forEach((a) => a.pause()) } else playNow()
+}
+
 function loopEl(url: string | undefined, vol: number) {
   if (!url) return null
   const a = new Audio(url); a.loop = true; a.preload = 'auto'; a.volume = vol; return a
 }
 const sceneEls = () => (scene ? [scene.mus, scene.amb].filter(Boolean) as HTMLAudioElement[] : [])
 function playNow() {
-  if (!unlocked || !setting('music')) return
+  if (!unlocked || !setting('music') || quiet) return
   if (scene) { themeEl().pause(); sceneEls().forEach((a) => a.play().catch(() => {})) }
   else themeEl().play().catch(() => { /* blocked until a gesture */ })
 }
@@ -66,7 +77,8 @@ function applyVolumes() {
 export function enterScene(id: string) {
   if (scene?.id === id) return
   leaveScene(false)
-  scene = { id, mus: loopEl(sceneUrl('mus', id) ?? sceneUrl('mus', 'quiz'), SCENE_VOL), amb: loopEl(sceneUrl('amb', id), AMB_VOL) }
+  const silent = VOICE_GAMES.has(id)
+  scene = silent ? { id, mus: null, amb: null } : { id, mus: loopEl(sceneUrl('mus', id) ?? sceneUrl('mus', 'quiz'), SCENE_VOL), amb: loopEl(sceneUrl('amb', id), AMB_VOL) }
   applyVolumes(); themeEl().pause(); playNow()
 }
 export function leaveScene(resume = true) {

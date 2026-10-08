@@ -20,7 +20,7 @@ import { ItemThumb } from '../components/ItemThumb'
 import { SpellLetter, hasLetter } from '../components/SpellLetter'
 import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic } from '../services/api'
 import { planRounds, AnswerSheet, solve, type Round } from '../services/serverPlay'
-import { sfx, enterScene, leaveScene } from '../services/audio'
+import { sfx, enterScene, leaveScene, quietStage, VOICE_GAMES } from '../services/audio'
 import '../components/gametitle.css'
 import './stage.css'
 import './serverstage.css'
@@ -73,6 +73,9 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
   const plan = useMemo(() => session ? planRounds(session.questions, boss) : null, [session, boss])
   const rounds: Round[] = plan?.rounds ?? []
   const round = rounds[ri]
+  // a stage with a speaking / listening game in any round has no music at all (lobby to result)
+  const quiet = VOICE_GAMES.has(stage.miniGame) || rounds.some((r) => VOICE_GAMES.has(r.game))
+  useEffect(() => { quietStage(quiet); return () => quietStage(false) }, [quiet])
 
   // start (or restart) the session
   useEffect(() => {
