@@ -33,9 +33,9 @@
   --card: linear-gradient(160deg, rgba(29, 42, 116, 0.55), rgba(12, 20, 64, 0.75));
 
   /* typography */
-  --sans: 'Nunito', system-ui, -apple-system, sans-serif;      /* UI text */
-  --display: 'Cinzel', serif;                                   /* magical titles */
-  --game: 'Baloo 2', 'Nunito', sans-serif;                     /* rounded in-game text */
+  --sans: 'Fredoka', system-ui, -apple-system, sans-serif;     /* UI text (admin 4284: Fredoka everywhere) */
+  --display: 'Fredoka', system-ui, sans-serif;                 /* titles */
+  --game: 'Fredoka', system-ui, sans-serif;                    /* in-game text */
   --mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* spacing scale */

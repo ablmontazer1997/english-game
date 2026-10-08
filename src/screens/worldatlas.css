@@ -30,7 +30,7 @@
 }
 .atlas-compass { position: absolute; width: 30%; left: 64%; top: 2.6%; fill: none; stroke: rgba(100, 62, 25, .45); stroke-width: 1.2; pointer-events: none; }
 .atlas-compass .k { fill: rgba(100, 62, 25, .35); stroke: none; }
-.atlas-compass text { fill: rgba(100, 62, 25, .6); stroke: none; font: 700 11px serif; text-anchor: middle; }
+.atlas-compass text { fill: rgba(100, 62, 25, .6); stroke: none; font: 700 11px Fredoka, system-ui, sans-serif; text-anchor: middle; }
 .atlas-compass.c2 { width: 22%; left: 6%; top: auto; bottom: 1.5%; transform: rotate(18deg); }
 
 /* floating magic motes */

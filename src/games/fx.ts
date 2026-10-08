@@ -27,7 +27,7 @@ export function burst(el: Element | null | undefined, o: BurstOpts = {}) {
     const a = o.up ? -Math.PI / 2 + (Math.random() - 0.5) * 1.4 : (i / n) * Math.PI * 2 + Math.random() * 0.5
     const d = dist * (0.6 + Math.random() * 0.6), s = size * (0.6 + Math.random() * 0.8)
     p.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${s}px;height:${s}px;margin:${-s / 2}px 0 0 ${-s / 2}px;border-radius:50%;` +
-      (o.glyph ? `font:900 ${s * 1.6}px/1 system-ui;color:${c};text-shadow:0 0 6px ${c};display:grid;place-items:center` : `background:radial-gradient(circle,#fff,${c} 55%);box-shadow:0 0 ${s}px ${c}`)
+      (o.glyph ? `font:900 ${s * 1.6}px/1 Fredoka,system-ui;color:${c};text-shadow:0 0 6px ${c};display:grid;place-items:center` : `background:radial-gradient(circle,#fff,${c} 55%);box-shadow:0 0 ${s}px ${c}`)
     if (o.glyph) p.textContent = o.glyph
     L.appendChild(p)
     const dx = Math.cos(a) * d, dy = Math.sin(a) * d + (o.up ? 0 : 12)

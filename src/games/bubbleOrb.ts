@@ -93,7 +93,7 @@ export function drawWord(ctx: CanvasRenderingContext2D, x: number, y: number, r:
   // and phrases wrap onto 2-3 centred lines inside the bubble instead of shrinking to a sliver
   ctx.save()
   ctx.globalAlpha = alpha
-  const FONT = (px: number) => `900 ${px}px 'Baloo 2', Nunito, system-ui, sans-serif`
+  const FONT = (px: number) => `700 ${px}px Fredoka, system-ui, sans-serif`
   const maxW = r * 1.55, maxH = r * 1.35
   const parts = word.split(/\s+/)
   const wrap = (px: number, n: number): string[] => {

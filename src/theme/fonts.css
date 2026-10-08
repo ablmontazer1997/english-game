@@ -1,0 +1,9 @@
+/* admin msg 4284: Fredoka everywhere. Self-hosted (no Google Fonts request; it can fail or be slow in Iran): one variable
+   latin file covers every weight; weights above 700 (800/900 in the CSS) use its boldest 700 */
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("/fonts/Fredoka-var.woff2") format("woff2");
+}
