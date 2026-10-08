@@ -197,10 +197,11 @@ function RoadToken({ stage, node, width, onPlay, look, beat }: {
           </span>
         )}
       </button>
-      {current && (
+      {/* admin msg 4269: no "Current" pill on the road (the hero standing there says it); Boss / Bonus keep theirs */}
+      {current && (stage.optional || stage.kind === 'boss') && (
         <span className="rtoken-current">
           <img src={skySrc('pill_current')} alt="" draggable={false} />
-          <b>{stage.optional ? 'Bonus' : stage.kind === 'boss' ? 'Boss' : 'Current'}</b>
+          <b>{stage.optional ? 'Bonus' : 'Boss'}</b>
         </span>
       )}
     </div>

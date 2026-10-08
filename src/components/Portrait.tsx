@@ -9,8 +9,10 @@ import defGirl from '../assets/character/portrait_default_f.webp'
 // hair, eyes and skin tone from localStorage; in `?portrait=1` mode it renders
 // one head-and-shoulders frame and posts it back (and stores it as rc.portrait).
 const KEY = 'rc.portrait'
+// test builds shoot from the test wardrobe (the integrated page that goes live next)
+const WARDROBE_BASE = import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-wardrobe-ui/' : '/runecast-wardrobe/'
 // bump when the wardrobe's look changes, so saved portraits are retaken once in the new lighting
-export const LOOK_VER = 'look3'
+export const LOOK_VER = 'look3p' // 10-08 admin msg 4269: frontal eye-level head-and-shoulders portrait
 export const portraitStale = () => { try { return !localStorage.getItem(KEY) || localStorage.getItem(KEY + '.look') !== LOOK_VER } catch { return true } }
 const read = () => { try { return localStorage.getItem(KEY) } catch { return null } }
 // the wardrobe stores the body type as localStorage girl=1
@@ -47,6 +49,6 @@ export function PortraitCapture({ version }: { version: number }) {
     return () => { removeEventListener('message', onMsg); clearTimeout(t) }
   }, [version])
   if (!on) return null
-  return <iframe key={version} title="portrait" aria-hidden src={`/runecast-wardrobe/?embed=1&portrait=1&v=${version}`}
+  return <iframe key={version} title="portrait" aria-hidden src={`${WARDROBE_BASE}?embed=1&portrait=1&v=${version}`}
     style={{ position: 'fixed', left: 0, bottom: 0, width: 320, height: 320, border: 0, opacity: 0.01, zIndex: -1, pointerEvents: 'none' }} />
 }
