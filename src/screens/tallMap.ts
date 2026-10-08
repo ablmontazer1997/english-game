@@ -1,3 +1,4 @@
+import type { LifeData } from '../components/MapLife'
 import type { MapNode } from './mapLayout'
 import { measure, projectS, type Road } from './mapProgress'
 
@@ -11,7 +12,8 @@ import { measure, projectS, type Road } from './mapProgress'
  * stages are not painted anywhere: they are spread evenly by distance along
  * the whole road, so a world can hold 10 stages or 18 on the same art.
  */
-export type TallPanel = { bg: string; w: number; h: number; pts: number[][] }
+/** anim: a lower panel's own animated life (falls, sway, glints...) in that panel's px, and its cutouts */
+export type TallPanel = { bg: string; w: number; h: number; pts: number[][]; anim?: { life: LifeData; src: Record<string, string> } }
 /** panels top to bottom; the first is the scene's own painting with the gate, its bottom
  *  cut off where the road flares towards the camera. band: the clouds over each join.
  *  life: the full scene's height over the first panel's, so the scene's hand-cut life

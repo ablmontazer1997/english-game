@@ -3,10 +3,11 @@ import { useGame } from '../services/ServiceProvider'
 import type { Stage } from '../types/game'
 import { skySrc } from '../components/SkyIcon'
 import { art } from '../components/PageArt'
+import { MapChromeAlt, MAP_LAYOUT } from './MapChromeAlt'
 import './serverstage.css'
 import { sceneFor } from './worlds'
 import { layoutTall } from './tallMap'
-import { MapLife } from '../components/MapLife'
+import { MapLife, type Extra, type LifeData } from '../components/MapLife'
 import './map.css'
 import { WorldAtlas } from './WorldAtlas'
 import atlasIcon from '../assets/atlas/icon.png'
@@ -17,9 +18,26 @@ import { padLook, pointAt, type PadLook, type Beat } from './mapProgress'
  *  damped: the raw ratio between the foot and the head of the path is far too
  *  strong once a real disc is on it. */
 const PAD_OVER = 0.74
+/** set pieces that live among the islands (not in the sky over the gate): a tall world's lower panels get them too */
+const GROUND_EXTRAS: Extra[] = ['books', 'butterflies', 'runes', 'heat']
+const groundCache = new WeakMap<Extra[], Extra[]>()
+const groundExtras = (ex?: Extra[]) => {
+  if (!ex) return undefined
+  let g = groundCache.get(ex)
+  if (!g) groundCache.set(ex, g = ex.filter((e) => GROUND_EXTRAS.includes(e)))
+  return g
+}
+const NO_SRC: Record<string, string> = {}
+/** the weather layer of a tall world covers the screen, at the painting's particle scale */
+const weatherCache = new WeakMap<LifeData, LifeData>()
+const weatherLife = (l: LifeData) => {
+  let w = weatherCache.get(l)
+  if (!w) weatherCache.set(l, w = { _map: l._map } as LifeData)
+  return w
+}
 const damp = (s: number) => 0.6 + 0.4 * s
 
-export function MapScreen({ onPlay, onCauldron, onHearth }: { onPlay: (s: Stage) => void; onCauldron?: () => void; onHearth?: () => void }) {
+export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: (s: Stage) => void; onCauldron?: () => void; onHearth?: () => void; onQuests?: () => void }) {
   const { worlds, quests, submitResult, mode, reviewDue, streak } = useGame()
   const [worldIdx, setWorldIdx] = useState(0)
   const [atlas, setAtlas] = useState(false)
@@ -94,9 +112,20 @@ export function MapScreen({ onPlay, onCauldron, onHearth }: { onPlay: (s: Stage)
           )) : <img className="mw-bg" src={scene.bg} alt="" draggable={false} />}
           <div className="mw-lifebox" style={{ height: tall ? tall.panels[0].h : sceneH }}>
             <div className="mw-lifebox-in" style={{ height: lifeH }}>
-              <MapLife width={sceneW} height={lifeH} life={scene.life} src={scene.src} fx={scene.fx} extras={scene.extras} />
+              <MapLife width={sceneW} height={lifeH} life={scene.life} src={scene.src} fx={tall ? undefined : scene.fx} extras={scene.extras} />
             </div>
           </div>
+          {/* each lower panel's own life, on that panel (under the next panel's fade-in, like the painting) */}
+          {tall ? tall.panels.map((p, i) => {
+            const P = scene.tall!.panels[i]
+            if (!i || !P.anim) return null
+            const fade = `linear-gradient(#0000, #000 ${tall.overlap}px)`
+            return (
+              <div key={`life${i}`} className="mw-lifebox" style={{ top: p.top, height: p.h, zIndex: i, maskImage: fade, WebkitMaskImage: fade }}>
+                <MapLife width={sceneW} height={p.h} life={P.anim.life} src={P.anim.src} extras={groundExtras(scene.extras)} />
+              </div>
+            )
+          }) : null}
           {tall && scene.tall!.clouds?.length ? tall.seams.map((sm, i) => (
             <CloudBank key={i} x={sm.x} y={sm.y} w={sceneW} clouds={scene.tall!.clouds!} flip={i % 2 === 1} />
           )) : null}
@@ -112,9 +141,19 @@ export function MapScreen({ onPlay, onCauldron, onHearth }: { onPlay: (s: Stage)
           {tall && <MapHero heroRef={adv.heroRef} hero3d={adv.hero3d} ready={adv.hero3dReady} hidden={!adv.showHero} />}
           {gateAt && <span className="mgate-flash" style={{ left: gateAt.x, top: gateAt.y }} />}
         </div>
+        {tall && scene.fx && box.h ? (
+          <div className="mw-weather" style={{ height: sceneH }}>
+            <div className="mw-weather-pin" style={{ height: box.h }}>
+              <MapLife width={box.w} height={box.h} life={weatherLife(scene.life)} src={NO_SRC} fx={scene.fx} anchor={frame} />
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      <div className="map-chrome">
+      {MAP_LAYOUT ? (
+        <MapChromeAlt layout={MAP_LAYOUT} world={world} quests={quests} http={mode === 'http'} reviewDue={reviewDue} streak={streak}
+          onAtlas={() => setAtlas(true)} onCauldron={onCauldron} onHearth={onHearth} onQuests={onQuests} />
+      ) : <div className="map-chrome">
         {daily && (
           <button className="daily-card reveal" aria-label={`Daily quest: ${daily.title}`}>
             <img className="daily-card-bg" src={skySrc('card_daily')} alt="" draggable={false} />
@@ -156,7 +195,7 @@ export function MapScreen({ onPlay, onCauldron, onHearth }: { onPlay: (s: Stage)
           <img className="chest-widget-bg" src={skySrc('widget_chest')} alt="" draggable={false} />
           <span className="chest-widget-txt">{dailyDone} / {dailyAll}</span>
         </div>
-      </div>
+      </div>}
       {atlas && <WorldAtlas worlds={worlds} current={worldIdx % Math.max(1, worlds.length)}
         onPick={(i) => setWorldIdx(i)} onClose={() => setAtlas(false)} />}
     </div>

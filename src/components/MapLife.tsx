@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 
 /* MapLife — ambient life on the home map, without touching the painting.
 
@@ -37,8 +37,9 @@ import { useEffect, useRef } from 'react'
    grade applied to .mw-scene exactly like the painting does. */
 
 type Region = { light?: [number, number, number]; amp?: number; kind: 'tree' | 'fall' | 'cloud' | 'gate' | 'sway' | 'pool'; x: number; y: number; w: number; h: number; pivotY?: number; depth?: number; cx?: number; cy?: number; rx?: number; ry?: number }
-type Glint = { x: number; y: number; tint: 'pink' | 'cyan' | 'violet' }
-type Lamp = { x: number; y: number; r: number }
+type Glint = { x: number; y: number; s?: number; tint: 'pink' | 'cyan' | 'violet' | 'gold' | 'white' }
+/** tint: a cold glow (glowing runes, crystal lamps) instead of the warm flame */
+type Lamp = { x: number; y: number; r: number; tint?: Glint['tint'] }
 export type LifeData = Record<string, Region> & { _map: { w: number; h: number }; _glints?: Glint[]; _lamps?: Lamp[] }
 export type Fx = 'snow' | 'embers' | 'leaves' | 'sand' | 'bubbles' | 'fireflies' | 'sprinkles' | 'steam' | 'petals' | 'stars' | 'sparkles' | 'pages' | 'motes'
 /** set pieces drawn over a world's sky/scene, on top of its weather */
@@ -47,12 +48,12 @@ type Particle = { x: number; y: number; vx: number; vy: number; s: number; age: 
 const TAU = Math.PI * 2
 // the painting's lightest water tone (pale sky-blue, not white): flow highlights blend toward it
 const LIGHT_R = 214, LIGHT_G = 240, LIGHT_B = 255
-const TINT: Record<Glint['tint'], string> = { pink: '255,170,235', cyan: '170,235,255', violet: '215,175,255' }
+const TINT: Record<Glint['tint'], string> = { pink: '255,170,235', cyan: '170,235,255', violet: '215,175,255', gold: '255,220,140', white: '235,245,255' }
 
 type Tree = { key: string; img: HTMLImageElement; r: Region; ph: number; rate: number }
 type Cloud = { key: string; img: HTMLImageElement; r: Region; ph: number; depth: number }
 type Flare = { g: Glint; next: number; dur: number; rot: number }
-type Fall = { key: string; img: HTMLImageElement; r: Region; base: Uint8ClampedArray; out: ImageData; off: HTMLCanvasElement; octx: CanvasRenderingContext2D; ph: number }
+type Fall = { key: string; img: HTMLImageElement; r: Region; base: Uint8ClampedArray; out: ImageData; off: HTMLCanvasElement; octx: CanvasRenderingContext2D; ph: number; w?: Float32Array }
 type Gate = { r: Region; base: Uint8ClampedArray; out: ImageData; off: HTMLCanvasElement; octx: CanvasRenderingContext2D; rr: Float32Array; th: Float32Array }
 type Mist = { u: number; v: number; life: number; age: number; s: number }
 
@@ -60,10 +61,22 @@ const SIN = new Float32Array(2048)
 for (let i = 0; i < 2048; i++) SIN[i] = Math.sin((i / 2048) * TAU)
 const sinT = (x: number) => SIN[((x % 1 + 1) % 1 * 2048) | 0]   // x in turns
 
-export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
+/** anchor: the scroller a viewport-sized weather layer is pinned in (tall worlds): its particles are
+ *  shifted by the scroll so they stay put on the scene, and wrap around instead of leaving the screen */
+export function MapLife({ width, height, life: R, src: SRC, fx, extras, anchor }: {
   width: number; height: number; life: LifeData; src: Record<string, string>; fx?: Fx; extras?: Extra[]
+  anchor?: RefObject<HTMLElement | null>
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  // a tall world stacks several of these: only the ones on screen are drawn
+  const onScreen = useRef(true)
+  useEffect(() => {
+    const cv = canvasRef.current
+    if (!cv || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => { onScreen.current = e.isIntersecting }, { rootMargin: '120px 0px' })
+    io.observe(cv)
+    return () => io.disconnect()
+  }, [])
   const trees = useRef<Tree[]>([])
   const falls = useRef<Fall[]>([])
   const clouds = useRef<Cloud[]>([])
@@ -108,7 +121,22 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
           const octx = off.getContext('2d', { willReadFrequently: true })!
           octx.drawImage(img, 0, 0)
           const base = new Uint8ClampedArray(octx.getImageData(0, 0, r.w, r.h).data)
-          fs.push({ key, img, r, base, out: octx.createImageData(r.w, r.h), off, octx, ph: Math.random() })
+          const fa: Fall = { key, img, r, base, out: octx.createImageData(r.w, r.h), off, octx, ph: Math.random() }
+          fs.push(fa)
+          // <key>_w.png: a grey weight map of the tree crown — only the crown moves, trunk and grass stay put
+          if (r.kind === 'sway' && SRC[key + '_w']) {
+            const wi = new Image()
+            wi.src = SRC[key + '_w']
+            wi.onload = () => {
+              if (!alive) return
+              const c = document.createElement('canvas'); c.width = r.w; c.height = r.h
+              const cx = c.getContext('2d', { willReadFrequently: true })!
+              cx.drawImage(wi, 0, 0, r.w, r.h)
+              const d = cx.getImageData(0, 0, r.w, r.h).data, w = new Float32Array(r.w * r.h)
+              for (let i = 0; i < w.length; i++) w[i] = d[i * 4] / 255
+              fa.w = w
+            }
+          }
         }
         trees.current = ts; falls.current = fs; clouds.current = cs
       }
@@ -185,7 +213,51 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
     // foliage / banners in the wind: the painted rectangle is resampled with a sideways
     // offset that is zero at the pivot row (trunk / banner rod) and fades to zero on the
     // other borders, so the edit never shows a seam; a gust envelope drives the whole piece
+    // a tree crown in the wind (weight-mapped sway): the whole crown leans from the trunk,
+    // more the higher it is, with a slow gust envelope; on top of that the puffs roll a
+    // little on their own (2D, not row by row). Sky around the crown is resampled too, so
+    // the crown really travels over it; the weight map fades to zero at the rect border
+    const drawCrown = (fa: Fall, t: number, step: boolean) => {
+      const { r, base, out } = fa, w = fa.w!
+      if (step) {
+        const od = out.data, W = r.w, H = r.h, piv = (r.pivotY ?? r.y + r.h) - r.y, ph = fa.ph * 6
+        const g = 0.6 + 0.4 * Math.sin(t * 0.21 + ph)
+        const lean = g * (0.72 * Math.sin(t * 0.85 + ph) + 0.28 * Math.sin(t * 1.9 + ph * 1.3))
+        const A = r.amp ?? 10, fl = A * 0.16
+        const k = 0.11, sx0 = Math.sin(t * 2.3 + ph), cx0 = Math.cos(t * 2.3 + ph)
+        const sy0 = Math.sin(t * 1.7 + ph * 0.7), cy0 = Math.cos(t * 1.7 + ph * 0.7)
+        for (let y = 0, p = 0; y < H; y++) {
+          const hn = Math.max(0, Math.min(1, (piv - y) / piv)), bend = A * lean * hn ** 1.3
+          const sy = Math.sin(y * k * 0.8), cy = Math.cos(y * k * 0.8)
+          for (let x = 0; x < W; x++, p += 4) {
+            const wv = w[p >> 2]
+            if (wv <= 0.004) { od[p] = base[p]; od[p + 1] = base[p + 1]; od[p + 2] = base[p + 2]; od[p + 3] = 255; continue }
+            let sx = x, sy2 = y
+            {
+              const ax = Math.sin(x * k), bx = Math.cos(x * k)
+              const px = (sx0 * bx + cx0 * ax) * cy + (cx0 * bx - sx0 * ax) * sy   // sin(t·2.3 + x·k + y·k·.8)
+              const py = (sy0 * bx - cy0 * ax) * cy - (cy0 * bx + sy0 * ax) * sy   // ~ an independent roll for y
+              sx = x - wv * (bend + fl * px)
+              sy2 = y - wv * (fl * 0.7 * py + Math.abs(bend) * 0.08)
+              if (sx < 0) sx = 0; else if (sx > W - 1.001) sx = W - 1.001
+              if (sy2 < 0) sy2 = 0; else if (sy2 > H - 1.001) sy2 = H - 1.001
+            }
+            const x0 = sx | 0, y0 = sy2 | 0, fx = sx - x0, fy = sy2 - y0, q = (y0 * W + x0) * 4, q2 = q + W * 4
+            for (let c = 0; c < 3; c++) {
+              const a = base[q + c] + (base[q + 4 + c] - base[q + c]) * fx
+              const b = base[q2 + c] + (base[q2 + 4 + c] - base[q2 + c]) * fx
+              od[p + c] = a + (b - a) * fy
+            }
+            od[p + 3] = 255
+          }
+        }
+        fa.octx.putImageData(out, 0, 0)
+      }
+      ctx.drawImage(fa.off, r.x * scale, r.y * scale, r.w * scale, r.h * scale)
+    }
+
     const drawSway = (fa: Fall, t: number, step: boolean) => {
+      if (fa.w) return drawCrown(fa, t, step)
       const { r, base, out } = fa
       if (step) {
         const od = out.data, W = r.w, H = r.h, piv = (r.pivotY ?? r.y + r.h) - r.y, span = Math.max(piv, H - piv) || 1
@@ -248,7 +320,10 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
         const fl = 0.62 + 0.2 * Math.sin(t * 2.3 + ph) + 0.12 * Math.sin(t * 7.9 + ph * 3) + 0.06 * Math.sin(t * 17 + ph * 5)
         const x = l.x * scale, y = l.y * scale, rad = Math.max(6, l.r * 3.2) * scale
         const g = ctx.createRadialGradient(x, y, 0, x, y, rad)
-        g.addColorStop(0, `rgba(255,214,140,${0.55 * fl})`); g.addColorStop(0.3, `rgba(255,170,80,${0.22 * fl})`); g.addColorStop(1, 'rgba(255,150,60,0)')
+        if (l.tint) {
+          const c = TINT[l.tint]
+          g.addColorStop(0, `rgba(${c},${0.5 * fl})`); g.addColorStop(0.3, `rgba(${c},${0.2 * fl})`); g.addColorStop(1, `rgba(${c},0)`)
+        } else { g.addColorStop(0, `rgba(255,214,140,${0.55 * fl})`); g.addColorStop(0.3, `rgba(255,170,80,${0.22 * fl})`); g.addColorStop(1, 'rgba(255,150,60,0)') }
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill()
       })
       ctx.restore()
@@ -307,13 +382,13 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
         if (k < 0) continue
         if (k > 1) { f.next = t + 2.5 + Math.random() * 5; f.rot = Math.random() * TAU; continue }
         const s = Math.sin(Math.PI * k)                            // 0 → 1 → 0
-        const x = f.g.x * scale, y = f.g.y * scale, c = TINT[f.g.tint]
+        const x = f.g.x * scale, y = f.g.y * scale, c = TINT[f.g.tint], gs = f.g.s ?? 1   // s: per-crystal size (big soft crystals need a bigger flare)
         // soft tinted glow on the crystal tip
-        const gr = ctx.createRadialGradient(x, y, 0, x, y, 16 * scale)
+        const gr = ctx.createRadialGradient(x, y, 0, x, y, 16 * gs * scale)
         gr.addColorStop(0, `rgba(${c},${0.55 * s})`); gr.addColorStop(0.4, `rgba(${c},${0.18 * s})`); gr.addColorStop(1, `rgba(${c},0)`)
-        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, 16 * scale, 0, TAU); ctx.fill()
+        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, 16 * gs * scale, 0, TAU); ctx.fill()
         // thin four-point flare, slightly rotated per firing
-        const L = (10 + 16 * s) * scale, wdt = 1.1 * scale
+        const L = (10 + 16 * s) * gs * scale, wdt = 1.1 * Math.sqrt(gs) * scale
         ctx.translate(x, y); ctx.rotate(f.rot + k * 0.35)
         ctx.fillStyle = `rgba(255,255,255,${0.85 * s})`
         for (const [lx, ly] of [[L, wdt], [L * 0.6, wdt * 0.8]]) {
@@ -416,6 +491,12 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
     const drawFx = (dt: number, t: number) => {
       if (!fx) return
       const F = FX[fx], ps = parts.current
+      const sc = anchor?.current
+      if (sc) {
+        const st = sc.scrollTop, d = st - lastScroll
+        lastScroll = st
+        if (d) { const span = height + 45; for (const p of ps) p.y = (((p.y - d + 30) % span) + span) % span - 30 }
+      }
       // seed the whole screen at start so it doesn't look empty for the first seconds
       if (!ps.length) for (let i = 0; i < F.n; i++) { const p = F.spawn(); p.y = Math.random() * height; if (p.vx > 20) p.x = Math.random() * width; p.age = Math.random() * Math.min(p.life, 3); ps.push(p) }
       while (ps.length < F.n) ps.push(F.spawn())
@@ -645,9 +726,10 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
     }
 
     let lastT = start
+    let lastScroll = anchor?.current?.scrollTop ?? 0
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop)
-      if (document.hidden) return
+      if (document.hidden || !onScreen.current) { lastT = now; return }
       const t = (now - start) / 1000
       const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now
       const stepFall = now - lastFall >= 33                          // waterfall pixels at ~30fps
@@ -667,7 +749,7 @@ export function MapLife({ width, height, life: R, src: SRC, fx, extras }: {
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [width, height, R, fx, extras])
+  }, [width, height, R, fx, extras, anchor])
 
   return <canvas className="mw-life" ref={canvasRef} aria-hidden="true" />
 }

@@ -91,7 +91,7 @@ export function App() {
         <>
           <HUD onBuy={setShop} onSettings={() => setSettings(true)} />
 
-          {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} />}
+          {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
           {tab === 'quests' && <QuestsScreen />}
           {tab === 'shop' && <ShopScreen />}
           {tab === 'league' && <LeagueScreen />}

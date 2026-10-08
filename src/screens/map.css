@@ -25,6 +25,10 @@
 @keyframes mw-drift { from { translate: -6px 0; } to { translate: 6px 0; } }
 /* ambient life (swaying trees, flowing falls) drawn over the painting, under the level discs */
 .mw-life { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+/* a tall world's weather: one screen-sized layer pinned in the scroller (so snow / petals / sparks fall over
+   every panel), above the clouds, under the level tokens (z5); MapLife keeps its flakes on the scene while scrolling */
+.mw-weather { position: absolute; top: 0; left: 0; width: 100%; z-index: 4; pointer-events: none; }
+.mw-weather-pin { position: sticky; top: 0; width: 100%; }
 
 /* ---------- level tokens ----------
    One asset for every state: the plain gold pad, no stars baked in. Stars,

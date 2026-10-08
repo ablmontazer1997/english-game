@@ -1,6 +1,6 @@
 import type { LifeData, Fx, Extra } from '../components/MapLife'
 import type { MapNode } from './mapLayout'
-import type { Tall } from './tallMap'
+import type { Tall, TallPanel } from './tallMap'
 const CLOUDS = Object.values(import.meta.glob('../assets/tall/cloud*.webp', { eager: true, import: 'default' }) as Record<string, string>)
 import W1_MAP from '../data/map.json'
 import W1_LIFE from '../assets/sky/life/life.json'
@@ -56,16 +56,28 @@ const W1: Scene = softMap && softBg ? {
 type Road = { w: number; h: number; pts: number[][]; life?: number }
 const TALL_JSON = import.meta.glob('../assets/tall/*/*.json', { eager: true, import: 'default' }) as Record<string, Road>
 const TALL_BG = import.meta.glob('../assets/tall/*/*.webp', { eager: true, import: 'default' }) as Record<string, string>
+// each lower panel's own life (runecast/fix/tallmap/life/tools/cut_panel.py): assets/tall/<scene dir>/life/<panel>.json
+// + <panel>_<region>.png, laid out on that panel alone (falls, swaying trees, pools, crystal glints, lamps)
+const PANEL_LIFE = import.meta.glob('../assets/tall/*/life/*.json', { eager: true, import: 'default' }) as Record<string, LifeData>
+const PANEL_PNG = import.meta.glob('../assets/tall/*/life/*.png', { eager: true, import: 'default' }) as Record<string, string>
+const world3 = (p: string) => p.split('/').slice(-3)[0]
+const panelLife = (id: string, panel: string) => {
+  const life = Object.entries(PANEL_LIFE).find(([p]) => world3(p) === id && base(p) === panel)?.[1]
+  if (!life) return {}
+  const src = Object.fromEntries(Object.entries(PANEL_PNG).filter(([p]) => world3(p) === id && base(p).startsWith(panel + '_'))
+    .map(([p, u]) => [base(p).slice(panel.length + 1), u]))
+  return { anim: { life, src } }
+}
 const tallFor = (id: string): Tall | undefined => {
   const at = (g: Record<string, unknown>, f: string) => Object.entries(g).find(([p]) => dir(p) === id && base(p) === f)?.[1]
   // upper, then lower, lower2, ... down the road
   const names = ['upper', 'lower', ...[2, 3, 4, 5].map((n) => `lower${n}`)]
   const panels = names.map((n) => {
     const road = at(TALL_JSON, n) as Road | undefined, bg = at(TALL_BG, n) as string | undefined
-    return road && bg ? { ...road, bg } : null
+    return road && bg ? { ...road, bg, ...(n === 'upper' ? {} : panelLife(id, n)) } : null
   })
   const n = panels.indexOf(null)
-  const have = (n < 0 ? panels : panels.slice(0, n)) as (Road & { bg: string })[]
+  const have = (n < 0 ? panels : panels.slice(0, n)) as (TallPanel & { life?: number })[]
   return have.length > 1 ? { clouds: CLOUDS, life: have[0].life, panels: have } : undefined
 }
 
