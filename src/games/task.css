@@ -53,12 +53,20 @@
 .ws-taskp .gtask-b { margin: 0; }
 .rt:has(.gtask) .rt-clue { top: 13%; }
 .rt:has(.gtask) .rt-slots { top: calc(13% + 152px); }
-/* Tavern (coordinator 10-08): compact mission panel, coin + mission on one row under the task, keeper moved down so her head shows */
-.tt-mission:has(.gtask) { padding: 6px 8px 6px; gap: 4px 8px; }
+/* Tavern (admin 4351): task + mission are the top of the bottom stack (above the innkeeper's line); compact so the stack never grows into her face */
+.tt-ui .tt-mission { margin-top: 0; padding: 6px 8px; gap: 2px 8px; }
 .tt-mission:has(.gtask) .gtask-b { margin-bottom: 2px; }
-.tt-mission:has(.gtask) .tt-coin { font-size: 18px; line-height: 1; }
+.tt-mission:has(.gtask) .tt-coin { font-size: 16px; line-height: 1; }
 .tt-mission:has(.gtask) > div:not(.gtask) { display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0; }
 .tt-mission:has(.gtask) > div:not(.gtask) b { flex: none; font-size: 10px; }
-.tt-mission:has(.gtask) > div:not(.gtask) p { font-size: 13px; line-height: 1.25; }
-.tt-mission:has(.gtask) .tt-price { min-width: 32px; height: 32px; font-size: 14px; }
-.tt:has(.tt-mission .gtask) .tt-keeper { top: max(25%, 224px); }
+.tt-mission:has(.gtask) > div:not(.gtask) p { font-size: 12.5px; line-height: 1.25; }
+.tt-mission:has(.gtask) .tt-price { min-width: 30px; height: 30px; font-size: 13px; }
+@media (max-height: 760px) {
+  .tt .tt-mission .gtask-t small { display: none; }
+  .tt .tt-chat { max-height: 112px; }
+}
+@media (max-height: 680px) {
+  .tt .tt-keeper { width: min(53vw, 210px, 30vh); top: 17%; }
+  .tt .tt-chat { max-height: 64px; }
+  .tt .tt-ui { gap: 6px; }
+}
