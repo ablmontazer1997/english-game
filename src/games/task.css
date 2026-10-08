@@ -4,21 +4,21 @@
 .gtask-ic svg { width: 62%; height: 62%; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .gtask-t { display: flex; flex-direction: column; min-width: 0; }
 .gtask .gtask-t b { font-weight: 800; line-height: 1.15; }
-.gtask-t small { font-weight: 600; font-size: 12.5px; line-height: 1.2; margin-top: 2px; }
+.gtask-t small { font-weight: 700; font-size: 13px; line-height: 1.2; margin-top: 2px; }
 
 /* A: header row inside the cream panel, gold coin icon, dark warm brown text, thin divider under it */
 .gtask-a { width: 100%; padding: 0 0 8px; margin: 0 0 8px; border-bottom: 2px dashed rgba(201, 150, 60, .45); }
-.gtask-a .gtask-ic { width: 34px; height: 34px; color: #fff; border: 2px solid #fff;
+.gtask-a .gtask-ic { width: 36px; height: 36px; color: #fff; border: 2px solid #fff;
   background: radial-gradient(circle at 35% 30%, #ffe48f, #f5b636 60%, #dd8f17); box-shadow: 0 2px 0 #b8741a, 0 3px 8px rgba(150, 90, 10, .35); }
-.gtask.gtask-a .gtask-t b { font-size: 18px; color: #4a2c0c; }
-.gtask-a .gtask-t small { color: #8a6a3e; }
+.gtask.gtask-a .gtask-t b { font-size: 20px; color: #4a2c0c; white-space: nowrap; }
+.gtask-a .gtask-t small { color: #6e5330; }
 
 /* B: violet header pill across the top of the panel, white icon disc, white text */
 .gtask-b { position: relative; z-index: 2; align-self: stretch; width: 100%; box-sizing: border-box; margin: 0 0 10px; padding: 6px 14px 6px 6px; border-radius: 18px;
   background: linear-gradient(180deg, #a77bff, #7b45f0); border: 2.5px solid #fff; box-shadow: 0 4px 0 #5a24c0, 0 6px 14px rgba(90, 40, 200, .35); }
-.gtask-b .gtask-ic { width: 30px; height: 30px; color: #7b45f0; background: #fff; }
-.gtask.gtask-b .gtask-t b { font-size: 16.5px; color: #fff; text-shadow: 0 1px 0 rgba(60, 20, 140, .45); }
-.gtask-b .gtask-t small { color: #efe6ff; }
+.gtask-b .gtask-ic { width: 32px; height: 32px; color: #7b45f0; background: #fff; }
+.gtask.gtask-b .gtask-t b { font-size: 19px; white-space: nowrap; color: #fff; text-shadow: 0 1px 0 rgba(60, 20, 140, .45); }
+.gtask-b .gtask-t small { color: #f6f1ff; }
 
 /* first round: the icon nudges and the line glows twice, then it rests */
 .gtask.first .gtask-ic { animation: gtask-nudge 1.1s ease-in-out .5s 3; }
@@ -30,3 +30,13 @@
 @media (prefers-reduced-motion: reduce) { .gtask.first, .gtask.first .gtask-ic { animation: none } }
 .cbk-card .cbk-task { flex-basis: 100%; }
 .swv-source.has-task { justify-items: stretch; }
+/* Bubble Pop with the task line: the panel takes the full width, the timer sits beside the big target word */
+.bubblepop .bp-prompt.has-task { right: 4%; align-items: stretch; padding: 10px 14px 8px; }
+.bubblepop .bp-prompt.has-task .gtask { margin-bottom: 4px; }
+.bubblepop .bp-trow { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; }
+.bubblepop .bp-prompt.has-task .bp-trow > b { font-size: clamp(24px, 7.2vw, 28px); font-weight: 900; color: #5a2fc0; line-height: 1.1; overflow-wrap: anywhere; }
+.bubblepop .bp-prompt.has-task .bp-ring { position: relative; top: auto; right: auto; flex: none; width: 52px; height: 52px; }
+.bubblepop .bp-prompt.has-task .bp-ring svg { width: 52px; height: 52px; }
+.bubblepop .bp-prompt.has-task .bp-ring .v b { font-size: 17px; }
+.bubblepop .bp-prompt.has-task .bp-ring .v s { font-size: 8.5px; }
+.bubblepop .bp-stage:has(.bp-prompt.has-task) .bp-field { top: calc(268px + var(--safe-top, 0px)); }

@@ -382,6 +382,17 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
 
   const ringOffset = RC * (1 - timeLeft / ROUND_SECONDS)
 
+  const ring = (
+    <div className="bp-ring">
+      <svg width="66" height="66">
+        <circle cx="33" cy="33" r="28" fill="#fff" stroke="#E3E9F5" strokeWidth="6" />
+        <circle className="arc" cx="33" cy="33" r="28" fill="none" stroke="#3FA9E6" strokeWidth="6"
+          strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={ringOffset} transform="rotate(-90 33 33)" />
+      </svg>
+      <div className="v"><b>{timeLeft}</b><s>SEC</s></div>
+    </div>
+  )
+
   return (
     <div className="bubblepop">
       <div className="bp-stage">
@@ -392,19 +403,20 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
 
         {/* admin 3697: same crest + cream prompt panel as every other mini-game */}
         <div className="bp-crest"><GameTitle title="Bubble Pop" count={`Bubble ${idx + 1} / ${items.length}`} /></div>
-        <div className="bp-prompt gs-panel">
-          {ASK ? <Task icon="tap" text="Pop the bubble that means" sub="Tap it before the time runs out" first={idx === 0} /> : <span className="bp-pq">Pop the bubble for</span>}
-          <b lang="en">{item.front}</b>
-        </div>
-
-        <div className="bp-ring">
-          <svg width="66" height="66">
-            <circle cx="33" cy="33" r="28" fill="#fff" stroke="#E3E9F5" strokeWidth="6" />
-            <circle className="arc" cx="33" cy="33" r="28" fill="none" stroke="#3FA9E6" strokeWidth="6"
-              strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={ringOffset} transform="rotate(-90 33 33)" />
-          </svg>
-          <div className="v"><b>{timeLeft}</b><s>SEC</s></div>
-        </div>
+        {ASK ? (
+          <div className="bp-prompt gs-panel has-task">
+            <Task icon="tap" text="Pop the meaning of:" sub="Tap it before time runs out" first={idx === 0} />
+            <div className="bp-trow"><b lang="en">{item.front}</b>{ring}</div>
+          </div>
+        ) : (
+          <>
+            <div className="bp-prompt gs-panel">
+              <span className="bp-pq">Pop the bubble for</span>
+              <b lang="en">{item.front}</b>
+            </div>
+            {ring}
+          </>
+        )}
 
         <div className="bp-field" ref={fieldRef}>
           {ready && <canvas className="bp-canvas" ref={canvasRef} onPointerDown={onCanvasDown} />}
