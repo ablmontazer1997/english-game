@@ -13,8 +13,8 @@
 .hud-avatar {
   position: relative; flex: 0 0 auto; width: 40px; height: 40px;
   border-radius: 50%; padding: 0;
-  /* admin msg 4299: a coloured backdrop that stands apart from the purple robe, the skin and the red/pink hat (teal; amber + sky were the other options) */
-  background: radial-gradient(circle at 50% 38%, #d4fff0 0%, #62d8c3 52%, #13968f 100%);
+  /* admin msgs 4299/4304: a warm amber backdrop that stands apart from the purple robe (teal and sky were the other options) */
+  background: radial-gradient(circle at 50% 38%, #fff0b8 0%, #ffc955 52%, #f0951c 100%);
   box-shadow: 0 3px 10px rgba(20, 60, 110, .28), inset 0 0 0 3px #fff;
   overflow: visible;
 }
