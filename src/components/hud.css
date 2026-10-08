@@ -22,12 +22,13 @@
   object-fit: cover; object-position: 50% 50%;
 }
 .hud-avatar-lvl {
-  position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
-  min-width: 22px; height: 19px; padding: 0 5px;
+  /* admin msg 4294: the badge sits on the ring at the lower right, off the face (it used to cover the mouth and chin) */
+  position: absolute; right: -7px; bottom: -5px;
+  min-width: 19px; height: 17px; padding: 0 4px;
   display: grid; place-items: center;
   border-radius: 99px; border: 2px solid #fff;
   background: linear-gradient(180deg, #ffb443, #f6903c);
-  color: #fff; font-size: 11px; font-weight: 800; line-height: 1;
+  color: #fff; font-size: 10px; font-weight: 800; line-height: 1;
   box-shadow: 0 2px 5px rgba(120, 60, 0, .3);
 }
 

@@ -12,9 +12,10 @@ const KEY = 'rc.portrait'
 // test builds shoot from the test wardrobe (the integrated page that goes live next)
 const WARDROBE_BASE = import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-wardrobe-ui/' : '/runecast-wardrobe/'
 // bump when the wardrobe's look changes, so saved portraits are retaken once in the new lighting
-export const LOOK_VER = 'look3p' // 10-08 admin msg 4269: frontal eye-level head-and-shoulders portrait
+export const LOOK_VER = 'look3f' // 10-08 admin msg 4294: framed on the face (eye level, eyes at 46%, face ~2/3 of the circle)
 export const portraitStale = () => { try { return !localStorage.getItem(KEY) || localStorage.getItem(KEY + '.look') !== LOOK_VER } catch { return true } }
-const read = () => { try { return localStorage.getItem(KEY) } catch { return null } }
+// a picture taken under an older look (other camera / light) is not shown: the new default stands in until the retake lands
+const read = () => { try { return localStorage.getItem(KEY + '.look') === LOOK_VER ? localStorage.getItem(KEY) : null } catch { return null } }
 // the wardrobe stores the body type as localStorage girl=1
 const fallback = () => { try { return localStorage.getItem('girl') === '1' ? defGirl : defBoy } catch { return defBoy } }
 
@@ -45,7 +46,7 @@ export function PortraitCapture({ version }: { version: number }) {
       if (e.data.final) setOn(false)
     }
     addEventListener('message', onMsg)
-    const t = setTimeout(() => setOn(false), 45000)                // never keep the 3D view alive for long
+    const t = setTimeout(() => setOn(false), 90000)                // never keep the 3D view alive for long (slow phones need > 45 s for the first load)
     return () => { removeEventListener('message', onMsg); clearTimeout(t) }
   }, [version])
   if (!on) return null
