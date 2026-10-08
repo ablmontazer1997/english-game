@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { use3dFallback } from '../components/use3dFallback'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
@@ -121,6 +122,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
   const heroFrame = useRef<HTMLIFrameElement>(null)
   const [hero3d, setHero3d] = useState(false)
   const use3d = useMemo(() => !/[?&]bbsprite=1/.test(location.search), [])
+  const heroFallback = use3dFallback(hero3d, !use3d)
   const onMark = useRef<((d: any) => void) | null>(null)
   useEffect(() => {
     const on = (e: MessageEvent) => {
@@ -318,7 +320,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
           </div>
           <i className="bb2-core" style={{ left: `${BOSS_IMG.chest[0] * 100}%`, top: `${BOSS_IMG.chest[1] * 100}%` }} />
         </div>
-        <div className={`bb2-sprite bb2-hero${hero3d ? ' bb2-3d' : ''}`} ref={heroEl} style={pct(HERO_BOX)}>
+        <div className={`bb2-sprite bb2-hero${hero3d ? ' bb2-3d' : ''}${!hero3d && !heroFallback ? ' bb2-wait3d' : ''}`} ref={heroEl} style={pct(HERO_BOX)}>
           {use3d && <iframe ref={heroFrame} className="bb2-hero3d" src={HERO_SRC} title="hero" scrolling="no" aria-hidden tabIndex={-1}
             style={inBox(HERO_BOX, H3D_BOX)} />}
           <div className="bb2-bob">

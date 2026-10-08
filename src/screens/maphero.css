@@ -155,3 +155,6 @@
 .is-reduced .pbreak-shard, .is-reduced .pbreak-dust, .is-reduced .mw-clouds.is-stirred::after { display: none; }
 .is-reduced .rtoken.is-crack .rtoken-btn, .is-reduced .rtoken.is-burst .rtoken-pad { animation: none; }
 .is-reduced .pbreak.is-crack .pbreak-crack { animation: none; }
+/* admin 4371: nothing in the hero spot while the 3D loads, then a quick fade in */
+.mhero.wait3d .mhero-sprites, .mhero.wait3d .mhero-shadow { opacity: 0; transition: none; }
+.mhero-3d { transition: opacity 250ms ease; }

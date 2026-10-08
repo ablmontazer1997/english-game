@@ -111,3 +111,6 @@
   .bb2-bob { animation: none !important; }
   .bb2-charge, .bb2-boom, .bb2-dmg { animation-duration: .01s; }
 }
+/* admin 4371: no painted hero while the 3D one loads */
+.bb2-wait3d .bb2-bob { visibility: hidden; }
+.bb2-hero3d { transition: opacity .25s ease; }

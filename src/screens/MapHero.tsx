@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
+import { use3dFallback } from '../components/use3dFallback'
 import heroFront from '../assets/games/boss2/hero.webp'
 import heroCheer from '../assets/games/boss2/hero_cheer.webp'
 import heroBack from '../assets/mapv2/hero_back.webp'
@@ -500,11 +501,12 @@ export function MapHero({ heroRef, hero3d, ready, hidden }: {
   ready: boolean
   hidden?: boolean
 }) {
+  const fallback = use3dFallback(ready, NO3D)
   return (
-    <div className={`mhero${ready ? ' is-3d' : ''}`} ref={heroRef} aria-hidden data-view="front" style={hidden ? { visibility: 'hidden' } : undefined}>
+    <div className={`mhero${ready ? ' is-3d' : ''}${!ready && !fallback ? ' wait3d' : ''}`} ref={heroRef} aria-hidden data-view="front" style={hidden ? { visibility: 'hidden' } : undefined}>
       <span className="mhero-shadow" />
       <span className="mhero-body">
-        {/* the painted stand-in while the 3D loads */}
+        {/* the painted hero only if the 3D never comes (admin 4371: nothing while it loads) */}
         <span className="mhero-sprites">
           <img className="mhero-img mhero-front" src={heroFront} alt="" draggable={false} />
           <img className="mhero-img mhero-cheer" src={heroCheer} alt="" draggable={false} />

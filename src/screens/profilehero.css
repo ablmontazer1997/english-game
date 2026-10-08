@@ -104,3 +104,5 @@
   0% { transform: rotate(var(--a)) translateX(6px) scale(.4); opacity: 1; }
   100% { transform: rotate(var(--a)) translateX(64px) scale(1.1); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ph-frame, .ph-frame.is-loading .ph-2d, .ph-burst i { animation: none; } .ph-burst { display: none; } }
+.ph-3d { transition: opacity 250ms ease; }
+.ph-frame.is-loading .ph-2d.off { animation: none; }

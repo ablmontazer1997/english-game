@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { use3dFallback } from '../components/use3dFallback'
 import hero2d from '../assets/games/boss2/hero.webp'
 import { art } from '../components/PageArt'
 import { hero3dPage } from './MapHero'
@@ -63,6 +64,7 @@ function useShowcase3d() {
 /** heroH: the model's height (feet to hat tip) in px; podiumW: the podium's width in px */
 function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: ReturnType<typeof useShowcase3d> }) {
   const { frame } = h3
+  const fb = use3dFallback(h3.ready)
   const fh = Math.round(heroH / Math.max(0.2, frame.gnd - frame.top))
   const fw = Math.round(fh * 0.8)
   const podiumH = podiumW / 1.315
@@ -70,7 +72,7 @@ function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: Re
   return (
     <>
       <img className="ph-podium" src={art('podium')} alt="" draggable={false} style={{ width: podiumW }} />
-      <img className={`ph-2d${h3.ready ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
+      <img className={`ph-2d${h3.ready || !fb ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
         style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
       <iframe ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
         style={{ width: fw, height: fh, bottom: feetY - fh * (1 - frame.gnd) }} />

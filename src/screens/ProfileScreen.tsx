@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { use3dFallback } from '../components/use3dFallback'
 import { ItemsSheet } from './ItemsSheet'
 import { useGame } from '../services/ServiceProvider'
 import { Card, Btn, Slot, Art, art, PAGE_BG } from '../components/PageArt'
@@ -18,6 +19,7 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
   const [items, setItems] = useState(false)
   const portrait = usePortrait()
   const hero = useHero3d()
+  const heroFb = use3dFallback(hero.ready)
   if (!profile) return <div className="screen pg" />
   const stars = worlds.reduce((a, w) => a + w.stages.reduce((b, s) => b + s.stars, 0), 0)
   const claimed = achievements.filter((a) => a.claimed)
@@ -60,7 +62,7 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
         {/* the hero on the podium: live 3D when the wardrobe page loads, the painted hero until then (or if it can't) */}
         <div className="pf-stage reveal">
           <Art name="podium" className="pf-podium" />
-          <img className={`pf-char${hero.ready ? ' off' : ''}`} src={hero2d} alt="" draggable={false} />
+          <img className={`pf-char${hero.ready || !heroFb ? ' off' : ''}`} src={hero2d} alt="" draggable={false} />
           <iframe ref={hero.ref} className={`pf-char3d${hero.ready ? ' on' : ''}`} src="/runecast-wardrobe/?embed=1" title="character" scrolling="no" />
         </div>
 

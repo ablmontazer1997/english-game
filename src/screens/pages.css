@@ -161,3 +161,4 @@ button.pnl:disabled { filter: grayscale(.5) opacity(.6); cursor: default; }
 .screen.pg .ui-h::after { background: rgba(90, 70, 160, .22); }
 .screen.pg .lg-name { color: #3d2f72; text-shadow: 0 1px 0 rgba(255, 255, 255, .9), 0 2px 10px rgba(255, 255, 255, .8); }
 .screen.pg .lg-step small { color: #4a3d80; text-shadow: 0 1px 0 rgba(255, 255, 255, .8); }
+.pf-char3d { transition: opacity 250ms ease; }
