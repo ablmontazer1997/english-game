@@ -224,7 +224,7 @@ const bossFor = (world?: number): Boss => {
 }
 // the world gate behind the fighters: on the back of the arena between them, slightly soft and dimmed so the fight reads
 let fireN = 0
-const GATE_AT = { x: 498, y: 930, h: 330 }
+const GATE_AT = { x: 498, y: 930, h: 455 }   // admin 4615: stairless gate (cut at the threshold), ~1.75x the old arch, standing on the platform back edge; covers the baked small gate + stairs
 // 3D hero (battle page built from the live wardrobe: live face warp; el=10 camera, yaw 0 = the 2D hero's 3/4 view; 5:7 frame):
 // measured figure 0.231..0.781, foot x 0.486, right hand at the cast release 0.529,0.629
 const H3D = { top: 0.231, bot: 0.781, foot: 0.486, hand: [0.529, 0.629] }
