@@ -42,6 +42,13 @@ import w4Angry from '../assets/games/bosses/w4/angry.webp'
 import w4Defeated from '../assets/games/bosses/w4/defeated.webp'
 import w4Laugh from '../assets/games/bosses/w4/laugh.webp'
 import w4Gate from '../assets/games/bosses/w4/gate.webp'
+import w5Idle from '../assets/games/bosses/w5/idle.webp'
+import w5Attack from '../assets/games/bosses/w5/attack.webp'
+import w5Hurt from '../assets/games/bosses/w5/hurt.webp'
+import w5Angry from '../assets/games/bosses/w5/angry.webp'
+import w5Defeated from '../assets/games/bosses/w5/defeated.webp'
+import w5Laugh from '../assets/games/bosses/w5/laugh.webp'
+import w5Gate from '../assets/games/bosses/w5/gate.webp'
 import w6Idle from '../assets/games/bosses/w6/idle.webp'
 import w6Attack from '../assets/games/bosses/w6/attack.webp'
 import w6Hurt from '../assets/games/bosses/w6/hurt.webp'
@@ -56,6 +63,34 @@ import w7Angry from '../assets/games/bosses/w7/angry.webp'
 import w7Defeated from '../assets/games/bosses/w7/defeated.webp'
 import w7Laugh from '../assets/games/bosses/w7/laugh.webp'
 import w7Gate from '../assets/games/bosses/w7/gate.webp'
+import w8Idle from '../assets/games/bosses/w8/idle.webp'
+import w8Attack from '../assets/games/bosses/w8/attack.webp'
+import w8Hurt from '../assets/games/bosses/w8/hurt.webp'
+import w8Angry from '../assets/games/bosses/w8/angry.webp'
+import w8Defeated from '../assets/games/bosses/w8/defeated.webp'
+import w8Laugh from '../assets/games/bosses/w8/laugh.webp'
+import w8Gate from '../assets/games/bosses/w8/gate.webp'
+import w9Idle from '../assets/games/bosses/w9/idle.webp'
+import w9Attack from '../assets/games/bosses/w9/attack.webp'
+import w9Hurt from '../assets/games/bosses/w9/hurt.webp'
+import w9Angry from '../assets/games/bosses/w9/angry.webp'
+import w9Defeated from '../assets/games/bosses/w9/defeated.webp'
+import w9Laugh from '../assets/games/bosses/w9/laugh.webp'
+import w9Gate from '../assets/games/bosses/w9/gate.webp'
+import w10Idle from '../assets/games/bosses/w10/idle.webp'
+import w10Attack from '../assets/games/bosses/w10/attack.webp'
+import w10Hurt from '../assets/games/bosses/w10/hurt.webp'
+import w10Angry from '../assets/games/bosses/w10/angry.webp'
+import w10Defeated from '../assets/games/bosses/w10/defeated.webp'
+import w10Laugh from '../assets/games/bosses/w10/laugh.webp'
+import w10Gate from '../assets/games/bosses/w10/gate.webp'
+import w11Idle from '../assets/games/bosses/w11/idle.webp'
+import w11Attack from '../assets/games/bosses/w11/attack.webp'
+import w11Hurt from '../assets/games/bosses/w11/hurt.webp'
+import w11Angry from '../assets/games/bosses/w11/angry.webp'
+import w11Defeated from '../assets/games/bosses/w11/defeated.webp'
+import w11Laugh from '../assets/games/bosses/w11/laugh.webp'
+import w11Gate from '../assets/games/bosses/w11/gate.webp'
 import w1Plate from '../assets/games/bosses/w1/plate.webp'
 import w2Plate from '../assets/games/bosses/w2/plate.webp'
 import w3Plate from '../assets/games/bosses/w3/plate.webp'
@@ -120,10 +155,20 @@ const BOSSES: Record<number, Boss> = {
     frames: { normal: w3Idle, attack: w3Attack, hurt: w3Hurt, angry: w3Angry, beaten: w3Defeated, happy: w3Laugh }, gate: w3Gate },
   3: { name: 'Thornroot Brute', img: { w: 700, h: 560, top: 0.1357, bot: 0.982, foot: 0.557, fist: [0.37, 0.491], chest: [0.557, 0.601] },
     frames: { normal: w4Idle, attack: w4Attack, hurt: w4Hurt, angry: w4Angry, beaten: w4Defeated, happy: w4Laugh }, gate: w4Gate },
+  4: { name: 'Toadstool Troll', img: { w: 700, h: 560, top: 0.1696, bot: 0.982, foot: 0.557, fist: [0.37, 0.511], chest: [0.557, 0.616] },
+    frames: { normal: w5Idle, attack: w5Attack, hurt: w5Hurt, angry: w5Angry, beaten: w5Defeated, happy: w5Laugh }, gate: w5Gate },
   5: { name: 'Eclipse Sentinel', img: { w: 700, h: 560, top: 0.1143, bot: 0.982, foot: 0.557, fist: [0.37, 0.479], chest: [0.557, 0.592] },
     frames: { normal: w6Idle, attack: w6Attack, hurt: w6Hurt, angry: w6Angry, beaten: w6Defeated, happy: w6Laugh }, gate: w6Gate },
   6: { name: 'Frostfang Yeti', img: { w: 700, h: 560, top: 0.1732, bot: 0.982, foot: 0.557, fist: [0.37, 0.513], chest: [0.557, 0.618] },
     frames: { normal: w7Idle, attack: w7Attack, hurt: w7Hurt, angry: w7Angry, beaten: w7Defeated, happy: w7Laugh }, gate: w7Gate },
+  7: { name: 'Cinder Drake', img: { w: 700, h: 560, top: 0.1804, bot: 0.982, foot: 0.557, fist: [0.37, 0.517], chest: [0.557, 0.621] },
+    frames: { normal: w8Idle, attack: w8Attack, hurt: w8Hurt, angry: w8Angry, beaten: w8Defeated, happy: w8Laugh }, gate: w8Gate },
+  8: { name: 'Rune Colossus', img: { w: 700, h: 560, top: 0.2179, bot: 0.982, foot: 0.557, fist: [0.37, 0.539], chest: [0.557, 0.638] },
+    frames: { normal: w9Idle, attack: w9Attack, hurt: w9Hurt, angry: w9Angry, beaten: w9Defeated, happy: w9Laugh }, gate: w9Gate },
+  9: { name: 'Gargoyle Proctor', img: { w: 700, h: 560, top: 0.2018, bot: 0.982, foot: 0.557, fist: [0.37, 0.529], chest: [0.557, 0.631] },
+    frames: { normal: w10Idle, attack: w10Attack, hurt: w10Hurt, angry: w10Angry, beaten: w10Defeated, happy: w10Laugh }, gate: w10Gate },
+  10: { name: 'Nebula Titan', img: { w: 700, h: 560, top: 0.1911, bot: 0.982, foot: 0.557, fist: [0.37, 0.523], chest: [0.557, 0.626] },
+    frames: { normal: w11Idle, attack: w11Attack, hurt: w11Hurt, angry: w11Angry, beaten: w11Defeated, happy: w11Laugh }, gate: w11Gate },
 // </bosses-table>
 }
 const ARENAS: Record<number, { plate: string; feet: [number, number] }> = {
@@ -141,6 +186,9 @@ const ARENAS: Record<number, { plate: string; feet: [number, number] }> = {
   10: { plate: w11Plate, feet: [1043, 1028] },
 // </arenas-table>
 }
+// attack-frame offset (plate px, + = away from the hero) so the projectile drawn in each attack sprite stops short of the
+// hero's wand (admin 4585 attack QA); 0-based world. w2 throws its weapon separately, so its frame needs none
+const ATTACK_DX: Record<number, number> = {}   // tried 10-09, crowded the screen edges; the weapon pass (projectile flown in JS) fixes the overlap instead
 const DEFAULT_BOSS: Boss = { name: 'Grammar Boss', img: GOLEM_IMG, frames: GOLEM }
 const bossFor = (world?: number): Boss => {
   const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null   // ?bossw=2 (1-based) for previews
@@ -191,6 +239,11 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
     const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null
     const w = q ? +q - 1 : world
     return w != null ? WEAPONS[w] ?? null : null
+  }, [world])
+  const attackDx = useMemo(() => {
+    const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null
+    const w = q ? +q - 1 : world
+    return w != null ? ATTACK_DX[w] ?? 0 : 0
   }, [world])
   const weaponImg = useRef<HTMLImageElement | null>(null)
   useEffect(() => { if (!weapon) { weaponImg.current = null; return } const im = new Image(); im.src = weapon.src; weaponImg.current = im }, [weapon])
@@ -501,7 +554,8 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
         <div className="bb2-sprite bb2-golem" ref={golemEl} style={pct(BOSS_BOX)}>
           <div className="bb2-bob">
             {(Object.keys(boss.frames) as GolemState[]).filter((k, i, a) => a.findIndex((x) => boss.frames[x] === boss.frames[k]) === i || golem === k).map((k) => (
-              <img key={k} src={boss.frames[k]} alt="" draggable={false} className={boss.frames[golem] === boss.frames[k] ? 'on' : ''} />
+              <img key={k} src={boss.frames[k]} alt="" draggable={false} className={boss.frames[golem] === boss.frames[k] ? 'on' : ''}
+                style={k === 'attack' && attackDx ? { transform: `translateX(${(attackDx / BOSS_BOX.w) * 100}%)` } : undefined} />
             ))}
           </div>
           <i className="bb2-core" style={{ left: `${BOSS_IMG.chest[0] * 100}%`, top: `${BOSS_IMG.chest[1] * 100}%` }} />
