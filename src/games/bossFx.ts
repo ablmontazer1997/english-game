@@ -5,7 +5,9 @@ type V2 = [number, number]
 type Part = { on: boolean; x: number; y: number; vx: number; vy: number; t: number; life: number; size: number; spr: number; rot: number; vr: number; drag: number; grav: number; grow: number }
 type Ring = { x: number; y: number; t: number; life: number; r0: number; r1: number; col: string; w: number }
 type Txt = { x: number; y: number; t: number; life: number; text: string; fill: string; stroke: string; size: number }
-type Bolt = { a: V2; c: V2; b: V2; t: number; life: number; size: number; crit: boolean; trail: V2[]; done: () => void; rock: boolean }
+type Bolt = { a: V2; c: V2; b: V2; t: number; life: number; size: number; crit: boolean; trail: V2[]; done: () => void; rock: boolean; wpn?: Weapon }
+/** a boss's own thrown weapon (admin 4545): the sprite cut from its attack frame, its anchor (0..1 in the sprite), how it flies, its colour */
+export type Weapon = { img: HTMLImageElement; size: number; anchor: [number, number]; motion: 'straight' | 'spin' | 'tumble'; col: string }
 type Fx = { el: HTMLElement; t: number; life: number; kind: 'shake' | 'hit' | 'hurt' | 'knock'; amp: number }
 type Zoom = { el: HTMLElement; from: number; to: number; t: number; life: number; cur: number }
 
@@ -40,6 +42,13 @@ function stone(n = 64) {
   x.strokeStyle = '#ff6a6a'; x.shadowColor = '#ff3a3a'; x.shadowBlur = n * 0.15; x.lineWidth = n * 0.06; x.beginPath(); x.moveTo(n * 0.42, n * 0.3); x.lineTo(n * 0.42, n * 0.7); x.lineTo(n * 0.62, n * 0.55); x.stroke(); return c
 }
 
+function shard(col: string, n = 40) {
+  const c = document.createElement('canvas'); c.width = c.height = n
+  const x = c.getContext('2d')!; x.translate(n / 2, n / 2); x.shadowColor = col; x.shadowBlur = n * 0.2
+  x.beginPath(); x.moveTo(0, -n * 0.42); x.lineTo(n * 0.16, 0); x.lineTo(0, n * 0.42); x.lineTo(-n * 0.16, 0); x.closePath()
+  x.fillStyle = col; x.fill(); x.shadowBlur = 0; x.fillStyle = 'rgba(255,255,255,.7)'; x.beginPath(); x.moveTo(0, -n * 0.36); x.lineTo(n * 0.07, -n * 0.05); x.lineTo(-n * 0.05, 0); x.closePath(); x.fill(); return c
+}
+
 export class BossFx {
   private cv: HTMLCanvasElement
   private x: CanvasRenderingContext2D
@@ -56,6 +65,7 @@ export class BossFx {
   private last = 0
   private dpr = 1
   private scale: () => number
+  private tint = new Map<string, number>()   // colour -> index of its glow sprite (its shard sprite is the next one)
   constructor(host: HTMLElement, scale: () => number) {
     this.scale = scale
     this.cv = document.createElement('canvas'); this.cv.className = 'bb2-fxc'
@@ -94,6 +104,31 @@ export class BossFx {
       const s = this.scale()
       this.bolts.push({ a, b, c: [(a[0] + b[0]) / 2, Math.min(a[1], b[1]) - 90 * s], t: 0, life: 0.44, size: 70 * s, crit: false, trail: [], done, rock: true }); this.kick()
     })
+  }
+  private tints(col: string) {
+    let i = this.tint.get(col); if (i == null) { i = this.spr.length; this.spr.push(glow(col), shard(col)); this.tint.set(col, i) }
+    return i
+  }
+  /** the boss's own weapon from its hand to the target (admin 4545): straight = flat, aimed along the flight, with a trail;
+   *  spin = fast spin on a medium arc; tumble = high arc, slow tumble. Resolves on arrival. */
+  weapon(a: V2, b: V2, w: Weapon) {
+    return new Promise<void>((done) => {
+      const s = this.scale(), dx = b[0] - a[0], lift = w.motion === 'tumble' ? 150 : w.motion === 'spin' ? 80 : 18
+      const life = w.motion === 'tumble' ? 0.5 : w.motion === 'spin' ? 0.44 : 0.36
+      const k = this.tints(w.col)
+      this.bolts.push({ a, b, c: [(a[0] + b[0]) / 2, Math.min(a[1], b[1]) - lift * s - Math.abs(dx) * 0.02], t: 0, life, size: w.size, crit: false, trail: [], done, rock: true, wpn: w })
+      this.flashes.push({ x: a[0], y: a[1], t: 0, life: 0.16, r: w.size * 0.9, col: k })
+      this.kick()
+    })
+  }
+  /** the weapon breaks on the hero: a flash, a ring and shards in its own colour */
+  shatter(p: V2, col: string) {
+    const s = this.scale(), k = this.tints(col)
+    this.flashes.push({ x: p[0], y: p[1], t: 0, life: 0.22, r: 150 * s, col: k })
+    this.rings.push({ x: p[0], y: p[1], t: 0, life: 0.34, r0: 10 * s, r1: 150 * s, col, w: 9 * s })
+    for (let i = 0; i < 14; i++) { const an = (i / 14) * 6.28 + Math.random() * 0.3, v = (260 + Math.random() * 300) * s; this.emit(p[0], p[1], Math.cos(an) * v, Math.sin(an) * v - 140 * s, 0.55 + Math.random() * 0.25, (22 + Math.random() * 16) * s, k + 1, { vr: (Math.random() - 0.5) * 16, drag: 2.6, grav: 900 * s }) }
+    for (let i = 0; i < 12; i++) { const an = Math.random() * 6.28, v = (120 + Math.random() * 260) * s; this.emit(p[0], p[1], Math.cos(an) * v, Math.sin(an) * v, 0.35 + Math.random() * 0.2, (12 + Math.random() * 12) * s, k, { drag: 4 }) }
+    this.kick()
   }
   impact(p: V2, crit = false) {
     const s = this.scale(), k = crit ? 1.35 : 1
@@ -152,7 +187,19 @@ export class BossFx {
       const B = this.bolts[i]; B.t += dt; const u = Math.min(1, B.t / B.life), e = B.rock ? u : Math.pow(u, 1.35)
       const px = (1 - e) * (1 - e) * B.a[0] + 2 * e * (1 - e) * B.c[0] + e * e * B.b[0], py = (1 - e) * (1 - e) * B.a[1] + 2 * e * (1 - e) * B.c[1] + e * e * B.b[1]
       B.trail.unshift([px, py]); if (B.trail.length > 12) B.trail.pop()
-      if (B.rock) {
+      if (B.wpn) {
+        const w = B.wpn, k = this.tints(w.col), ih = (w.size * w.img.naturalHeight) / Math.max(1, w.img.naturalWidth)
+        const pv = B.trail[Math.min(2, B.trail.length - 1)], ang = B.trail.length > 2 ? Math.atan2(py - pv[1], px - pv[0]) : Math.atan2(B.c[1] - B.a[1], B.c[0] - B.a[0])
+        const rot = w.motion === 'straight' ? ang - Math.PI : w.motion === 'spin' ? -u * 14 : -u * 6.5   // the sprites face left (thrown toward the hero)
+        if (w.motion === 'straight') {   // glowing trail behind it
+          x.globalCompositeOperation = 'lighter'
+          for (let j = B.trail.length - 1; j > 0; j--) { const f = 1 - j / B.trail.length; x.globalAlpha = 0.5 * f; const r = w.size * 0.5 * f; x.drawImage(this.spr[k], B.trail[j][0] - r, B.trail[j][1] - r, r * 2, r * 2) }
+          x.globalAlpha = 1
+        }
+        x.globalCompositeOperation = 'source-over'; x.save(); x.translate(px, py); x.rotate(rot)
+        x.drawImage(w.img, -w.anchor[0] * w.size, -w.anchor[1] * ih, w.size, ih); x.restore()
+        if (Math.random() < 0.5) this.emit(px, py, (Math.random() - 0.5) * 60 * s, (Math.random() - 0.5) * 60 * s, 0.3, 14 * s, k, { drag: 3 })
+      } else if (B.rock) {
         x.globalCompositeOperation = 'source-over'; x.save(); x.translate(px, py); x.rotate(-u * 9); x.drawImage(this.spr[13], -B.size / 2, -B.size / 2, B.size, B.size); x.restore()
         if (Math.random() < 0.6) this.emit(px, py, (Math.random() - 0.5) * 40 * s, (Math.random() - 0.5) * 40 * s, 0.35, 12 * s, 5)
       } else {
@@ -191,7 +238,7 @@ export class BossFx {
       p.t += dt; const u = p.t / p.life; if (u >= 1) { p.on = false; continue }
       alive = true; const dr = Math.exp(-p.drag * dt); p.vx *= dr; p.vy = p.vy * dr + p.grav * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt
       const sz = p.size * (u < 0.15 ? 0.4 + 4 * u : 1 - 0.6 * (u - 0.15)) * (1 + p.grow * u)
-      x.globalCompositeOperation = p.spr === 5 || p.spr === 13 ? 'source-over' : 'lighter'
+      x.globalCompositeOperation = p.spr === 5 || p.spr === 13 || (p.spr > 13 && (p.spr - 14) % 2 === 1) ? 'source-over' : 'lighter'   // shards paint normally
       x.globalAlpha = u > 0.6 ? (1 - u) / 0.4 : 1
       if (p.spr >= 6) { x.save(); x.translate(p.x, p.y); x.rotate(p.rot); x.drawImage(this.spr[p.spr], -sz / 2, -sz / 2, sz, sz); x.restore() } else x.drawImage(this.spr[p.spr], p.x - sz / 2, p.y - sz / 2, sz, sz)
       x.globalAlpha = 1

@@ -3,7 +3,8 @@ import { use3dFallback } from '../components/use3dFallback'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
-import { BossFx } from './bossFx'
+import w2Weapon from '../assets/games/bosses/w2/weapon.webp'
+import { BossFx, type Weapon } from './bossFx'
 import { sfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
@@ -12,6 +13,14 @@ import golemNormal from '../assets/games/boss2/golem.webp'
 import golemHurt from '../assets/games/boss2/golem_hurt.webp'
 import golemHappy from '../assets/games/boss2/golem_happy.webp'
 import golemBeaten from '../assets/games/boss2/golem_beaten.webp'
+// <bosses-imports>
+import w1Idle from '../assets/games/bosses/w1/idle.webp'
+import w1Attack from '../assets/games/bosses/w1/attack.webp'
+import w1Hurt from '../assets/games/bosses/w1/hurt.webp'
+import w1Angry from '../assets/games/bosses/w1/angry.webp'
+import w1Defeated from '../assets/games/bosses/w1/defeated.webp'
+import w1Laugh from '../assets/games/bosses/w1/laugh.webp'
+import w1Gate from '../assets/games/bosses/w1/gate.webp'
 import w2Idle from '../assets/games/bosses/w2/idle.webp'
 import w2Attack from '../assets/games/bosses/w2/attack.webp'
 import w2Hurt from '../assets/games/bosses/w2/hurt.webp'
@@ -19,6 +28,35 @@ import w2Angry from '../assets/games/bosses/w2/angry.webp'
 import w2Defeated from '../assets/games/bosses/w2/defeated.webp'
 import w2Laugh from '../assets/games/bosses/w2/laugh.webp'
 import w2Gate from '../assets/games/bosses/w2/gate.webp'
+import w3Idle from '../assets/games/bosses/w3/idle.webp'
+import w3Attack from '../assets/games/bosses/w3/attack.webp'
+import w3Hurt from '../assets/games/bosses/w3/hurt.webp'
+import w3Angry from '../assets/games/bosses/w3/angry.webp'
+import w3Defeated from '../assets/games/bosses/w3/defeated.webp'
+import w3Laugh from '../assets/games/bosses/w3/laugh.webp'
+import w3Gate from '../assets/games/bosses/w3/gate.webp'
+import w4Idle from '../assets/games/bosses/w4/idle.webp'
+import w4Attack from '../assets/games/bosses/w4/attack.webp'
+import w4Hurt from '../assets/games/bosses/w4/hurt.webp'
+import w4Angry from '../assets/games/bosses/w4/angry.webp'
+import w4Defeated from '../assets/games/bosses/w4/defeated.webp'
+import w4Laugh from '../assets/games/bosses/w4/laugh.webp'
+import w4Gate from '../assets/games/bosses/w4/gate.webp'
+import w6Idle from '../assets/games/bosses/w6/idle.webp'
+import w6Attack from '../assets/games/bosses/w6/attack.webp'
+import w6Hurt from '../assets/games/bosses/w6/hurt.webp'
+import w6Angry from '../assets/games/bosses/w6/angry.webp'
+import w6Defeated from '../assets/games/bosses/w6/defeated.webp'
+import w6Laugh from '../assets/games/bosses/w6/laugh.webp'
+import w6Gate from '../assets/games/bosses/w6/gate.webp'
+import w7Idle from '../assets/games/bosses/w7/idle.webp'
+import w7Attack from '../assets/games/bosses/w7/attack.webp'
+import w7Hurt from '../assets/games/bosses/w7/hurt.webp'
+import w7Angry from '../assets/games/bosses/w7/angry.webp'
+import w7Defeated from '../assets/games/bosses/w7/defeated.webp'
+import w7Laugh from '../assets/games/bosses/w7/laugh.webp'
+import w7Gate from '../assets/games/bosses/w7/gate.webp'
+// </bosses-imports>
 import heroNormal from '../assets/games/boss2/hero.webp'
 import heroHurt from '../assets/games/boss2/hero_hurt.webp'
 import heroCheer from '../assets/games/boss2/hero_cheer.webp'
@@ -53,10 +91,29 @@ type BossImg = { w: number; h: number; top: number; bot: number; foot: number; f
 const GOLEM_IMG: BossImg = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, fist: [0.08, 0.45], chest: [0.5, 0.52] }
 // per-world bosses (admin 4477): one GPT sprite sheet per boss (idle, attack, hurt, angry, defeated, laugh) cut into aligned
 // 700x560 frames (fix/bosses/<w>/cut.py: body centre x .557, lowest pixel y .982); the world's gate stands behind the fight
+// the boss's own weapon (admin 4545), cut from its attack frame (fix/bosses/<w>/wpn/split.py): at = its centre in the attack frame
+// (0..1), w = sprite width / frame width, anchor = that centre inside the sprite, motion + colour for the flight and the burst
+type BossWeapon = { src: string; at: [number, number]; w: number; anchor: [number, number]; motion: Weapon['motion']; col: string }
+const WEAPONS: Record<number, BossWeapon> = {
+  // 1: { src: w2Weapon, at: [0.1626, 0.4956], w: 0.2457, anchor: [0.4989, 0.5158], motion: 'straight', col: '#b07cff' },   // w2 amethyst shard (in review)
+}
+void w2Weapon
 type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }
 const BOSSES: Record<number, Boss> = {
+// <bosses-table>
+  0: { name: 'Bramblehorn Beast', img: { w: 700, h: 560, top: 0.0911, bot: 0.982, foot: 0.557, fist: [0.37, 0.465], chest: [0.557, 0.581] },
+    frames: { normal: w1Idle, attack: w1Attack, hurt: w1Hurt, angry: w1Angry, beaten: w1Defeated, happy: w1Laugh }, gate: w1Gate },
   1: { name: 'Geode Guardian', img: { w: 700, h: 560, top: 0.1107, bot: 0.982, foot: 0.557, fist: [0.37, 0.48], chest: [0.557, 0.70] },
     frames: { normal: w2Idle, attack: w2Attack, hurt: w2Hurt, angry: w2Angry, beaten: w2Defeated, happy: w2Laugh }, gate: w2Gate },
+  2: { name: 'Tome Tyrant', img: { w: 700, h: 560, top: 0.1786, bot: 0.982, foot: 0.557, fist: [0.37, 0.516], chest: [0.557, 0.62] },
+    frames: { normal: w3Idle, attack: w3Attack, hurt: w3Hurt, angry: w3Angry, beaten: w3Defeated, happy: w3Laugh }, gate: w3Gate },
+  3: { name: 'Thornroot Brute', img: { w: 700, h: 560, top: 0.1357, bot: 0.982, foot: 0.557, fist: [0.37, 0.491], chest: [0.557, 0.601] },
+    frames: { normal: w4Idle, attack: w4Attack, hurt: w4Hurt, angry: w4Angry, beaten: w4Defeated, happy: w4Laugh }, gate: w4Gate },
+  5: { name: 'Eclipse Sentinel', img: { w: 700, h: 560, top: 0.1143, bot: 0.982, foot: 0.557, fist: [0.37, 0.479], chest: [0.557, 0.592] },
+    frames: { normal: w6Idle, attack: w6Attack, hurt: w6Hurt, angry: w6Angry, beaten: w6Defeated, happy: w6Laugh }, gate: w6Gate },
+  6: { name: 'Frostfang Yeti', img: { w: 700, h: 560, top: 0.1732, bot: 0.982, foot: 0.557, fist: [0.37, 0.513], chest: [0.557, 0.618] },
+    frames: { normal: w7Idle, attack: w7Attack, hurt: w7Hurt, angry: w7Angry, beaten: w7Defeated, happy: w7Laugh }, gate: w7Gate },
+// </bosses-table>
 }
 const DEFAULT_BOSS: Boss = { name: 'Grammar Boss', img: GOLEM_IMG, frames: GOLEM }
 const bossFor = (world?: number): Boss => {
@@ -65,6 +122,7 @@ const bossFor = (world?: number): Boss => {
   return (w != null && BOSSES[w]) || DEFAULT_BOSS
 }
 // the world gate behind the fighters: on the back of the arena between them, slightly soft and dimmed so the fight reads
+let fireN = 0
 const GATE_AT = { x: 498, y: 930, h: 330 }
 // 3D hero (battle page built from the live wardrobe: live face warp; el=10 camera, yaw 0 = the 2D hero's 3/4 view; 5:7 frame):
 // measured figure 0.231..0.781, foot x 0.486, right hand at the cast release 0.529,0.629
@@ -94,6 +152,13 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
   const boss = useMemo(() => bossFor(world), [world])
   const BOSS_IMG = boss.img
   const BOSS_BOX = useMemo(() => boxOf(BOSS_AT, boss.img), [boss])
+  const weapon = useMemo(() => {
+    const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null
+    const w = q ? +q - 1 : world
+    return w != null ? WEAPONS[w] ?? null : null
+  }, [world])
+  const weaponImg = useRef<HTMLImageElement | null>(null)
+  useEffect(() => { if (!weapon) { weaponImg.current = null; return } const im = new Image(); im.src = weapon.src; weaponImg.current = im }, [weapon])
   const total = items.length
   const [idx, setIdx] = useState(0)
   const [picked, setPicked] = useState<{ i: number; ok: boolean } | null>(null)
@@ -268,7 +333,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
 
   // right answer: cast -> bolt -> impact on the boss
   const cast = () => {
-    sfx('spell')
+    sfx(fireN++ % 2 ? 'spellFire4' : 'spellFire2')   // admin 4530: alternate fire magic 2 / 4 per cast
     const crit = r.current.combo >= 3
     let launched = false
     const launch = (d?: any) => {
@@ -329,9 +394,14 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
       { transform: 'translateX(-7%) rotate(-3deg)', offset: 0.7 }, { transform: 'translateX(0)' }], { duration: 620, easing: 'ease-in-out' })
     later(() => {
       const F = bfx.current
-      ;(F ? F.rock(PP(bossFist), PP(heroChest)) : fly('bb2-rock', bossFist, heroChest, 62, 440, 90, -300)).then(() => {
+      const wp = weapon && F && weaponImg.current?.complete && weaponImg.current.naturalWidth ? weapon : null
+      // the weapon leaves from where it was drawn in the attack frame (+ the 3% wind-up shift of the lunge at this moment)
+      const wFrom = wp ? [BOSS_BOX.x + (wp.at[0] + 0.03) * BOSS_BOX.w, BOSS_BOX.y + wp.at[1] * BOSS_BOX.h] : bossFist
+      ;(F && wp ? F.weapon(PP(wFrom), PP(heroChest), { img: weaponImg.current!, size: wp.w * BOSS_BOX.w * scale.current, anchor: wp.anchor, motion: wp.motion, col: wp.col })
+        : new Promise<void>((res) => later(res, 440))).then(() => {   // admin 4555: no generic rock; the attack sprite shows the boss's own weapon, the hit lands when the rock used to
+        if (F && wp) F.shatter(PP(heroChest), wp.col)
         r.current.lives -= 1
-        setGolem('happy')
+        setGolem('happy'); sfx('bossLaugh')   // admin 4539: the boss mocks the player with the laugh sprite
         setLives(r.current.lives)
         setHero('hurt')
         if (hero3d) heroFrame.current?.contentWindow?.postMessage({ type: 'rc-hurt' }, '*')
@@ -390,7 +460,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
       <div className="bb2-scene" ref={sceneEl}>
         <img className="gs-plate" src={plate} alt="" draggable={false} />
         {boss.gate && <img className="bb2-gate" src={boss.gate} alt="" draggable={false}
-          style={{ left: `${((GATE_AT.x - GATE_AT.h * 0.38) / PW) * 100}%`, top: `${((GATE_AT.y - GATE_AT.h) / PH) * 100}%`, height: `${(GATE_AT.h / PH) * 100}%` }} />}
+          style={{ left: `${(GATE_AT.x / PW) * 100}%`, transform: 'translateX(-50%)', top: `${((GATE_AT.y - GATE_AT.h) / PH) * 100}%`, height: `${(GATE_AT.h / PH) * 100}%` }} />}
         <i className="bb2-shadow" style={shadowStyle(BOSS_AT, BOSS_BOX.w * 0.78)} />
         <i className="bb2-shadow" style={shadowStyle(HERO_AT, HERO_BOX.w * 0.9)} />
         <div className="bb2-sprite bb2-golem" ref={golemEl} style={pct(BOSS_BOX)}>

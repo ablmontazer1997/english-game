@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { sfx } from '../services/audio'
 import { useGame } from '../services/ServiceProvider'
 import { art, Card, Btn } from './PageArt'
 import { skySrc } from './SkyIcon'
@@ -23,6 +24,7 @@ export function RewardChips({ reward, size = 18 }: { reward: Reward; size?: numb
 /** the app-wide "you got…" card (quests, achievements, chests, league) */
 export function RewardPopup() {
   const { toast, clearToast } = useGame()
+  useEffect(() => { if (toast) sfx('reveal') }, [toast])   // admin 4530: every reward / chest / purchase card
   if (!toast) return null
   const r = toast.reward
   return (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { sfx } from '../services/audio'
 import { ItemThumb } from '../components/ItemThumb'
 import './serverstage.css'
 import type { ShopOut, ChestInfo, ShopItem } from '../services/api'
@@ -193,7 +194,7 @@ function ItemCard({ it, onBuy }: { it: ShopItem; onBuy: (id: string) => Promise<
   const go = async () => {
     const r = await onBuy(it.id)
     if (!r.ok) { setMsg(r.reason ?? 'Not possible'); setTimeout(() => setMsg(null), 2200); return }
-    setOwned(true); if (r.currencies) setCurrencies(r.currencies)
+    setOwned(true); sfx('reveal'); if (r.currencies) setCurrencies(r.currencies)
   }
   return (
     <Card name="card_square" className="reveal sh-card">

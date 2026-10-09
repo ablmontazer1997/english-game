@@ -20,8 +20,13 @@ import star from '../assets/audio/star.mp3'
 import pour from '../assets/audio/pour.mp3'
 import bubble from '../assets/audio/bubble.mp3'
 import confirm from '../assets/audio/confirm.mp3'
+// admin 4530: item reveal (shop purchase, chest open, new item / reward) + the Boss Battle spell (Pixabay fire magic, trimmed 2.3 s)
+import reveal from '../assets/audio/reveal.mp3'
+import spellFire2 from '../assets/audio/spell_fire2.mp3'
+import spellFire4 from '../assets/audio/spell_fire4.mp3'
+import bossLaugh from '../assets/audio/boss_laugh.mp3'   // admin 4539, used as is (1.7 s)
 
-const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble, confirm }
+const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble, confirm, reveal, spellFire2, spellFire4, bossLaugh }
 export type Sfx = keyof typeof SFX
 
 const MUSIC_VOL = 0.35

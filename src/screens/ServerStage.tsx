@@ -305,7 +305,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
 
 /** the boss drop, the level up and the level completed cards (rw-card style, like the app's reward popup) */
 function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | 'done'; out: CompleteOut; stage: Stage; onClose: () => void }) {
-  useEffect(() => { sfx('win') }, [kind])
+  useEffect(() => { sfx(kind === 'drop' ? 'reveal' : 'win') }, [kind])   // admin 4530: a new wardrobe item = reveal
   return (
     <div className="rw-scrim" onClick={onClose}>
       <div className="rw-card ss-modal" onClick={(e) => e.stopPropagation()}>
