@@ -283,7 +283,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
       <div className={`game-host${FULL_BLEED.has(round.game) ? ' bleed' : ''}`}>
         <HintCtx.Provider value={registerHint}>
           <Suspense fallback={<div className="game-wait">…</div>}>
-            <Game key={`${attempt}:${ri}`} items={round.items} srv={round.qs as ServerQuestion[]} onAnswer={onAnswer} onFinish={roundDone} level={level} />
+            <Game key={`${attempt}:${ri}`} items={round.items} world={stage.paint} srv={round.qs as ServerQuestion[]} onAnswer={onAnswer} onFinish={roundDone} level={level} />
           </Suspense>
         </HintCtx.Provider>
       </div>

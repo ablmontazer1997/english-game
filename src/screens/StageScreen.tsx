@@ -172,7 +172,7 @@ export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { sta
       </div>
       <div className={`game-host${FULL_BLEED.has(stage.miniGame) ? ' bleed' : ''}`}>
         {items.length
-          ? <HintCtx.Provider value={registerHint}><Suspense fallback={<div className="game-wait">…</div>}><Game key={run} items={items} onFinish={handleFinish} level={Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf(stage.cefr ?? 'A1'))} /></Suspense></HintCtx.Provider>
+          ? <HintCtx.Provider value={registerHint}><Suspense fallback={<div className="game-wait">…</div>}><Game key={run} items={items} world={stage.paint} onFinish={handleFinish} level={Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf(stage.cefr ?? 'A1'))} /></Suspense></HintCtx.Provider>
           : <div className="game-wait">…</div>}
       </div>
       {!NO_BOOSTERS.has(stage.miniGame) && (

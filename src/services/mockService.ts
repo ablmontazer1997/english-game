@@ -94,7 +94,7 @@ const KIND_FOR = (i: number, last: boolean): StageKind =>
 let _idx = 0
 function buildWorlds(s: SaveState): World[] {
   _idx = 0
-  return WORLD_DEFS.map((w) => {
+  return WORLD_DEFS.map((w, wi) => {
     const stages: Stage[] = Array.from({ length: w.count }, (_, k) => {
       const globalIdx = _idx++
       const last = k === w.count - 1
@@ -106,6 +106,7 @@ function buildWorlds(s: SaveState): World[] {
         status,
         stars: s.stars[`${w.id}-s${k + 1}`] ?? 0,
         miniGame: last ? 'boss-battle' : w.games[k % w.games.length],
+        paint: wi,
         cefr: w.cefr,
         title: last ? 'Boss Fight' : `Stage ${k + 1}`,
       }

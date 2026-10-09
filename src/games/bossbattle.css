@@ -116,3 +116,6 @@
 /* admin 4371: no painted hero while the 3D one loads */
 .bb2-wait3d .bb2-bob { visibility: hidden; }
 .bb2-hero3d { transition: opacity .25s ease; }
+
+/* the world's gate behind the fight (admin 4477): on the back of the arena, soft and dimmed */
+.bb2-gate { position: absolute; z-index: 1; width: auto; pointer-events: none; filter: blur(1.2px) brightness(.88) saturate(.9); opacity: .92; }

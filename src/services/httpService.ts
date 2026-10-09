@@ -51,6 +51,7 @@ function toWorld(w: MapWorld, levelLocked: boolean): World {
     heartsApply: s.hearts_apply,
     topicId: s.topic_id,
     worldId: s.world_id,
+    paint,
     questionCount: s.question_count,
   }))
   return {

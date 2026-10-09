@@ -16,6 +16,8 @@ export interface MiniGameProps {
   onFinish: (o: MiniGameOutcome) => void
   /** the player's CEFR level for this stage: 0..4 = A1..C1 */
   level?: number
+  /** painting index 0..10 (w1..w11) of the world this stage belongs to (Boss Battle: the world's boss) */
+  world?: number
   /** server mode: the questions of this round (payload per game). When set, the game plays exactly
    *  these instead of its local bank and reports every answer through onAnswer. */
   srv?: ServerQuestion[]

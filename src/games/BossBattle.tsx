@@ -12,6 +12,13 @@ import golemNormal from '../assets/games/boss2/golem.webp'
 import golemHurt from '../assets/games/boss2/golem_hurt.webp'
 import golemHappy from '../assets/games/boss2/golem_happy.webp'
 import golemBeaten from '../assets/games/boss2/golem_beaten.webp'
+import w2Idle from '../assets/games/bosses/w2/idle.webp'
+import w2Attack from '../assets/games/bosses/w2/attack.webp'
+import w2Hurt from '../assets/games/bosses/w2/hurt.webp'
+import w2Angry from '../assets/games/bosses/w2/angry.webp'
+import w2Defeated from '../assets/games/bosses/w2/defeated.webp'
+import w2Laugh from '../assets/games/bosses/w2/laugh.webp'
+import w2Gate from '../assets/games/bosses/w2/gate.webp'
 import heroNormal from '../assets/games/boss2/hero.webp'
 import heroHurt from '../assets/games/boss2/hero_hurt.webp'
 import heroCheer from '../assets/games/boss2/hero_cheer.webp'
@@ -27,9 +34,9 @@ import './bossbattle.css'
 // and, when the question panel would hide the arena, lifted (or on very short screens shrunk) so the
 // fight band sits between the HUD and the panel. The rest of the screen shows a blurred copy of the plate.
 
-type GolemState = 'normal' | 'hurt' | 'happy' | 'beaten'
+type GolemState = 'normal' | 'hurt' | 'happy' | 'beaten' | 'attack' | 'angry'
 type HeroState = 'normal' | 'hurt' | 'cheer'
-const GOLEM: Record<GolemState, string> = { normal: golemNormal, hurt: golemHurt, happy: golemHappy, beaten: golemBeaten }
+const GOLEM: Record<GolemState, string> = { normal: golemNormal, hurt: golemHurt, happy: golemHappy, beaten: golemBeaten, attack: golemHappy, angry: golemNormal }
 const HERO: Record<HeroState, string> = { normal: heroNormal, hurt: heroHurt, cheer: heroCheer }
 const LIVES = 3
 
@@ -42,7 +49,23 @@ const FIGHT_CX = 490
 const HERO_AT = { x: 300, y: 1045, h: 365 }
 const BOSS_AT = { x: 695, y: 1025, h: 390 }   // admin 4477: boss feet on the hero ground line (was y 1005)
 const HERO_IMG = { w: 420, h: 640, top: 0.023, bot: 0.984, foot: 0.56, hand: [0.93, 0.52], cheerHand: [0.88, 0.43] }
-const BOSS_IMG = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, fist: [0.08, 0.45], chest: [0.5, 0.52] }
+type BossImg = { w: number; h: number; top: number; bot: number; foot: number; fist: number[]; chest: number[] }
+const GOLEM_IMG: BossImg = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, fist: [0.08, 0.45], chest: [0.5, 0.52] }
+// per-world bosses (admin 4477): one GPT sprite sheet per boss (idle, attack, hurt, angry, defeated, laugh) cut into aligned
+// 700x560 frames (fix/bosses/<w>/cut.py: body centre x .557, lowest pixel y .982); the world's gate stands behind the fight
+type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }
+const BOSSES: Record<number, Boss> = {
+  1: { name: 'Geode Guardian', img: { w: 700, h: 560, top: 0.1107, bot: 0.982, foot: 0.557, fist: [0.37, 0.48], chest: [0.557, 0.70] },
+    frames: { normal: w2Idle, attack: w2Attack, hurt: w2Hurt, angry: w2Angry, beaten: w2Defeated, happy: w2Laugh }, gate: w2Gate },
+}
+const DEFAULT_BOSS: Boss = { name: 'Grammar Boss', img: GOLEM_IMG, frames: GOLEM }
+const bossFor = (world?: number): Boss => {
+  const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null   // ?bossw=2 (1-based) for previews
+  const w = q ? +q - 1 : world
+  return (w != null && BOSSES[w]) || DEFAULT_BOSS
+}
+// the world gate behind the fighters: on the back of the arena between them, slightly soft and dimmed so the fight reads
+const GATE_AT = { x: 498, y: 930, h: 330 }
 // 3D hero (battle page built from the live wardrobe: live face warp; el=10 camera, yaw 0 = the 2D hero's 3/4 view; 5:7 frame):
 // measured figure 0.231..0.781, foot x 0.486, right hand at the cast release 0.529,0.629
 const H3D = { top: 0.231, bot: 0.781, foot: 0.486, hand: [0.529, 0.629] }
@@ -54,7 +77,6 @@ const boxOf = (at: { x: number; y: number; h: number }, im: { w: number; h: numb
   return { x: at.x - im.foot * w, y: at.y - im.bot * h, w, h }
 }
 const HERO_BOX = boxOf(HERO_AT, HERO_IMG)
-const BOSS_BOX = boxOf(BOSS_AT, BOSS_IMG)
 const H3D_BOX = (() => { const h = HERO_AT.h / (H3D.bot - H3D.top), w = (h * 5) / 7; return { x: HERO_AT.x - H3D.foot * w, y: HERO_AT.y - H3D.bot * h, w, h } })()
 const pct = (b: Box) => ({ left: `${(b.x / PW) * 100}%`, top: `${(b.y / PH) * 100}%`, width: `${(b.w / PW) * 100}%`, height: `${(b.h / PH) * 100}%` })
 const inBox = (b: Box, inner: Box) => ({ left: `${((inner.x - b.x) / b.w) * 100}%`, top: `${((inner.y - b.y) / b.h) * 100}%`,
@@ -68,7 +90,10 @@ function shuffle<T>(a: T[]): T[] {
   return b
 }
 
-export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
+export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) {
+  const boss = useMemo(() => bossFor(world), [world])
+  const BOSS_IMG = boss.img
+  const BOSS_BOX = useMemo(() => boxOf(BOSS_AT, boss.img), [boss])
   const total = items.length
   const [idx, setIdx] = useState(0)
   const [picked, setPicked] = useState<{ i: number; ok: boolean } | null>(null)
@@ -213,6 +238,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
     if (hero3d) return [H3D_BOX.x + H3D.hand[0] * H3D_BOX.w, H3D_BOX.y + H3D.hand[1] * H3D_BOX.h]
     return [HERO_BOX.x + HERO_IMG.cheerHand[0] * HERO_BOX.w, HERO_BOX.y + HERO_IMG.cheerHand[1] * HERO_BOX.h]
   }
+  const rest = (): GolemState => (total && r.current.correct * 2 >= total ? 'angry' : 'normal')
   const bossChest = [BOSS_BOX.x + BOSS_IMG.chest[0] * BOSS_BOX.w, BOSS_BOX.y + BOSS_IMG.chest[1] * BOSS_BOX.h]
   const bossFist = [BOSS_BOX.x + BOSS_IMG.fist[0] * BOSS_BOX.w, BOSS_BOX.y + BOSS_IMG.fist[1] * BOSS_BOX.h]
   const heroChest = [HERO_AT.x + 10, HERO_AT.y - HERO_AT.h * 0.45]
@@ -291,20 +317,21 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
       later(finish, 1900)
     } else {
       say(r.current.combo >= 3 ? `Combo ×${r.current.combo}!` : 'Nice!', 'ok')
-      later(() => { setGolem('normal'); setHero('normal') }, 900)
+      later(() => { setGolem(rest()); setHero('normal') }, 900)
       later(next, 1400)
     }
   }
 
   // wrong answer: the boss winds up, lunges and throws a rune stone at the mage
   const strike = () => {
-    sfx('wrong'); setGolem('happy')
+    sfx('wrong'); setGolem('attack')
     golemEl.current?.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(3%) rotate(2deg)', offset: 0.35 },
       { transform: 'translateX(-7%) rotate(-3deg)', offset: 0.7 }, { transform: 'translateX(0)' }], { duration: 620, easing: 'ease-in-out' })
     later(() => {
       const F = bfx.current
       ;(F ? F.rock(PP(bossFist), PP(heroChest)) : fly('bb2-rock', bossFist, heroChest, 62, 440, 90, -300)).then(() => {
         r.current.lives -= 1
+        setGolem('happy')
         setLives(r.current.lives)
         setHero('hurt')
         if (hero3d) heroFrame.current?.contentWindow?.postMessage({ type: 'rc-hurt' }, '*')
@@ -325,7 +352,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
           later(finish, 1900)
         } else {
           say('Ouch!', 'bad')
-          later(() => { setGolem('normal'); setHero('normal') }, 1000)
+          later(() => { setGolem(rest()); setHero('normal') }, 1000)
           later(next, 1700)
         }
       })
@@ -362,12 +389,14 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
       <div className="bb2-backdrop" style={{ backgroundImage: `url(${plate})` }} aria-hidden />
       <div className="bb2-scene" ref={sceneEl}>
         <img className="gs-plate" src={plate} alt="" draggable={false} />
+        {boss.gate && <img className="bb2-gate" src={boss.gate} alt="" draggable={false}
+          style={{ left: `${((GATE_AT.x - GATE_AT.h * 0.38) / PW) * 100}%`, top: `${((GATE_AT.y - GATE_AT.h) / PH) * 100}%`, height: `${(GATE_AT.h / PH) * 100}%` }} />}
         <i className="bb2-shadow" style={shadowStyle(BOSS_AT, BOSS_BOX.w * 0.78)} />
         <i className="bb2-shadow" style={shadowStyle(HERO_AT, HERO_BOX.w * 0.9)} />
         <div className="bb2-sprite bb2-golem" ref={golemEl} style={pct(BOSS_BOX)}>
           <div className="bb2-bob">
-            {(Object.keys(GOLEM) as GolemState[]).map((k) => (
-              <img key={k} src={GOLEM[k]} alt="" draggable={false} className={golem === k ? 'on' : ''} />
+            {(Object.keys(boss.frames) as GolemState[]).filter((k, i, a) => a.findIndex((x) => boss.frames[x] === boss.frames[k]) === i || golem === k).map((k) => (
+              <img key={k} src={boss.frames[k]} alt="" draggable={false} className={boss.frames[golem] === boss.frames[k] ? 'on' : ''} />
             ))}
           </div>
           <i className="bb2-core" style={{ left: `${BOSS_IMG.chest[0] * 100}%`, top: `${BOSS_IMG.chest[1] * 100}%` }} />
@@ -397,7 +426,7 @@ export function BossBattle({ items, onFinish, onAnswer }: MiniGameProps) {
           </div>
         </div>
         <div className="gs-panel bb2-hp">
-          <b>Grammar Boss</b>
+          <b>{boss.name}</b>
           <div className="bb2-row">
             <i className="bb2-heart" />
             <div className="bb2-track">

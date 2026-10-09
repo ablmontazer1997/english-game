@@ -51,6 +51,8 @@ export interface Stage {
   heartsApply?: boolean
   topicId?: string | null
   worldId?: string
+  /** painting index 0..10 (w1..w11) of the stage's world: picks the world's boss */
+  paint?: number
   questionCount?: number
 }
 
