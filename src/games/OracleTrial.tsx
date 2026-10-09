@@ -8,6 +8,7 @@ import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
 import oracleHappy from '../assets/games/oracle/oracle_happy.webp'
 import oracleSurprised from '../assets/games/oracle/oracle_surprised.webp'
 import ribbon from '../assets/pages/ribbon_gold.png'
+import { TitleIntro } from '../components/GameTitle'
 import { ORACLE_BANK, LEVELS, type OracleQ } from './oracleBank'
 import './oracletrial.css'
 
@@ -170,7 +171,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGame
       <img className="ot-plate" src={bgPlate} alt="" draggable={false} />
 
       <div className="ot-head">
-        <div className="ot-ribbon"><img src={ribbon} alt="" draggable={false} /><span>{srvQs ? 'Oracle' : 'Oracle Trial'}</span></div>
+        <TitleIntro title={srvQs ? 'Oracle' : 'Oracle Trial'} src={ribbon} className="ot-ribbon" />
         <div className="ot-count">{done != null ? 'Complete' : `Question ${n + 1} / ${TOTAL}`}</div>
         <div className="ot-gauge" aria-label={`Level ${LEVELS[shownLevel]}`}>
           <div className="ot-rail">

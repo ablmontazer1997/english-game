@@ -42,3 +42,11 @@
   background: linear-gradient(180deg, #fffdf8, #f8eedb); box-shadow: 0 0 0 2px #fff, 0 4px 0 #dccaa2, 0 6px 12px rgba(40, 30, 100, .16);
 }
 .kchip:active { transform: translateY(2px); box-shadow: 0 0 0 2px #fff, 0 2px 0 #dccaa2; }
+
+/* game-name intro (admin 4602): overlay, out of the layout flow; scale-in, hold, 400 ms fade, then unmounted */
+.gt-intro { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none; }
+.gt-intro .gt-ribbon { width: min(80vw, 340px); will-change: transform; }   /* scale-in + fade driven by GameTitle.tsx (rAF) */
+@media (prefers-reduced-motion: reduce) { .gt-intro { display: none; } }
+/* what stays in the layout: only the round counter */
+.gt-slim { gap: 0; }
+.gt-slim .gt-count, .gs-title .gt-slim .gt-count { position: static; margin: 0; }
