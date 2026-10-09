@@ -357,7 +357,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
     r.current.correct += 1
     const h = r.current.correct
     setHits(h)
-    sfx('correct')
+    if (h < total) sfx('correct')   // admin 4559: the killing blow plays only the boss defeat sound
     const F = bfx.current
     if (F) {
       // hit-stop: a few frozen frames on the hit (this layer + the hero), then the camera eases back out
