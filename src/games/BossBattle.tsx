@@ -56,6 +56,17 @@ import w7Angry from '../assets/games/bosses/w7/angry.webp'
 import w7Defeated from '../assets/games/bosses/w7/defeated.webp'
 import w7Laugh from '../assets/games/bosses/w7/laugh.webp'
 import w7Gate from '../assets/games/bosses/w7/gate.webp'
+import w1Plate from '../assets/games/bosses/w1/plate.webp'
+import w2Plate from '../assets/games/bosses/w2/plate.webp'
+import w3Plate from '../assets/games/bosses/w3/plate.webp'
+import w4Plate from '../assets/games/bosses/w4/plate.webp'
+import w5Plate from '../assets/games/bosses/w5/plate.webp'
+import w6Plate from '../assets/games/bosses/w6/plate.webp'
+import w7Plate from '../assets/games/bosses/w7/plate.webp'
+import w8Plate from '../assets/games/bosses/w8/plate.webp'
+import w9Plate from '../assets/games/bosses/w9/plate.webp'
+import w10Plate from '../assets/games/bosses/w10/plate.webp'
+import w11Plate from '../assets/games/bosses/w11/plate.webp'
 // </bosses-imports>
 import heroNormal from '../assets/games/boss2/hero.webp'
 import heroHurt from '../assets/games/boss2/hero_hurt.webp'
@@ -84,8 +95,8 @@ const PW = 941, PH = 1672
 const BAND = [560, 1082] // plate rows that must stay visible between the HUD and the question panel
 const FIGHT_CX = 490
 // fighters: foot point on the floor + figure height; sprite canvases: figure top/bottom and foot centre as fractions
-const HERO_AT = { x: 300, y: 1045, h: 365 }
-const BOSS_AT = { x: 695, y: 1025, h: 390 }   // admin 4477: boss feet on the hero ground line (was y 1005)
+const HERO_AT0 = { x: 300, y: 1045, h: 365 }   // default feet; a world's own arena gives its own feet line (Boss.feet)
+const BOSS_AT0 = { x: 695, y: 1025, h: 390 }   // admin 4477: boss feet on the hero ground line (was y 1005)
 const HERO_IMG = { w: 420, h: 640, top: 0.023, bot: 0.984, foot: 0.56, hand: [0.93, 0.52], cheerHand: [0.88, 0.43] }
 type BossImg = { w: number; h: number; top: number; bot: number; foot: number; fist: number[]; chest: number[] }
 const GOLEM_IMG: BossImg = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, fist: [0.08, 0.45], chest: [0.5, 0.52] }
@@ -98,7 +109,7 @@ const WEAPONS: Record<number, BossWeapon> = {
   // w2 amethyst shard (admin 4549 pass): starts with its tail at the fingertips (the sheet drew it a little in front of the hand)
   1: { src: w2Weapon, at: [0.19, 0.4956], w: 0.2457, anchor: [0.4989, 0.5158], motion: 'straight', col: '#b07cff' },
 }
-type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }
+type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }   // plate: the world's own arena (admin 4565)
 const BOSSES: Record<number, Boss> = {
 // <bosses-table>
   0: { name: 'Bramblehorn Beast', img: { w: 700, h: 560, top: 0.0911, bot: 0.982, foot: 0.557, fist: [0.37, 0.465], chest: [0.557, 0.581] },
@@ -114,6 +125,21 @@ const BOSSES: Record<number, Boss> = {
   6: { name: 'Frostfang Yeti', img: { w: 700, h: 560, top: 0.1732, bot: 0.982, foot: 0.557, fist: [0.37, 0.513], chest: [0.557, 0.618] },
     frames: { normal: w7Idle, attack: w7Attack, hurt: w7Hurt, angry: w7Angry, beaten: w7Defeated, happy: w7Laugh }, gate: w7Gate },
 // </bosses-table>
+}
+const ARENAS: Record<number, { plate: string; feet: [number, number] }> = {
+// <arenas-table>
+  0: { plate: w1Plate, feet: [1010, 995] },
+  1: { plate: w2Plate, feet: [1000, 985] },
+  2: { plate: w3Plate, feet: [1010, 995] },
+  3: { plate: w4Plate, feet: [1015, 1000] },
+  4: { plate: w5Plate, feet: [995, 982] },
+  5: { plate: w6Plate, feet: [1015, 1000] },
+  6: { plate: w7Plate, feet: [1010, 995] },
+  7: { plate: w8Plate, feet: [988, 975] },
+  8: { plate: w9Plate, feet: [985, 972] },
+  9: { plate: w10Plate, feet: [1010, 995] },
+  10: { plate: w11Plate, feet: [1043, 1028] },
+// </arenas-table>
 }
 const DEFAULT_BOSS: Boss = { name: 'Grammar Boss', img: GOLEM_IMG, frames: GOLEM }
 const bossFor = (world?: number): Boss => {
@@ -134,8 +160,8 @@ const boxOf = (at: { x: number; y: number; h: number }, im: { w: number; h: numb
   const h = at.h / (im.bot - im.top), w = (h * im.w) / im.h
   return { x: at.x - im.foot * w, y: at.y - im.bot * h, w, h }
 }
-const HERO_BOX = boxOf(HERO_AT, HERO_IMG)
-const H3D_BOX = (() => { const h = HERO_AT.h / (H3D.bot - H3D.top), w = (h * 5) / 7; return { x: HERO_AT.x - H3D.foot * w, y: HERO_AT.y - H3D.bot * h, w, h } })()
+const heroBoxes = (HERO_AT: { x: number; y: number; h: number }) => ({ HERO_BOX: boxOf(HERO_AT, HERO_IMG),
+  H3D_BOX: (() => { const h = HERO_AT.h / (H3D.bot - H3D.top), w = (h * 5) / 7; return { x: HERO_AT.x - H3D.foot * w, y: HERO_AT.y - H3D.bot * h, w, h } })() })
 const pct = (b: Box) => ({ left: `${(b.x / PW) * 100}%`, top: `${(b.y / PH) * 100}%`, width: `${(b.w / PW) * 100}%`, height: `${(b.h / PH) * 100}%` })
 const inBox = (b: Box, inner: Box) => ({ left: `${((inner.x - b.x) / b.w) * 100}%`, top: `${((inner.y - b.y) / b.h) * 100}%`,
   width: `${(inner.w / b.w) * 100}%`, height: `${(inner.h / b.h) * 100}%` })
@@ -151,7 +177,16 @@ function shuffle<T>(a: T[]): T[] {
 export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) {
   const boss = useMemo(() => bossFor(world), [world])
   const BOSS_IMG = boss.img
-  const BOSS_BOX = useMemo(() => boxOf(BOSS_AT, boss.img), [boss])
+  // the world's own arena (admin 4565/4575): its plate + the fighters' feet line measured on that plate's top surface
+  const arena = useMemo(() => {
+    const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null
+    const w = q ? +q - 1 : world
+    return w != null ? ARENAS[w] ?? null : null
+  }, [world])
+  const HERO_AT = useMemo(() => ({ ...HERO_AT0, y: arena ? arena.feet[0] : HERO_AT0.y }), [arena])
+  const BOSS_AT = useMemo(() => ({ ...BOSS_AT0, y: arena ? arena.feet[1] : BOSS_AT0.y }), [arena])
+  const { HERO_BOX, H3D_BOX } = useMemo(() => heroBoxes(HERO_AT), [HERO_AT])
+  const BOSS_BOX = useMemo(() => boxOf(BOSS_AT, boss.img), [boss, BOSS_AT])
   const weapon = useMemo(() => {
     const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null
     const w = q ? +q - 1 : world
@@ -456,9 +491,9 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
 
   return (
     <div className={`gs bb2${banner ? ' bb2-' + banner.kind : ''}`} ref={rootEl}>
-      <div className="bb2-backdrop" style={{ backgroundImage: `url(${plate})` }} aria-hidden />
+      <div className="bb2-backdrop" style={{ backgroundImage: `url(${arena?.plate ?? plate})` }} aria-hidden />
       <div className="bb2-scene" ref={sceneEl}>
-        <img className="gs-plate" src={plate} alt="" draggable={false} />
+        <img className="gs-plate" src={arena?.plate ?? plate} alt="" draggable={false} />
         {boss.gate && <img className="bb2-gate" src={boss.gate} alt="" draggable={false}
           style={{ left: `${(GATE_AT.x / PW) * 100}%`, transform: 'translateX(-50%)', top: `${((GATE_AT.y - GATE_AT.h) / PH) * 100}%`, height: `${(GATE_AT.h / PH) * 100}%` }} />}
         <i className="bb2-shadow" style={shadowStyle(BOSS_AT, BOSS_BOX.w * 0.78)} />
