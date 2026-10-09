@@ -5,7 +5,7 @@ import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
 import w2Weapon from '../assets/games/bosses/w2/weapon.webp'
 import { BossFx, type Weapon } from './bossFx'
-import { sfx } from '../services/audio'
+import { sfx, bossVictory } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import plate from '../assets/games/boss2/plate.webp'
@@ -95,9 +95,9 @@ const GOLEM_IMG: BossImg = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, 
 // (0..1), w = sprite width / frame width, anchor = that centre inside the sprite, motion + colour for the flight and the burst
 type BossWeapon = { src: string; at: [number, number]; w: number; anchor: [number, number]; motion: Weapon['motion']; col: string }
 const WEAPONS: Record<number, BossWeapon> = {
-  // 1: { src: w2Weapon, at: [0.1626, 0.4956], w: 0.2457, anchor: [0.4989, 0.5158], motion: 'straight', col: '#b07cff' },   // w2 amethyst shard (in review)
+  // w2 amethyst shard (admin 4549 pass): starts with its tail at the fingertips (the sheet drew it a little in front of the hand)
+  1: { src: w2Weapon, at: [0.19, 0.4956], w: 0.2457, anchor: [0.4989, 0.5158], motion: 'straight', col: '#b07cff' },
 }
-void w2Weapon
 type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }
 const BOSSES: Record<number, Boss> = {
 // <bosses-table>
@@ -377,7 +377,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
     const dead = h >= total
     setGolem(dead ? 'beaten' : 'hurt')
     if (dead) {
-      say('Victory!', 'win', 1800); sfx('win')
+      say('Victory!', 'win', 1800); bossVictory()   // admin 4559: defeat sound, then the stage victory (replaces the win jingle)
       setHero('cheer'); if (hero3d) anim3d({ name: 'clap' })
       later(finish, 1900)
     } else {

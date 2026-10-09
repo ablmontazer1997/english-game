@@ -25,8 +25,11 @@ import reveal from '../assets/audio/reveal.mp3'
 import spellFire2 from '../assets/audio/spell_fire2.mp3'
 import spellFire4 from '../assets/audio/spell_fire4.mp3'
 import bossLaugh from '../assets/audio/boss_laugh.mp3'   // admin 4539, used as is (1.7 s)
+// admin 4559: boss defeated (0.89 s) then the stage victory (trimmed 2.7 s), Boss Battle only
+import bossDefeat from '../assets/audio/boss_defeat.mp3'
+import stageVictory from '../assets/audio/stage_victory.mp3'
 
-const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble, confirm, reveal, spellFire2, spellFire4, bossLaugh }
+const SFX = { tap, correct, wrong, combo, win, lose, coin, pop, whoosh, spell, brew, card, star, pour, bubble, confirm, reveal, spellFire2, spellFire4, bossLaugh, bossDefeat, stageVictory }
 export type Sfx = keyof typeof SFX
 
 const MUSIC_VOL = 0.35
@@ -104,8 +107,18 @@ export function duck(on: boolean) {
   ducked = on; applyVolumes()
 }
 
+/** admin 4559: while the boss victory sounds play, no other jingle (win/lose/laugh) may overlap them */
+let holdUntil = 0
+const HELD = new Set<Sfx>(['win', 'lose', 'bossLaugh'])
+/** boss defeated: stop the music, play the defeat sound, then the stage victory right after it ends */
+export function bossVictory() {
+  themeEl().pause(); sceneEls().forEach((a) => a.pause())
+  holdUntil = Date.now() + 3800
+  sfx('bossDefeat', 0.9); window.setTimeout(() => sfx('stageVictory', 0.9), 890)
+}
 export function sfx(name: Sfx, vol = 0.8) {
   if (!setting('sound')) return
+  if (HELD.has(name) && Date.now() < holdUntil) return
   try {
     const list = pool.get(name) ?? []
     let a = list.find((x) => x.paused || x.ended)
