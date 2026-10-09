@@ -40,7 +40,7 @@ const BAND = [560, 1082] // plate rows that must stay visible between the HUD an
 const FIGHT_CX = 490
 // fighters: foot point on the floor + figure height; sprite canvases: figure top/bottom and foot centre as fractions
 const HERO_AT = { x: 300, y: 1045, h: 365 }
-const BOSS_AT = { x: 695, y: 1005, h: 390 }
+const BOSS_AT = { x: 695, y: 1025, h: 390 }   // admin 4477: boss feet on the hero ground line (was y 1005)
 const HERO_IMG = { w: 420, h: 640, top: 0.023, bot: 0.984, foot: 0.56, hand: [0.93, 0.52], cheerHand: [0.88, 0.43] }
 const BOSS_IMG = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, fist: [0.08, 0.45], chest: [0.5, 0.52] }
 // 3D hero (battle page built from the live wardrobe: live face warp; el=10 camera, yaw 0 = the 2D hero's 3/4 view; 5:7 frame):
