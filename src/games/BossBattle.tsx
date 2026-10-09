@@ -3,7 +3,16 @@ import { use3dFallback } from '../components/use3dFallback'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, shake } from './fx'
+import w1Weapon from '../assets/games/bosses/w1/weapon.webp'
+import w4Weapon from '../assets/games/bosses/w4/weapon.webp'
+import w5Weapon from '../assets/games/bosses/w5/weapon.webp'
+import w6Weapon from '../assets/games/bosses/w6/weapon.webp'
+import w7Weapon from '../assets/games/bosses/w7/weapon.webp'
+import w8Weapon from '../assets/games/bosses/w8/weapon.webp'
+import w9Weapon from '../assets/games/bosses/w9/weapon.webp'
+import w10Weapon from '../assets/games/bosses/w10/weapon.webp'
 import w2Weapon from '../assets/games/bosses/w2/weapon.webp'
+import w3Weapon from '../assets/games/bosses/w3/weapon.webp'
 import { BossFx, type Weapon } from './bossFx'
 import { sfx, bossVictory } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
@@ -141,8 +150,26 @@ const GOLEM_IMG: BossImg = { w: 600, h: 640, top: 0.02, bot: 0.994, foot: 0.55, 
 // (0..1), w = sprite width / frame width, anchor = that centre inside the sprite, motion + colour for the flight and the burst
 type BossWeapon = { src: string; at: [number, number]; w: number; anchor: [number, number]; motion: Weapon['motion']; col: string }
 const WEAPONS: Record<number, BossWeapon> = {
+  // w1 thorny seed pod (sides completed by a masked GPT edit: the sheet cell had cut them), spins to the hero
+  0: { src: w1Weapon, at: [0.165, 0.47], w: 0.235, anchor: [0.4909, 0.5071], motion: 'spin', col: '#d36bff' },
   // w2 amethyst shard (admin 4549 pass): starts with its tail at the fingertips (the sheet drew it a little in front of the hand)
   1: { src: w2Weapon, at: [0.19, 0.4956], w: 0.2457, anchor: [0.4989, 0.5158], motion: 'straight', col: '#b07cff' },
+  // w3 angry book (core outline: its flame trail is as opaque as the book), tumbles to the hero
+  2: { src: w3Weapon, at: [0.24, 0.49], w: 0.2229, anchor: [0.4981, 0.5107], motion: 'tumble', col: '#ffc94a' },
+  // w4 green potion flask (fingertip tint pulled back to the hand colour), tumbles to the hero
+  3: { src: w4Weapon, at: [0.2, 0.49], w: 0.2086, anchor: [0.5162, 0.5084], motion: 'tumble', col: '#58e04a' },
+  // w5 glowing spore mushroom (pointing hand repainted by a masked GPT edit), spins to the hero
+  4: { src: w5Weapon, at: [0.2, 0.5], w: 0.17, anchor: [0.5253, 0.4488], motion: 'spin', col: '#ff5fa2' },
+  // w6 crescent moon blade (fist repainted by a masked GPT edit), spins to the hero
+  5: { src: w6Weapon, at: [0.215, 0.49], w: 0.2643, anchor: [0.4583, 0.4922], motion: 'spin', col: '#5fb4ff' },
+  // w7 faceted ice chunk (palm cut edge rounded, stray shard removed), tumbles to the hero
+  6: { src: w7Weapon, at: [0.24, 0.5], w: 0.2471, anchor: [0.5389, 0.4964], motion: 'tumble', col: '#7fd8ff' },
+  // w8 fireball breathed from the mouth (stream tip faded to a wisp at the jaws), flies straight
+  7: { src: w8Weapon, at: [0.35, 0.53], w: 0.1943, anchor: [0.4911, 0.4996], motion: 'straight', col: '#ff8a1e' },
+  // w9 rune boulder (hand repainted by a masked GPT edit), tumbles to the hero
+  8: { src: w9Weapon, at: [0.215, 0.43], w: 0.2457, anchor: [0.5093, 0.4899], motion: 'tumble', col: '#4fe6d8' },
+  // w10 arcane orb (pointing hand repainted by a masked GPT edit), flies straight
+  9: { src: w10Weapon, at: [0.2, 0.525], w: 0.2229, anchor: [0.4964, 0.4978], motion: 'straight', col: '#b45cff' },
 }
 type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }   // plate: the world's own arena (admin 4565)
 const BOSSES: Record<number, Boss> = {

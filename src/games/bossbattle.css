@@ -66,7 +66,7 @@
   30% { transform: translate(-50%, -70%) scale(1) } 75% { opacity: 1 } 100% { transform: translate(-50%, -160%) scale(.95); opacity: 0 } }
 
 /* HP panels under the ribbon */
-.bb2-hud { top: calc(50px + var(--safe-top, 0px));   /* was 10.8cqh under the game-name ribbon (admin 4602: ribbon is now an intro only) */
+.bb2-hud { top: calc(62px + var(--safe-top, 0px));   /* below the stage close button (12 + 42 px) + 8 px gap (admin 4610); was 10.8cqh under the old ribbon */
   display: grid; grid-template-columns: 1fr 1fr; gap: 3.5cqw; }
 .bb2-hp { padding: 6px 10px 8px; text-align: center; border-radius: 20px; }
 .bb2-hp b { display: block; font-size: clamp(14px, 4.2cqw, 18px); font-weight: 900; line-height: 1.2; color: #2a2550; }
