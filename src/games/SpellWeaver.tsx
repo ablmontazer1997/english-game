@@ -71,6 +71,7 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     <div className={`gs swv swv-${state}`}>
       <div className="gs-scene">
         <img className="gs-plate" src={bgPlate} alt="" draggable={false} />
+        <img className="swv-mirror" src={bgPlate} alt="" draggable={false} />
         <span className="gs-at swv-glow" aria-hidden />
         <div className="gs-at swv-line" aria-label="Your spell">
           {s.answer.map((_, i) => {
