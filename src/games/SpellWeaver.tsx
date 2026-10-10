@@ -83,19 +83,21 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Spell Weaver" count={`Spell ${round + 1} / ${spells.length}`} /></div>
 
-      <div className={`gs-ui gs-panel swv-source${ASK ? ' has-task' : ''}`}>
-        {ASK && <Task icon="build" text={cap(s.cmd)} sub="Tap the words in the right order" first={round === 0} />}
-        <p>{s.source}</p>
-        {!ASK && <span className="swv-cmd">{s.cmd}</span>}
+      {/* admin 4793: the loom rides up under the HUD; task card, chips and Weave sit together at the bottom */}
+      <div className="gs-ui swv-dock">
+        <div className={`gs-panel swv-source${ASK ? ' has-task' : ''}`}>
+          {ASK && <Task icon="build" text={cap(s.cmd)} sub="Tap the words in the right order" first={round === 0} />}
+          <p>{s.source}</p>
+          {!ASK && <span className="swv-cmd">{s.cmd}</span>}
+        </div>
+        <div className="swv-pool">
+          {tiles.map((x) => (
+            <button key={x.id} className={`swv-tile rope${woven.includes(x.id) || pend === x.id ? ' used' : ''}`} style={{ backgroundImage: `url(${tileRope})` }}
+              disabled={woven.includes(x.id) || pend !== null || state !== 'play'} onClick={(e) => add(x.id, e.currentTarget)}>{x.t}</button>
+          ))}
+        </div>
+        <div className="swv-go"><button className="gs-go" onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
       </div>
-
-      <div className="gs-ui swv-pool">
-        {tiles.map((x) => (
-          <button key={x.id} className={`swv-tile rope${woven.includes(x.id) || pend === x.id ? ' used' : ''}`} style={{ backgroundImage: `url(${tileRope})` }}
-            disabled={woven.includes(x.id) || pend !== null || state !== 'play'} onClick={(e) => add(x.id, e.currentTarget)}>{x.t}</button>
-        ))}
-      </div>
-      <div className="gs-ui swv-go"><button className="gs-go" onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
     </div>
   )
 }

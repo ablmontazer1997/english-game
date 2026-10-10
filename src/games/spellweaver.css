@@ -1,5 +1,12 @@
 /* Spell Weaver: positions follow the mockup (c_spell); the loom is part of the painting */
-.swv-source { top: 14%; left: 9%; right: 9%; min-height: 10%; display: grid; justify-items: center; align-content: center; gap: 6px; text-align: center; padding: 10px 14px; }
+/* admin 4793: the plate keeps its own 941x1672 aspect and slides up so the loom crest (27% of the plate) sits just under
+   the HUD (64px); it grows by the same amount so the floor still reaches the bottom edge. Props keep their % spots. */
+.swv .gs-scene { --swS: max(0px, calc((27cqh - 64px - var(--safe-top, 0px)) / .73)); --swH: max(calc(100cqh + var(--swS)), 177.68cqw);
+  aspect-ratio: auto; top: calc(-1 * var(--swS)); height: var(--swH); width: calc(var(--swH) * .5628); left: calc((100cqw - var(--swH) * .5628) / 2); }
+/* task card, word chips and the Weave button stack from the bottom edge, so the card always sits right above the chips */
+.swv-dock { top: auto; left: 0; right: 0; bottom: calc(max(14px, 2.4cqh) + var(--safe-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.swv-dock > * { pointer-events: auto; }
+.swv-source { margin: 0 6%; display: grid; justify-items: center; align-content: center; gap: 6px; text-align: center; padding: 10px 14px; }
 .swv-source p { margin: 0; font-size: clamp(17px, 5.2cqw, 23px); font-weight: 900; line-height: 1.25; }
 .swv-cmd { padding: 3px 16px; border-radius: 999px; font-size: 13px; font-weight: 900; letter-spacing: .05em; color: #fff; border: 2px solid #e2d0ff;
   background: linear-gradient(180deg, #a978ff, #7b3ff0); box-shadow: 0 2px 0 #5a24c0; }
@@ -16,11 +23,11 @@
 .swv-ok .swv-tile.in { filter: drop-shadow(0 0 12px rgba(255, 220, 110, 1)) hue-rotate(-60deg) saturate(1.2); }
 .swv-bad .swv-line { animation: gs-no .4s; }
 
-.swv-pool { top: 69%; left: 2%; right: 2%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px; }
+.swv-pool { margin: 0 2%; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px; }
 .swv-tile.rope { min-height: 52px; padding: 0 22px; color: #2a2550; filter: drop-shadow(0 4px 4px rgba(80, 50, 0, .25)); }
 .swv-tile.rope:active { transform: translateY(2px); }
 .swv-tile.used { opacity: .25; }
-.swv-go { top: 84%; left: 20%; right: 20%; }
+.swv-go { margin: 8px 20% 0; }
 
 /* motion: a woven spell shimmers along the loom; a wrong one unravels and drops */
 .swv-ok .swv-tile.in { animation: swv-hop .45s ease-out both; }

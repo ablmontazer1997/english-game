@@ -44,7 +44,7 @@ export function BoosterTray({ coins, elixirs, canHint, onHint, free }: {
 // slides to the free gap nearest its usual spot (38% down); if no vertical gap is tall enough it lies flat (two buttons
 // side by side) in the largest gap. Re-checked on resize and once a second, because rounds change the layout.
 const OBSTACLES = '.gs-panel,.lp,.gtask,button:not(.bt-btn),.ws-scroll,.gg-tablet,.ot-q,.ot-opts,.tt-msg,.mc-card,.mc-stat,.mb-board,.mb-tbar,'
-  + 'input,textarea,.ro-slots,.gs-pill,.gs-chip,.gt-ribbon,.gt-count,.bp-ring,.play-top'
+  + 'input,textarea,.ro-slots,.gs-pill,.gs-chip,.gt-ribbon,.gt-count,.bp-ring,.play-top,.swv-slot'
 function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const place = () => {
