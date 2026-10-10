@@ -119,4 +119,5 @@
 .bb2-hero3d { transition: opacity .25s ease; }
 
 /* the world's gate behind the fight (admin 4477): on the back of the arena, soft and dimmed */
-.bb2-gate { position: absolute; z-index: 1; width: auto; pointer-events: none; filter: blur(1.2px) brightness(.88) saturate(.9); opacity: 1; }   /* opaque: it covers the small gate baked into the plate (admin 4615) */
+.bb2-gate { position: absolute; z-index: 1; width: auto; pointer-events: none; filter: blur(1.8px) brightness(.88) saturate(.9); opacity: 1; }   /* behind the platform (admin 4622): blur close to the background haze */
+.bb2-scene > .bb2-front { z-index: 1; pointer-events: none; }   /* the platform part of the plate, drawn over the gate base */

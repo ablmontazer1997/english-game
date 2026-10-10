@@ -11,6 +11,18 @@ import w7Weapon from '../assets/games/bosses/w7/weapon.webp'
 import w8Weapon from '../assets/games/bosses/w8/weapon.webp'
 import w9Weapon from '../assets/games/bosses/w9/weapon.webp'
 import w10Weapon from '../assets/games/bosses/w10/weapon.webp'
+import w11Weapon from '../assets/games/bosses/w11/weapon.webp'
+import w1Front from '../assets/games/bosses/w1/front.webp'
+import w2Front from '../assets/games/bosses/w2/front.webp'
+import w3Front from '../assets/games/bosses/w3/front.webp'
+import w4Front from '../assets/games/bosses/w4/front.webp'
+import w5Front from '../assets/games/bosses/w5/front.webp'
+import w6Front from '../assets/games/bosses/w6/front.webp'
+import w7Front from '../assets/games/bosses/w7/front.webp'
+import w8Front from '../assets/games/bosses/w8/front.webp'
+import w9Front from '../assets/games/bosses/w9/front.webp'
+import w10Front from '../assets/games/bosses/w10/front.webp'
+import w11Front from '../assets/games/bosses/w11/front.webp'
 import w2Weapon from '../assets/games/bosses/w2/weapon.webp'
 import w3Weapon from '../assets/games/bosses/w3/weapon.webp'
 import { BossFx, type Weapon } from './bossFx'
@@ -170,6 +182,8 @@ const WEAPONS: Record<number, BossWeapon> = {
   8: { src: w9Weapon, at: [0.215, 0.43], w: 0.2457, anchor: [0.5093, 0.4899], motion: 'tumble', col: '#4fe6d8' },
   // w10 arcane orb (pointing hand repainted by a masked GPT edit), flies straight
   9: { src: w10Weapon, at: [0.2, 0.525], w: 0.2229, anchor: [0.4964, 0.4978], motion: 'straight', col: '#b45cff' },
+  // w11 flaming meteor (hand repainted by a masked GPT edit), flies straight
+  10: { src: w11Weapon, at: [0.16, 0.536], w: 0.2029, anchor: [0.4992, 0.4982], motion: 'straight', col: '#ffb347' },
 }
 type Boss = { name: string; frames: Record<GolemState, string>; img: BossImg; gate?: string }   // plate: the world's own arena (admin 4565)
 const BOSSES: Record<number, Boss> = {
@@ -216,6 +230,10 @@ const ARENAS: Record<number, { plate: string; feet: [number, number] }> = {
 // attack-frame offset (plate px, + = away from the hero) so the projectile drawn in each attack sprite stops short of the
 // hero's wand (admin 4585 attack QA); 0-based world. w2 throws its weapon separately, so its frame needs none
 const ATTACK_DX: Record<number, number> = {}   // tried 10-09, crowded the screen edges; the weapon pass (projectile flown in JS) fixes the overlap instead
+// admin 4622: the platform part of each plate (front.webp, cut along its back rim) is drawn above the gate, so the gate
+// stands behind the platform; gate bottom y per world = rim y at the centre + ~45 px hidden behind the rim
+const FRONTS: Record<number, string> = { 0: w1Front, 1: w2Front, 2: w3Front, 3: w4Front, 4: w5Front, 5: w6Front, 6: w7Front, 7: w8Front, 8: w9Front, 9: w10Front, 10: w11Front }
+const GATE_Y: Record<number, number> = { 0: 956, 1: 949, 2: 904, 3: 916, 4: 926, 5: 851, 6: 950, 7: 905, 8: 917, 9: 860, 10: 910 }
 const DEFAULT_BOSS: Boss = { name: 'Grammar Boss', img: GOLEM_IMG, frames: GOLEM }
 const bossFor = (world?: number): Boss => {
   const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null   // ?bossw=2 (1-based) for previews
@@ -224,7 +242,7 @@ const bossFor = (world?: number): Boss => {
 }
 // the world gate behind the fighters: on the back of the arena between them, slightly soft and dimmed so the fight reads
 let fireN = 0
-const GATE_AT = { x: 498, y: 930, h: 455 }   // admin 4615: stairless gate (cut at the threshold), ~1.75x the old arch, standing on the platform back edge; covers the baked small gate + stairs
+const GATE_AT = { x: 498, y: 930, h: 440 }   // admin 4622: ~1.5x the old arch visible + ~45 px hidden behind the platform rim (bottom y per world: GATE_Y)
 // 3D hero (battle page built from the live wardrobe: live face warp; el=10 camera, yaw 0 = the 2D hero's 3/4 view; 5:7 frame):
 // measured figure 0.231..0.781, foot x 0.486, right hand at the cast release 0.529,0.629
 const H3D = { top: 0.231, bot: 0.781, foot: 0.486, hand: [0.529, 0.629] }
@@ -267,6 +285,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
     const w = q ? +q - 1 : world
     return w != null ? WEAPONS[w] ?? null : null
   }, [world])
+  const wsel = useMemo(() => { const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null; return q ? +q - 1 : world }, [world])
   const attackDx = useMemo(() => {
     const q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('bossw') : null
     const w = q ? +q - 1 : world
@@ -575,7 +594,8 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
       <div className="bb2-scene" ref={sceneEl}>
         <img className="gs-plate" src={arena?.plate ?? plate} alt="" draggable={false} />
         {boss.gate && <img className="bb2-gate" src={boss.gate} alt="" draggable={false}
-          style={{ left: `${(GATE_AT.x / PW) * 100}%`, transform: 'translateX(-50%)', top: `${((GATE_AT.y - GATE_AT.h) / PH) * 100}%`, height: `${(GATE_AT.h / PH) * 100}%` }} />}
+          style={{ left: `${(GATE_AT.x / PW) * 100}%`, transform: 'translateX(-50%)', top: `${(((wsel != null && GATE_Y[wsel]) || GATE_AT.y) - GATE_AT.h) / PH * 100}%`, height: `${(GATE_AT.h / PH) * 100}%` }} />}
+        {boss.gate && wsel != null && FRONTS[wsel] && <img className="gs-plate bb2-front" src={FRONTS[wsel]} alt="" draggable={false} />}
         <i className="bb2-shadow" style={shadowStyle(BOSS_AT, BOSS_BOX.w * 0.78)} />
         <i className="bb2-shadow" style={shadowStyle(HERO_AT, HERO_BOX.w * 0.9)} />
         <div className="bb2-sprite bb2-golem" ref={golemEl} style={pct(BOSS_BOX)}>
