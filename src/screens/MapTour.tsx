@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import { Btn } from '../components/PageArt'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
 import './maptour.css'
-import { dimPath } from '../games/coach'
+import { Dim } from '../games/coach'
 
 interface Mark { find: () => Element | null; title: string; text: string }
 const MARKS: Mark[] = [
@@ -28,6 +28,7 @@ export function MapTour({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0)
   const [box, setBox] = useState<Box | null>(null)
   const [vh, setVh] = useState(() => innerHeight)
+  const [vw, setVw] = useState(() => innerWidth)
 
   // skip marks whose element is not on screen (e.g. a layout without that chip)
   useEffect(() => {
@@ -48,6 +49,7 @@ export function MapTour({ onDone }: { onDone: () => void }) {
       const el = MARKS[i].find(), host = document.querySelector('.app-frame')
       const r = el?.getBoundingClientRect(), h = host?.getBoundingClientRect()
       setVh(h?.height ?? innerHeight)
+      setVw(h?.width ?? innerWidth)
       if (!r || !h || !r.width) { setBox(null); return }
       // tight to the element, never past the screen edges (the League tab hole used to stick out above the tab bar)
       const pad = 5
@@ -66,10 +68,10 @@ export function MapTour({ onDone }: { onDone: () => void }) {
   const last = i === MARKS.length - 1
   return (
     <div className="mt" role="dialog" aria-label={`Tour: ${m.title}`}>
-      {/* Phase E (admin 4847): one even-odd SVG path, like the game tutorials. The old 9999px box-shadow hole rendered as a pale
+      {/* Phase E (admin 4847): plain HTML rectangles (coach Dim), like the game tutorials. The old 9999px box-shadow hole rendered as a pale
           wash on some phones, so the lit element barely stood out from the map. */}
-      <svg className="mt-dim" width="100%" height="100%" aria-hidden>
-        <path d={dimPath(4000, 4000, box ? [box] : [], 18)} fill="#08051a" fillOpacity={0.8} fillRule="evenodd" />
+      <Dim w={vw} h={vh} boxes={box ? [box] : []} color="rgba(8, 5, 26, .8)" r={18} />
+      <svg className="mt-dim" width={vw} height={vh} viewBox={`0 0 ${vw} ${vh}`} aria-hidden>
         {box && <rect className="mt-glow" x={box.x} y={box.y} width={box.w} height={box.h} rx="18" />}
         {box && <rect className="mt-ring" x={box.x} y={box.y} width={box.w} height={box.h} rx="18" />}
       </svg>

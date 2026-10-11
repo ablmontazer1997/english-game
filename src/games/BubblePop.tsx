@@ -453,7 +453,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
           </>
         )}
 
-        <div className="bp-field" ref={fieldRef} data-coach="a">
+        <div className="bp-field" ref={fieldRef} data-coach="a" data-coach-parts=".bp-okmark">
           {ready && <canvas className="bp-canvas" ref={canvasRef} onPointerDown={onCanvasDown} />}
           {ctl.practice && bubbles.filter((b) => !gone.has(b.key)).map((b) => (
             <div key={b.key} className="bp-okmark" ref={(el) => { marks.current[b.key] = el }} data-demo={b.correct ? 0 : undefined} data-bad={b.correct ? undefined : 1} aria-hidden />

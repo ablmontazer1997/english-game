@@ -200,16 +200,32 @@ export function boxesIn(root: HTMLElement | null, host: HTMLElement | null, mode
   }).filter((b) => b.w > 0 && b.h > 0)
 }
 
-/** the dim as ONE even-odd path: the full rect minus a rounded rect per hole. Phase E: no SVG <mask> any more; masked
- *  fills rendered as a pale wash in our Chromium checks, so the lit parts barely stood out. */
-export function dimPath(w: number, h: number, boxes: Box[], r = 16): string {
-  let d = `M0 0H${w}V${h}H0Z`
-  for (const b of boxes) {
-    const k = Math.min(r, b.w / 2, b.h / 2)
-    d += `M${b.x + k} ${b.y}H${b.x + b.w - k}A${k} ${k} 0 0 1 ${b.x + b.w} ${b.y + k}V${b.y + b.h - k}A${k} ${k} 0 0 1 ${b.x + b.w - k} ${b.y + b.h}`
-      + `H${b.x + k}A${k} ${k} 0 0 1 ${b.x} ${b.y + b.h - k}V${b.y + k}A${k} ${k} 0 0 1 ${b.x + k} ${b.y}Z`
+/** Phase E: the dim is plain HTML rectangles around the holes (+ rounded corner pieces). The SVG fills used before
+ *  (a <mask>, then an even-odd path) and the old 9999px box-shadow did not paint in our Chromium checks: the map and
+ *  the scene showed through un-dimmed, so the lit part did not stand out. A coloured div always paints. */
+export function Dim({ w, h, boxes, color, r = 16, className }: { w: number; h: number; boxes: Box[]; color: string; r?: number; className?: string }) {
+  const out: { x: number; y: number; w: number; h: number }[] = []
+  const ys = [...new Set([0, h, ...boxes.flatMap((b) => [Math.max(0, b.y), Math.min(h, b.y + b.h)])])].sort((a, b) => a - b)
+  for (let i = 0; i < ys.length - 1; i++) {
+    const y0 = ys[i], y1 = ys[i + 1]
+    if (y1 <= y0) continue
+    const xs = boxes.filter((b) => b.y <= y0 && b.y + b.h >= y1).map((b) => [Math.max(0, b.x), Math.min(w, b.x + b.w)]).sort((a, b) => a[0] - b[0])
+    let at = 0
+    for (const [a, b] of xs) { if (a > at) out.push({ x: at, y: y0, w: a - at, h: y1 - y0 }); at = Math.max(at, b) }
+    if (at < w) out.push({ x: at, y: y0, w: w - at, h: y1 - y0 })
   }
-  return d
+  const corners = boxes.flatMap((b) => {
+    const k = Math.min(r, b.w / 2, b.h / 2)
+    return ([[0, 0, '100% 100%'], [1, 0, '0 100%'], [0, 1, '100% 0'], [1, 1, '0 0']] as const).map(([cx, cy, at]) => ({
+      x: b.x + cx * (b.w - k), y: b.y + cy * (b.h - k), k, at }))
+  })
+  return (
+    <div className={className} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} aria-hidden>
+      {out.map((o, i) => <i key={i} style={{ position: 'absolute', left: o.x, top: o.y, width: o.w, height: o.h, background: color }} />)}
+      {corners.map((c, i) => <i key={'c' + i} style={{ position: 'absolute', left: c.x, top: c.y, width: c.k, height: c.k,
+        background: `radial-gradient(circle at ${c.at}, transparent ${c.k - 0.5}px, ${color} ${c.k}px)` }} />)}
+    </div>
+  )
 }
 
 /** where a card of height `ch` covers the least of the holes (ties: the middle of the biggest free band); null = centred */
@@ -308,8 +324,8 @@ export function Spotlight({ game, step, getRoot, getHost, onNext, onSkip, canDem
   const t = TUT[game]
   return (
     <div className="tut" role="dialog" aria-label="How to play">
+      <Dim w={size.w} h={size.h} boxes={boxes} color="rgba(8, 5, 26, .84)" r={18} />
       <svg className="tut-dim" width={size.w} height={size.h} aria-hidden>
-        <path d={dimPath(size.w, size.h, boxes, 18)} fill="#08051a" fillOpacity={0.84} fillRule="evenodd" />
         {boxes.map((b, i) => <rect key={'g' + i} className="tut-glow" x={b.x} y={b.y} width={b.w} height={b.h} rx="18" />)}
         {boxes.map((b, i) => <rect key={i} className="tut-ring" x={b.x} y={b.y} width={b.w} height={b.h} rx="18" />)}
       </svg>
@@ -359,9 +375,7 @@ export function FocusVeil({ getRoot, getHost }: { getRoot: () => HTMLElement | n
     return () => { alive = false; clearInterval(t); removeEventListener('resize', m) }
   }, [getRoot, getHost])
   return (
-    <svg className="fx-veil" width={size.w} height={size.h} aria-hidden>
-      <path d={dimPath(size.w, size.h, boxes, 16)} fill="#07060c" fillRule="evenodd" />
-    </svg>
+    <Dim className="fx-veil" w={size.w} h={size.h} boxes={boxes} color="#07060c" r={16} />
   )
 }
 
