@@ -6,7 +6,6 @@ import bubViolet from '../assets/es2/games/bub_violet.webp'
 import bubBlue from '../assets/es2/games/bub_blue.webp'
 import bubGreen from '../assets/es2/games/bub_green.webp'
 import bubGold from '../assets/es2/games/bub_gold.webp'
-import plateViolet from '../assets/es2/games/plate_violet.webp'
 import sparkRing from '../assets/es2/games/spark_ring.webp'
 import timerRing from '../assets/es2/games/timer_ring.webp'
 import comboChip from '../assets/es2/games/combo_chip.webp'
@@ -141,7 +140,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
     w.__bp = () => bubblesRef.current.filter((b) => !goneRef.current.has(b.key)).map((b) => ({ ...phys.current[b.key], ok: b.correct }))
     return () => { delete w.__bp }
   }, [])
-  useEffect(() => { loadSprites({ purple: bubViolet, blue: bubBlue, green: bubGreen, gold: bubGold, plate: plateViolet, ring: sparkRing }) }, [])
+  useEffect(() => { loadSprites({ purple: bubViolet, blue: bubBlue, green: bubGreen, gold: bubGold, ring: sparkRing }) }, [])
 
   // seed physics for the new round: spread the bubbles low and let them rise
   useEffect(() => {
@@ -390,7 +389,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
             const sq = squash.current[b.key], k = sq ? Math.min(1, (t - sq.t) / 90) : 0
             const sx = sq ? 1 + 0.08 * k : 1, sy = sq ? 1 - 0.08 * k : 1
             drawBubble(ctx, p.x, p.y + bob, r, b.col, ease, sx, sy, sq && !sq.ok ? 1 : 0)
-            drawWordPlate(ctx, p.x, p.y + bob, r * sx, b.text, ease)
+            drawWordPlate(ctx, p.x, p.y + bob, r * sx, b.text, ease, b.col)
           }
           taps.current = taps.current.filter((q) => t - q.t < 460)
           for (const q of taps.current) drawTapRing(ctx, q.x, q.y, q.r, (t - q.t) / 460)

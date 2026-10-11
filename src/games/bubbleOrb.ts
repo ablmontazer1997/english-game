@@ -372,9 +372,9 @@ function star(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, ro
    GPT asset sheet (src/assets/es2/games). The sphere fills 0.88 of a sprite's width, centred; the caps reach 1.36 r above
    and below the centre. No icons inside the bubbles (admin rule: nothing that hints at the answer). */
 export const SPRITE_REACH = 1.36
-const SPR: Partial<Record<OrbColor | 'plate' | 'ring', HTMLImageElement>> = {}
-export function loadSprites(urls: Record<OrbColor | 'plate' | 'ring', string>) {
-  for (const k of Object.keys(urls) as (OrbColor | 'plate' | 'ring')[]) {
+const SPR: Partial<Record<OrbColor | 'ring', HTMLImageElement>> = {}
+export function loadSprites(urls: Record<OrbColor | 'ring', string>) {
+  for (const k of Object.keys(urls) as (OrbColor | 'ring')[]) {
     if (SPR[k]) continue
     const im = new Image(); im.src = urls[k]; SPR[k] = im
   }
@@ -403,27 +403,46 @@ export function drawTapRing(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.save(); ctx.globalAlpha = Math.max(0, 1 - k * k); ctx.drawImage(im, x - s / 2, y - h / 2, s, h); ctx.restore()
 }
 
-/** the dark word plate under a one-line word (caps kept, the middle stretched in x only); multi-line words get a drawn plate */
-export function drawPlate(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, alpha = 1) {
-  const im = SPR.plate
+/** concept 07 word plate: a capsule (fully round ends) in a darker shade of its own bubble's colour, a gold rim with a thin
+ *  dark outer line, a gloss band, and a small gold diamond stud at each end. Drawn, so the shape holds at any size. */
+const PLATE: Record<OrbColor, [string, string, string]> = {   // top, bottom, gloss (measured on 07_game_bubble_pop.png)
+  purple: ['#8a46a8', '#5e2484', 'rgba(255, 220, 255, .28)'],
+  blue: ['#5266b8', '#34418f', 'rgba(220, 235, 255, .28)'],
+  green: ['#4f8c34', '#2f6a20', 'rgba(230, 255, 210, .26)'],
+  gold: ['#c27410', '#8f4e02', 'rgba(255, 238, 200, .30)'],
+}
+function capsule(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, h: number) {
+  const r = h / 2
+  ctx.beginPath(); ctx.moveTo(x0 + r, y0); ctx.lineTo(x0 + w - r, y0); ctx.arc(x0 + w - r, y0 + r, r, -Math.PI / 2, Math.PI / 2)
+  ctx.lineTo(x0 + r, y0 + h); ctx.arc(x0 + r, y0 + r, r, Math.PI / 2, Math.PI * 1.5); ctx.closePath()
+}
+function stud(ctx: CanvasRenderingContext2D, x: number, y: number, s: number) {
+  ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s * .62, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s * .62, y); ctx.closePath()
+  const g = ctx.createLinearGradient(x - s, y - s, x + s, y + s); g.addColorStop(0, '#fff3b8'); g.addColorStop(.5, '#f2c04a'); g.addColorStop(1, '#a8680f')
+  ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = Math.max(1, s * .16); ctx.strokeStyle = '#7a4a10'; ctx.stroke()
+}
+export function drawPlate(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, alpha = 1, col: OrbColor = 'purple') {
+  const [top, bot, gloss] = PLATE[col], rim = Math.max(2.5, h * .1), x0 = x - w / 2, y0 = y - h / 2
   ctx.save(); ctx.globalAlpha = alpha
-  if (ready(im) && h <= w / 2.6) {
-    const iw = im.naturalWidth, ih = im.naturalHeight, cap = ih * 0.62, sc = h / ih, capW = cap * sc
-    const x0 = x - w / 2, y0 = y - h / 2
-    ctx.drawImage(im, 0, 0, cap, ih, x0, y0, capW, h)
-    ctx.drawImage(im, cap, 0, iw - 2 * cap, ih, x0 + capW, y0, Math.max(0, w - 2 * capW), h)
-    ctx.drawImage(im, iw - cap, 0, cap, ih, x0 + w - capW, y0, capW, h)
-  } else {
-    const rr = Math.min(h / 2, 16), x0 = x - w / 2, y0 = y - h / 2
-    ctx.beginPath(); ctx.roundRect(x0, y0, w, h, rr)
-    const g = ctx.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, '#5a26c4'); g.addColorStop(1, '#3a128e')
-    ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#f2c24e'; ctx.stroke()
-  }
+  ctx.shadowColor = 'rgba(30, 10, 60, .45)'; ctx.shadowBlur = h * .18; ctx.shadowOffsetY = h * .06
+  capsule(ctx, x0, y0, w, h); ctx.fillStyle = '#7a4a10'; ctx.fill()          // thin dark outer line
+  ctx.shadowColor = 'transparent'
+  capsule(ctx, x0 + 1, y0 + 1, w - 2, h - 2)                                   // gold rim
+  const gr = ctx.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, '#ffeaa0'); gr.addColorStop(.45, '#f0b93a'); gr.addColorStop(1, '#b77a16')
+  ctx.fillStyle = gr; ctx.fill()
+  const ix = x0 + 1 + rim, iy = y0 + 1 + rim, iw = w - 2 - 2 * rim, ih = h - 2 - 2 * rim
+  capsule(ctx, ix, iy, iw, ih)                                                 // the coloured inner plate
+  const gi = ctx.createLinearGradient(0, iy, 0, iy + ih); gi.addColorStop(0, top); gi.addColorStop(1, bot)
+  ctx.fillStyle = gi; ctx.fill()
+  ctx.save(); capsule(ctx, ix, iy, iw, ih); ctx.clip()                         // gloss band on the upper half
+  capsule(ctx, ix + ih * .35, iy + ih * .08, iw - ih * .7, ih * .38); ctx.fillStyle = gloss; ctx.fill()
+  ctx.restore()
+  const s = Math.max(3, h * .17); stud(ctx, x0 + 1.5, y, s); stud(ctx, x0 + w - 1.5, y, s)
   ctx.restore()
 }
 
 /** the word on its plate: the existing fit/wrap logic sizes the text, the plate is drawn to fit the lines */
-export function drawWordPlate(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, word: string, alpha = 1) {
+export function drawWordPlate(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, word: string, alpha = 1, col: OrbColor = 'purple') {
   ctx.save()
   const FONT = (px: number) => `800 ${px}px Fredoka, system-ui, sans-serif`
   const maxW = r * 1.5, parts = word.split(/\s+/)
@@ -444,13 +463,14 @@ export function drawWordPlate(ctx: CanvasRenderingContext2D, x: number, y: numbe
   ctx.font = FONT(px)
   const lw = Math.max(...lines.map((l) => ctx.measureText(l).width))
   const lh = px * 1.08, ph = lines.length * lh + px * 0.62, pw = Math.min(r * 1.86, lw + px * 1.5)
-  drawPlate(ctx, x, y, Math.max(pw, r * 1.1), ph, alpha)
+  drawPlate(ctx, x, y, Math.max(pw, r * 1.1) + ph * .5, ph, alpha, col)
   ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(2, px * 0.14); ctx.strokeStyle = 'rgba(40, 14, 90, .9)'
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(1.6, px * 0.1); ctx.strokeStyle = 'rgba(50, 20, 10, .55)'
   const y0 = y + 1 - (lines.length - 1) * lh / 2
   lines.forEach((l, k) => {
-    ctx.strokeText(l, x, y0 + k * lh)
-    const g = ctx.createLinearGradient(0, y0 + k * lh - px / 2, 0, y0 + k * lh + px / 2); g.addColorStop(0, '#fffbe8'); g.addColorStop(1, '#ffe08a')
+    ctx.shadowColor = 'rgba(40, 14, 10, .55)'; ctx.shadowBlur = px * .12; ctx.shadowOffsetY = px * .07
+    ctx.strokeText(l, x, y0 + k * lh); ctx.shadowColor = 'transparent'
+    const g = ctx.createLinearGradient(0, y0 + k * lh - px / 2, 0, y0 + k * lh + px / 2); g.addColorStop(0, '#fffaf0'); g.addColorStop(1, '#ffe9b8')
     ctx.fillStyle = g; ctx.fillText(l, x, y0 + k * lh)
   })
   ctx.restore()
