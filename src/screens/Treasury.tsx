@@ -1,14 +1,24 @@
-import { Card, Btn, Chip, art, type ArtName } from '../components/PageArt'
+import { Card, Btn, Chip, art } from '../components/PageArt'
 import { ItemThumb } from '../components/ItemThumb'
 import { skySrc } from '../components/SkyIcon'
 import { useCountdown } from '../components/Rewards'
 import type { StoreOut, WardrobeItem, Product } from '../services/api'
 import { SWATCH } from './SeasonPassScreen'
 import './treasury.css'
+import './shop2.css'
+import { RibbonH } from '../components/RibbonH'
+import ribSmall from '../assets/es2/shop/rib_small.webp'
+import gemsS from '../assets/es2/shop/gems_s.webp'
+import gemsM from '../assets/es2/shop/gems_m.webp'
+import gemsChest from '../assets/es2/shop/gems_chest.webp'
+
+/** ES redesign 10-11: the concept's gem piles, smallest to the chest of gems */
+export const PACK_PILE: Record<string, string> = { gems_100: gemsS, gems_300: gemsM, gems_1000: gemsChest }
+export const PILE = [gemsS, gemsM, gemsChest]
+
 
 // Phase D (admin 4839): English Spell's own real-money store. Decision 1 = D: no payment yet, so every buy button
 // says "Coming soon" and no price is shown ("TBD"). The server switch (payments_enabled) turns the real flow on later.
-const PACK_ART: Record<string, ArtName> = { gems_100: 'gem_s', gems_300: 'gem_m', gems_1000: 'gem_xl' }
 
 /** a wardrobe thumbnail; recolours show their base garment with the dye dot (the 3D wardrobe's convention) */
 function RThumb({ id, items }: { id: string; items: Record<string, WardrobeItem> }) {
@@ -33,7 +43,8 @@ export function Treasury({ st, premium, onSeason }: { st: StoreOut; premium: War
   const packs = st.products.filter((p) => p.kind === 'gems')
   const prem = byId.premium_month
   return <>
-    <div className="ui-h tsy-h">Treasury {!st.payments_enabled && <Chip className="tsy-soon">Coming soon</Chip>}</div>
+    <RibbonH>Treasury</RibbonH>
+    {!st.payments_enabled && <Chip className="tsy-soon tsy-h">Purchases coming soon</Chip>}
 
     {starter && st.starter.eligible && (
       <Card name="panel_wide" className="reveal tsy-starter">
@@ -52,16 +63,7 @@ export function Treasury({ st, premium, onSeason }: { st: StoreOut; premium: War
       </Card>
     )}
 
-    <div className="sh-grid3">
-      {packs.map((p) => (
-        <Card key={p.id} name="card_square" className="reveal sh-card tsy-pack">
-          {p.tag && <span className="tsy-tag">{p.tag}</span>}
-          <img className="sh-card-art" src={art(PACK_ART[p.id] ?? 'gem_m')} alt="" draggable={false} />
-          <span className="sh-card-n"><img src={skySrc('ic_gem')} alt="" />{p.gems.toLocaleString('en-US')}</span>
-          <Btn className="sm" disabled>{p.available && p.price_label ? p.price_label : 'Soon'}</Btn>
-        </Card>
-      ))}
-    </div>
+    <TreasuryPacks packs={packs} />
 
     {prem && (
       <Card className="reveal tsy-prem">
@@ -89,3 +91,24 @@ export function Treasury({ st, premium, onSeason }: { st: StoreOut; premium: War
     <p className="ui-note">Purchases are not open yet and prices are not set. Until then, earn gems from quests, achievements, level-ups, the league and the Season Pass.</p>
   </>
 }
+
+/** Treasury gem packs as the concept's three cards (ribbons from the server's tags). Real money is off: "Coming soon". */
+export function TreasuryPacks({ packs, onOpen }: { packs: Product[]; onOpen?: () => void }) {
+  const TAG: Record<string, string> = { gems_300: 'Popular', gems_1000: 'Best value' }
+  return (
+    <div className="shp-grid shp-grid3 shp-tsy">
+      {packs.map((p, i) => {
+        const tag = p.tag ?? TAG[p.id]
+        return (
+          <div key={p.id} className={`shp-pack esk-enter${onOpen ? ' esk-press' : ''}`} style={{ ['--i' as string]: i }} onClick={onOpen} role={onOpen ? 'button' : undefined}>
+            {tag && <span className="shp-pack-tag"><img src={ribSmall} alt="" draggable={false} /><b>{tag}</b></span>}
+            <img className="shp-pack-art" src={PACK_PILE[p.id] ?? PILE[Math.min(i, 2)]} alt="" draggable={false} />
+            <span className="shp-pack-n"><img src={skySrc('ic_gem')} alt="" />{p.gems.toLocaleString('en-US')}</span>
+            <span className="shp-soon">{p.available && p.price_label ? p.price_label : 'Coming soon'}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+

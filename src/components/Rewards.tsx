@@ -6,6 +6,7 @@ import { skySrc } from './SkyIcon'
 import { CHEST_LABEL } from '../services/progress'
 import type { Reward, ChestKind } from '../types/game'
 import './progression.css'
+import './eskit.css'
 
 const CHEST_ART = { wood: 'chest_wood', silver: 'chest_silver', epic: 'chest_epic' } as const
 
@@ -21,31 +22,54 @@ export function RewardChips({ reward, size = 18 }: { reward: Reward; size?: numb
   )
 }
 
-/** the app-wide "you got…" card (quests, achievements, chests, league) */
+/** the app-wide "you got…" reveal (quests, achievements, chests, league). ES redesign 10-11: the Bingual ChestReveal pattern —
+ *  a dark backdrop; when a chest is involved it drops in, shakes three times, then a flash, sparks fly out, slow rays turn
+ *  behind and the reward cards pop in one by one (170 ms apart). Plain rewards skip the chest and open on the rays. */
+const CHEST_OF = (title: string, r: Reward): ChestKind | null => {
+  const k = (Object.keys(CHEST_LABEL) as ChestKind[]).find((c) => title.startsWith(CHEST_LABEL[c]))
+  return k ?? (r.chest ?? null)
+}
+const SPARKS = Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2; const d = 110 + (i % 3) * 30; return { dx: Math.cos(a) * d, dy: Math.sin(a) * d } })
 export function RewardPopup() {
   const { toast, clearToast } = useGame()
-  useEffect(() => { if (toast) sfx('reveal') }, [toast])   // admin 4530: every reward / chest / purchase card
+  const [opened, setOpened] = useState(false)
+  const chest = toast ? CHEST_OF(toast.title, toast.reward) : null
+  const opening = !!toast && !!chest && /opened/i.test(toast.title)
+  useEffect(() => {
+    if (!toast) return
+    sfx('reveal')   // admin 4530: every reward / chest / purchase card
+    const calm = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    setOpened(!opening || calm)
+    if (opening && !calm) { const t = setTimeout(() => setOpened(true), 1900); return () => clearTimeout(t) }
+  }, [toast, opening])
   if (!toast) return null
   const r = toast.reward
+  const items: { img: string; n: string; label: string }[] = []
+  if (r.coins) items.push({ img: skySrc('ic_coin'), n: `+${r.coins.toLocaleString('en-US')}`, label: 'Coins' })
+  if (r.gems) items.push({ img: skySrc('ic_gem'), n: `+${r.gems}`, label: 'Gems' })
+  if (r.potion) items.push({ img: art('qi_potion'), n: `+${r.potion}`, label: r.potion > 1 ? 'Elixirs' : 'Elixir' })
+  if (r.chest) items.push({ img: art(CHEST_ART[r.chest]), n: '+1', label: CHEST_LABEL[r.chest] })
+  const d0 = opening ? '120ms' : '0ms'
   return (
-    <div className="rw-scrim" onClick={clearToast}>
-      <div className="rw-card" onClick={(e) => e.stopPropagation()}>
-        <div className="rw-rays" />
-        <div className="rw-title">{toast.title}</div>
-        <div className="rw-items">
-          {!!r.coins && <RewardBig img={skySrc('ic_coin')} n={`+${r.coins.toLocaleString('en-US')}`} label="Coins" />}
-          {!!r.gems && <RewardBig img={skySrc('ic_gem')} n={`+${r.gems}`} label="Gems" />}
-          {!!r.potion && <RewardBig img={art('qi_potion')} n={`+${r.potion}`} label={r.potion > 1 ? 'Elixirs' : 'Elixir'} />}
-          {r.chest && <RewardBig img={art(CHEST_ART[r.chest])} n="+1" label={CHEST_LABEL[r.chest]} />}
-        </div>
-        {r.chest && <p className="rw-note">Open it from your chests in the Shop or Quests.</p>}
-        <Btn name="btn_gold" className="lg" onClick={clearToast}>Great!</Btn>
+    <div className={`esk-rv${opened ? ' opened' : ''}`} onClick={() => opened && clearToast()} role="dialog" aria-label={toast.title}>
+      <div className="esk-rv-stage" onClick={(e) => e.stopPropagation()} style={{ ['--d0' as string]: d0 }}>
+        {opened && <div className="esk-rv-rays" />}
+        {chest && (opening || !opened) && <img className="esk-rv-chest" src={art(CHEST_ART[chest])} alt="" draggable={false} />}
+        <div className="esk-rv-sparks" aria-hidden>{opening && SPARKS.map((s, i) => <i key={i} style={{ ['--dx' as string]: `${s.dx}px`, ['--dy' as string]: `${s.dy}px` }} />)}</div>
+        {opened && <>
+          <h2 className="esk-rv-title">{toast.title}</h2>
+          <div className="esk-rv-cards">
+            {items.map((it, i) => (
+              <div key={it.label} className="esk-rv-card" style={{ ['--i' as string]: i }}><img src={it.img} alt="" draggable={false} /><b>{it.n}</b><span>{it.label}</span></div>
+            ))}
+          </div>
+          {r.chest && <p className="esk-rv-note">Open it from your chests in the Shop or Quests.</p>}
+          <Btn name="btn_gold" className="lg" onClick={clearToast}>Great!</Btn>
+        </>}
       </div>
+      {opening && <div className="esk-rv-flash" />}
     </div>
   )
-}
-function RewardBig({ img, n, label }: { img: string; n: string; label: string }) {
-  return <div className="rw-big"><img src={img} alt="" draggable={false} /><b>{n}</b><span>{label}</span></div>
 }
 
 /** the chests you own, each with an Open button that plays a short reveal */

@@ -1,0 +1,91 @@
+/* ES redesign 10-11 (admin 4884/4892): the shared kit for the redesigned inner screens and games.
+   Prefix `esk-` (unique, checked against every css file). Art comes from the approved concepts' GPT asset sheets
+   (src/assets/es2/*); these rules only place it, add the contrast system and the motion. */
+
+/* ---------- contrast: a soft violet vignette over the painted backdrop (cards keep >= 3:1 against it) ---------- */
+.esk-scrim { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 45%, rgba(46, 20, 92, 0) 55%, rgba(40, 16, 84, .38) 100%),
+              linear-gradient(180deg, rgba(46, 20, 92, .10), rgba(30, 12, 64, .22)); }
+
+/* ---------- cream panel with a gold rim and a solid ledge shadow ---------- */
+.esk-panel { position: relative; border-radius: 18px; background: linear-gradient(180deg, #fff8e8, #f6e7c8);
+  border: 3px solid #e7b64a; box-shadow: 0 0 0 1px #9a6a1e, inset 0 2px 0 rgba(255, 255, 255, .85), 0 5px 0 rgba(70, 30, 110, .32), 0 12px 22px rgba(20, 8, 40, .30); }
+
+/* ---------- motion utilities (transform + opacity only; all off under reduced motion) ---------- */
+.esk-float { animation: esk-float 2.4s ease-in-out infinite; will-change: transform; }
+.esk-float.d1 { animation-delay: -.6s; } .esk-float.d2 { animation-delay: -1.2s; } .esk-float.d3 { animation-delay: -1.8s; }
+@keyframes esk-float { 0%, 100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-6px) rotate(1.5deg); } }
+
+.esk-shimmer { position: relative; overflow: hidden; isolation: isolate; }
+.esk-shimmer::after { content: ''; position: absolute; top: -20%; bottom: -20%; left: -40%; width: 60px; z-index: 3; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .42), rgba(255, 255, 255, 0));
+  transform: translateX(0) rotate(16deg); animation: esk-shim 4.3s ease-in-out infinite; }
+@keyframes esk-shim { 0% { transform: translateX(0) rotate(16deg); } 35%, 100% { transform: translateX(calc(100vw)) rotate(16deg); } }
+
+.esk-press { transition: transform 120ms cubic-bezier(.3, 1.6, .5, 1); }
+.esk-press:active { transform: translateY(3px) scale(.97); }
+
+.esk-enter { animation: esk-enter 420ms cubic-bezier(.2, .9, .3, 1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes esk-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.esk-bounce { animation: esk-bounce 2s ease-in-out infinite; }
+@keyframes esk-bounce { 0%, 70%, 100% { transform: translateY(0); filter: drop-shadow(0 0 0 rgba(255, 200, 60, 0)); }
+  80% { transform: translateY(-4px); filter: drop-shadow(0 0 8px rgba(255, 200, 60, .9)); } 90% { transform: translateY(0); } }
+
+/* sunburst rays + twinkling sparkles behind hero art */
+.esk-rays { position: absolute; inset: -30%; pointer-events: none; opacity: .5;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 236, 170, .55) 0 8deg, rgba(255, 236, 170, 0) 8deg 20deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 20%, transparent 100%); mask-image: radial-gradient(closest-side, #000 20%, transparent 100%);
+  animation: esk-spin 24s linear infinite; }
+@keyframes esk-spin { to { transform: rotate(360deg); } }
+.esk-spark { position: absolute; width: 14px; height: 14px; pointer-events: none;
+  background: radial-gradient(closest-side, #fff, rgba(255, 255, 255, 0));
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  animation: esk-twinkle 2.2s ease-in-out infinite; }
+@keyframes esk-twinkle { 0%, 100% { opacity: .2; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+
+/* count-up numbers keep their width steady */
+.esk-num { font-variant-numeric: tabular-nums; }
+
+/* ---------- reward reveal (the Bingual ChestReveal pattern in ES colours) ---------- */
+.esk-rv { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px;
+  background: rgba(16, 6, 40, .78); animation: esk-fade .25s ease-out both; }
+@keyframes esk-fade { from { opacity: 0; } }
+.esk-rv-stage { position: relative; width: min(92vw, 360px); display: grid; justify-items: center; gap: 14px; }
+.esk-rv-rays { position: absolute; left: 50%; top: 92px; width: 520px; height: 520px; margin: -260px 0 0 -260px; pointer-events: none;
+  background: repeating-conic-gradient(rgba(255, 220, 120, .30) 0 9deg, rgba(255, 220, 120, 0) 9deg 22deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 25%, transparent 100%); mask-image: radial-gradient(closest-side, #000 25%, transparent 100%);
+  animation: esk-spin 9s linear infinite, esk-fade .4s ease-out .5s both; }
+.esk-rv-chest { position: relative; width: 168px; height: 168px; object-fit: contain; z-index: 2;
+  animation: esk-drop .55s cubic-bezier(.3, 1.5, .5, 1) both, esk-shake .42s ease-in-out .6s 3; }
+.esk-rv.opened .esk-rv-chest { animation: esk-pop .45s ease-in both; }
+@keyframes esk-drop { from { transform: translateY(-120px) scale(.6); opacity: 0; } }
+@keyframes esk-shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-7deg) scale(1.03); } 75% { transform: rotate(7deg) scale(1.03); } }
+@keyframes esk-pop { to { transform: scale(1.25); opacity: 0; } }
+.esk-rv-flash { position: fixed; inset: 0; z-index: 3; background: #fff; pointer-events: none; opacity: 0; }
+.esk-rv.opened .esk-rv-flash { animation: esk-flash .54s ease-out both; }
+@keyframes esk-flash { 22% { opacity: .9; } 100% { opacity: 0; } }
+.esk-rv-sparks { position: absolute; left: 50%; top: 92px; z-index: 2; pointer-events: none; }
+.esk-rv-sparks i { position: absolute; width: 10px; height: 10px; margin: -5px; border-radius: 2px; transform: rotate(45deg);
+  background: linear-gradient(135deg, #fff6c8, #ffc23a); opacity: 0; }
+.esk-rv.opened .esk-rv-sparks i { animation: esk-burst .9s cubic-bezier(.1, .7, .3, 1) both; }
+@keyframes esk-burst { 0% { opacity: 1; transform: translate(0, 0) rotate(45deg) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(225deg) scale(.4); } }
+.esk-rv-title { position: relative; z-index: 2; margin: 0; text-align: center; font-size: 24px; line-height: 30px; font-weight: 900; color: #ffe08a;
+  text-shadow: 0 2px 0 #6a3a00, 0 4px 14px rgba(0, 0, 0, .5); }
+.esk-rv-cards { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.esk-rv-card { width: 92px; padding: 10px 6px 8px; display: grid; justify-items: center; gap: 2px; border-radius: 16px;
+  background: linear-gradient(180deg, #fff8e8, #f3e2bf); border: 3px solid #e7b64a; box-shadow: 0 4px 0 #9a6a1e, 0 10px 20px rgba(0, 0, 0, .35);
+  animation: esk-card .5s cubic-bezier(.3, 1.6, .5, 1) both; animation-delay: calc(var(--i, 0) * 170ms + var(--d0, 0ms)); }
+@keyframes esk-card { from { opacity: 0; transform: translateY(18px) scale(.6); } }
+.esk-rv-card img { width: 52px; height: 52px; object-fit: contain; }
+.esk-rv-card b { font-size: 18px; line-height: 22px; font-weight: 900; color: #3a1d6e; }
+.esk-rv-card span { font-size: 12px; line-height: 14px; font-weight: 800; color: #6b4a8a; }
+.esk-rv-note { position: relative; z-index: 2; margin: 0; max-width: 300px; text-align: center; font-size: 13px; line-height: 17px; font-weight: 700; color: #e9dcff; }
+.esk-rv .ui-btn { position: relative; z-index: 2; min-width: 160px; animation: esk-card .4s ease-out both; animation-delay: calc(var(--d0, 0ms) + 400ms); }
+
+@media (prefers-reduced-motion: reduce) {
+  .esk-float, .esk-shimmer::after, .esk-bounce, .esk-rays, .esk-spark, .esk-enter, .esk-rv-rays, .esk-rv-chest, .esk-rv-card, .esk-rv .ui-btn,
+  .esk-rv-sparks i, .esk-rv-flash { animation: none !important; }
+  .esk-rv.opened .esk-rv-chest { opacity: 0; }
+}

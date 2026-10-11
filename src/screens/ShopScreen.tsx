@@ -1,25 +1,51 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { sfx } from '../services/audio'
-import { ItemThumb } from '../components/ItemThumb'
 import './serverstage.css'
 import { api, errorText, type ShopOut, type ChestInfo, type WardrobeItem, type Merchant } from '../services/api'
 import { wearItem } from '../services/look'
 import { toCurrencies } from '../services/httpService'
 import { useGame } from '../services/ServiceProvider'
-import { Card, Row, Btn, Slot, Chip, art, PAGE_BG, type ArtName } from '../components/PageArt'
+import { Card, Row, Btn, Slot, Chip, art, type ArtName } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import { ChestStrip, useCountdown } from '../components/Rewards'
-import { Treasury } from './Treasury'
+import { Treasury, TreasuryPacks, PILE } from './Treasury'
 import { ESSENTIALS, BOOSTS, CHEST_OFFERS, GEM_PACKS, dealOfTheDay, priceLabel, type Offer, type OfferIcon } from '../services/shopCatalog'
 import { dayEnd } from '../services/progress'
 import './pages.css'
 import '../components/progression.css'
+import '../components/eskit.css'
+import './shop2.css'
+import { ItemArt } from '../components/ItemArt'
+import { SWATCH } from './SeasonPassScreen'
+import bgShop2 from '../assets/es2/shop/bg_shop2.webp'
+import signArt from '../assets/es2/shop/sign.webp'
+import tabOn from '../assets/es2/shop/tab_on.webp'
+import tabOff from '../assets/es2/shop/tab_off.webp'
+import ribFeatured from '../assets/es2/shop/rib_featured.webp'
+import ribRed from '../assets/es2/shop/rib_red.webp'
+import { RibbonH } from '../components/RibbonH'
+import elixirs3 from '../assets/es2/shop/elixirs3.webp'
+import awning from '../assets/es2/shop/awning.webp'
+import lanternPost from '../assets/es2/shop/lantern_post.webp'
+import pedestal from '../assets/es2/shop/pedestal.webp'
 
 const ICON_ART: Record<OfferIcon, string> = {
   heart: skySrc('ic_heart'), potion: art('qi_potion'), potion3: art('qi_potion'), flame: art('qi_flame'), xp: skySrc('ic_energy'),
   coins: skySrc('ic_coin'), coins_big: skySrc('ic_coin'), wood: art('chest_wood'), silver: art('chest_silver'), epic: art('chest_epic'),
 }
-const GEM_ART: ArtName[] = ['gem_s', 'gem_m', 'gem_l', 'gem_xl']
+/** rarity of a wardrobe item for the card colour: the server's rarity, else coin items common, gem items rare / epic by price */
+type Rarity = 'common' | 'rare' | 'epic'
+const rarityOf = (it: WardrobeItem): Rarity => {
+  const r = (it.rarity ?? '').toLowerCase()
+  if (r === 'epic' || r === 'legendary') return 'epic'
+  if (r === 'rare') return 'rare'
+  if (r === 'common') return 'common'
+  return it.tier === 'coin' ? 'common' : (it.price_gems ?? 0) >= 100 ? 'epic' : 'rare'
+}
+const RAR_LABEL: Record<Rarity, string> = { common: 'Common', rare: 'Rare', epic: 'Epic' }
+const RAR_OF_CHEST: Record<string, Rarity> = { chest_wood: 'common', chest_silver: 'rare', chest_epic: 'epic' }
+type ShopTab = 'featured' | 'merchant' | 'chests' | 'treasury'
+const TABS: { id: ShopTab; t: string }[] = [{ id: 'featured', t: 'Featured' }, { id: 'merchant', t: 'Merchant' }, { id: 'chests', t: 'Chests' }, { id: 'treasury', t: 'Treasury' }]
 
 /** price button: coin or gem icon + amount; greys out when you can't afford it */
 function PriceBtn({ o, onBuy, disabled, small }: { o: Offer; onBuy: () => void; disabled?: boolean; small?: boolean }) {
@@ -82,76 +108,108 @@ export function ShopScreen({ onSeason }: { onSeason?: () => void } = {}) {
   const { currencies, inventory, mode } = useGame()
   const { shop, chests, refresh } = useServerShop()
   const server = mode === 'http'
+  const [tab, setTab] = useState<ShopTab>(() => (new URLSearchParams(location.search).get('shoptab') as ShopTab | null) ?? 'featured')
   // the server has no daily discount: the banner features one offer at its normal price
   const deal = server ? (() => { const d = dealOfTheDay(); const base = withServer({ ...d, id: d.id.replace(/^deal:/, ''), was: undefined }, shop); return { ...base, note: 'Featured today' } })() : dealOfTheDay()
   const dealLeft = useCountdown(dayEnd())
   const boost = useCountdown(inventory?.xpBoostUntil ?? 0)
   const fullHearts = !!currencies && currencies.hearts >= currencies.heartsMax
+  // the red ribbon shows a REAL saving only: a bundle against its single item, or the mock deal's struck price
+  const saving = (() => {
+    const one = deal.id.replace(/_3$/, '_1')
+    if (deal.was) { const w = deal.was.gems ?? deal.was.coins ?? 0, p = deal.price.gems ?? deal.price.coins ?? 0; return w > p ? Math.round((1 - p / w) * 100) : 0 }
+    if (one === deal.id) return 0
+    const single = withServer(ESSENTIALS.find((o) => o.id === one) ?? deal, shop)
+    const s1 = single.price.gems ?? 0, p3 = deal.price.gems ?? 0
+    return s1 && p3 ? Math.max(0, Math.round((1 - p3 / (3 * s1)) * 100)) : 0
+  })()
+  const merchant = server ? shop?.merchant : undefined
+  const packs = shop?.store?.products.filter((p) => p.kind === 'gems') ?? []
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const pick = (t: ShopTab) => { setTab(t); scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }) }
 
   return (
-    <div className="screen pg">
-      <img className="pg-bg" src={PAGE_BG.shop} alt="" draggable={false} />
-      <div className="pg-scroll">
-        {/* deal of the day */}
-        <Card name="panel_banner" className="reveal sh-banner">
-          <div className="sh-banner-main">
-            <span className="sk sk-ribbon sh-ribbon">{server ? 'Featured' : `Deal · ${dealLeft.label}`}</span>
-            <span className="sh-banner-t">{deal.title}</span>
-            <span className="sh-banner-l">
-              {deal.was && <s>{priceLabel(deal.was)}</s>}
-              <img src={skySrc(deal.price.gems != null ? 'ic_gem' : 'ic_coin')} alt="" />{priceLabel(deal.price)}
-            </span>
+    <div className="screen pg shp">
+      <img className="pg-bg" src={bgShop2} alt="" draggable={false} />
+      <div className="esk-scrim" />
+      <div className="pg-scroll shp-scroll" ref={scrollRef}>
+        <div className="shp-sign esk-enter"><img src={signArt} alt="" draggable={false} /><h1>Shop</h1></div>
+        <div className="shp-tabs" role="tablist">
+          {TABS.map((t) => (
+            <button key={t.id} role="tab" aria-selected={tab === t.id} className={`shp-tab esk-press${tab === t.id ? ' on' : ''}`} onClick={() => pick(t.id)}>
+              <img src={tab === t.id ? tabOn : tabOff} alt="" draggable={false} /><span>{t.t}</span>
+            </button>
+          ))}
+        </div>
+
+        {tab === 'featured' && <>
+          <div className="shp-feat esk-enter">
+            <div className="shp-feat-in">
+              <div className="esk-rays shp-feat-rays" />
+              <i className="esk-spark" style={{ left: '58%', top: '14%' }} /><i className="esk-spark d" style={{ left: '90%', top: '30%', animationDelay: '-1s' }} /><i className="esk-spark" style={{ left: '66%', top: '70%', animationDelay: '-.5s' }} />
+              <div className="shp-feat-l">
+                <span className="shp-rib-f"><img src={ribFeatured} alt="" draggable={false} /><b>Featured</b></span>
+                <b className="shp-feat-t">{deal.title}</b>
+                {saving > 0 && <span className="shp-rib-r"><img src={ribRed} alt="" draggable={false} /><b>-{saving}%</b></span>}
+                <span className="shp-clock"><i aria-hidden />{dealLeft.label}</span>
+              </div>
+              <img className="shp-feat-art esk-float" src={deal.icon === 'potion3' ? elixirs3 : ICON_ART[deal.icon]} alt="" draggable={false} />
+            </div>
             <DealBuy deal={deal} bought={!server && !!inventory?.dealBought} />
           </div>
-          <img className="sh-banner-art" src={ICON_ART[deal.icon]} alt="" draggable={false} />
-        </Card>
 
-        {server && shop?.merchant && <MerchantSection m={shop.merchant} onDone={refresh} />}
+          {merchant && <MerchantSection m={merchant} onDone={refresh} preview onMore={() => pick('merchant')} />}
 
-        <ChestStrip />
+          {server && packs.length > 0 && <>
+            <RibbonH i={2}>Treasury</RibbonH>
+            <TreasuryPacks packs={packs} onOpen={() => pick('treasury')} />
+          </>}
 
-        <div className="ui-h">Essentials</div>
-        {ESSENTIALS.map((o) => withServer(o, shop)).map((o) => (
-          <OfferRow key={o.id} o={o} disabled={o.id === 'hearts_full' && fullHearts}
-            status={o.id === 'hearts_full' && fullHearts ? 'Hearts are full' : o.id.startsWith('elixir') ? `You have ${currencies?.potion ?? 0}` : undefined} />
-        ))}
-
-        <div className="ui-h">Boosts</div>
-        {BOOSTS.map((o) => withServer(o, shop)).map((o) => (
-          <OfferRow key={o.id} o={o}
-            status={o.id === 'xp_boost' && boost.ms > 0 ? `Active · ${boost.label} left`
-              : o.id === 'freeze' ? `You hold ${inventory?.freezes ?? 0} / 2` : undefined} />
-        ))}
-
-        <div className="ui-h">Chests</div>
-        <div className="sh-grid3">
-          {CHEST_OFFERS.map((o) => withServer(o, shop)).map((o) => <ChestCard key={o.id} o={o} odds={chests?.find((c) => 'chest_' + c.kind === o.id)?.odds} />)}
-        </div>
-        {server && <p className="ui-note">Tap a chest's name to see its odds. Chests hold coins and elixirs, never gems or wardrobe items.</p>}
-
-        {server && shop && shop.items.length > 0 && <>
-          <div className="ui-h">Wardrobe</div>
-          <div className="sh-grid3">
-            {shop.items.filter((it) => it.tier === 'coin').map((it) => <ItemCard key={it.id} it={it} onDone={refresh} />)}
-          </div>
-          <div className="sh-grid3 sh-gap">
-            {shop.items.filter((it) => it.tier === 'gem').map((it) => <ItemCard key={it.id} it={it} onDone={refresh} />)}
-          </div>
-          <p className="ui-note">Looks only: nothing here changes your score. Try anything on in Profile, Edit. Boss treasures and Hearthfire hats cannot be bought; win them.</p>
+          <RibbonH i={3}>Essentials</RibbonH>
+          {ESSENTIALS.map((o) => withServer(o, shop)).map((o) => (
+            <OfferRow key={o.id} o={o} disabled={o.id === 'hearts_full' && fullHearts}
+              status={o.id === 'hearts_full' && fullHearts ? 'Hearts are full' : o.id.startsWith('elixir') ? `You have ${currencies?.potion ?? 0}` : undefined} />
+          ))}
+          <RibbonH i={4}>Boosts</RibbonH>
+          {BOOSTS.map((o) => withServer(o, shop)).map((o) => (
+            <OfferRow key={o.id} o={o}
+              status={o.id === 'xp_boost' && boost.ms > 0 ? `Active · ${boost.label} left`
+                : o.id === 'freeze' ? `You hold ${inventory?.freezes ?? 0} / 2` : undefined} />
+          ))}
         </>}
 
-        {server && shop?.store ? <Treasury st={shop.store} premium={shop.premium ?? []} onSeason={onSeason} /> : <>
-          <div className="ui-h">Gems</div>
-          <div className="sh-grid">
+        {tab === 'merchant' && <>
+          {merchant && <MerchantSection m={merchant} onDone={refresh} />}
+          {server && shop && shop.items.length > 0 && <>
+            <RibbonH i={2}>Wardrobe</RibbonH>
+            <div className="shp-grid">
+              {[...shop.items.filter((it) => it.tier === 'coin'), ...shop.items.filter((it) => it.tier === 'gem')].map((it, i) => <ItemCard key={it.id} it={it} onDone={refresh} i={i} />)}
+            </div>
+            <p className="ui-note">Looks only: nothing here changes your score. Try anything on in Profile, Edit. Boss treasures and Hearthfire hats cannot be bought; win them.</p>
+          </>}
+          {!server && <p className="ui-note">The Merchant opens when you play online.</p>}
+        </>}
+
+        {tab === 'chests' && <>
+          <ChestStrip />
+          <div className="shp-grid shp-grid3">
+            {CHEST_OFFERS.map((o) => withServer(o, shop)).map((o, i) => <ChestCard key={o.id} o={o} i={i} odds={chests?.find((c) => 'chest_' + c.kind === o.id)?.odds} />)}
+          </div>
+          {server && <p className="ui-note">Tap a chest's name to see its odds. Chests hold coins and elixirs, never gems or wardrobe items.</p>}
+        </>}
+
+        {tab === 'treasury' && (server && shop?.store ? <Treasury st={shop.store} premium={shop.premium ?? []} onSeason={onSeason} /> : <>
+          <RibbonH>Treasury</RibbonH>
+          <div className="shp-grid shp-grid3 shp-tsy">
             {GEM_PACKS.map((p, i) => (
-              <Card key={p.n} name="card_square" className="reveal sh-card">
-                <img className="sh-card-art" src={art(GEM_ART[i])} alt="" draggable={false} />
-                <span className="sh-card-n"><img src={art('gem_s')} alt="" />{p.n.toLocaleString('en-US')}</span>
-                <Btn className="sm" disabled>{p.price}</Btn>
-              </Card>
+              <div key={p.n} className="shp-pack esk-enter" style={{ ['--i' as string]: i }}>
+                <img className="shp-pack-art" src={PILE[Math.min(i, 2)]} alt="" draggable={false} />
+                <span className="shp-pack-n"><img src={skySrc('ic_gem')} alt="" />{p.n.toLocaleString('en-US')}</span>
+                <span className="shp-soon">Coming soon</span>
+              </div>
             ))}
           </div>
-        </>}
+        </>)}
       </div>
     </div>
   )
@@ -166,11 +224,13 @@ function DealBuy({ deal, bought }: { deal: Offer; bought: boolean }) {
     if (deal.id.includes('chest_')) showReward('Added to your chests', { chest: 'silver' })
   }
   return (
-    <Btn onClick={go} disabled={bought}>{bought ? 'Bought' : msg ?? 'Buy'}</Btn>
+    <Btn className="lg shp-buy esk-press" onClick={go} disabled={bought}>
+      {bought ? 'Bought' : msg ?? <><img src={skySrc(deal.price.gems != null ? 'ic_gem' : 'ic_coin')} alt="" />{priceLabel(deal.price)}{deal.price.gems != null ? ' gems' : ' coins'}</>}
+    </Btn>
   )
 }
 
-function ChestCard({ o, odds }: { o: Offer; odds?: { reward: string; min?: number; max?: number; amount?: number; chance: number }[] }) {
+function ChestCard({ o, odds, i = 0 }: { o: Offer; i?: number; odds?: { reward: string; min?: number; max?: number; amount?: number; chance: number }[] }) {
   const { buy, showReward } = useGame()
   const [msg, setMsg] = useState<string | null>(null)
   const [show, setShow] = useState(false)
@@ -179,17 +239,24 @@ function ChestCard({ o, odds }: { o: Offer; odds?: { reward: string; min?: numbe
     if (!r.ok) { setMsg(r.reason ?? 'Not possible'); setTimeout(() => setMsg(null), 2200); return }
     showReward('Added to your chests', { chest: o.id.slice(6) as 'wood' })
   }
+  const rar = RAR_OF_CHEST[o.id] ?? 'common'
   return (
-    <Card name="card_square" className="reveal sh-card">
-      <img className="sh-card-art" src={ICON_ART[o.icon]} alt="" draggable={false} />
-      <span className="sh-card-n" onClick={() => odds && setShow(!show)} role={odds ? 'button' : undefined}>{msg ?? o.title.replace(' Chest', '')}{odds ? ' ⓘ' : ''}</span>
-      {show && odds && (
-        <span className="sh-odds">{odds.map((x, i) => (
-          <small key={i}>{Math.round(x.chance * 100)}% · {x.min != null ? `${x.min}–${x.max}` : x.amount} {x.reward === 'elixir' ? 'elixir' : x.reward}</small>
-        ))}</span>
-      )}
-      <PriceBtn o={o} onBuy={go} small />
-    </Card>
+    <div className={`shp-rc r-${rar} esk-enter`} style={{ ['--i' as string]: i }}>
+      <div className="shp-rc-top">
+        <span className="shp-rar">{RAR_LABEL[rar]}</span>
+        <img className="shp-ped" src={pedestal} alt="" draggable={false} />
+        <img className={`shp-rc-art esk-float d${i % 4}`} src={ICON_ART[o.icon]} alt="" draggable={false} />
+      </div>
+      <div className="shp-rc-b">
+        <span className="shp-rc-n" onClick={() => odds && setShow(!show)} role={odds ? 'button' : undefined}>{msg ?? o.title.replace(' Chest', '')}{odds ? ' ⓘ' : ''}</span>
+        {show && odds && (
+          <span className="sh-odds">{odds.map((x, k) => (
+            <small key={k}>{Math.round(x.chance * 100)}% · {x.min != null ? `${x.min}–${x.max}` : x.amount} {x.reward === 'elixir' ? 'elixir' : x.reward}</small>
+          ))}</span>
+        )}
+        <PriceBtn o={o} onBuy={go} small />
+      </div>
+    </div>
   )
 }
 
@@ -208,7 +275,7 @@ const Price = ({ it }: { it: WardrobeItem }) => (
 )
 
 /** a wardrobe item of the one catalogue: buy in place (server price), then Wear */
-function ItemCard({ it, onDone }: { it: WardrobeItem; onDone?: () => void }) {
+function ItemCard({ it, onDone, i = 0 }: { it: WardrobeItem; onDone?: () => void; i?: number }) {
   const { currencies, setCurrencies } = useGame()
   const [msg, setMsg] = useState<string | null>(null)
   const [owned, setOwned] = useState(it.owned)
@@ -234,18 +301,27 @@ function ItemCard({ it, onDone }: { it: WardrobeItem; onDone?: () => void }) {
     try { await wearItem(it.slot, it.id); setWorn(true) } catch (e) { say(errorText(e)) }
     setBusy(false)
   }
+  const rar = rarityOf(it)
+  const label = it.slot === 'haircolor' ? `${it.name} dye` : it.name
   return (
-    <Card name="card_square" className="reveal sh-card">
-      <ItemThumb className="sh-card-art" id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />
-      <span className="sh-card-n sh-item-n" title={it.name}>{msg ?? it.name}</span>
-      {owned ? <Btn className="sm" name={worn ? 'btn_gold' : 'btn_green'} disabled={busy || worn} onClick={wear}>{worn ? 'Worn' : 'Wear'}</Btn>
-        : <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={go}>{c.armed ? 'Sure?' : <Price it={it} />}</Btn>}
-    </Card>
+    <div className={`shp-rc r-${rar} esk-enter`} style={{ ['--i' as string]: i }}>
+      <div className="shp-rc-top">
+        <span className="shp-rar">{RAR_LABEL[rar]}</span>
+        <img className="shp-ped" src={pedestal} alt="" draggable={false} />
+        <ItemArt className={`shp-rc-art esk-float d${i % 4} s-${it.slot}`} id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />
+        {it.recolour?.swatch && <i className="shp-dot" style={{ background: SWATCH[it.recolour.swatch] ?? '#999' }} />}
+      </div>
+      <div className="shp-rc-b">
+        <span className="shp-rc-n" title={label}>{msg ?? label}</span>
+        {owned ? <Btn className="sm" name={worn ? 'btn_gold' : 'btn_green'} disabled={busy || worn} onClick={wear}>{worn ? 'Worn' : 'Wear'}</Btn>
+          : <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={go}>{c.armed ? 'Sure?' : <Price it={it} />}</Btn>}
+      </div>
+    </div>
   )
 }
 
 /** the Wandering Merchant: 4 items + one set, the same for everyone, rotating every Monday (audit 5.3 C) */
-function MerchantSection({ m, onDone }: { m: Merchant; onDone: () => void }) {
+function MerchantSection({ m, onDone, preview, onMore }: { m: Merchant; onDone: () => void; preview?: boolean; onMore?: () => void }) {
   const left = useCountdown(m.ends_at)
   const { currencies, setCurrencies } = useGame()
   const [msg, setMsg] = useState<string | null>(null)
@@ -260,26 +336,33 @@ function MerchantSection({ m, onDone }: { m: Merchant; onDone: () => void }) {
     try { const r = await api.buySet(set.id); sfx('reveal'); setCurrencies(toCurrencies(r.wallet)); onDone() } catch (e) { setMsg(errorText(e)); setTimeout(() => setMsg(null), 2200) }
     setBusy(false)
   }
-  return <>
-    <div className="ui-h wm-h">Wandering Merchant <Chip className="wm-left">{left.label}</Chip></div>
-    <div className="sh-grid wm-grid">
-      {m.items.map((it) => <ItemCard key={it.id} it={it} onDone={onDone} />)}
+  return <section className="shp-merch esk-enter" style={{ ['--i' as string]: 1 }}>
+    <div className="shp-awn"><img src={awning} alt="" draggable={false} /><h2>Wandering Merchant</h2></div>
+    <img className="shp-post l" src={lanternPost} alt="" draggable={false} />
+    <img className="shp-post r" src={lanternPost} alt="" draggable={false} />
+    <div className="shp-board">
+      <Chip className="shp-left">New wares in {left.label}</Chip>
+      <div className="shp-grid">
+        {m.items.map((it, i) => <ItemCard key={it.id} it={it} onDone={onDone} i={i} />)}
+      </div>
+      {preview ? (onMore && <button className="shp-more esk-press" onClick={onMore}>See the set and all wares ›</button>) : <>
+        <Card className="reveal wm-set">
+          <span className="wm-set-th">{set.items.map((it) => <ItemArt key={it.id} id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />)}</span>
+          <span className="wm-set-main">
+            <b className="ui-t">{set.name}</b>
+            <small className="ui-s">{msg ?? (set.owned_all ? 'You own the whole set' : `${set.items.filter((i) => !i.owned).length} items · 20% off`)}</small>
+          </span>
+          {set.owned_all ? <Btn className="sm" disabled>Owned</Btn> : (
+            <span className="wm-set-buy">
+              {set.full_gems > set.price_gems && <s>{set.full_gems}</s>}
+              <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={buySet}>
+                {c.armed ? 'Sure?' : <><img src={skySrc('ic_gem')} alt="" />{set.price_gems}</>}
+              </Btn>
+            </span>
+          )}
+        </Card>
+        <p className="ui-note">New wares every Monday. Epic cloaks and sets are sold only here, and some return months later.</p>
+      </>}
     </div>
-    <Card className="reveal wm-set">
-      <span className="wm-set-th">{set.items.map((it) => <ItemThumb key={it.id} id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />)}</span>
-      <span className="wm-set-main">
-        <b className="ui-t">{set.name}</b>
-        <small className="ui-s">{msg ?? (set.owned_all ? 'You own the whole set' : `${set.items.filter((i) => !i.owned).length} items · 20% off`)}</small>
-      </span>
-      {set.owned_all ? <Btn className="sm" disabled>Owned</Btn> : (
-        <span className="wm-set-buy">
-          {set.full_gems > set.price_gems && <s>{set.full_gems}</s>}
-          <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={buySet}>
-            {c.armed ? 'Sure?' : <><img src={skySrc('ic_gem')} alt="" />{set.price_gems}</>}
-          </Btn>
-        </span>
-      )}
-    </Card>
-    <p className="ui-note">New wares every Monday. Epic cloaks and sets are sold only here, and some return months later.</p>
-  </>
+  </section>
 }
