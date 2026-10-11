@@ -237,7 +237,7 @@ def shown_name(name: str | None, user_id) -> str:
     if name and name != "Apprentice":
         return name
     h = int(str(user_id).replace("-", "")[:8], 16)
-    return f"Apprentice {RUNE_NAMES[h % len(RUNE_NAMES)]}"
+    return f"Mage {RUNE_NAMES[h % len(RUNE_NAMES)]}"
 
 
 def league_points(correct: int, total: int) -> int:
