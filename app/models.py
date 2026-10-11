@@ -156,8 +156,22 @@ class User(Base):
     xp_total: Mapped[int] = mapped_column(BigInteger, default=0)
     xp_boost_until: Mapped[datetime | None] = mapped_column(TS, nullable=True)
     league_opt_in: Mapped[bool] = mapped_column(Boolean, default=True)
+    # first-run intro (10-11): None = the intro has not been finished; existing players were marked done by 0003
+    onboarded_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
+    daily_goal: Mapped[int | None] = mapped_column(Integer, nullable=True)  # stages a day the player vowed (1..3)
+    # small client flags kept on the account (e.g. {"tour": "pending" | "done"}); see play.FLAG_KEYS
+    flags: Mapped[dict] = mapped_column(JSONB, default=dict, server_default="{}")
     created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
     last_seen_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
+
+
+class UserAchievement(Base):
+    """A claimed achievement step (id like `journey.2`); `reward` is what was paid."""
+    __tablename__ = "user_achievements"
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    ach_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    reward: Mapped[dict] = mapped_column(JSONB, default=dict)
+    claimed_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
 
 
 class Wallet(Base):

@@ -1,4 +1,5 @@
 """Stage start / complete and the review queue. All rewards are computed here, on the server."""
+import re
 from datetime import timedelta
 
 from sqlalchemy import func, select
@@ -30,7 +31,36 @@ def me_out(u: User, streak: int | None = None) -> dict:
             "timezone": u.timezone, "player_level": u.player_level, "xp": u.xp, "xp_to_next": u.xp_to_next,
             "xp_total": u.xp_total, "streak": streak if streak is not None else 0,
             "xp_boost_until": int(u.xp_boost_until.timestamp() * 1000) if u.xp_boost_until else 0,
-            "league_opt_in": u.league_opt_in, "created_at": u.created_at.isoformat() if u.created_at else None}
+            "league_opt_in": u.league_opt_in, "created_at": u.created_at.isoformat() if u.created_at else None,
+            "onboarded": u.onboarded_at is not None, "daily_goal": u.daily_goal, "flags": dict(u.flags or {})}
+
+
+# client flags kept on the account: key -> allowed values (anything else is ignored)
+FLAG_KEYS = {"tour": {"pending", "done"}, "intro_step": None, "look": {"boy", "girl", "custom"},
+             "placement": None, "guided": {"pending", "done"}}
+_NAME_OK = re.compile(r"[^\w .'\-]", re.UNICODE)
+
+
+def clean_name(raw: str) -> str | None:
+    """a league-safe display name: 2..20 visible characters, letters/digits/space . ' - only, no links"""
+    n = " ".join(_NAME_OK.sub("", raw or "").split())[:20].strip()
+    if len(n) < 2 or n.replace(" ", "").isdigit():
+        return None
+    return n
+
+
+def merge_flags(old: dict | None, new: dict) -> dict:
+    out = dict(old or {})
+    for k, v in (new or {}).items():
+        if k not in FLAG_KEYS:
+            continue
+        allowed = FLAG_KEYS[k]
+        if allowed is None:
+            if isinstance(v, (int, str)) and len(str(v)) <= 12:
+                out[k] = v
+        elif v in allowed:
+            out[k] = v
+    return out
 
 
 async def start_stage(db: AsyncSession, user: User, stage_id: str) -> dict:
@@ -187,6 +217,8 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     stat.gems += gems
     games = set(stat.games or [])
     games.add(stage.mini_game)
+    # every game the player actually played in this stage (lessons mix a grammar game and a word game)
+    games.update(qs[qid].game for qid in by_qid if qid in qs)
     stat.games = sorted(games)
     if stars > 0:
         stat.stages_won += 1

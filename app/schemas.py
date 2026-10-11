@@ -26,6 +26,9 @@ class MeOut(BaseModel):
     xp_boost_until: int
     league_opt_in: bool
     created_at: str | None
+    onboarded: bool = True
+    daily_goal: int | None = None
+    flags: dict[str, Any] = Field(default_factory=dict)
 
 
 class TokenOut(BaseModel):
@@ -41,6 +44,9 @@ class MePatch(BaseModel):
     timezone: str | None = None
     league_opt_in: bool | None = None
     level: LevelCode | None = Field(None, description="placement / chosen current level")
+    daily_goal: int | None = Field(None, ge=1, le=3, description="stages a day (the intro's daily vow)")
+    onboarded: bool | None = Field(None, description="true = the first-run intro is finished")
+    flags: dict[str, Any] | None = Field(None, description="merged into the account's client flags (known keys only)")
 
 
 class WalletOut(BaseModel):

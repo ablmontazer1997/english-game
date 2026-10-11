@@ -85,7 +85,7 @@ def streak_out(st: Streak, stat: UserDayStat | None, today: date) -> dict:
 
 # ---------------------------------------------------------------- quests (same pools as the app's progress.ts)
 DAILY = [
-    ("win", lambda n: f"Win {n} stages", [2, 3], lambda t: t["stages_won"], {"coins": 120}),
+    ("win", lambda n: "Win a stage" if n == 1 else f"Win {n} stages", [2, 3], lambda t: t["stages_won"], {"coins": 120}),
     ("three", lambda n: "Earn 3 stars in a stage" if n == 1 else f"Earn 3 stars in {n} stages", [1, 2],
      lambda t: t["stars3"], {"coins": 150}),
     ("correct", lambda n: f"Answer {n} questions correctly", [20, 30], lambda t: t["correct"], {"potion": 1}),
@@ -123,11 +123,16 @@ async def _ensure_period(db, user, period: str, key: date):
     if exist:
         return list(exist)
     pool, k = (DAILY, 3) if period == "daily" else (WEEKLY, 3)
+    if period == "daily" and not await _review_possible(db, user, key):
+        # audit 10-11 P0: no "answer N review items" quest on a day with nothing (or too little) due in the Cauldron
+        pool = [q for q in pool if q[0] != "cauldron"]
     rnd = random.Random(f"{period}{key.isoformat()}")  # the same quests for everyone on the same day/week
     chosen = rnd.sample(pool, k)
     rows = []
     for qk, title, ns, _get, reward in chosen:
         n = rnd.choice(ns)
+        if qk == "win" and user.daily_goal:  # the intro's daily vow sets the size of the "win stages" quest
+            n = user.daily_goal
         rows.append(DailyQuest(user_id=user.id, quest_id=f"{period}:{key.isoformat()}:{qk}", period=period,
                                period_key=key, quest_key=qk, title=title(n), target=n, reward=reward, bonus=False))
     if period == "daily":
@@ -142,6 +147,15 @@ async def _ensure_period(db, user, period: str, key: date):
         db.add(r)
     await db.flush()
     return rows
+
+
+async def _review_possible(db, user: User, day: date) -> bool:
+    """enough Cauldron items are due by the end of `day` to finish the largest review quest"""
+    from ..models import SrsItem
+    end = local_midnight_utc(user.timezone, day + timedelta(days=1))
+    due = (await db.execute(select(func.count()).select_from(SrsItem).where(
+        SrsItem.user_id == user.id, SrsItem.due_at < end))).scalar_one()
+    return due >= 15
 
 
 async def quests_for(db: AsyncSession, user: User) -> list[dict]:
@@ -203,6 +217,19 @@ BOT_NAMES = ["Elowen", "Thorne", "Mirabel", "Caspian", "Isolde", "Rowan", "Serap
              "Odette", "Faelan", "Brielle", "Corwin", "Nimue", "Percival", "Tamsin", "Evander", "Liora", "Gideon"]
 
 
+# players who never picked a name (the old default "Apprentice") get a stable rune-name in the table, so the league is
+# not a column of identical rows; the player can rename from the League or Settings at any time
+RUNE_NAMES = ["Ash", "Birch", "Cedar", "Ember", "Fern", "Frost", "Hazel", "Iris", "Jade", "Lark", "Moss", "Onyx", "Opal",
+              "Quill", "Raven", "Sorrel", "Thistle", "Willow", "Yarrow", "Zephyr", "Amber", "Briar", "Clover", "Dusk"]
+
+
+def shown_name(name: str | None, user_id) -> str:
+    if name and name != "Apprentice":
+        return name
+    h = int(str(user_id).replace("-", "")[:8], 16)
+    return f"Apprentice {RUNE_NAMES[h % len(RUNE_NAMES)]}"
+
+
 def league_points(correct: int, total: int) -> int:
     if total <= 0:
         return 0
@@ -238,7 +265,8 @@ async def _group_table(db, week: date, tier: str, group: int, frac: float, me_id
     rows = (await db.execute(select(LeagueMembership, User.display_name).join(User, User.id == LeagueMembership.user_id)
                              .where(LeagueMembership.week_start == week, LeagueMembership.tier == tier,
                                     LeagueMembership.group_no == group))).all()
-    entries = [{"playerId": str(m.user_id), "name": name, "lp": m.points, "isMe": m.user_id == me_id, "bot": False}
+    entries = [{"playerId": str(m.user_id), "name": shown_name(name, m.user_id), "lp": m.points,
+                "isMe": m.user_id == me_id, "bot": False}
                for m, name in rows]
     entries += _bots(week, tier, group, max(0, GROUP_SIZE - len(entries)), frac)
     entries.sort(key=lambda e: (-e["lp"], e["bot"], e["name"]))

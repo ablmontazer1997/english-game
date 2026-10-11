@@ -347,3 +347,63 @@ async def test_import_topic_id_and_topic_first_selection(tmp_path, seeded):
                                                          topic_ids=["a1-possessive-adjectives"])}
         assert "or-A1-possessive-adjectives-1" in via_codes and "or-A1-bogus-1" in via_codes
         assert "or-A1-subject-pronouns-1" not in via_codes
+
+
+async def test_onboarding_name_level_goal_flags(client, player):
+    assert player["onboarded"] is False and player["flags"] == {}
+    r = await client.patch("/v1/me", json={"display_name": "  Mira   Vale ", "level": "B1", "daily_goal": 1,
+                                           "flags": {"tour": "pending", "bogus": 1, "look": "nope"}})
+    me = r.json()
+    assert r.status_code == 200 and me["display_name"] == "Mira Vale" and me["level"] == "B1"
+    assert me["daily_goal"] == 1 and me["flags"] == {"tour": "pending"} and me["onboarded"] is False
+    assert (await client.patch("/v1/me", json={"display_name": "x"})).status_code == 422
+    me = (await client.patch("/v1/me", json={"onboarded": True, "flags": {"tour": "done"}})).json()
+    assert me["onboarded"] is True and me["flags"]["tour"] == "done"
+    lv = (await client.get("/v1/levels")).json()
+    assert [x["unlocked"] for x in lv] == [True, True, True, False, False]
+    b1 = (await client.get("/v1/map/B1")).json()
+    assert b1["worlds"][0]["stages"][0]["status"] == "current"
+    qs = (await client.get("/v1/quests")).json()
+    win = [q for q in qs if q["id"].endswith(":win")]
+    assert not win or (win[0]["target"] == 1 and win[0]["title"] == "Win a stage")
+    # nothing is due in the Cauldron on day one: no review quest
+    assert not any(q["id"].endswith(":cauldron") for q in qs)
+    items = (await client.get("/v1/placement/items?per_level=3")).json()
+    assert items and all(q["game"] == "oracle-trial" for q in items)
+
+
+async def test_lesson_starts_with_its_own_grammar(client, player):
+    r = await client.post("/v1/stages/A1-W01-S01/start")
+    qs = r.json()["questions"]
+    first = qs[0]
+    assert first["game"] not in ("bubble-pop", "match-blitz", "memory-crystals", "gap-gate")
+    assert first["topic_id"] == r.json()["stage"]["topic_id"]
+    vocab = [i for i, q in enumerate(qs) if q["game"] in ("bubble-pop", "match-blitz", "memory-crystals", "gap-gate")]
+    assert all(i >= len(qs) - len(vocab) for i in vocab)
+
+
+async def test_achievements_pay_once(client, player):
+    a = (await client.get("/v1/achievements")).json()
+    assert len(a) > 60 and not any(x["id"].startswith("hints.") for x in a)
+    assert (await client.post("/v1/achievements/journey.1/claim")).status_code == 409
+    await play(client, "A1-W01-S01")
+    a = {x["id"]: x for x in (await client.get("/v1/achievements")).json()}
+    assert a["played.1"]["progress"] == 1 and a["correct.1"]["progress"] > 0 and a["explorer.1"]["progress"] >= 1
+    # reach "Rising Mage I" (level 5) directly and claim it
+    from app.models import User
+    async with SessionLocal() as db:
+        await db.execute(update(User).where(User.display_name == "Apprentice").values(player_level=5))
+        await db.commit()
+    g0 = (await client.get("/v1/wallet")).json()["gems"]
+    r = await client.post("/v1/achievements/level.1/claim")
+    assert r.status_code == 200 and r.json()["reward"] == {"gems": 2} and r.json()["wallet"]["gems"] == g0 + 2
+    assert next(x for x in r.json()["achievements"] if x["id"] == "level.1")["claimed"] is True
+    assert (await client.post("/v1/achievements/level.1/claim")).status_code == 409
+    assert (await client.post("/v1/achievements/nope.1/claim")).status_code == 404
+
+
+async def test_league_names_are_not_all_apprentice(client, player):
+    await play(client, "A1-W01-S01")
+    lg = (await client.get("/v1/league")).json()
+    me = next(e for e in lg["entries"] if e["isMe"])
+    assert me["name"].startswith("Apprentice ") and me["name"] != "Apprentice"

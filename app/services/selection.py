@@ -179,6 +179,19 @@ async def pick_for_stage(db: AsyncSession, user: User, stage: Stage) -> list[tup
     # rounds: words first, then grammar, then skills; review items interleaved
     rnd = random.SystemRandom()
     rnd.shuffle(picked)
+    if stage.kind == "lesson":
+        # audit 10-11 P0: a lesson opens on its OWN grammar (an untimed grammar game), the word round comes last
+        lead = next((p[0].game for p in picked if p[2] == stage.topic_id and p[0].game in GRAMMAR_GAMES), None)
+
+        def lesson_key(p):
+            g = p[0].game
+            if g in VOCAB_GAMES or g in SPELLING_GAMES:
+                return 3
+            if p[2] == stage.topic_id:
+                return 0 if g == lead else 1
+            return 2
+        picked.sort(key=lesson_key)
+        return picked[:n]
     picked.sort(key=lambda p: ROUND_ORDER.get(p[0].game, 1 if p[0].game in ("spell-weaver", "curse-breaker",
                                                                              "rune-order", "oracle-trial") else 2))
     return picked[:n]

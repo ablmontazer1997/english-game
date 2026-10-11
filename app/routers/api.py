@@ -1,17 +1,18 @@
 import uuid
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..catalog import DEFAULT_EQUIP, SKUS, STARTING_WALLET
 from ..curriculum import LEVEL_ORD, LEVELS
 from ..db import get_db
 from ..errors import ApiError
-from ..models import GrammarTopic, Item, Level, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
+from ..models import GrammarTopic, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
 from ..schemas import (BuyIn, CheckoutIn, CompleteIn, EquipIn, GuestIn, LedgerRow, LevelOut, MeOut, MePatch,
                        ReviewIn, StartOut, TokenOut, WalletOut)
 from ..security import current_user, make_token
+from ..services import achievements as ach
 from ..services import engage, play, shop
 from ..services import wallet as W
 from ..services.content import map_for
@@ -69,7 +70,10 @@ async def me(user: User = Depends(current_user), db: AsyncSession = Depends(get_
 @router.patch("/me", response_model=MeOut, tags=["auth"])
 async def me_patch(body: MePatch, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
     if body.display_name is not None:
-        user.display_name = body.display_name.strip() or user.display_name
+        name = play.clean_name(body.display_name)
+        if name is None:
+            raise ApiError(422, "bad_name", "use 2 to 20 letters or numbers")
+        user.display_name = name
     if body.timezone is not None:
         if not valid_tz(body.timezone):
             raise ApiError(422, "bad_timezone", "use an IANA zone like Asia/Tehran")
@@ -78,6 +82,12 @@ async def me_patch(body: MePatch, user: User = Depends(current_user), db: AsyncS
         user.league_opt_in = body.league_opt_in
     if body.level is not None:
         user.level = body.level
+    if body.daily_goal is not None:
+        user.daily_goal = body.daily_goal
+    if body.flags is not None:
+        user.flags = play.merge_flags(user.flags, body.flags)
+    if body.onboarded and user.onboarded_at is None:
+        user.onboarded_at = utcnow()
     await db.commit()
     return play.me_out(user, await _streak_now(db, user))
 
@@ -256,3 +266,31 @@ async def league_seen(user: User = Depends(current_user), db: AsyncSession = Dep
     granted, w = await engage.league_seen(db, user)
     await db.commit()
     return {"granted": granted, "wallet": W.wallet_out(w)}
+
+
+# ---------------------------------------------------------------- achievements (audit 10-11 P0)
+@router.get("/achievements", tags=["engagement"], summary="Every achievement step with progress from server stats")
+async def achievements(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    return await ach.listing(db, user)
+
+
+@router.post("/achievements/{ach_id}/claim", tags=["engagement"], summary="Claim a reached step: pays its gems once")
+async def achievement_claim(ach_id: str, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    reward, w = await ach.claim(db, user, ach_id)
+    out = {"reward": reward, "wallet": W.wallet_out(w), "achievements": await ach.listing(db, user)}
+    await db.commit()
+    return out
+
+
+# ---------------------------------------------------------------- placement (first-run intro)
+@router.get("/placement/items", tags=["map"],
+            summary="Oracle Trial items per level for the app's adaptive placement test (no rewards, no hearts)")
+async def placement_items(per_level: int = Query(6, ge=2, le=12), user: User = Depends(current_user),
+                          db: AsyncSession = Depends(get_db)):
+    out = []
+    for code, _, _ in LEVELS:
+        rows = (await db.execute(select(Question).where(Question.game == "oracle-trial", Question.level == code,
+                                                        Question.active.is_(True))
+                                 .order_by(func.random()).limit(per_level))).scalars().all()
+        out += [play.question_out(q) for q in rows]
+    return out
