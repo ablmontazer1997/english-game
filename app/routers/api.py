@@ -84,6 +84,7 @@ async def me_patch(body: MePatch, user: User = Depends(current_user), db: AsyncS
         user.level = body.level
     if body.daily_goal is not None:
         user.daily_goal = body.daily_goal
+        await engage.apply_daily_goal(db, user)
     if body.flags is not None:
         user.flags = play.merge_flags(user.flags, body.flags)
     if body.onboarded and user.onboarded_at is None:

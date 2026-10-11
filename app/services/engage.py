@@ -158,6 +158,16 @@ async def _review_possible(db, user: User, day: date) -> bool:
     return due >= 15
 
 
+async def apply_daily_goal(db, user: User):
+    """the vow changes today's unclaimed "win stages" quest at once (new days pick it up in _ensure_period)"""
+    n = user.daily_goal
+    if not n:
+        return
+    row = await db.get(DailyQuest, (user.id, f"daily:{local_day(user.timezone).isoformat()}:win"))
+    if row is not None and row.claimed_at is None:
+        row.target, row.title = n, ("Win a stage" if n == 1 else f"Win {n} stages")
+
+
 async def quests_for(db: AsyncSession, user: User) -> list[dict]:
     today = local_day(user.timezone)
     wk = week_start(today)

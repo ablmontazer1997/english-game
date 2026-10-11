@@ -351,6 +351,7 @@ async def test_import_topic_id_and_topic_first_selection(tmp_path, seeded):
 
 async def test_onboarding_name_level_goal_flags(client, player):
     assert player["onboarded"] is False and player["flags"] == {}
+    await client.get("/v1/quests")  # today's quests exist before the vow (the app loads them first)
     r = await client.patch("/v1/me", json={"display_name": "  Mira   Vale ", "level": "B1", "daily_goal": 1,
                                            "flags": {"tour": "pending", "bogus": 1, "look": "nope"}})
     me = r.json()
