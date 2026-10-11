@@ -79,6 +79,10 @@ button.ui-card { cursor: pointer; font: inherit; color: inherit; }
   font-size: var(--fs-caption); line-height: 1; font-weight: 800; color: #fff;
   text-shadow: 0 1px 3px rgba(60, 20, 140, .5);
 }
+/* admin 4858: the painted light-violet chip art gave white/violet text about 3.5:1 (timers unreadable). Solid deep violet
+   with a light rim: white text is about 7.8:1 */
+.ui-chip.sk-chip { border-image: none !important; border: 2px solid #cdb6ff; border-radius: 999px; background: #5b2bd1;
+  color: #fff !important; text-shadow: none; font-weight: 900; box-shadow: 0 2px 0 #3d1a96; }
 
 /* ---------- section header, aligned to the painted card edge ---------- */
 .ui-h {

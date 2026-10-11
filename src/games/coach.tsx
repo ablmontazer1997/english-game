@@ -190,7 +190,8 @@ export function boxesIn(root: HTMLElement | null, host: HTMLElement | null, mode
     if (!visible(el)) return
     // an empty keep area (Potion Mix's mix before anything is poured) is not lit
     if (el.dataset.focusKeep !== undefined && !el.dataset.coach && !el.children.length && !el.textContent?.trim()) return
-    const sel = el.dataset.coachParts
+    // data-coach-tut: a tighter hole for the tutorial only (Guild Letters points at the paper, Focus keeps the whole panel)
+    const sel = (mode === 'tut' && el.dataset.coachTut) || el.dataset.coachParts
     const parts = sel ? [...el.querySelectorAll(sel)].filter(visible) : []
     if (!parts.length) rs.push(rectOf(el))
     else if (mode === 'focus') parts.forEach((p) => rs.push(rectOf(p)))

@@ -6,10 +6,10 @@
 .evp > img { width: 30px; height: 30px; object-fit: contain; flex: none; }
 .evp-tx { display: grid; text-align: left; line-height: 1.1; min-width: 0; }
 .evp-tx b { font-size: 13.5px; font-weight: 900; color: #3c4160; white-space: nowrap; }
-.evp-tx small { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; color: #6c7294; white-space: nowrap; }
-.evp.is-on .evp-tx small { color: #8a5a00; }
+.evp-tx small { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 900; color: #484e6e; white-space: nowrap; }
+.evp.is-on .evp-tx small { color: #5e3d00; }
 .evp-live, .evr-chip.is-on { font-style: normal; }
-.evp-live { padding: 1px 6px; border-radius: 99px; background: #e5525f; color: #fff; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; }
+.evp-live { padding: 1px 6px; border-radius: 99px; background: #c62f3d; color: #fff; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; }
 .evp:active { transform: scale(.97); }
 
 .evc { display: grid; gap: 8px; }
@@ -26,5 +26,5 @@
 .evr-top small { font-size: 11.5px; font-weight: 800; color: var(--ink-l, #7d83a2); }
 .evr-blurb { font-size: 12.5px; line-height: 1.3; font-weight: 700; color: var(--ink-m, #4a3f66); text-wrap: pretty; }
 .evr-chip { --h: 26px; font-size: 11.5px; white-space: nowrap; }
-.evr-chip.is-on { color: #8a5a00; }
+.evr-chip.is-on { background: #c62f3d; border-color: #ffc2c8; box-shadow: 0 2px 0 #8e1d28; }
 @media (max-width: 370px) { .evr { grid-template-columns: 38px minmax(0, 1fr); } .evr-ic { width: 38px; height: 38px; } .evr-chip { grid-column: 2; justify-self: start; } }

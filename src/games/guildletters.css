@@ -12,18 +12,31 @@
 .gl-letter p { margin: 0; }
 .gl-from { margin-top: .4em !important; text-align: right; font-weight: 900; color: #6a4a20; }
 
-.gl-write { top: 58.5%; height: 21.5%; left: 4%; right: 4%; display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 8px; }
-.gl-task { font-size: 13px; font-weight: 900; color: #7b3ff0; line-height: 1.25; }
-.gl-tips { margin: 0; font-size: 12px; font-weight: 800; color: #b8741a; }
-.gl-write textarea { flex: 1; min-height: 0; width: 100%; resize: none; border: 0; background: none; padding: 2px 0; font: inherit; font-size: clamp(16px, 4.8cqw, 21px);
-  font-weight: 800; color: #2a2550; line-height: 1.35; caret-color: #8a4dff; }
-.gl-write textarea:focus { outline: none; }
-.gl-count { align-self: flex-end; font-size: 13px; font-weight: 800; color: #5a5f7d; }
-.gl-count.ok { color: #3f9d27; }
-.gl-go { top: 84%; left: 15%; right: 15%; }
+/* admin 4857: the bottom is one column (the dock): the writing panel grows to fill it, Send sits under it.
+   It starts just under the painted parchment (52% of the scene height). */
+.gl-dock { top: calc(max(150cqw, 100cqh) * .535); bottom: calc(10px + var(--safe-bottom, 0px)); display: flex; flex-direction: column;
+  justify-content: flex-end; gap: 14px; }
+.gl-write { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 8px; scrollbar-width: none; }
+.gl .gl-write .gtask-b { margin: 0 0 2px; padding: 5px 10px 5px 5px; }
+.gl .gl-write .gtask-b .gtask-ic { width: 26px; height: 26px; }
+.gl .gl-write .gtask.gtask-b .gtask-t b { font-size: 17px; }
+.gl-task { margin: 0; padding: 0 2px; font-size: 13.5px; font-weight: 800; color: #5b2bd1; line-height: 1.3; }
+.gl-tips { margin: 0; padding: 0 2px; font-size: 12.5px; font-weight: 800; color: #8a4f00; }
+/* the writing paper: lined note paper with a clear border; the whole sheet is the textarea, so a tap anywhere focuses it */
+.gl-paper { --lh: 26px; flex: 1 0 calc(3 * var(--lh) + 14px); display: flex; min-height: calc(3 * var(--lh) + 14px); border-radius: 14px; cursor: text;
+  border: 2px solid #c9a35a; background: #fffaf0; box-shadow: inset 0 2px 5px rgba(120, 80, 20, .16); transition: border-color .15s, box-shadow .15s; }
+.gl-paper:focus-within { border-color: #7d4ff0; box-shadow: 0 0 0 3px rgba(125, 79, 240, .28), inset 0 2px 5px rgba(120, 80, 20, .12); }
+.gl-write .gl-paper textarea { flex: 1; min-height: 0; width: 100%; resize: none; border: 0; outline: none; margin: 0; padding: 6px 12px;
+  font: inherit; font-size: 17px; font-weight: 700; line-height: var(--lh); color: #2a2550; caret-color: #7d4ff0; border-radius: 12px;
+  background: repeating-linear-gradient(180deg, transparent 0 calc(var(--lh) - 1px), rgba(125, 79, 240, .22) calc(var(--lh) - 1px) var(--lh));
+  background-position: 0 6px; background-attachment: local; }
+.gl-write .gl-paper textarea::placeholder { color: #857aa3; font-style: italic; font-weight: 700; opacity: 1; }
+.gl-count { align-self: flex-end; font-size: 13px; font-weight: 800; color: #4f5470; }
+.gl-count.ok { color: #2f7d1c; }
+.gl-go { flex: none; padding: 0 11%; }
 .gl-go .gs-go { font-size: clamp(20px, 6cqw, 26px); }
 
-.gl-review { height: auto; min-height: 21.5%; justify-content: center; gap: 6px; }
+.gl-review { flex: 0 1 auto; justify-content: center; gap: 6px; padding: 12px 16px; }
 .gl-stars { display: flex; justify-content: center; gap: 6px; font-size: 34px; color: #b3a5d0; }
 .gl-stars span.on { color: #ffc93a; text-shadow: 0 2px 0 #c98a1c, 0 0 12px rgba(255, 200, 60, .8); animation: gl-star .5s ease-out both; }
 .gl-stars span:nth-child(2) { animation-delay: .15s } .gl-stars span:nth-child(3) { animation-delay: .3s }
@@ -45,4 +58,32 @@
 .gl-review li:nth-child(2) { animation-delay: .1s } .gl-review li:nth-child(3) { animation-delay: .2s }
 @keyframes gl-li { from { transform: translateX(-12px); opacity: 0 } }
 /* Phase E (360x740 audit): the review grows UP from above the Finish button and scrolls, instead of running under it */
-.gl-write.gl-review { top: auto; bottom: 17.5%; max-height: 54%; overflow: auto; }
+.gl-sent .gl-dock { top: 30%; }
+.gl-sending .gl-dock { top: calc(max(150cqw, 100cqh) * .535); }
+
+/* ---- keyboard open / short screen (gl-kb): the scene steps back, a compact letter card with the owl takes the top,
+   the paper and Send fit in the visible height (--gl-vis), so Send is never under the keyboard ---- */
+.gl-kb .gs-title, .gl-kb .gl-owl, .gl-kb .gl-letter { display: none; }
+.gl-kb .gs-scene { filter: brightness(.8) saturate(.8); }
+.gl-kb .gl-dock, .gl-kb.gl-sent .gl-dock { top: calc(58px + var(--safe-top, 0px)); bottom: auto; height: calc(var(--gl-vis) - 58px - var(--safe-top, 0px) - 8px);
+  gap: 8px; justify-content: flex-start; }
+.gl-card { flex: 0 1 auto; min-height: 44px; max-height: 34%; position: relative; display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px 8px 6px;
+  border-radius: 16px; border: 2px solid #e7c47a; background: linear-gradient(180deg, #fffaf0, #f5e6c8); box-shadow: 0 0 0 3px rgba(255, 255, 255, .9), 0 6px 14px rgba(40, 30, 100, .25); }
+.gl-card-owl { flex: none; width: 46px; height: 46px; object-fit: contain; object-position: 50% 0; }
+.gl-card-body { flex: 1; min-width: 0; max-height: 100%; overflow-y: auto; align-self: stretch; padding-right: 54px; font-style: italic; font-weight: 700;
+  font-size: 14px; line-height: 1.35; color: #3a2a18; scrollbar-width: thin; }
+.gl-card-body p { margin: 0; }
+.gl-card-body .gl-from { margin-top: 2px !important; }
+.gl-card-peek { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gl-card.shut .gl-card-owl { width: 30px; height: 30px; }
+.gl-card-tg { position: absolute; top: 6px; right: 6px; height: 28px; padding: 0 10px; border-radius: 99px; border: 0; font: inherit; font-size: 12.5px; font-weight: 900;
+  color: #fff; background: #5b2bd1; }
+.gl-kb .gl-write { gap: 4px; padding: 8px 10px 6px; }
+.gl-kb .gl-write .gtask-b { display: none; }
+.gl-kb .gl-paper { --lh: 24px; flex-basis: calc(3 * var(--lh) + 12px); min-height: calc(3 * var(--lh) + 12px); }
+.gl-kb .gl-go { padding: 0 6%; }
+.gl-kb .gl-go .gs-go { min-height: 52px; font-size: 21px; }
+
+/* Focus (admin 4857): the owl and the letter stay lit; the letter gets its own parchment card, since the painted one is hidden */
+.stage-host.focus .gl :is(.gl-owl, .gl-letter) { visibility: visible; }
+.stage-host.focus .gl .gl-letter { background: #f8edd2; border-radius: 12px; box-shadow: 0 0 0 2px #e7c47a; transform: none; padding: 2% 3%; }
