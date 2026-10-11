@@ -9,11 +9,12 @@ from ..curriculum import LEVEL_ORD, LEVELS
 from ..db import get_db
 from ..errors import ApiError
 from ..models import GrammarTopic, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
-from ..schemas import (BuyIn, CheckoutIn, CompleteIn, EquipIn, GuestIn, LedgerRow, LevelOut, MeOut, MePatch,
-                       ReviewIn, StartOut, TokenOut, WalletOut)
+from ..schemas import (BuyIn, CheckoutIn, CompleteIn, ContinueIn, DyeIn, EquipIn, GuestIn, LedgerRow, LevelOut,
+                       LookIn, MeOut, MePatch, ReviewIn, SetIn, StartOut, TokenOut, WalletOut, WardrobeBuyIn)
 from ..security import current_user, make_token
 from ..services import achievements as ach
 from ..services import engage, play, shop
+from ..services import wardrobe as WD
 from ..services import wallet as W
 from ..services.content import map_for
 from ..timeutil import local_day, utcnow, valid_tz
@@ -123,7 +124,7 @@ async def topic(topic_id: str, user: User = Depends(current_user), db: AsyncSess
 
 
 # ---------------------------------------------------------------- play
-@router.post("/stages/{stage_id}/start", response_model=StartOut, tags=["play"])
+@router.post("/stages/{stage_id}/start", response_model=StartOut, response_model_by_alias=True, tags=["play"])
 async def stage_start(stage_id: str, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
     out = await play.start_stage(db, user, stage_id)
     await db.commit()
@@ -136,6 +137,29 @@ async def session_complete(session_id: uuid.UUID, body: CompleteIn, user: User =
                            db: AsyncSession = Depends(get_db)):
     out = await play.complete(db, user, session_id, [a.model_dump() for a in body.answers], body.hints_used,
                               body.use_elixir)
+    await db.commit()
+    return out
+
+
+@router.post("/sessions/{session_id}/continue", tags=["play"],
+             summary="'+3 questions' after a lost trial / boss / vault: 1 elixir or 15 gems, once per session")
+async def session_continue(session_id: uuid.UUID, body: ContinueIn, user: User = Depends(current_user),
+                           db: AsyncSession = Depends(get_db)):
+    out = await play.continue_session(db, user, session_id, body.pay)
+    await db.commit()
+    return out
+
+
+@router.get("/hints", tags=["play"], summary="Hints left free today (3 a day, then 20 coins each)")
+async def hints(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = play.hints_state(await engage.day_stat(db, user))
+    await db.commit()
+    return out
+
+
+@router.post("/hints/use", tags=["play"], summary="A hint the game just applied: free 3 a day, then 20 coins")
+async def hint_use(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await play.use_hint(db, user)
     await db.commit()
     return out
 
@@ -220,11 +244,55 @@ async def equip(body: EquipIn, user: User = Depends(current_user), db: AsyncSess
 
 @router.get("/catalog/items", tags=["inventory"], summary="The whole wardrobe catalogue (no auth)")
 async def catalog_items(db: AsyncSession = Depends(get_db)):
-    rows = (await db.execute(select(Item).order_by(Item.slot, Item.tier, Item.id))).scalars().all()
+    rows = (await db.execute(select(Item).where(Item.active.is_(True)).order_by(Item.sort, Item.id))).scalars().all()
     return [{"id": i.id, "name": i.name, "slot": i.slot, "tier": i.tier, "rarity": i.rarity,
-             "price_gems": i.price_gems, "world_drop": i.world_drop, "drop_stage_id": i.drop_stage_id,
+             "price_gems": i.price_gems, "price_coins": i.price_coins, "how": i.how,
+             "world_drop": i.world_drop, "drop_stage_id": i.drop_stage_id,
              "theme": i.theme, "is_new": i.is_new, "base_mesh": i.base_mesh, "recolour": i.recolour,
              "is_default": i.is_default, "active": i.active, "notes": i.notes} for i in rows]
+
+
+# ---------------------------------------------------------------- wardrobe (Phase B: ownership on the server)
+@router.get("/wardrobe", tags=["inventory"],
+            summary="The one catalogue with ownership, prices and how to earn, the saved look, dyes and the Merchant")
+async def wardrobe(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await WD.view(db, user)
+    await db.commit()
+    return out
+
+
+@router.put("/wardrobe/look", tags=["inventory"],
+            summary="Save the look on the account (unowned picks fall back); migrate=true = first upload from the browser")
+async def wardrobe_look(body: LookIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    look, granted = await WD.save_look(db, user, body.look, body.migrate)
+    await db.commit()
+    return {"look": look, "granted": granted}
+
+
+@router.post("/wardrobe/buy", tags=["inventory"], summary="Buy a coin / gem item in place (server price), optionally wear it")
+async def wardrobe_buy(body: WardrobeBuyIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await WD.buy_item(db, user, body.item_id, body.wear)
+    await db.commit()
+    return out
+
+
+@router.post("/wardrobe/dye", tags=["inventory"], summary="Dye one owned garment one colour for good (150 coins)")
+async def wardrobe_dye(body: DyeIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await WD.buy_dye(db, user, body.garment, body.swatch)
+    await db.commit()
+    return out
+
+
+@router.get("/merchant", tags=["shop"], summary="The Wandering Merchant: 4 items + 1 set, rotating every Monday")
+async def merchant(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    return await WD.merchant_view(db, user)
+
+
+@router.post("/merchant/buy-set", tags=["shop"], summary="Buy this week's set (20% off the items you do not own)")
+async def merchant_set(body: SetIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await WD.buy_set(db, user, body.set_id)
+    await db.commit()
+    return out
 
 
 # ---------------------------------------------------------------- quests, streak, league
@@ -251,6 +319,19 @@ async def streak(user: User = Depends(current_user), db: AsyncSession = Depends(
     from ..models import UserDayStat
     stat = await db.get(UserDayStat, (user.id, today))
     out = engage.streak_out(st, stat, today)
+    await db.commit()
+    return out
+
+
+@router.post("/streak/repair", tags=["engagement"],
+             summary="Relight a Hearthfire that went out within 2 missed days, for 200 gems")
+async def streak_repair(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    st = await engage.repair_streak(db, user)
+    today = local_day(user.timezone)
+    from ..models import UserDayStat
+    stat = await db.get(UserDayStat, (user.id, today))
+    w = await W.get_wallet(db, user.id)
+    out = {"streak": engage.streak_out(st, stat, today), "wallet": W.wallet_out(w)}
     await db.commit()
     return out
 

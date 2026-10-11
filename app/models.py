@@ -48,9 +48,12 @@ class Item(Base):
     id: Mapped[str] = mapped_column(Text, primary_key=True)
     name: Mapped[str] = mapped_column(Text)
     slot: Mapped[str] = mapped_column(String(16))
-    tier: Mapped[str] = mapped_column(String(10))  # free | boss | gem | premium
+    tier: Mapped[str] = mapped_column(String(10))  # free | boss | earned | coin | gem | premium
     rarity: Mapped[str | None] = mapped_column(String(10), nullable=True)  # common | rare | epic
     price_gems: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    price_coins: Mapped[int | None] = mapped_column(Integer, nullable=True)  # Phase B: coin tier
+    how: Mapped[str] = mapped_column(Text, default="", server_default="")  # how to get it (earned / premium)
+    sort: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     world_drop: Mapped[int | None] = mapped_column(Integer, nullable=True)  # global world index 1..45
     drop_stage_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     theme: Mapped[str] = mapped_column(Text, default="")
@@ -161,6 +164,11 @@ class User(Base):
     daily_goal: Mapped[int | None] = mapped_column(Integer, nullable=True)  # stages a day the player vowed (1..3)
     # small client flags kept on the account (e.g. {"tour": "pending" | "done"}); see play.FLAG_KEYS
     flags: Mapped[dict] = mapped_column(JSONB, default=dict, server_default="{}")
+    # Phase B: the 3D look saved on the account (catalogue ids, see services/wardrobe.py); null = never saved
+    look: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    dyes: Mapped[list] = mapped_column(JSONB, default=list, server_default="[]")  # "garment:swatch" owned
+    # true for accounts that existed before server ownership: their first look upload keeps what they wear
+    look_legacy: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
     last_seen_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
 
@@ -222,6 +230,7 @@ class StageSession(Base):
     expires_at: Mapped[datetime] = mapped_column(TS)
     completed_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
     result: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    continues: Mapped[int] = mapped_column(Integer, default=0, server_default="0")  # Phase B "+3 questions"
 
 
 class SrsItem(Base):
@@ -331,6 +340,7 @@ class UserDayStat(Base):
     league_points: Mapped[int] = mapped_column(Integer, default=0)
     games: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     dailies_all_claimed: Mapped[bool] = mapped_column(Boolean, default=False)
+    hints_used: Mapped[int] = mapped_column(Integer, default=0, server_default="0")  # Phase B: 3 free a day
 
 
 class Streak(Base):
@@ -342,6 +352,9 @@ class Streak(Base):
     last_active_day: Mapped[date | None] = mapped_column(Date, nullable=True)
     freezes: Mapped[int] = mapped_column(Integer, default=0)
     freezes_used: Mapped[int] = mapped_column(Integer, default=0)
+    # Phase B streak repair: the Hearthfire that went out (days) and the day a new one was lit after it
+    lost: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    lost_on: Mapped[date | None] = mapped_column(Date, nullable=True)
 
 
 class LeagueMembership(Base):

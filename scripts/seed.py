@@ -19,6 +19,27 @@ from app.models import ChestType, GrammarTopic, Item, Level, Stage, UserProgress
 SNAP = Path(__file__).resolve().parent.parent / "app" / "seed_data" / "bingual_grammar_topics.json"
 
 
+def item_rows(with_world: bool) -> list[dict]:
+    """catalogue v2 rows (Phase B); with_world=False leaves world_drop / drop_stage_id as they are in the DB"""
+    rows = []
+    for it in catalog.items():
+        row = dict(id=it["id"], name=it["name"], slot=it["slot"], tier=it["tier"], rarity=it.get("rarity"),
+                   price_gems=it.get("price_gems"), price_coins=it.get("price_coins"), how=it.get("how", ""),
+                   sort=it.get("sort", 0), theme=it.get("theme", ""), base_mesh=it.get("base_mesh"),
+                   recolour=it.get("recolour"), is_new=it.get("is_new", False), is_default=it.get("is_default", False),
+                   active=it.get("active", True), notes=it.get("notes", ""))
+        if with_world:
+            row.update(world_drop=it.get("world_drop"), drop_stage_id=None)
+        rows.append(row)
+    return rows
+
+
+async def retire_items(db):
+    """first-catalogue items the live wardrobe cannot show stay in the table (user_items may point at them), inactive"""
+    await db.execute(update(Item).where(Item.id.in_(catalog.RETIRED)).values(active=False, tier="retired",
+                                                                                price_gems=None, price_coins=None))
+
+
 def check_plan(bingual: dict[str, dict]):
     used = [t for lv in C.WORLDS.values() for _, ts in lv for t in ts]
     assert len(used) == len(set(used)), "a topic is used twice"
@@ -69,15 +90,9 @@ async def main():
                                    "rules": [], "examples": []}))
         await upsert(db, GrammarTopic, topics, ["id"])
 
-        items = []
-        for it in catalog.items():
-            row = dict(id=it["id"], name=it["name"], slot=it["slot"], tier=it["tier"], rarity=it.get("rarity"),
-                       price_gems=it.get("price_gems"), world_drop=it.get("world_drop"), drop_stage_id=None,
-                       theme=it.get("theme", ""), base_mesh=it.get("base_mesh"), recolour=it.get("recolour"),
-                       is_new=it.get("is_new", False), is_default=it.get("is_default", False),
-                       active=it.get("active", True), notes=it.get("notes", ""))
-            items.append(row)
+        items = item_rows(with_world=True)
         await upsert(db, Item, items, ["id"])
+        await retire_items(db)
         await upsert(db, ChestType, [dict(c) for c in catalog.CHESTS], ["kind"])
 
         gi = core_n = 0

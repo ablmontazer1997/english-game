@@ -8,9 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..config import get_settings
 from ..curriculum import LEVEL_ORD, NEXT_LEVEL, TREASURE_GEMS
 from ..errors import ApiError
-from ..models import (Item, Question, SrsItem, Stage, StageSession, User, UserItem, UserProgress, World)
+from ..models import (Item, Question, SrsItem, Stage, StageSession, User, UserItem, UserProgress, World)  # noqa
 from ..timeutil import end_of_local_day, local_day, utcnow
-from . import engage, srs
+from .. import catalog as C
+from . import engage, srs, wardrobe
 from . import wallet as W
 from .content import is_stage_open, stage_out
 from .grading import grade
@@ -81,9 +82,82 @@ async def start_stage(db: AsyncSession, user: User, stage_id: str) -> dict:
                         expires_at=now + timedelta(minutes=get_settings().session_ttl_minutes))
     db.add(sess)
     await db.flush()
+    stat = await engage.day_stat(db, user)
     return {"session_id": str(sess.id), "stage": stage_out(stage), "expires_at": sess.expires_at.isoformat(),
             "review_ratio": stage.review_ratio,
-            "questions": [question_out(q, s, t) for q, s, t in picked], "hearts": w.hearts}
+            "questions": [question_out(q, s, t) for q, s, t in picked], "hearts": w.hearts,
+            "hints": hints_state(stat), "continue": continue_offer(stage, sess)}
+
+
+# ---------------------------------------------------------------- Phase B sinks: hints and "continue"
+def hints_state(stat) -> dict:
+    used = stat.hints_used or 0
+    return {"free_left": max(0, C.HINT_FREE_PER_DAY - used), "free_per_day": C.HINT_FREE_PER_DAY,
+            "cost_coins": C.HINT_COST_COINS, "used_today": used}
+
+
+async def use_hint(db: AsyncSession, user: User) -> dict:
+    """a hint the game just applied: the first 3 of the local day are free, then 20 coins each"""
+    stat = await engage.day_stat(db, user)
+    w = await W.get_wallet(db, user.id)
+    charged = 0
+    if (stat.hints_used or 0) >= C.HINT_FREE_PER_DAY:
+        W.change(db, w, "coins", -C.HINT_COST_COINS, "hint", local_day(user.timezone).isoformat())
+        charged = C.HINT_COST_COINS
+    stat.hints_used = (stat.hints_used or 0) + 1
+    await db.flush()
+    return {"charged_coins": charged, "hints": hints_state(stat), "wallet": W.wallet_out(w)}
+
+
+def continue_offer(stage: Stage, sess: StageSession) -> dict | None:
+    if not stage.hearts_apply:
+        return None
+    return {"questions": C.CONTINUE_QUESTIONS, "cost_gems": C.CONTINUE_GEMS, "cost_elixir": 1,
+            "left": max(0, 1 - (sess.continues or 0))}
+
+
+async def continue_session(db: AsyncSession, user: User, session_id, pay: str) -> dict:
+    """"+3 questions" after a lost trial / boss / vault (audit 5.3 A), once per session, for 1 elixir or 15 gems.
+    The questions join the session, so the result is graded over all of them."""
+    sess = await db.get(StageSession, session_id, with_for_update=True)
+    if sess is None or sess.user_id != user.id:
+        raise ApiError(404, "not_found", "unknown session")
+    if sess.completed_at is not None:
+        raise ApiError(409, "already_completed", "this session was already completed")
+    now = utcnow()
+    if now > sess.expires_at:
+        raise ApiError(410, "session_expired", "start the stage again")
+    stage = await db.get(Stage, sess.stage_id)
+    if not stage.hearts_apply:
+        raise ApiError(409, "no_continue", "only trials, bosses and vaults can be continued")
+    if (sess.continues or 0) >= 1:
+        raise ApiError(409, "already_continued", "a stage can be continued once")
+    if pay not in ("elixir", "gems"):
+        raise ApiError(422, "bad_request", "pay with elixir or gems")
+    picked = await pick_for_stage(db, user, stage)
+    have = set(sess.question_ids)
+    fresh = [(q, s, t) for q, s, t in picked if q.id not in have]
+    # the stage's own game first (a boss stays a boss fight), then anything else it picked
+    fresh.sort(key=lambda x: 0 if x[0].game == stage.mini_game else 1)
+    fresh = fresh[:C.CONTINUE_QUESTIONS]
+    if not fresh:
+        raise ApiError(409, "no_questions", "no more questions for this stage")
+    w = await W.get_wallet(db, user.id)
+    ref = f"{stage.id}:{sess.id}"
+    if pay == "elixir":
+        W.change(db, w, "elixir", -1, "continue", ref)
+    else:
+        W.change(db, w, "gems", -C.CONTINUE_GEMS, "continue", ref)
+    sess.question_ids = list(sess.question_ids) + [q.id for q, _, _ in fresh]
+    src = dict(sess.sources or {})
+    for q, s, t in fresh:
+        src[q.id] = {"source": s, "topic_id": t}
+    sess.sources = src
+    sess.continues = (sess.continues or 0) + 1
+    sess.expires_at = max(sess.expires_at, now + timedelta(minutes=15))
+    await db.flush()
+    return {"questions": [question_out(q, s, t) for q, s, t in fresh], "wallet": W.wallet_out(w),
+            "paid": pay, "continue": continue_offer(stage, sess)}
 
 
 def stars_for(acc: float) -> int:
@@ -182,6 +256,7 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     if first_clear and stage.kind == "boss":
         it = await _give_item(db, user.id, world.boss_drop_item_id, "boss")
         if it:
+            it["why"] = "Boss treasure"
             items.append(it)
     if first_clear and stage.drop_item_id:
         it = await _give_item(db, user.id, stage.drop_item_id, "bonus")
@@ -229,6 +304,7 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
             stat.bosses += 1
     st = await engage.touch_streak(db, user, stat)
     lp = await engage.add_points(db, user, stat, engage.league_points(correct, total))
+    items += await wardrobe.habit_rewards(db, user, st)   # Phase B: 7 / 30-day Hearthfire hats
 
     # what opened up
     unlocked = []
@@ -313,8 +389,9 @@ async def review_submit(db: AsyncSession, user: User, answers: list[dict]) -> di
         W.change(db, w, "hearts", hearts_gained, "review_refill", local_day(user.timezone).isoformat())
         hearts_gained = w.hearts - h0
     st = await engage.touch_streak(db, user, stat)
+    items = await wardrobe.habit_rewards(db, user, st)
     await db.flush()
-    return {"graded": len(results), "correct": correct, "hearts_gained": max(0, hearts_gained),
+    return {"graded": len(results), "items": items, "correct": correct, "hearts_gained": max(0, hearts_gained),
             "srs": [{"qid": r.question_id, "box": r.box, "due_at": r.due_at.isoformat()} for r in rows],
             "wallet": W.wallet_out(w), "streak": engage.streak_out(st, stat, local_day(user.timezone))}
 

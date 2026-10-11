@@ -120,6 +120,11 @@ class StartOut(BaseModel):
     review_ratio: float
     questions: list[QuestionOut]
     hearts: int
+    hints: dict[str, Any] | None = Field(None, description="Phase B: free_left / cost_coins (3 free hints a day)")
+    continue_: dict[str, Any] | None = Field(None, alias="continue",
+                                             description="Phase B: the '+3 questions' offer after a loss")
+
+    model_config = {"populate_by_name": True}
 
 
 class AnswerIn(BaseModel):
@@ -152,3 +157,28 @@ class EquipIn(BaseModel):
 class CheckoutIn(BaseModel):
     sku: str
     provider: str | None = None
+
+
+# ---------------------------------------------------------------- Phase B: wardrobe + sinks
+class LookIn(BaseModel):
+    look: dict[str, Any] = Field(description="body, tone, blush, hair, haircolor, eyes, hat, top, coat, pants, shoes "
+                                             "(catalogue ids; null = none for hat/top/coat/pants/shoes), tint {id: swatch}")
+    migrate: bool = Field(False, description="the app's first upload of a look kept only in the browser")
+
+
+class WardrobeBuyIn(BaseModel):
+    item_id: str
+    wear: bool = False
+
+
+class DyeIn(BaseModel):
+    garment: str
+    swatch: str
+
+
+class SetIn(BaseModel):
+    set_id: str
+
+
+class ContinueIn(BaseModel):
+    pay: str = Field("gems", description="elixir | gems")

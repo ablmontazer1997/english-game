@@ -31,7 +31,7 @@ async def test_guest_auth_and_starting_state(client, player):
     w = (await client.get("/v1/wallet")).json()
     assert (w["gems"], w["coins"], w["elixir"], w["potion"], w["hearts"]) == (40, 1250, 3, 3, 5)
     inv = (await client.get("/v1/inventory")).json()
-    assert len(inv["items"]) == 19
+    assert len(inv["items"]) == 15  # Phase B starter set
     assert inv["equipped"]["hair"] == "hair_short"
     led = (await client.get("/v1/wallet/ledger")).json()
     assert {r["reason"] for r in led} == {"signup"}
@@ -175,30 +175,33 @@ async def _set_wallet(player, **vals):
 
 async def test_shop_chests_inventory(client, player):
     shop = (await client.get("/v1/shop")).json()
-    assert len(shop["items"]) == 27 and all(not g["enabled"] for g in shop["gem_packs"])
+    # Phase B: coin + gem items of the one catalogue (the two merchant-only cloaks are not in the plain list)
+    assert len(shop["items"]) == 28 and all(not g["enabled"] for g in shop["gem_packs"])
+    assert {i["tier"] for i in shop["items"]} == {"coin", "gem"} and shop["merchant"]["items"]
     assert next(o for o in shop["offers"] if o["id"] == "chest_wood")["odds"][1]["chance"] == 0.35
     r = await client.post("/v1/shop/buy", json={"item_id": "shoes_forest"})
     assert r.status_code == 409 and r.json()["detail"]["code"] == "not_for_sale"
     r = await client.post("/v1/shop/buy", json={"item_id": "coat_star"})
     assert r.json()["detail"]["code"] == "not_for_sale"
-    r = await client.post("/v1/shop/buy", json={"item_id": "hair_pony"})
+    r = await client.post("/v1/shop/buy", json={"item_id": "hat_witch"})
     assert r.status_code == 409 and r.json()["detail"]["code"] == "not_enough_gems"
     await _set_wallet(player, gems=500)
-    r = (await client.post("/v1/shop/buy", json={"item_id": "hair_pony"})).json()
-    assert r["wallet"]["gems"] == 450 and r["owned_item"] == "hair_pony"
-    assert (await client.post("/v1/shop/buy", json={"item_id": "hair_pony"})).json()["detail"]["code"] == "already_owned"
-    # equip
-    inv = (await client.put("/v1/inventory/equip", json={"slot": "hair", "item_id": "hair_pony"})).json()
-    assert inv["equipped"]["hair"] == "hair_pony"
-    r = await client.put("/v1/inventory/equip", json={"slot": "hair", "item_id": "hair_bob"})
+    r = (await client.post("/v1/shop/buy", json={"item_id": "hat_witch"})).json()
+    assert r["wallet"]["gems"] == 300 and r["owned_item"] == "hat_witch"
+    assert (await client.post("/v1/shop/buy", json={"item_id": "hat_witch"})).json()["detail"]["code"] == "already_owned"
+    # equip = the look on the account
+    inv = (await client.put("/v1/inventory/equip", json={"slot": "hat", "item_id": "hat_witch"})).json()
+    assert inv["equipped"]["hat"] == "hat_witch" and inv["look"]["hat"] == "hat_witch"
+    r = await client.put("/v1/inventory/equip", json={"slot": "hat", "item_id": "hat_midnight"})
     assert r.status_code == 403
-    r = await client.put("/v1/inventory/equip", json={"slot": "coat", "item_id": "hair_pony"})
+    r = await client.put("/v1/inventory/equip", json={"slot": "coat", "item_id": "hat_witch"})
     assert r.status_code == 422
     # chests: buy with published price, open with server RNG inside the published ranges
     r = (await client.post("/v1/shop/buy", json={"offer_id": "chest_silver"})).json()
-    assert r["wallet"]["gems"] == 420 and r["inventory"]["chests"]["silver"] == 1
+    assert r["wallet"]["gems"] == 270 and r["inventory"]["chests"]["silver"] == 1
     o = (await client.post("/v1/chests/silver/open")).json()
-    assert 200 <= o["reward"]["coins"] <= 350 and 3 <= o["reward"]["gems"] <= 8 and o["remaining"] == 0
+    # Phase B: a chest never pays gems back
+    assert 400 <= o["reward"]["coins"] <= 700 and "gems" not in o["reward"] and o["remaining"] == 0
     assert (await client.post("/v1/chests/silver/open")).json()["detail"]["code"] == "no_chest"
     # hearts already full
     assert (await client.post("/v1/shop/buy", json={"offer_id": "hearts_full"})).json()["detail"]["code"] == "hearts_full"
@@ -207,7 +210,7 @@ async def test_shop_chests_inventory(client, player):
     # payments are a placeholder
     assert (await client.post("/v1/payments/checkout", json={"sku": "gems_80"})).status_code == 501
     led = (await client.get("/v1/wallet/ledger")).json()
-    assert any(x["reason"] == "shop_item" and x["delta"] == -50 for x in led)
+    assert any(x["reason"] == "wardrobe_item" and x["delta"] == -200 for x in led)
 
 
 async def test_streak_quests_freeze(client, player):

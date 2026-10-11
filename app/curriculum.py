@@ -307,7 +307,7 @@ STAGE_RULES = {
     "lesson": (8, 0.0, 0.25, False),
     "practice": (10, 0.0, 0.2, False),
     "practice2": (6, 0.0, 0.0, False),
-    "trial": (12, 0.35, 0.0, False),
+    "trial": (12, 0.35, 0.0, True),   # Phase B (audit 5.3 A): a trial with no stars costs a heart
     "boss": (15, 0.35, 0.0, True),
     "bonus_vault": (12, 0.0, 0.0, True),
     "bonus_gate": (20, 0.0, 0.0, True),

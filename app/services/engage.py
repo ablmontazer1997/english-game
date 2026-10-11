@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..errors import ApiError
 from ..models import DailyQuest, LeagueMembership, Streak, User, UserDayStat
 from ..timeutil import local_day, local_midnight_utc, ms, utcnow, week_start
+from .. import catalog as C
 from . import wallet as W
 
 # ---------------------------------------------------------------- day stats
@@ -69,14 +70,56 @@ async def touch_streak(db: AsyncSession, user: User, stat: UserDayStat) -> Strea
             st.freezes_used += gap
             st.current += 1
         else:
+            # Phase B: remember the Hearthfire that went out, so it can still be repaired (2 missed days at most)
+            if gap - st.freezes <= C.STREAK_REPAIR_MAX_MISSED and st.current > 0:
+                st.lost, st.lost_on = st.current, today
+                st.freezes_used += st.freezes
+                st.freezes = 0
+            else:
+                st.lost, st.lost_on = 0, None
             st.current = 1
     st.last_active_day = today
     st.best = max(st.best, st.current)
     return st
 
 
+def repair_state(st: Streak, today: date) -> dict | None:
+    """a Hearthfire that went out within 2 missed days (beyond the Frost Wards) can be repaired for 200 gems"""
+    if not st.last_active_day:
+        return None
+    if st.last_active_day == today and st.lost > 0 and st.lost_on == today:
+        # the player already lit a new one today: the repair joins the old fire to it
+        return {"lost": st.lost, "cost_gems": C.STREAK_REPAIR_GEMS, "restores": st.lost + st.current}
+    missed = (today - st.last_active_day).days - 1
+    over = missed - st.freezes
+    if st.current > 0 and 0 < over <= C.STREAK_REPAIR_MAX_MISSED:
+        return {"lost": st.current, "cost_gems": C.STREAK_REPAIR_GEMS, "restores": st.current}
+    return None
+
+
+async def repair_streak(db: AsyncSession, user: User) -> Streak:
+    st = await get_streak(db, user.id)
+    today = local_day(user.timezone)
+    rs = repair_state(st, today)
+    if rs is None:
+        raise ApiError(409, "nothing_to_repair", "your Hearthfire is burning, or it went out too long ago")
+    w = await W.get_wallet(db, user.id)
+    W.change(db, w, "gems", -C.STREAK_REPAIR_GEMS, "streak_repair", today.isoformat())
+    if st.last_active_day == today and st.lost_on == today:
+        st.current = st.lost + st.current
+    else:
+        st.last_active_day = today - timedelta(days=1)   # burning again: today's exercise keeps it going
+        st.freezes_used += st.freezes
+        st.freezes = 0
+    st.lost, st.lost_on = 0, None
+    st.best = max(st.best, st.current)
+    await db.flush()
+    return st
+
+
 def streak_out(st: Streak, stat: UserDayStat | None, today: date) -> dict:
     return {"current": live_streak(st, today), "best": st.best, "today_done": st.last_active_day == today,
+            "repair": repair_state(st, today),
             "today_progress": {"stages_won": stat.stages_won if stat else 0,
                                "review_correct": stat.review_correct if stat else 0},
             "rule": STREAK_RULE, "freezes": st.freezes, "freezes_max": FREEZES_MAX,
@@ -96,12 +139,12 @@ DAILY = [
      {"coins": 120}),
 ]
 WEEKLY = [
-    ("wwin", lambda n: f"Win {n} stages this week", [12, 15], lambda t: t["stages_won"], {"gems": 15}),
+    ("wwin", lambda n: f"Win {n} stages this week", [12, 15], lambda t: t["stages_won"], {"gems": 10}),
     ("wthree", lambda n: f"Earn 3 stars in {n} stages", [6, 8], lambda t: t["stars3"], {"gems": 15}),
     ("wcorrect", lambda n: f"Answer {n} questions correctly", [120, 160], lambda t: t["correct"],
      {"chest": "silver"}),
-    ("wboss", lambda n: "Defeat a world boss", [1], lambda t: t["bosses"], {"gems": 20}),
-    ("wxp", lambda n: f"Earn {n} XP", [1200, 1600], lambda t: t["xp"], {"gems": 10}),
+    ("wboss", lambda n: "Defeat a world boss", [1], lambda t: t["bosses"], {"gems": 15}),
+    ("wxp", lambda n: f"Earn {n} XP", [1200, 1600], lambda t: t["xp"], {"gems": 8}),
 ]
 
 
@@ -246,15 +289,16 @@ def league_points(correct: int, total: int) -> int:
     return round(10 * correct * (correct / total))
 
 
-def rank_reward(rank: int) -> dict:
+def rank_reward(rank: int, tier: str = "bronze") -> dict:
+    """Phase B (audit 5.3 C): rank 1 = 20 gems, the Epic chest only above Bronze"""
     if rank == 1:
-        return {"gems": 30, "chest": "epic"}
+        return {"gems": 20} if tier == "bronze" else {"gems": 20, "chest": "epic"}
     if rank == 2:
-        return {"gems": 20, "chest": "silver"}
-    if rank == 3:
         return {"gems": 15, "chest": "silver"}
+    if rank == 3:
+        return {"gems": 10, "chest": "silver"}
     if rank <= 10:
-        return {"gems": 5}
+        return {"gems": 3}
     return {}
 
 
@@ -264,7 +308,9 @@ def _bots(week: date, tier: str, group: int, n: int, frac: float) -> list[dict]:
     names = rnd.sample(BOT_NAMES, min(n, len(BOT_NAMES)))
     out = []
     for i in range(n):
-        target = int(900 * (0.6 + 0.3 * ti) * rnd.uniform(0.15, 1.5))
+        # Phase B (audit 5.3 C): beatable but not free. Bronze tops out near 1,500 a week (was ~810), so 3 stages a
+        # day still wins, 2 a day lands mid-table
+        target = int(1100 * (0.7 + 0.3 * ti) * rnd.uniform(0.2, 1.9))
         # bots earn through the week (a little faster early on), so the table moves while you play
         out.append({"playerId": f"bot-{group}-{i}", "name": names[i % len(names)],
                     "lp": int(target * min(1.0, frac ** 0.8)), "isMe": False, "bot": True})
@@ -288,7 +334,10 @@ async def _settle(db, m: LeagueMembership):
     rank = next(i for i, e in enumerate(table, 1) if e["isMe"])
     ti = TIERS.index(m.tier)
     moved = 1 if (rank <= PROMOTE and ti < len(TIERS) - 1) else (-1 if (rank > GROUP_SIZE - DEMOTE and ti > 0) else 0)
-    m.final_rank, m.moved, m.reward, m.settled = rank, moved, rank_reward(rank), True
+    m.final_rank, m.moved, m.reward, m.settled = rank, moved, rank_reward(rank, m.tier), True
+    if moved == 1:   # Phase B: the first promotion earns the Frost hat
+        from .wardrobe import grant
+        await grant(db, m.user_id, C.LEAGUE_PROMOTION_REWARD, "league")
 
 
 async def membership(db: AsyncSession, user: User, create: bool = True) -> LeagueMembership | None:

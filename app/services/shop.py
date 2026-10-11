@@ -5,12 +5,13 @@ from datetime import timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..catalog import DEFAULT_EQUIP, OFFER_BY_ID, OFFERS, SKUS
+from ..catalog import DEFAULT_EQUIP, DEFAULT_LOOK, OFFER_BY_ID, OFFERS, SKUS
 from ..errors import ApiError
-from ..models import ChestOpen, ChestType, Item, User, UserChest, UserEquipment, UserItem
+from ..models import ChestOpen, ChestType, Item, User, UserChest, UserItem
 from ..timeutil import local_day, ms, utcnow
 from . import engage
 from . import wallet as W
+from . import wardrobe as WD
 
 RNG = random.SystemRandom()
 XP_BOOST = timedelta(minutes=15)
@@ -32,9 +33,8 @@ async def chests_out(db: AsyncSession, user_id) -> list[dict]:
 
 
 async def shop_view(db: AsyncSession, user: User) -> dict:
-    items = (await db.execute(select(Item).where(Item.tier == "gem", Item.active.is_(True))
-                              .order_by(Item.price_gems, Item.slot, Item.id))).scalars().all()
-    owned = await owned_ids(db, user.id)
+    """offers + chests + (Phase B) the wardrobe items for coins / gems from the ONE catalogue, and the Merchant"""
+    wd = await WD.view(db, user)
     odds = {c["kind"]: c["odds"] for c in await chests_out(db, user.id)}
     offers = []
     for o in OFFERS:
@@ -42,9 +42,9 @@ async def shop_view(db: AsyncSession, user: User) -> dict:
         if o["kind"] == "chest":
             d["odds"] = odds.get(o["id"].split("_", 1)[1])
         offers.append(d)
-    return {"items": [{"id": i.id, "name": i.name, "slot": i.slot, "tier": i.tier, "rarity": i.rarity,
-                       "price_gems": i.price_gems, "theme": i.theme, "owned": i.id in owned} for i in items],
-            "offers": offers,
+    items = [i for i in wd["items"] if i["tier"] in ("coin", "gem") and not i["limited"]]
+    return {"items": items, "offers": offers, "merchant": wd["merchant"],
+            "premium": [i for i in wd["items"] if i["tier"] == "premium"],
             "gem_packs": [s for s in SKUS if s["kind"] == "gems"]}
 
 
@@ -52,16 +52,8 @@ async def buy(db: AsyncSession, user: User, item_id: str | None, offer_id: str |
     w = await W.get_wallet(db, user.id)
     out: dict = {"ok": True}
     if item_id:
-        it = await db.get(Item, item_id)
-        if it is None or not it.active:
-            raise ApiError(404, "not_found", "unknown item")
-        if it.tier != "gem" or not it.price_gems:
-            raise ApiError(409, "not_for_sale", "boss, free and subscriber items cannot be bought")
-        if await db.get(UserItem, (user.id, item_id)) is not None:
-            raise ApiError(409, "already_owned")
-        W.change(db, w, "gems", -it.price_gems, "shop_item", item_id)
-        db.add(UserItem(user_id=user.id, item_id=item_id, source="shop"))
-        out["owned_item"] = item_id
+        r = await WD.buy_item(db, user, item_id)   # Phase B: the one wardrobe catalogue decides the price
+        out["owned_item"] = r["owned_item"]
     elif offer_id:
         o = OFFER_BY_ID.get(offer_id)
         if o is None:
@@ -130,30 +122,18 @@ async def open_chest(db: AsyncSession, user: User, kind: str) -> dict:
 
 async def inventory(db: AsyncSession, user: User) -> dict:
     items = (await db.execute(select(UserItem, Item.slot).join(Item, Item.id == UserItem.item_id)
-                              .where(UserItem.user_id == user.id).order_by(Item.slot, UserItem.item_id))).all()
-    eq = {e.slot: e.item_id for e in (await db.execute(select(UserEquipment)
-                                                       .where(UserEquipment.user_id == user.id))).scalars()}
+                              .where(UserItem.user_id == user.id, Item.active.is_(True))
+                              .order_by(Item.slot, Item.sort, UserItem.item_id))).all()
+    look = user.look or DEFAULT_LOOK
     chests = {c["kind"]: c["owned"] for c in await chests_out(db, user.id)}
     st = await engage.get_streak(db, user.id)
     return {"items": [{"item_id": ui.item_id, "slot": slot, "source": ui.source,
                        "acquired_at": ui.acquired_at.isoformat() if ui.acquired_at else None} for ui, slot in items],
-            "equipped": {**DEFAULT_EQUIP, **eq}, "chests": chests, "freezes": st.freezes,
-            "xpBoostUntil": ms(user.xp_boost_until) or 0}
+            "equipped": {s: look.get(s) for s in DEFAULT_EQUIP}, "look": look, "chests": chests,
+            "freezes": st.freezes, "xpBoostUntil": ms(user.xp_boost_until) or 0}
 
 
 async def equip(db: AsyncSession, user: User, slot: str, item_id: str | None) -> dict:
-    if slot not in DEFAULT_EQUIP:
-        raise ApiError(422, "bad_slot", f"slot must be one of {sorted(DEFAULT_EQUIP)}")
-    item_id = item_id or DEFAULT_EQUIP[slot]
-    it = await db.get(Item, item_id)
-    if it is None or it.slot != slot:
-        raise ApiError(422, "bad_item", "that item does not fit this slot")
-    if await db.get(UserItem, (user.id, item_id)) is None:
-        raise ApiError(403, "not_owned", "you do not own this item")
-    row = await db.get(UserEquipment, (user.id, slot))
-    if row is None:
-        db.add(UserEquipment(user_id=user.id, slot=slot, item_id=item_id))
-    else:
-        row.item_id = item_id
-    await db.flush()
+    """Phase B: wearing an item changes the look on the account, which the 3D wardrobe and hero load"""
+    await WD.set_slot(db, user, slot, item_id)
     return await inventory(db, user)
