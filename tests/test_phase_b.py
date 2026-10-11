@@ -34,7 +34,7 @@ async def test_catalogue_tiers_and_wardrobe_view(client, player):
     tiers = {}
     for i in wd["items"]:
         tiers[i["tier"]] = tiers.get(i["tier"], 0) + 1
-    assert tiers == {"free": 15, "coin": 14, "gem": 16, "earned": 3, "premium": 2, "boss": 45}
+    assert tiers == {"free": 15, "coin": 14, "gem": 16, "earned": 3, "premium": 11, "boss": 45}  # Phase D: 2 cloaks + this month's set (4) + season cloak + starter outfit (4)
     assert all(i["owned"] for i in wd["items"] if i["tier"] == "free")
     assert not any(i["owned"] for i in wd["items"] if i["tier"] != "free")
     assert wd["look"] is None and wd["look_saved"] is False and wd["legacy"] is False

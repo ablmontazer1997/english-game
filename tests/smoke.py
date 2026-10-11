@@ -53,7 +53,7 @@ def main():
     check(len(c.get("/v1/league").json()["entries"]) == 15, "league table of 15")
     check("due_count" in c.get("/v1/review/today").json(), "review queue")
     check(len(c.get("/v1/inventory").json()["items"]) >= 19, "inventory")
-    check(c.post("/v1/payments/checkout", json={"sku": "gems_80"}).status_code == 501, "payments not live (501)")
+    check(c.post("/v1/payments/checkout", json={"product_id": "gems_100"}).status_code == 503, "payments off (503 Coming soon)")
     print("SMOKE PASSED")
 
 

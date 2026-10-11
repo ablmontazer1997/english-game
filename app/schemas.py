@@ -156,7 +156,8 @@ class EquipIn(BaseModel):
 
 
 class CheckoutIn(BaseModel):
-    sku: str
+    product_id: str | None = None
+    sku: str | None = None          # old name of product_id
     provider: str | None = None
 
 
@@ -183,3 +184,33 @@ class SetIn(BaseModel):
 
 class ContinueIn(BaseModel):
     pay: str = Field("gems", description="elixir | gems")
+
+
+# ---------------------------------------------------------------- Phase D: store, season pass, web push
+class ProductIn(BaseModel):
+    product_id: str
+
+
+class ConfirmIn(BaseModel):
+    purchase_id: str
+    payload: dict = {}
+
+
+class SeasonClaimIn(BaseModel):
+    tier: int
+    track: str = "free"
+
+
+class PushKeys(BaseModel):
+    p256dh: str
+    auth: str
+
+
+class PushSubIn(BaseModel):
+    endpoint: str
+    keys: PushKeys
+    user_agent: str = ""
+
+
+class PushUnsubIn(BaseModel):
+    endpoint: str | None = None

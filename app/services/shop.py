@@ -5,13 +5,15 @@ from datetime import timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..catalog import DEFAULT_EQUIP, DEFAULT_LOOK, OFFER_BY_ID, OFFERS, SKUS
+from ..catalog import DEFAULT_EQUIP, DEFAULT_LOOK, OFFER_BY_ID, OFFERS
 from ..errors import ApiError
 from ..models import ChestOpen, ChestType, Item, User, UserChest, UserItem
 from ..timeutil import local_day, ms, utcnow
 from . import engage
 from . import wallet as W
 from . import wardrobe as WD
+from . import payments as PAY
+from . import season as SS
 
 RNG = random.SystemRandom()
 XP_BOOST = timedelta(minutes=15)
@@ -45,7 +47,8 @@ async def shop_view(db: AsyncSession, user: User) -> dict:
     items = [i for i in wd["items"] if i["tier"] in ("coin", "gem") and not i["limited"]]
     return {"items": items, "offers": offers, "merchant": wd["merchant"],
             "premium": [i for i in wd["items"] if i["tier"] == "premium"],
-            "gem_packs": [s for s in SKUS if s["kind"] == "gems"]}
+            # Phase D: the real-money store (all "Coming soon" while settings.payments_enabled is off)
+            "store": await PAY.store_view(db, user, SS.season_id())}
 
 
 async def buy(db: AsyncSession, user: User, item_id: str | None, offer_id: str | None) -> dict:

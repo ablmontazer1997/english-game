@@ -165,7 +165,10 @@ def items() -> list[dict]:
         add(id=iid, name=name, slot=slot, tier="earned", how=how, is_default=False)
     for iid, name, slot, how in _PREMIUM:
         add(id=iid, name=name, slot=slot, tier="premium", how=how, is_default=False)
-    for w, (iid, name, slot, theme, new, base, rec) in _BOSS.items():
+    for d in phase_d_items():   # Phase D: monthly sets, season cloaks, starter outfit (recolours, real money only)
+        add(id=d["id"], name=d["name"], slot=d["slot"], tier="premium", how=d["how"], theme=d["theme"], is_new=True,
+            base_mesh=d["base"], recolour=d["sw"], is_default=False)
+    for w,(iid, name, slot, theme, new, base, rec) in _BOSS.items():
         add(id=iid, name=name, slot=slot, tier="boss", theme=theme, world_drop=w, is_new=new, base_mesh=base,
             recolour=rec, is_default=False)
     for iid, name, slot, theme, new, base, rec in _GATE:
@@ -216,18 +219,6 @@ OFFERS = [
 ]
 OFFER_BY_ID = {o["id"]: o for o in OFFERS}
 
-# ---------------------------------------------------------------- real money (placeholder, disabled)
-SKUS = [
-    dict(sku="gems_80", kind="gems", gems=80, price_units=1, enabled=False),
-    dict(sku="gems_250", kind="gems", gems=250, price_units=3, enabled=False),
-    dict(sku="gems_650", kind="gems", gems=650, price_units=7, enabled=False),
-    dict(sku="gems_1500", kind="gems", gems=1500, price_units=13, enabled=False),
-    dict(sku="sub_monthly", kind="subscription", gems=100, price_units=5, enabled=False,
-         includes=["coat_star", "coat_shadow", "monthly set", "unlimited hearts", "100 gems a month"]),
-    dict(sku="sub_yearly", kind="subscription", gems=100, price_units=35, enabled=False,
-         includes=["same as monthly, 7 months' price"]),
-]
-
 STARTING_WALLET = dict(gems=40, coins=1250, hearts=5, hearts_max=5, elixir=3)
 
 # ---------------------------------------------------------------- Phase B sinks (audit 5.3 A-C)
@@ -237,3 +228,134 @@ CONTINUE_GEMS = 15           # or 1 elixir: "+3 questions" once per lost trial /
 CONTINUE_QUESTIONS = 3
 STREAK_REPAIR_GEMS = 200     # restores a Hearthfire that went out, within 2 missed days (48 h)
 STREAK_REPAIR_MAX_MISSED = 2
+
+# ================================================================ Phase D (admin msg 4839): store, premium, season pass
+# 🔴 English Spell is its own product: none of this touches Bingual's subscription, accounts or payments.
+# Real money is OFF (decision 1 = D): every real-money product below is fully defined and shown, but its buy button
+# says "Coming soon" and the server refuses checkout until settings.payments_enabled is true AND a provider adapter is
+# registered (services/payments.py). Prices are "TBD" (price_label None) until the admin sets them.
+
+# Monthly themes. Each month (UTC calendar month = one season) uses one theme, in rotation:
+# - set: the Premium monthly outfit (decision 3), recolours of existing Hunyuan garments (no new 3D work)
+# - pass_cloak: the Season Pass premium-track final reward (a recolour as well)
+# - pass_hat: the Season Pass FREE-track hat (an existing gem hat; owners get gems instead)
+# - dyes: the free-track dyes, on starter garments everyone owns (garment id, PALETTE swatch)
+# recolour bases must be garments the wardrobe can wear as a variant (top / coat / pants / shoes)
+SEASON_THEMES = [
+    dict(key="ember", name="Ember Hollow", accent="crimson",
+         set=[("prem_ember_coat", "Ember Hollow cloak", "coat", "coat", "crimson"),
+              ("prem_ember_top", "Ember tunic", "top", "top_scholar", "crimson"),
+              ("prem_ember_pants", "Ember trousers", "pants", "pants_frost", "charcoal"),
+              ("prem_ember_shoes", "Ember boots", "shoes", "shoes", "crimson")],
+         pass_cloak=("pass_ember_cloak", "Harvest Moon cloak", "coat", "coat_frost", "ochre"),
+         pass_hat="hat_mushroom", dyes=[("coat", "crimson"), ("top_apprentice", "ochre"), ("pants", "charcoal")]),
+    dict(key="frost", name="Frostfall", accent="teal",
+         set=[("prem_frost_coat", "Frostfall cloak", "coat", "coat_frost", "cream"),
+              ("prem_frost_top", "Frostfall tunic", "top", "top_forest", "teal"),
+              ("prem_frost_pants", "Frostfall trousers", "pants", "pants_forest", "teal"),
+              ("prem_frost_shoes", "Frostfall boots", "shoes", "shoes_crystal", "cream")],
+         pass_cloak=("pass_frost_cloak", "Glacier cloak", "coat", "coat_frost", "royal"),
+         pass_hat="hat_owl", dyes=[("coat", "teal"), ("top_apprentice", "cream"), ("pants", "royal")]),
+    dict(key="star", name="Starfall", accent="midnight",
+         set=[("prem_star_coat", "Starfall cloak", "coat", "coat_forest", "midnight"),
+              ("prem_star_top", "Starfall tunic", "top", "top_star", "midnight"),
+              ("prem_star_pants", "Starfall trousers", "pants", "pants_forest", "royal"),
+              ("prem_star_shoes", "Starfall boots", "shoes", "shoes_star", "royal")],
+         pass_cloak=("pass_star_cloak", "Aurora cloak", "coat", "coat_frost", "rose"),
+         pass_hat="hat_astronomer", dyes=[("coat", "midnight"), ("top_apprentice", "royal"), ("pants", "violet")]),
+]
+_THEME_EPOCH = (2026, 10)   # October 2026 = theme 0 (Ember Hollow)
+
+
+def season_id_of(year: int, month: int) -> str:
+    return f"{year:04d}-{month:02d}"
+
+
+def theme_for(season_id: str) -> dict:
+    y, m = (int(x) for x in season_id.split("-"))
+    n = (y * 12 + m - 1) - (_THEME_EPOCH[0] * 12 + _THEME_EPOCH[1] - 1)
+    return SEASON_THEMES[n % len(SEASON_THEMES)]
+
+
+# the one-time Starter Pack outfit (decision 4): recolours of starter garments
+STARTER_SET = [("pack_wayfarer_coat", "Wayfarer cloak", "coat", "coat_forest", "emerald"),
+               ("pack_wayfarer_top", "Wayfarer tunic", "top", "top_scholar", "teal"),
+               ("pack_wayfarer_pants", "Wayfarer trousers", "pants", "pants", "charcoal"),
+               ("pack_wayfarer_shoes", "Wayfarer boots", "shoes", "shoes_crystal", "emerald")]
+STARTER_GEMS = 200
+STARTER_DAYS = 7            # offered only in the account's first week, once
+PREMIUM_CLOAKS = ["coat_star", "coat_shadow"]
+PREMIUM_DAYS = 30
+
+# real-money products (decision 2 A, 3 A, 4 A, 5 A). price_label None = "TBD": the app shows no price.
+PRODUCTS = [
+    dict(id="gems_100", kind="gems", title="Pouch of Gems", gems=100, price_label=None),
+    dict(id="gems_300", kind="gems", title="Chest of Gems", gems=300, price_label=None, tag="Popular"),
+    dict(id="gems_1000", kind="gems", title="Dragon's Hoard", gems=1000, price_label=None, tag="Best value"),
+    dict(id="starter_pack", kind="starter", title="Starter Pack", gems=STARTER_GEMS, price_label=None,
+         items=[s[0] for s in STARTER_SET], once=True, days=STARTER_DAYS),
+    dict(id="premium_month", kind="premium", title="Archmage Circle", gems=0, price_label=None, days=PREMIUM_DAYS,
+         includes=["Star cloak", "Shadow cloak", "The monthly outfit set"]),
+    dict(id="season_premium", kind="season", title="Season Pass: Premium track", gems=0, price_label=None),
+]
+PRODUCT_BY_ID = {p["id"]: p for p in PRODUCTS}
+
+
+def phase_d_items() -> list[dict]:
+    """recolour items for the store / premium / season pass, all locked behind real money (tier premium)"""
+    out = []
+    for t in SEASON_THEMES:
+        for iid, name, slot, base, sw in t["set"]:
+            out.append(dict(id=iid, name=name, slot=slot, base=base, sw=sw, how=f"Premium: {t['name']} set",
+                            theme=t["key"]))
+        iid, name, slot, base, sw = t["pass_cloak"]
+        out.append(dict(id=iid, name=name, slot=slot, base=base, sw=sw, how="Season Pass premium track",
+                        theme=t["key"]))
+    for iid, name, slot, base, sw in STARTER_SET:
+        out.append(dict(id=iid, name=name, slot=slot, base=base, sw=sw, how="Starter Pack", theme="starter"))
+    return out
+
+
+# ---------------------------------------------------------------- Season Pass (decision 5 A)
+SEASON_TIERS = 30
+SEASON_TIER_XP = 150        # 4,500 season XP for the whole track: ~20 days of 3 stages + dailies
+# season XP sources (from the server, never the client). Focus mode keeps its caps: its stars are already capped at 2,
+# and a Focus stage gives at most SEASON_FOCUS_MAX.
+SEASON_XP_STAGE_WIN = 20    # + SEASON_XP_PER_STAR per star
+SEASON_XP_PER_STAR = 10
+SEASON_XP_STAGE_LOST = 5
+SEASON_FOCUS_MAX = 30
+SEASON_XP_QUEST = {"daily": 25, "weekly": 60}
+SEASON_XP_DAILY_CAP = 600   # most season XP one local day can give (no grinding the month away in a day)
+
+
+def season_track(theme: dict) -> list[dict]:
+    """30 tiers: free rewards (coins, a few gems, dyes, elixir, a hat) and premium rewards (locked until bought)"""
+    dyes = theme["dyes"]
+    tiers = []
+    for n in range(1, SEASON_TIERS + 1):
+        free: dict = {"coins": 100 + 20 * (n // 5)}
+        if n in (5, 15, 25):
+            free = {"gems": 5}
+        if n in (8, 18, 28):
+            g, sw = dyes[(n // 10) % len(dyes)]
+            free = {"dye": f"{g}:{sw}"}
+        if n in (10, 20):
+            free = {"elixir": 1}
+        if n == 12:
+            free = {"chest": "wood"}
+        if n == SEASON_TIERS:
+            free = {"item": theme["pass_hat"]}
+        prem: dict = {"coins": 250}
+        if n % 3 == 0:
+            prem = {"gems": 15}
+        if n in (7, 17, 27):
+            prem = {"elixir": 2}
+        if n == 10:
+            prem = {"chest": "silver"}
+        if n == 22:
+            prem = {"chest": "epic"}
+        if n == SEASON_TIERS:
+            prem = {"item": theme["pass_cloak"][0]}
+        tiers.append({"tier": n, "xp": n * SEASON_TIER_XP, "free": free, "premium": prem})
+    return tiers

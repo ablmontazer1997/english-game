@@ -250,9 +250,13 @@ async def merchant_view(db: AsyncSession, user: User, items: list[Item] | None =
 
 # ---------------------------------------------------------------- the whole wardrobe for the client
 async def view(db: AsyncSession, user: User) -> dict:
+    from . import payments as PAY, season as SS
     await habit_rewards(db, user)
+    sid = SS.season_id()
+    await PAY.premium_catch_up(db, user, sid)   # Phase D: premium owns this month's set (never while payments are off)
     owned = await ensure_starter(db, user)
-    items = await active_items(db)
+    # Phase D: a month's premium set / season cloak shows only in its month (or once owned)
+    items = [i for i in await active_items(db) if SS.visible_now(i.id, sid, owned)]
     worlds = await _drop_worlds(db)
     merch = await merchant_view(db, user, items, owned, worlds)
     mset = {i["id"] for i in merch["items"]} | {i["id"] for i in merch["set"]["items"]}

@@ -176,7 +176,7 @@ async def _set_wallet(player, **vals):
 async def test_shop_chests_inventory(client, player):
     shop = (await client.get("/v1/shop")).json()
     # Phase B: coin + gem items of the one catalogue (the two merchant-only cloaks are not in the plain list)
-    assert len(shop["items"]) == 28 and all(not g["enabled"] for g in shop["gem_packs"])
+    assert len(shop["items"]) == 28 and all(not g["available"] and g["cta"] == "Coming soon" for g in shop["store"]["products"])
     assert {i["tier"] for i in shop["items"]} == {"coin", "gem"} and shop["merchant"]["items"]
     assert next(o for o in shop["offers"] if o["id"] == "chest_wood")["odds"][1]["chance"] == 0.35
     r = await client.post("/v1/shop/buy", json={"item_id": "shoes_forest"})
@@ -208,7 +208,7 @@ async def test_shop_chests_inventory(client, player):
     # Frost Ward only while the streak is alive
     assert (await client.post("/v1/shop/buy", json={"offer_id": "freeze"})).json()["detail"]["code"] == "streak_not_alive"
     # payments are a placeholder
-    assert (await client.post("/v1/payments/checkout", json={"sku": "gems_80"})).status_code == 501
+    assert (await client.post("/v1/payments/checkout", json={"sku": "gems_100"})).status_code == 503
     led = (await client.get("/v1/wallet/ledger")).json()
     assert any(x["reason"] == "wardrobe_item" and x["delta"] == -200 for x in led)
 

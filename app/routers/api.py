@@ -4,16 +4,21 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..catalog import DEFAULT_EQUIP, SKUS, STARTING_WALLET
+from .. import catalog as C
+from ..catalog import DEFAULT_EQUIP, STARTING_WALLET
 from ..curriculum import LEVEL_ORD, LEVELS
 from ..db import get_db
 from ..errors import ApiError
 from ..models import GrammarTopic, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
 from ..schemas import (BuyIn, CheckoutIn, CompleteIn, ContinueIn, DyeIn, EquipIn, GuestIn, LedgerRow, LevelOut,
-                       LookIn, MeOut, MePatch, ReviewIn, SetIn, StartOut, TokenOut, WalletOut, WardrobeBuyIn)
+                       LookIn, MeOut, MePatch, ReviewIn, SetIn, StartOut, TokenOut, WalletOut, WardrobeBuyIn,
+                       ConfirmIn, PushSubIn, PushUnsubIn, SeasonClaimIn)
 from ..security import current_user, make_token
 from ..services import achievements as ach
 from ..services import engage, play, shop
+from ..services import payments as PAY
+from ..services import push as PUSH
+from ..services import season as SS
 from ..services import wardrobe as WD
 from ..services import wallet as W
 from ..services.content import map_for
@@ -219,14 +224,79 @@ async def chest_open(kind: str, user: User = Depends(current_user), db: AsyncSes
     return out
 
 
-@router.get("/payments/skus", tags=["payments"], summary="Real-money products (placeholder, all disabled)")
+@router.get("/payments/skus", tags=["payments"], summary="Real-money products (all 'Coming soon' while payments are off)")
 async def skus():
-    return SKUS
+    on = PAY.enabled()
+    return [PAY.product_out(p, on) for p in C.PRODUCTS]
 
 
-@router.post("/payments/checkout", tags=["payments"], status_code=501)
-async def checkout(body: CheckoutIn, user: User = Depends(current_user)):
-    raise ApiError(501, "payments_not_live", "real-money payments are not live yet")
+@router.get("/store", tags=["payments"],
+            summary="The real-money store: gem packs, Starter Pack (first week, once), Archmage Circle, Season Pass")
+async def store(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await PAY.store_view(db, user, SS.season_id())
+    await db.commit()
+    return out
+
+
+@router.post("/payments/checkout", tags=["payments"],
+             summary="Start a purchase. 503 payments_disabled until settings.payments_enabled + a provider adapter")
+async def checkout(body: CheckoutIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await PAY.checkout(db, user, body.product_id or body.sku or "")
+    await db.commit()
+    return out
+
+
+@router.post("/payments/confirm", tags=["payments"], summary="Verify a payment with the provider and grant it once")
+async def payment_confirm(body: ConfirmIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    try:
+        pid = uuid.UUID(body.purchase_id)
+    except ValueError:
+        raise ApiError(404, "not_found", "unknown purchase")
+    out = await PAY.confirm(db, user, pid, body.payload, SS.season_id())
+    await db.commit()
+    return out
+
+
+# ---------------------------------------------------------------- Season Pass (Phase D)
+@router.get("/season", tags=["engagement"], summary="This month's Season Pass: XP, 30 tiers, free + premium tracks")
+async def season(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await SS.view(db, user)
+    await db.commit()
+    return out
+
+
+@router.post("/season/claim", tags=["engagement"], summary="Claim a reached tier (free now; premium when bought)")
+async def season_claim(body: SeasonClaimIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    got, w = await SS.claim(db, user, body.tier, body.track)
+    out = {"reward": got, "wallet": W.wallet_out(w), "season": await SS.view(db, user)}
+    await db.commit()
+    return out
+
+
+# ---------------------------------------------------------------- Web Push reminders (Phase D, English Spell's own)
+@router.get("/push/key", tags=["engagement"], summary="The VAPID public key for the browser (no auth)")
+async def push_key():
+    from ..config import get_settings
+    return {"enabled": PUSH.configured(), "public_key": get_settings().vapid_public_key or None}
+
+
+@router.get("/push/status", tags=["engagement"])
+async def push_status(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    return await PUSH.status(db, user)
+
+
+@router.post("/push/subscribe", tags=["engagement"], summary="Save this browser's push subscription")
+async def push_subscribe(body: PushSubIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await PUSH.subscribe(db, user, body.endpoint, body.keys.p256dh, body.keys.auth, body.user_agent)
+    await db.commit()
+    return out
+
+
+@router.post("/push/unsubscribe", tags=["engagement"], summary="Turn reminders off (this browser, or all when empty)")
+async def push_unsubscribe(body: PushUnsubIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await PUSH.unsubscribe(db, user, body.endpoint)
+    await db.commit()
+    return out
 
 
 # ---------------------------------------------------------------- inventory
@@ -306,8 +376,9 @@ async def quests(user: User = Depends(current_user), db: AsyncSession = Depends(
 @router.post("/quests/{quest_id}/claim", tags=["engagement"])
 async def quest_claim(quest_id: str, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
     reward, w = await engage.claim_quest(db, user, quest_id)
+    season_xp = await SS.add_xp(db, user, C.SEASON_XP_QUEST.get(quest_id.split(":", 1)[0], 0))   # Phase D
     q = await engage.quests_for(db, user)
-    out = {"reward": reward, "quests": q, "wallet": W.wallet_out(w)}
+    out = {"reward": reward, "quests": q, "wallet": W.wallet_out(w), "season": season_xp}
     await db.commit()
     return out
 

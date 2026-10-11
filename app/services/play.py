@@ -12,6 +12,7 @@ from ..models import (Item, Question, SrsItem, Stage, StageSession, User, UserIt
 from ..timeutil import end_of_local_day, local_day, utcnow
 from .. import catalog as C
 from . import engage, srs, wardrobe
+from . import season as season_svc
 from . import wallet as W
 from .content import is_stage_open, stage_out
 from .grading import grade
@@ -317,6 +318,8 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     st = await engage.touch_streak(db, user, stat)
     lp = 0 if focus else await engage.add_points(db, user, stat, engage.league_points(correct, total))
     items += await wardrobe.habit_rewards(db, user, st)   # Phase B: 7 / 30-day Hearthfire hats
+    # Phase D: Season Pass XP (server only; Focus keeps its caps via its capped stars + SEASON_FOCUS_MAX)
+    season = await season_svc.add_xp(db, user, season_svc.stage_xp(stars, focus), now)
 
     # what opened up
     unlocked = []
@@ -335,7 +338,7 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
                           "items": items, "chest": chest},
               "hearts_lost": hearts_lost, "elixir_used": elixir_used, "level_up": level_up,
               "level_completed": level_completed, "unlocked": unlocked, "srs_updated": len(srs_rows),
-              "league_points": lp, "focus": focus, "graded": [{"qid": q, "correct": ok} for q, ok in graded]}
+              "league_points": lp, "focus": focus, "season": season, "graded": [{"qid": q, "correct": ok} for q, ok in graded]}
     sess.completed_at = now
     sess.result = result
     await db.flush()

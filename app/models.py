@@ -169,6 +169,10 @@ class User(Base):
     dyes: Mapped[list] = mapped_column(JSONB, default=list, server_default="[]")  # "garment:swatch" owned
     # true for accounts that existed before server ownership: their first look upload keeps what they wear
     look_legacy: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # Phase D: Archmage Circle (premium) entitlement end; null = never premium. Only a fulfilled purchase sets it.
+    premium_until: Mapped[datetime | None] = mapped_column(TS, nullable=True)
+    # Phase D Web Push: the local day the last reminder went out (at most one a day)
+    last_reminder_day: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
     last_seen_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
 
@@ -371,3 +375,33 @@ class LeagueMembership(Base):
     reward: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     seen: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = (Index("ix_league_group", "week_start", "tier", "group_no"),)
+
+
+# ---------------------------------------------------------------- Phase D (admin msg 4839)
+class SeasonProgress(Base):
+    """Season Pass: one row per player per season (UTC calendar month, id like 2026-10). A new month = a new row,
+    so the reset is server-side by construction."""
+    __tablename__ = "season_progress"
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    season_id: Mapped[str] = mapped_column(String(7), primary_key=True)
+    xp: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    premium: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    free_claimed: Mapped[list[int]] = mapped_column(ARRAY(Integer), default=list, server_default="{}")
+    premium_claimed: Mapped[list[int]] = mapped_column(ARRAY(Integer), default=list, server_default="{}")
+    xp_day: Mapped[date | None] = mapped_column(Date, nullable=True)        # local day of xp_today
+    xp_today: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    updated_at: Mapped[datetime] = mapped_column(TS, server_default=_now(), onupdate=_now())
+
+
+class PushSubscription(Base):
+    """English Spell's OWN Web Push (VAPID) subscriptions; one row per browser endpoint."""
+    __tablename__ = "push_subscriptions"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    endpoint: Mapped[str] = mapped_column(Text, unique=True)
+    p256dh: Mapped[str] = mapped_column(Text)
+    auth: Mapped[str] = mapped_column(Text)
+    user_agent: Mapped[str] = mapped_column(Text, default="", server_default="")
+    fails: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    last_ok_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
