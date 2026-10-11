@@ -19,8 +19,16 @@ from .grading import grade
 from .selection import pick_for_stage
 
 
+def served_game(q: Question) -> str:
+    """admin 4931: Bubble Pop asks synonyms only. A definition-mode word row (the shared vocab pool is stored as bubble-pop)
+    is played in Match Blitz instead: same item shape, same answer (payload.back), graded by the stored game as before."""
+    if q.game == "bubble-pop" and (q.payload or {}).get("mode") != "synonym":
+        return "match-blitz"
+    return q.game
+
+
 def question_out(q: Question, source: str | None = None, topic_id: str | None = None) -> dict:
-    d = {"qid": q.id, "game": q.game, "level": q.level, "difficulty": q.difficulty, "grammar": q.grammar_codes,
+    d = {"qid": q.id, "game": served_game(q), "level": q.level, "difficulty": q.difficulty, "grammar": q.grammar_codes,
          "skills": q.skills, "topic": q.topic, "payload": q.payload}
     if source is not None:
         d["source"] = source

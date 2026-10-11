@@ -457,6 +457,7 @@ async def placement_items(per_level: int = Query(6, ge=2, le=12), user: User = D
 
 
 # ---------------------------------------------------------------- tutorials (Phase C)
+_SAMPLE_MODE = {"bubble-pop": "synonym", "match-blitz": "definition", "memory-crystals": "definition"}
 _SAMPLE_SRC = {"match-blitz": "bubble-pop", "memory-crystals": "bubble-pop", "gap-gate": "bubble-pop", "boss-battle": "bubble-pop"}
 
 
@@ -468,6 +469,9 @@ async def game_samples(game: str, level: str = Query("A1", pattern="^(A1|A2|B1|B
     if game not in play.TUT_GAMES:
         raise ApiError(404, "not_found", "unknown game")
     q = select(Question).where(Question.game == src, Question.level == level, Question.active.is_(True))
+    mode = _SAMPLE_MODE.get(game)
+    if mode:  # admin 4931: Bubble Pop shows synonyms, the pair games show definitions
+        q = q.where(Question.payload["mode"].astext == mode)
     rows = list((await db.execute(q.where(Question.difficulty <= 1).order_by(func.random()).limit(n))).scalars().all())
     if len(rows) < n:
         have = [r.id for r in rows]

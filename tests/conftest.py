@@ -46,7 +46,8 @@ def _questions():
     for i in range(30):
         rows.append(dict(id=f"t-bp-{i}", game="bubble-pop", level="A1", difficulty=1, grammar_codes=[],
                          skills=["V-DEF"], topic="home",
-                         payload={"front": f"word{i}", "back": f"meaning {i}", "distractors": ["a", "b", "c"]}))
+                         payload={"front": f"word{i}", "back": f"meaning {i}", "distractors": ["a", "b", "c"],
+                                  "mode": "synonym" if i < 20 else "definition"}))
     rows.append(dict(id="t-ro-1", game="rune-order", level="A1", difficulty=1, grammar_codes=["A1-G01"], skills=[],
                      topic="home", payload={"text": "Where is the golden key"}))
     rows.append(dict(id="t-cb-1", game="curse-breaker", level="A1", difficulty=1, grammar_codes=["A1-G01"],

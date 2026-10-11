@@ -44,7 +44,7 @@ def _tids(t: GrammarTopic) -> list[str]:
 
 
 async def _pick(db, user_id, k, *, codes=None, topic_ids=None, games=None, level=None, max_level=None, no_grammar=False,
-                prefer_difficulty=None, exclude=(), due_first=False):
+                prefer_difficulty=None, exclude=(), due_first=False, mode=None):
     if k <= 0:
         return []
     q = select(Question, SrsItem.due_at).outerjoin(
@@ -65,6 +65,8 @@ async def _pick(db, user_id, k, *, codes=None, topic_ids=None, games=None, level
         q = q.where(Question.level == level)
     if max_level:
         q = q.where(Question.level.in_([lv for lv, o in LEVEL_ORD.items() if o <= LEVEL_ORD[max_level]]))
+    if mode:  # admin 4931: vocab rows by payload.mode ('synonym' = Bubble Pop)
+        q = q.where(Question.payload["mode"].astext == mode)
     if no_grammar:
         q = q.where(func.cardinality(Question.grammar_codes) == 0)
     if exclude:
@@ -164,7 +166,12 @@ async def pick_for_stage(db: AsyncSession, user: User, stage: Stage) -> list[tup
                      "review", tid)
     # vocab round
     if vocab_n:
-        take(await _pick(db, user.id, vocab_n, games=VOCAB_GAMES, level=stage.level, exclude=used), "new", None)
+        # admin 4931: the word round is Bubble Pop, and Bubble Pop asks SYNONYMS only. Seen items may repeat (unseen first),
+        # so the synonym pool never runs dry; a definition item only enters through the fallbacks below (served as Match Blitz)
+        take(await _pick(db, user.id, vocab_n, games=["bubble-pop"], level=stage.level, exclude=used, mode="synonym"), "new", None)
+        short_v = vocab_n - sum(1 for p in picked if p[2] is None and p[1] == "new")
+        if short_v > 0:
+            take(await _pick(db, user.id, short_v, games=VOCAB_GAMES, level=stage.level, exclude=used), "new", None)
     # fallbacks while the bank is thin
     short = n - len(picked)
     if short > 0:

@@ -26,3 +26,17 @@ async def test_samples(client):
     r = await client.get("/v1/samples/match-blitz?n=3")
     assert r.status_code == 200 and len(r.json()) == 3 and all(q["game"] == "match-blitz" and q["payload"] for q in r.json())
     assert (await client.get("/v1/samples/nope")).status_code == 404
+
+
+async def test_bubble_pop_asks_synonyms_only(client, player):
+    """admin 4931: Bubble Pop serves synonym rows only; definition rows are played as Match Blitz"""
+    bp = (await client.get("/v1/samples/bubble-pop?n=5")).json()
+    assert len(bp) == 5 and all(q["game"] == "bubble-pop" and q["payload"]["mode"] == "synonym" for q in bp)
+    mb = (await client.get("/v1/samples/match-blitz?n=3")).json()
+    assert all(q["payload"]["mode"] == "definition" for q in mb)
+    s = (await client.post("/v1/stages/A1-W01-S01/start")).json()
+    vocab = [q for q in s["questions"] if q["game"] in ("bubble-pop", "match-blitz")]
+    assert vocab and all(q["game"] == "bubble-pop" and q["payload"]["mode"] == "synonym" for q in vocab)
+    answers = [{"qid": q["qid"], "answer": correct_answer(q)} for q in s["questions"]]
+    res = (await client.post(f"/v1/sessions/{s['session_id']}/complete", json={"answers": answers})).json()
+    assert res["correct"] == res["total"]
