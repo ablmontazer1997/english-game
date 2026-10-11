@@ -128,7 +128,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
       correct: o.correct,
       col: ORB_COLORS[i % 4],
       // ES redesign 10-11: big bubbles as in the concept; long options (definitions) shrink them and wrap on the plate
-      sz: o.text.length > 24 ? 92 : o.text.length > 14 ? 100 : o.text.length > 8 ? 108 : 116,
+      sz: o.text.length > 24 ? 96 : o.text.length > 14 ? 106 : o.text.length > 8 ? 116 : 124,
     }))
   }, [item])
   bubblesRef.current = bubbles

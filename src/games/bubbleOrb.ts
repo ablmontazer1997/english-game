@@ -445,9 +445,9 @@ export function drawPlate(ctx: CanvasRenderingContext2D, x: number, y: number, w
 export function drawWordPlate(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, word: string, alpha = 1, col: OrbColor = 'purple') {
   ctx.save()
   const FONT = (px: number) => `800 ${px}px Fredoka, system-ui, sans-serif`
-  const maxW = r * 1.5, parts = word.split(/\s+/)
+  const maxW = r * 1.4, parts = word.split(/\s+/)
   const short = parts.length <= 2 && word.length <= 10
-  let px = Math.max(15, Math.round(r * (short ? 0.36 : 0.27))), lines: string[] = [word]
+  let px = Math.max(15, Math.round(r * (short ? 0.44 : 0.3))), lines: string[] = [word]   // concept 07: big words on wide plates
   const fit = (p: number) => {
     ctx.font = FONT(p)
     for (let n = 1; n <= Math.min(3, parts.length); n++) {
@@ -459,11 +459,15 @@ export function drawWordPlate(ctx: CanvasRenderingContext2D, x: number, y: numbe
     }
     return null
   }
-  for (; px >= 11; px--) { const ls = fit(px); if (ls) { lines = ls; break } }
+  // concept 07: one line when it fits at up to 22% smaller type, otherwise wrap at the full size
+  const px0 = px; let one = 0
+  for (let p = px0; p >= Math.max(11, Math.round(px0 * .78)); p--) { ctx.font = FONT(p); if (ctx.measureText(word).width <= maxW) { one = p; break } }
+  if (one) { px = one; lines = [word] }
+  else for (; px >= 11; px--) { const ls = fit(px); if (ls) { lines = ls; break } }
   ctx.font = FONT(px)
   const lw = Math.max(...lines.map((l) => ctx.measureText(l).width))
   const lh = px * 1.08, ph = lines.length * lh + px * 0.62, pw = Math.min(r * 1.86, lw + px * 1.5)
-  drawPlate(ctx, x, y, Math.max(pw, r * 1.1) + ph * .5, ph, alpha, col)
+  drawPlate(ctx, x, y, Math.min(r * 1.78, Math.max(pw, r * 1.36) + ph * .4), ph, alpha, col)   // inside the bubble, as in the concept
   ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
   ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(1.6, px * 0.1); ctx.strokeStyle = 'rgba(50, 20, 10, .55)'
   const y0 = y + 1 - (lines.length - 1) * lh / 2

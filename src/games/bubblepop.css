@@ -383,13 +383,13 @@
 
 /* the task card: the painted gold-rimmed card with its gem crest, drawn at its own aspect (never stretched) */
 .bubblepop .bp-prompt.bp2-card { left: 50%; right: auto; transform: translateX(-50%); top: calc(70px + var(--safe-top, 0px));
-  width: min(92%, 380px); aspect-ratio: 1060 / 384; min-height: 0; padding: 9% 6.5% 6.5% 8.5%; align-content: center;
+  width: min(92%, 380px); aspect-ratio: 1060 / 384; min-height: 0; padding: 9.5% 7.5% 5.5% 8%; align-content: center;   /* cream area of task_card.webp: 21.6%..89% of its height */
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 8px;
   background: url(../assets/es2/games/task_card.webp) center / 100% 100% no-repeat; border: 0; border-radius: 0; box-shadow: none;
   filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .45)); }
-.bubblepop .bp2-q { min-width: 0; display: grid; gap: 0; }
-.bubblepop .bp2-ask { font-size: clamp(14px, 4.3vw, 17px); line-height: 1.2; font-weight: 900; color: #3d1a8a; }
-.bubblepop .bp2-card .bp2-q b { font-size: clamp(30px, 10.5vw, 42px); line-height: 1.12; font-weight: 900; color: #b0741c; letter-spacing: .01em;
+.bubblepop .bp2-q { min-width: 0; display: grid; gap: 0; justify-items: center; text-align: center; }
+.bubblepop .bp2-ask { font-size: clamp(14px, 4.4vw, 17px); line-height: 1.15; font-weight: 900; color: #3d1a8a; }
+.bubblepop .bp2-card .bp2-q b { font-size: clamp(28px, 9.8vw, 40px); line-height: 1.04; font-weight: 900; color: #b0741c; letter-spacing: .01em;
   background: linear-gradient(180deg, #d99a2b, #9a5f12); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .7)); overflow-wrap: anywhere; }
 .bubblepop .bp2-q small { font-size: 12.5px; font-weight: 800; color: #6b4a8a; }
@@ -433,7 +433,9 @@
 .stage-host:has(.bubblepop) .bt-count { top: -3px; right: -3px; }
 .stage-host:has(.bubblepop) .bt-btn.off { filter: grayscale(.85) brightness(.85); opacity: .75; }
 /* the round pill: white label at full strength; a narrower pill on small phones so the streak chip never touches it */
-.bubblepop .gt-pp-t { color: #fff; font-size: 15px; text-shadow: 0 1px 0 #2a0a66, 0 0 3px rgba(30, 6, 70, .7); }
+.bubblepop .gt-pp-t { color: #fff; font-size: 16px; line-height: 18px; text-shadow: 0 1.5px 0 rgba(30, 6, 70, .55); }
+.bubblepop .gt-count.gt-pp { border: 3px solid #ffd45a; box-shadow: 0 0 0 1.5px #8a5a10, inset 0 2px 0 rgba(255, 255, 255, .3), 0 4px 0 rgba(40, 10, 90, .5), 0 8px 14px rgba(20, 6, 50, .35); }
+.bubblepop .gt-pips i { width: 13px; height: 13px; }
 @media (max-width: 374px) {
   .bubblepop .gt-count.gt-pp { padding: 4px 11px 6px; }
   .bubblepop .gt-pips { gap: 4px; }
