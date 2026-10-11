@@ -44,3 +44,5 @@
 .gl-review li { animation: gl-li .3s ease-out both; }
 .gl-review li:nth-child(2) { animation-delay: .1s } .gl-review li:nth-child(3) { animation-delay: .2s }
 @keyframes gl-li { from { transform: translateX(-12px); opacity: 0 } }
+/* Phase E (360x740 audit): the review grows UP from above the Finish button and scrolls, instead of running under it */
+.gl-write.gl-review { top: auto; bottom: 17.5%; max-height: 54%; overflow: auto; }

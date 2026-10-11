@@ -108,7 +108,8 @@
 }
 .lobby-title {
   font-family: var(--display); font-weight: 800; font-size: 34px; color: #fff;
-  text-shadow: 0 3px 14px rgba(20,40,110,.6), 0 0 24px rgba(126,196,255,.4); margin: 2px 0 0;
+  /* Phase E: a violet outline, white text on the pale sky read as low contrast */
+  text-shadow: 0 2px 0 #4b2fa8, 0 -1px 0 #4b2fa8, 2px 0 0 #4b2fa8, -2px 0 0 #4b2fa8, 0 4px 12px rgba(20,40,110,.6); margin: 2px 0 0;
 }
 .lobby-sub { font-family: var(--game); color: #4a3f6e; opacity: 1; font-size: 14px; margin: 0 0 4px;
   text-shadow: 0 2px 8px rgba(10,30,80,.5); }
