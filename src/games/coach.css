@@ -119,3 +119,6 @@
 @media (max-width: 374px) { .tut-banner span { display: none; } }
 /* the practice item skips the game-name ribbon intro (it would cross the spotlight) */
 .gh-prac .gt-intro { display: none; }
+/* Phase E Focus: the painted plates behind the lit parts go too, so a window shows the part on black, not scene art */
+.stage-host.focus .game-host :is(.gs-scene, .gs-plate, .ro-plate, .ws-plate, .tt-plate, .ot-plate, .bb2-backdrop, .bb2-scene, .tt-keeper) { visibility: hidden; }
+.stage-host.focus .game-host :is(.matchblitz, .gg, .mc-root) { background-image: none !important; background-color: #07060c !important; }

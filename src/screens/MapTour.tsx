@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import { Btn } from '../components/PageArt'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
 import './maptour.css'
+import { dimPath } from '../games/coach'
 
 interface Mark { find: () => Element | null; title: string; text: string }
 const MARKS: Mark[] = [
@@ -65,16 +66,10 @@ export function MapTour({ onDone }: { onDone: () => void }) {
   const last = i === MARKS.length - 1
   return (
     <div className="mt" role="dialog" aria-label={`Tour: ${m.title}`}>
-      {/* Phase E (admin 4847): an SVG mask, like the game tutorials. The old 9999px box-shadow hole rendered as a pale
+      {/* Phase E (admin 4847): one even-odd SVG path, like the game tutorials. The old 9999px box-shadow hole rendered as a pale
           wash on some phones, so the lit element barely stood out from the map. */}
       <svg className="mt-dim" width="100%" height="100%" aria-hidden>
-        <defs>
-          <mask id="mt-holes">
-            <rect width="100%" height="100%" fill="#fff" />
-            {box && <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="18" fill="#000" />}
-          </mask>
-        </defs>
-        <rect width="100%" height="100%" fill="rgba(8, 5, 26, .8)" mask="url(#mt-holes)" />
+        <path d={dimPath(4000, 4000, box ? [box] : [], 18)} fill="#08051a" fillOpacity={0.8} fillRule="evenodd" />
         {box && <rect className="mt-glow" x={box.x} y={box.y} width={box.w} height={box.h} rx="18" />}
         {box && <rect className="mt-ring" x={box.x} y={box.y} width={box.w} height={box.h} rx="18" />}
       </svg>

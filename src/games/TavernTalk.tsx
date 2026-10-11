@@ -191,7 +191,7 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="tt-ui">
-        <div className="tt-chat" data-focus-keep="">
+        <div className="tt-chat" data-focus-keep="" data-coach-parts=".tt-msg">
           {log.slice(-2).map((m, i) => <div key={log.length - 2 + i} className={`tt-msg ${m.who}`}>{m.text}</div>)}
           <div ref={chatEnd} />
         </div>

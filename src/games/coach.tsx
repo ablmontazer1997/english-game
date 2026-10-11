@@ -200,6 +200,18 @@ export function boxesIn(root: HTMLElement | null, host: HTMLElement | null, mode
   }).filter((b) => b.w > 0 && b.h > 0)
 }
 
+/** the dim as ONE even-odd path: the full rect minus a rounded rect per hole. Phase E: no SVG <mask> any more; masked
+ *  fills rendered as a pale wash in our Chromium checks, so the lit parts barely stood out. */
+export function dimPath(w: number, h: number, boxes: Box[], r = 16): string {
+  let d = `M0 0H${w}V${h}H0Z`
+  for (const b of boxes) {
+    const k = Math.min(r, b.w / 2, b.h / 2)
+    d += `M${b.x + k} ${b.y}H${b.x + b.w - k}A${k} ${k} 0 0 1 ${b.x + b.w} ${b.y + k}V${b.y + b.h - k}A${k} ${k} 0 0 1 ${b.x + b.w - k} ${b.y + b.h}`
+      + `H${b.x + k}A${k} ${k} 0 0 1 ${b.x} ${b.y + b.h - k}V${b.y + k}A${k} ${k} 0 0 1 ${b.x + k} ${b.y}Z`
+  }
+  return d
+}
+
 /** where a card of height `ch` covers the least of the holes (ties: the middle of the biggest free band); null = centred */
 export function placeCard(boxes: Box[], hostH: number, ch: number, top = 64, bottom = 16): number | null {
   const lo = top, hi = hostH - bottom - ch
@@ -297,13 +309,7 @@ export function Spotlight({ game, step, getRoot, getHost, onNext, onSkip, canDem
   return (
     <div className="tut" role="dialog" aria-label="How to play">
       <svg className="tut-dim" width={size.w} height={size.h} aria-hidden>
-        <defs>
-          <mask id="tut-holes">
-            <rect width="100%" height="100%" fill="#fff" />
-            {boxes.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="18" fill="#000" />)}
-          </mask>
-        </defs>
-        <rect width="100%" height="100%" fill="rgba(8, 5, 26, .84)" mask="url(#tut-holes)" />
+        <path d={dimPath(size.w, size.h, boxes, 18)} fill="#08051a" fillOpacity={0.84} fillRule="evenodd" />
         {boxes.map((b, i) => <rect key={'g' + i} className="tut-glow" x={b.x} y={b.y} width={b.w} height={b.h} rx="18" />)}
         {boxes.map((b, i) => <rect key={i} className="tut-ring" x={b.x} y={b.y} width={b.w} height={b.h} rx="18" />)}
       </svg>
@@ -354,13 +360,7 @@ export function FocusVeil({ getRoot, getHost }: { getRoot: () => HTMLElement | n
   }, [getRoot, getHost])
   return (
     <svg className="fx-veil" width={size.w} height={size.h} aria-hidden>
-      <defs>
-        <mask id="fx-holes">
-          <rect width="100%" height="100%" fill="#fff" />
-          {boxes.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="16" fill="#000" />)}
-        </mask>
-      </defs>
-      <rect width="100%" height="100%" fill="#07060c" mask="url(#fx-holes)" />
+      <path d={dimPath(size.w, size.h, boxes, 16)} fill="#07060c" fillRule="evenodd" />
     </svg>
   )
 }
