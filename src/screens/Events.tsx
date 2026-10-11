@@ -45,7 +45,7 @@ export function MapEventPill({ onOpen }: { onOpen?: () => void }) {
   const left = useCountdown(e ? (e.active ? e.ends_at : e.starts_at) : 0)
   if (!e) return null
   return (
-    <button className={`evp sk sk-card reveal${e.active ? ' is-on' : ''}`} onClick={onOpen}
+    <button className={`evp reveal${e.active ? ' is-on' : ''}`} onClick={onOpen}
       aria-label={e.active ? `${e.title} is on, ends in ${left.label}` : `${e.title} starts in ${left.label}`}>
       <img src={ICON[e.icon] ?? bossIcon} alt="" draggable={false} />
       <span className="evp-tx">

@@ -115,7 +115,7 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         </button>
       </div>
 
-      <div className="gs-ui rt-slots" style={{ '--n': w.word.length, ...(slotTop != null ? { top: slotTop } : {}) } as React.CSSProperties}>
+      <div className="gs-ui rt-slots" data-focus-keep="" style={{ '--n': w.word.length, ...(slotTop != null ? { top: slotTop } : {}) } as React.CSSProperties}>
         {[...w.word].map((_, i) => (
           <span key={i} className={`rt-slot${typed[i] ? ' full' : ''}${bad.includes(i) ? ' bad' : ''}`}>{typed[i] ?? ''}</span>
         ))}

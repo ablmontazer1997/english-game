@@ -1,6 +1,8 @@
 /* Phase E: weekly events (prefix ev-). Map pill = the status bar's painted card; Quests = a cream card with two rows. */
+/* a cream pill with the gold rim (the 9-sliced card art needs more height than a pill has, it did not paint) */
 .evp { position: absolute; left: var(--ml-side); top: calc(var(--ml-top) + 66px); display: flex; align-items: center; gap: 6px;
-  max-width: calc(100% - 2 * var(--ml-side)); padding: 5px 12px 7px 6px; border: 0; filter: drop-shadow(0 4px 10px rgba(20, 60, 110, .22)); }
+  max-width: calc(100% - 2 * var(--ml-side)); padding: 4px 14px 4px 5px; border-image: none !important; border: 2px solid #e7c47a; border-radius: 99px;
+  background: linear-gradient(180deg, #fffdf6, #f7ecd4); box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 3px 0 #d9c49a, 0 6px 14px rgba(20, 60, 110, .25); }
 .evp > img { width: 30px; height: 30px; object-fit: contain; flex: none; }
 .evp-tx { display: grid; text-align: left; line-height: 1.1; min-width: 0; }
 .evp-tx b { font-size: 13.5px; font-weight: 900; color: #3c4160; white-space: nowrap; }
