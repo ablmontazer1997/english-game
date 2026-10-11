@@ -43,7 +43,7 @@ async def test_catalogue_tiers_and_wardrobe_view(client, player):
     assert items["shoes_librarian"]["recolour"] == {"base": "shoes", "swatch": "ochre"}
     assert items["coat_star"]["how"] == "Premium, coming soon" and not items["coat_star"]["buyable"]
     assert items["hat_fire"]["how"] == "Keep a 7-day Hearthfire"
-    assert items["hair_ponybow"]["price_coins"] == 900 and items["hat_witch"]["price_gems"] == 200
+    assert items["hair_ponybow"]["price_coins"] == 900 and items["hat_witch"]["price_gems"] == 60
     assert items["coat_royal"]["limited"] and wd["merchant"]["ends_at"] and len(wd["merchant"]["items"]) == 4
     # retired first-catalogue items are gone from the list
     assert "hair_pony" not in items and "pose_idle" not in items
@@ -157,12 +157,12 @@ async def test_trial_costs_a_heart_and_continue(client, player):
     await _wallet(player, gems=20, elixir=0)
     s = (await client.post("/v1/stages/A1-W01-S04/start")).json()
     assert s["stage"]["kind"] == "trial" and s["stage"]["hearts_apply"] is True
-    assert s["continue"] == {"questions": 3, "cost_gems": 15, "cost_elixir": 1, "left": 1}
+    assert s["continue"] == {"questions": 3, "cost_gems": 10, "cost_elixir": 1, "left": 1}
     n0 = len(s["questions"])
     r = await client.post(f"/v1/sessions/{s['session_id']}/continue", json={"pay": "elixir"})
     assert r.json()["detail"]["code"] == "not_enough_elixir"
     c = (await client.post(f"/v1/sessions/{s['session_id']}/continue", json={"pay": "gems"})).json()
-    assert len(c["questions"]) == 3 and c["wallet"]["gems"] == 5 and c["continue"]["left"] == 0
+    assert len(c["questions"]) == 3 and c["wallet"]["gems"] == 10 and c["continue"]["left"] == 0
     assert not {q["qid"] for q in c["questions"]} & {q["qid"] for q in s["questions"]}
     r = await client.post(f"/v1/sessions/{s['session_id']}/continue", json={"pay": "gems"})
     assert r.json()["detail"]["code"] == "already_continued"
@@ -191,10 +191,10 @@ async def test_streak_repair(client, player):
         st.current, st.best, st.last_active_day, st.freezes = 9, 9, today - timedelta(days=3), 0
         await db.commit()
     st = (await client.get("/v1/streak")).json()
-    assert st["current"] == 0 and st["repair"] == {"lost": 9, "cost_gems": 200, "restores": 9}
-    await _wallet(player, gems=199)
+    assert st["current"] == 0 and st["repair"] == {"lost": 9, "cost_gems": 30, "restores": 9}
+    await _wallet(player, gems=29)
     assert (await client.post("/v1/streak/repair")).json()["detail"]["code"] == "not_enough_gems"
-    await _wallet(player, gems=250)
+    await _wallet(player, gems=80)
     r = (await client.post("/v1/streak/repair")).json()
     assert r["streak"]["current"] == 9 and r["streak"]["repair"] is None and r["wallet"]["gems"] == 50
     assert (await client.post("/v1/streak/repair")).json()["detail"]["code"] == "nothing_to_repair"
@@ -216,8 +216,8 @@ async def test_streak_repair_after_lighting_a_new_fire(client, player):
     from tests.test_flows import play
     await play(client, "A1-W01-S01")   # a new fire: 1 day, the old 6 remembered
     st = (await client.get("/v1/streak")).json()
-    assert st["current"] == 1 and st["repair"] == {"lost": 6, "cost_gems": 200, "restores": 7}
-    await _wallet(player, gems=200)
+    assert st["current"] == 1 and st["repair"] == {"lost": 6, "cost_gems": 30, "restores": 7}
+    await _wallet(player, gems=30)
     r = (await client.post("/v1/streak/repair")).json()
     assert r["streak"]["current"] == 7
 

@@ -84,7 +84,7 @@ async def touch_streak(db: AsyncSession, user: User, stat: UserDayStat) -> Strea
 
 
 def repair_state(st: Streak, today: date) -> dict | None:
-    """a Hearthfire that went out within 2 missed days (beyond the Frost Wards) can be repaired for 200 gems"""
+    """a Hearthfire that went out within 2 missed days (beyond the Frost Wards) can be repaired for 30 gems"""
     if not st.last_active_day:
         return None
     if st.last_active_day == today and st.lost > 0 and st.lost_on == today:

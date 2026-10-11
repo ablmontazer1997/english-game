@@ -34,17 +34,19 @@ _COIN = [
     ("eyes_blue", "Blue eyes", "eyes", 600), ("eyes_green", "Green eyes", "eyes", 600),
     ("eyes_hazel", "Hazel eyes", "eyes", 600), ("eyes_grey", "Grey eyes", "eyes", 600),
 ]
-# gems (audit 5.3 C/D): themed hats + fantasy colours 150-300 (rare); epic cloaks 400-600, sold ONLY by the
-# Wandering Merchant while they are in its rotation (limited)
+# gems. Phase E (admin 4847, Q12) price rebalance from the measured earn rates (see ECONOMY_E below):
+# a regular player (2 stages a day, 6 days a week) earns ~38 gems a week with the weekly events (~28 without), so
+# fantasy colours / eyes (40) take ~1 week, hats (50-70) 1.3-1.8 weeks, and the epic cloaks, sold ONLY by the
+# Wandering Merchant while they are in its rotation, 3.4-3.9 weeks. (Phase B prices were 150-250 / 450-500 = 5-18 weeks.)
 _GEM = [
-    ("hat_mushroom", "Mushroom hat", "hat", 150, "rare"), ("hat_owl", "Owl beret", "hat", 150, "rare"),
-    ("hat_witch", "Witch hat", "hat", 200, "rare"), ("hat_midnight", "Midnight hat", "hat", 200, "rare"),
-    ("hat_scholar", "Scholar cap", "hat", 250, "rare"), ("hat_astronomer", "Astronomer hat", "hat", 250, "rare"),
-    ("haircolor_pink", "Pink", "haircolor", 150, "rare"), ("haircolor_lilac", "Lilac", "haircolor", 150, "rare"),
-    ("haircolor_blue", "Blue", "haircolor", 150, "rare"), ("haircolor_mint", "Mint", "haircolor", 150, "rare"),
-    ("eyes_aqua", "Aqua eyes", "eyes", 150, "rare"), ("eyes_amber", "Amber eyes", "eyes", 150, "rare"),
-    ("eyes_ruby", "Ruby eyes", "eyes", 150, "rare"), ("eyes_pink", "Pink eyes", "eyes", 150, "rare"),
-    ("coat_sea", "Sea cloak", "coat", 450, "epic"), ("coat_royal", "Royal ermine cloak", "coat", 500, "epic"),
+    ("hat_mushroom", "Mushroom hat", "hat", 50, "rare"), ("hat_owl", "Owl beret", "hat", 50, "rare"),
+    ("hat_witch", "Witch hat", "hat", 60, "rare"), ("hat_midnight", "Midnight hat", "hat", 60, "rare"),
+    ("hat_scholar", "Scholar cap", "hat", 70, "rare"), ("hat_astronomer", "Astronomer hat", "hat", 70, "rare"),
+    ("haircolor_pink", "Pink", "haircolor", 40, "rare"), ("haircolor_lilac", "Lilac", "haircolor", 40, "rare"),
+    ("haircolor_blue", "Blue", "haircolor", 40, "rare"), ("haircolor_mint", "Mint", "haircolor", 40, "rare"),
+    ("eyes_aqua", "Aqua eyes", "eyes", 40, "rare"), ("eyes_amber", "Amber eyes", "eyes", 40, "rare"),
+    ("eyes_ruby", "Ruby eyes", "eyes", 40, "rare"), ("eyes_pink", "Pink eyes", "eyes", 40, "rare"),
+    ("coat_sea", "Sea cloak", "coat", 130, "epic"), ("coat_royal", "Royal ermine cloak", "coat", 150, "epic"),
 ]
 MERCHANT_ONLY = {"coat_sea", "coat_royal"}
 # earned by habit (audit 5.3 D "Earned: habit"); never for sale
@@ -183,16 +185,16 @@ GARMENT_SLOTS = {"hat", "top", "coat", "pants", "shoes"}
 
 # ---------------------------------------------------------------- chests (published odds = the RNG's table)
 CHESTS = [
-    dict(kind="wood", title="Wooden Chest", price_coins=400, price_gems=None, odds=[
+    dict(kind="wood", title="Wooden Chest", price_coins=300, price_gems=None, odds=[
         {"reward": "coins", "min": 80, "max": 150, "chance": 1.0},
         {"reward": "elixir", "amount": 1, "chance": 0.35},
     ]),
     # Phase B (audit 5.3 C): a chest never pays gems back (gem-bought chests used to return 3-30 gems)
-    dict(kind="silver", title="Silver Chest", price_coins=None, price_gems=30, odds=[
+    dict(kind="silver", title="Silver Chest", price_coins=None, price_gems=15, odds=[
         {"reward": "coins", "min": 400, "max": 700, "chance": 1.0},
         {"reward": "elixir", "amount": 1, "chance": 0.6},
     ]),
-    dict(kind="epic", title="Epic Chest", price_coins=None, price_gems=80, odds=[
+    dict(kind="epic", title="Epic Chest", price_coins=None, price_gems=35, odds=[
         {"reward": "coins", "min": 1000, "max": 1600, "chance": 1.0},
         {"reward": "elixir", "min": 1, "max": 2, "chance": 1.0},
     ]),
@@ -210,23 +212,32 @@ OFFERS = [
          kind="boost", price={"coins": 300}),
     dict(id="coin_sack", title="Coin Sack", note="1,000 coins for hairstyles, dyes, boosts and extra hints",
          kind="boost",
-         price={"gems": 10}),
+         price={"gems": 15}),
     dict(id="chest_wood", title="Wooden Chest", note="See the odds before you buy", kind="chest",
-         price={"coins": 400}),
+         price={"coins": 300}),
     dict(id="chest_silver", title="Silver Chest", note="See the odds before you buy", kind="chest",
-         price={"gems": 30}),
-    dict(id="chest_epic", title="Epic Chest", note="See the odds before you buy", kind="chest", price={"gems": 80}),
+         price={"gems": 15}),
+    dict(id="chest_epic", title="Epic Chest", note="See the odds before you buy", kind="chest", price={"gems": 35}),
 ]
 OFFER_BY_ID = {o["id"]: o for o in OFFERS}
 
 STARTING_WALLET = dict(gems=40, coins=1250, hearts=5, hearts_max=5, elixir=3)
 
+# ---------------------------------------------------------------- Phase E economy (admin 4847, Q12)
+# Earn rates per week (Monte Carlo of the live rules, scripts/earn_model.py; with the weekly events):
+#   casual  1 stage x 4 days, 70%:   ~7 gems,   ~570 coins
+#   regular 2 stages x 6 days, 80%: ~38 gems, ~2,170 coins  (~28 gems without Boss Rush)
+#   serious 5 stages x 7 days, 88%: ~107 gems, ~7,400 coins
+# Targets: a regular buys a gem item every 1-2 weeks, a coin item every few days (coin items 600-1,200 = 2-4 days,
+# unchanged), an epic / Merchant cloak in 3-4 weeks; continue (10) and streak repair (30) are a few days of gems.
+# Chests are priced at their expected value (1 gem ~ 50-70 coins): Wood 300 coins, Silver 15 gems, Epic 35 gems.
+
 # ---------------------------------------------------------------- Phase B sinks (audit 5.3 A-C)
 HINT_FREE_PER_DAY = 3        # then HINT_COST_COINS each
 HINT_COST_COINS = 20
-CONTINUE_GEMS = 15           # or 1 elixir: "+3 questions" once per lost trial / boss / vault
+CONTINUE_GEMS = 10           # Phase E: = the price of 1 elixir (was 15); or 1 elixir: "+3 questions" once per lost trial / boss / vault
 CONTINUE_QUESTIONS = 3
-STREAK_REPAIR_GEMS = 200     # restores a Hearthfire that went out, within 2 missed days (48 h)
+STREAK_REPAIR_GEMS = 30      # Phase E: ~5 days of a regular player's gems (was 200 = 7 weeks); restores a Hearthfire that went out, within 2 missed days (48 h)
 STREAK_REPAIR_MAX_MISSED = 2
 
 # ================================================================ Phase D (admin msg 4839): store, premium, season pass

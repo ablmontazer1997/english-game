@@ -83,6 +83,15 @@ async def seeded(migrated):
     return True
 
 
+@pytest.fixture(autouse=True)
+def _events_off():
+    """Phase E: the weekly events follow the real weekday; every test runs with them off unless it turns one on"""
+    from app.services import events as EV
+    EV.FORCE = set()
+    yield
+    EV.FORCE = set()
+
+
 @pytest_asyncio.fixture(loop_scope="session")
 async def client(seeded):
     from app.main import app

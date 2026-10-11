@@ -187,7 +187,7 @@ async def test_shop_chests_inventory(client, player):
     assert r.status_code == 409 and r.json()["detail"]["code"] == "not_enough_gems"
     await _set_wallet(player, gems=500)
     r = (await client.post("/v1/shop/buy", json={"item_id": "hat_witch"})).json()
-    assert r["wallet"]["gems"] == 300 and r["owned_item"] == "hat_witch"
+    assert r["wallet"]["gems"] == 440 and r["owned_item"] == "hat_witch"
     assert (await client.post("/v1/shop/buy", json={"item_id": "hat_witch"})).json()["detail"]["code"] == "already_owned"
     # equip = the look on the account
     inv = (await client.put("/v1/inventory/equip", json={"slot": "hat", "item_id": "hat_witch"})).json()
@@ -198,7 +198,7 @@ async def test_shop_chests_inventory(client, player):
     assert r.status_code == 422
     # chests: buy with published price, open with server RNG inside the published ranges
     r = (await client.post("/v1/shop/buy", json={"offer_id": "chest_silver"})).json()
-    assert r["wallet"]["gems"] == 270 and r["inventory"]["chests"]["silver"] == 1
+    assert r["wallet"]["gems"] == 425 and r["inventory"]["chests"]["silver"] == 1
     o = (await client.post("/v1/chests/silver/open")).json()
     # Phase B: a chest never pays gems back
     assert 400 <= o["reward"]["coins"] <= 700 and "gems" not in o["reward"] and o["remaining"] == 0
@@ -210,7 +210,7 @@ async def test_shop_chests_inventory(client, player):
     # payments are a placeholder
     assert (await client.post("/v1/payments/checkout", json={"sku": "gems_100"})).status_code == 503
     led = (await client.get("/v1/wallet/ledger")).json()
-    assert any(x["reason"] == "wardrobe_item" and x["delta"] == -200 for x in led)
+    assert any(x["reason"] == "wardrobe_item" and x["delta"] == -60 for x in led)
 
 
 async def test_streak_quests_freeze(client, player):

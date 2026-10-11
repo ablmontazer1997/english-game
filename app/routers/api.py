@@ -16,6 +16,7 @@ from ..schemas import (BuyIn, CheckoutIn, CompleteIn, ContinueIn, DyeIn, EquipIn
 from ..security import current_user, make_token
 from ..services import achievements as ach
 from ..services import engage, play, shop
+from ..services import events as EV
 from ..services import payments as PAY
 from ..services import push as PUSH
 from ..services import season as SS
@@ -147,7 +148,7 @@ async def session_complete(session_id: uuid.UUID, body: CompleteIn, user: User =
 
 
 @router.post("/sessions/{session_id}/continue", tags=["play"],
-             summary="'+3 questions' after a lost trial / boss / vault: 1 elixir or 15 gems, once per session")
+             summary="'+3 questions' after a lost trial / boss / vault: 1 elixir or 10 gems, once per session")
 async def session_continue(session_id: uuid.UUID, body: ContinueIn, user: User = Depends(current_user),
                            db: AsyncSession = Depends(get_db)):
     out = await play.continue_session(db, user, session_id, body.pay)
@@ -258,6 +259,12 @@ async def payment_confirm(body: ConfirmIn, user: User = Depends(current_user), d
 
 
 # ---------------------------------------------------------------- Season Pass (Phase D)
+@router.get("/events", tags=["engagement"],
+            summary="The weekly events (Boss Rush Sat+Sun, Double XP Wed, player's local days): active or next, with bounds")
+async def events(user: User = Depends(current_user)):
+    return EV.view(user)
+
+
 @router.get("/season", tags=["engagement"], summary="This month's Season Pass: XP, 30 tiers, free + premium tracks")
 async def season(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
     out = await SS.view(db, user)
@@ -395,7 +402,7 @@ async def streak(user: User = Depends(current_user), db: AsyncSession = Depends(
 
 
 @router.post("/streak/repair", tags=["engagement"],
-             summary="Relight a Hearthfire that went out within 2 missed days, for 200 gems")
+             summary="Relight a Hearthfire that went out within 2 missed days, for 30 gems")
 async def streak_repair(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
     st = await engage.repair_streak(db, user)
     today = local_day(user.timezone)

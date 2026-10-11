@@ -11,7 +11,7 @@ from ..errors import ApiError
 from ..models import (Item, Question, SrsItem, Stage, StageSession, User, UserItem, UserProgress, World)  # noqa
 from ..timeutil import end_of_local_day, local_day, utcnow
 from .. import catalog as C
-from . import engage, srs, wardrobe
+from . import engage, events as EV, srs, wardrobe
 from . import season as season_svc
 from . import wallet as W
 from .content import is_stage_open, stage_out
@@ -128,7 +128,7 @@ def continue_offer(stage: Stage, sess: StageSession) -> dict | None:
 
 
 async def continue_session(db: AsyncSession, user: User, session_id, pay: str) -> dict:
-    """"+3 questions" after a lost trial / boss / vault (audit 5.3 A), once per session, for 1 elixir or 15 gems.
+    """"+3 questions" after a lost trial / boss / vault (audit 5.3 A), once per session, for 1 elixir or 10 gems.
     The questions join the session, so the result is graded over all of them."""
     sess = await db.get(StageSession, session_id, with_for_update=True)
     if sess is None or sess.user_id != user.id:
@@ -256,13 +256,26 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     ref = f"{stage.id}:{sess.id}"
     xp = correct * 12 + stars * 10
     boosted = bool(user.xp_boost_until and user.xp_boost_until > now)
-    xp_player = xp * 2 if boosted else xp
+    # Phase E (admin 4847, Q8): the weekly events, from the server clock + the player's local weekday
+    ev_on = EV.active_ids(user, now)
+    double_xp = "double_xp" in ev_on
+    xp_player = xp * 2 if (boosted or double_xp) else xp   # the event and the bought boost do not stack
     coins = correct * 5 + stars * 15
     if not improved:
         coins //= 2
     gems = TREASURE_GEMS if (stage.kind == "bonus" and first_clear) else 0
     W.change(db, w, "coins", coins, "stage", ref)
     W.change(db, w, "gems", gems, "stage", ref)
+    rush = None
+    if "boss_rush" in ev_on and stage.kind == "boss" and stars > 0:
+        today_l = local_day(user.timezone, now)
+        used = await EV.boss_rush_used(db, user, today_l)
+        g = EV.boss_rush_gems(stars) if used < EV.BOSS_RUSH_DAILY_MAX else 0
+        if g:
+            W.change(db, w, "gems", g, "boss_rush", f"{today_l.isoformat()}:{ref}")
+            gems += g
+            used += 1
+        rush = {"gems": g, "left": max(0, EV.BOSS_RUSH_DAILY_MAX - used)}
     level_up = _add_xp(db, user, w, xp_player)
     items = []
     chest = None
@@ -319,7 +332,7 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     lp = 0 if focus else await engage.add_points(db, user, stat, engage.league_points(correct, total))
     items += await wardrobe.habit_rewards(db, user, st)   # Phase B: 7 / 30-day Hearthfire hats
     # Phase D: Season Pass XP (server only; Focus keeps its caps via its capped stars + SEASON_FOCUS_MAX)
-    season = await season_svc.add_xp(db, user, season_svc.stage_xp(stars, focus), now)
+    season = await season_svc.add_xp(db, user, season_svc.stage_xp(stars, focus) * (EV.DOUBLE_XP_MULT if double_xp else 1), now)
 
     # what opened up
     unlocked = []
@@ -335,7 +348,8 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     result = {"stars": stars, "best_stars": prog.best_stars, "first_clear": first_clear, "correct": correct,
               "total": total, "accuracy": round(acc, 3), "unverified": unverified,
               "rewards": {"xp": xp_player, "xp_base": xp, "boosted": boosted, "coins": coins, "gems": gems,
-                          "items": items, "chest": chest},
+                          "items": items, "chest": chest,
+                          "double_xp": double_xp, "boss_rush": rush},
               "hearts_lost": hearts_lost, "elixir_used": elixir_used, "level_up": level_up,
               "level_completed": level_completed, "unlocked": unlocked, "srs_updated": len(srs_rows),
               "league_points": lp, "focus": focus, "season": season, "graded": [{"qid": q, "correct": ok} for q, ok in graded]}
