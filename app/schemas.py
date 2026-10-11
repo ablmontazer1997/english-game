@@ -138,6 +138,7 @@ class CompleteIn(BaseModel):
     answers: list[AnswerIn] = Field(default_factory=list, max_length=60)
     hints_used: int = 0
     use_elixir: bool = False
+    focus: bool = Field(False, description="Focus mode: untimed; at most 2 stars and no league points")
 
 
 class ReviewIn(BaseModel):

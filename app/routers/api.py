@@ -136,7 +136,7 @@ async def stage_start(stage_id: str, user: User = Depends(current_user), db: Asy
 async def session_complete(session_id: uuid.UUID, body: CompleteIn, user: User = Depends(current_user),
                            db: AsyncSession = Depends(get_db)):
     out = await play.complete(db, user, session_id, [a.model_dump() for a in body.answers], body.hints_used,
-                              body.use_elixir)
+                              body.use_elixir, body.focus)
     await db.commit()
     return out
 
@@ -376,3 +376,23 @@ async def placement_items(per_level: int = Query(6, ge=2, le=12), user: User = D
                                  .order_by(func.random()).limit(per_level))).scalars().all()
         out += [play.question_out(q) for q in rows]
     return out
+
+
+# ---------------------------------------------------------------- tutorials (Phase C)
+_SAMPLE_SRC = {"match-blitz": "bubble-pop", "memory-crystals": "bubble-pop", "gap-gate": "bubble-pop", "boss-battle": "bubble-pop"}
+
+
+@router.get("/samples/{game}", tags=["play"],
+            summary="A few easy items of one game for its first-time tutorial practice and app previews (not graded)")
+async def game_samples(game: str, level: str = Query("A1", pattern="^(A1|A2|B1|B2|C1)$"), n: int = Query(1, ge=1, le=6),
+                       db: AsyncSession = Depends(get_db)):
+    src = _SAMPLE_SRC.get(game, game)
+    if game not in play.TUT_GAMES:
+        raise ApiError(404, "not_found", "unknown game")
+    q = select(Question).where(Question.game == src, Question.level == level, Question.active.is_(True))
+    rows = list((await db.execute(q.where(Question.difficulty <= 1).order_by(func.random()).limit(n))).scalars().all())
+    if len(rows) < n:
+        have = [r.id for r in rows]
+        rows += (await db.execute(q.where(Question.id.notin_(have) if have else True)
+                                  .order_by(func.random()).limit(n - len(rows)))).scalars().all()
+    return [{**play.question_out(r), "game": game} for r in rows]

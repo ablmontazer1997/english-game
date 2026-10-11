@@ -38,7 +38,11 @@ def me_out(u: User, streak: int | None = None) -> dict:
 
 # client flags kept on the account: key -> allowed values (anything else is ignored)
 FLAG_KEYS = {"tour": {"pending", "done"}, "intro_step": None, "look": {"boy", "girl", "custom"},
-             "placement": None, "guided": {"pending", "done"}}
+             "placement": None, "guided": {"pending", "done"}, "focus": {"on", "off"}}
+# Phase C: the games whose first-time tutorial the player has seen (merged as a set, known ids only)
+TUT_GAMES = {"bubble-pop", "match-blitz", "memory-crystals", "gap-gate", "oracle-trial", "rune-order", "whisper-scroll",
+             "tavern-talk", "echo", "rune-type", "potion-mix", "curse-breaker", "spell-weaver", "crystal-ball",
+             "bards-tale", "guild-letters", "boss-battle"}
 _NAME_OK = re.compile(r"[^\w .'\-]", re.UNICODE)
 
 
@@ -53,6 +57,12 @@ def clean_name(raw: str) -> str | None:
 def merge_flags(old: dict | None, new: dict) -> dict:
     out = dict(old or {})
     for k, v in (new or {}).items():
+        if k == "tut":   # list of game ids: added to what is stored ("reset" clears it)
+            if v == "reset":
+                out.pop("tut", None)
+            elif isinstance(v, list):
+                out["tut"] = sorted(set(out.get("tut") or []) | {g for g in v if g in TUT_GAMES})
+            continue
         if k not in FLAG_KEYS:
             continue
         allowed = FLAG_KEYS[k]
@@ -190,7 +200,7 @@ def _add_xp(db, user: User, w, xp: int) -> bool:
 
 
 async def complete(db: AsyncSession, user: User, session_id, answers: list[dict], hints_used: int,
-                   use_elixir: bool) -> dict:
+                   use_elixir: bool, focus: bool = False) -> dict:
     sess = await db.get(StageSession, session_id, with_for_update=True)
     if sess is None or sess.user_id != user.id:
         raise ApiError(404, "not_found", "unknown session")
@@ -224,6 +234,8 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
     correct = sum(1 for _, ok in graded if ok)
     acc = correct / total if total else 0.0
     stars = stars_for(acc)
+    if focus:   # Phase C Focus mode (untimed, calm): at most 2 stars and no league points, so it stays fair
+        stars = min(stars, 2)
 
     prog = await db.get(UserProgress, (user.id, stage.id), with_for_update=True)
     if prog is None:
@@ -303,7 +315,7 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
         if stage.kind == "boss":
             stat.bosses += 1
     st = await engage.touch_streak(db, user, stat)
-    lp = await engage.add_points(db, user, stat, engage.league_points(correct, total))
+    lp = 0 if focus else await engage.add_points(db, user, stat, engage.league_points(correct, total))
     items += await wardrobe.habit_rewards(db, user, st)   # Phase B: 7 / 30-day Hearthfire hats
 
     # what opened up
@@ -323,7 +335,7 @@ async def complete(db: AsyncSession, user: User, session_id, answers: list[dict]
                           "items": items, "chest": chest},
               "hearts_lost": hearts_lost, "elixir_used": elixir_used, "level_up": level_up,
               "level_completed": level_completed, "unlocked": unlocked, "srs_updated": len(srs_rows),
-              "league_points": lp, "graded": [{"qid": q, "correct": ok} for q, ok in graded]}
+              "league_points": lp, "focus": focus, "graded": [{"qid": q, "correct": ok} for q, ok in graded]}
     sess.completed_at = now
     sess.result = result
     await db.flush()
