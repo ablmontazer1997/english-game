@@ -1,116 +1,150 @@
-/* ES redesign 10-11: the Shop from concept 01_shop.png (admin 4884). Prefix shp- (unique). Art: src/assets/es2/shop/*
-   cut from the GPT asset sheet of the approved concept; every plate keeps its painted aspect (polish rule: never stretched). */
+/* ES redesign 10-11: the Shop from concept 01_shop.png (admin 4884), standards pass (admin 4914):
+   - one title style for every plate (sign, awning plaque, ribbons): .esk-title, centred on the measured blank area;
+   - every button sits inside its card, 44 px tall; nothing straddles a container edge;
+   - items rest ON the pedestal's top face, scaled per slot; nothing touches the screen edges (16 px gutter);
+   - one card frame (3 px gold border), one spacing scale (8 / 12 / 16), equal card heights per row.
+   Prefix shp- (unique). Art: src/assets/es2/shop/* from the concept's GPT asset sheet, re-matted (no glow fringes). */
 
-.shp .pg-scroll { gap: 10px; }
-.shp-title-font, .shp-sign h1, .shp-awn h2, .shp-ribh span { font-family: var(--display); font-weight: 900; letter-spacing: .01em; }
+.shp .pg-scroll { gap: 12px; grid-auto-rows: max-content;
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) + 2px), #000 calc(var(--safe-top) + var(--hud-h) + 22px), #000 calc(100% - 30px), transparent calc(100% - 4px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) + 2px), #000 calc(var(--safe-top) + var(--hud-h) + 22px), #000 calc(100% - 30px), transparent calc(100% - 4px));
+  padding-top: calc(var(--hud-h) + var(--safe-top) + 14px); }
+.shp .ui-btn.sm { --h: 44px; min-width: 76px; font-size: 14px; }
 
-/* carved wooden sign with lanterns; the word is live text on the blank plank */
-.shp-sign { position: relative; width: min(88%, 316px); justify-self: center; margin: -14px 0 -10px; }
-.shp-sign img { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 10px rgba(40, 14, 80, .35)); }
-.shp-sign h1 { position: absolute; left: 0; right: 0; top: 30%; margin: 0; text-align: center; font-size: 40px; line-height: 1;
-  color: #ffd25a; background: linear-gradient(180deg, #fff3b0 10%, #ffc93a 55%, #f39a12 95%); -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; -webkit-text-stroke: 2.5px #5a2d0c; paint-order: stroke fill;
-  filter: drop-shadow(0 3px 0 #3b1c06) drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); }
+/* the shared title style on painted plates: app font, cream fill, an even violet outline, a 2 px drop */
+.esk-title { font-family: var(--display); font-weight: 800; color: #fff4cf; letter-spacing: .01em; white-space: nowrap; line-height: 1;
+  text-shadow: 1.5px 0 0 #3a1466, -1.5px 0 0 #3a1466, 0 1.5px 0 #3a1466, 0 -1.5px 0 #3a1466, 1px 1px 0 #3a1466, -1px 1px 0 #3a1466, 1px -1px 0 #3a1466, -1px -1px 0 #3a1466, 0 3px 0 #2a0c4e; }
 
-/* tabs: painted gold (on) / cream (off) plates, pinned under the status bar once the sign scrolls away */
-.shp-tabs { position: relative; z-index: 5; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; margin: 0 -2px -14px; }
-.shp-tab { position: relative; padding: 0; background: none; aspect-ratio: 260 / 88; display: grid; place-items: center; }
-.shp-tab img { position: absolute; inset: 0; width: 100%; height: 100%; }
-.shp-tab span { position: relative; padding-bottom: 2px; font-size: clamp(12px, 3.6vw, 14.5px); font-weight: 900; color: #4e3e6c; white-space: nowrap; }
-.shp-tab.on span { color: #5a3300; text-shadow: 0 1px 0 rgba(255, 255, 255, .6); }
-.shp-tab:not(.on) img { filter: drop-shadow(0 2px 3px rgba(40, 14, 80, .3)); }
+/* carved wooden sign: the word centred on the blank plank (plank = 26%..74% x, 19%..72% y of the art) */
+.shp-sign { position: relative; width: min(100%, 320px); justify-self: center; }
+.shp-sign img { display: block; width: 100%; height: auto; }
+.shp-sign h1 { position: absolute; left: 26%; right: 26%; top: 19%; bottom: 28%; margin: 0; display: grid; place-items: center; font-size: 34px; }
 
-/* the Featured card: the painted gold-rim frame (9-slice, no fill) over the painted sunburst interior (cover, never stretched) */
-.shp-feat { position: relative; margin-bottom: 22px; }
-.shp-feat-in { position: relative; overflow: hidden; min-height: 146px; display: grid; grid-template-columns: minmax(0, 1fr) 46%; align-items: center;
-  border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card.webp) 56 / 17px stretch;
+/* tabs: painted gold (on) / cream (off) plates, 44 px tap height, the plate centred in it */
+.shp-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.shp-tab { position: relative; height: 44px; padding: 0; background: none; display: grid; place-items: center; }
+.shp-tab img { position: absolute; left: 0; right: 0; top: 50%; width: 100%; aspect-ratio: 260 / 88; height: auto; transform: translateY(-50%); }
+.shp-tab span { position: relative; font-size: clamp(12px, 3.5vw, 14px); font-weight: 800; color: #3d2c5c; white-space: nowrap; }
+.shp-tab.on span { color: #4a2800; }
+
+/* the Featured card: painted frame (9-slice, no fill) over the painted interior (cover); everything inside it */
+.shp-feat-in { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 40%; align-items: center; column-gap: 8px;
+  padding: 2px 2px 4px 4px; border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card.webp) 56 / 17px stretch;
   background: url(../assets/es2/shop/featured_card.webp) 50% 45% / 118% auto no-repeat; background-origin: border-box; background-clip: padding-box;
-  border-radius: 26px; box-shadow: 0 6px 0 rgba(70, 30, 110, .32), 0 14px 26px rgba(20, 8, 40, .32); margin: 0; }
-.shp-feat-in { padding: 4px 0 22px 2px; }
-.shp-feat-rays { left: 40%; right: -30%; inset-block: -40%; opacity: .35; }
-.shp-feat-l { position: relative; z-index: 2; display: grid; justify-items: start; gap: 3px; }
-.shp-rib-f, .shp-rib-r { position: relative; display: grid; place-items: center; }
-.shp-rib-f { width: 132px; margin-left: -6px; }
-.shp-rib-r { width: 104px; margin-left: 4px; }
-.shp-rib-f img, .shp-rib-r img { width: 100%; height: auto; display: block; }
-.shp-rib-f b { position: absolute; inset: 0 0 18%; display: grid; place-items: center; font-size: 15px; font-weight: 900; color: #6a3d00;
-  text-transform: uppercase; letter-spacing: .03em; text-shadow: 0 1px 0 rgba(255, 255, 255, .55); }
-.shp-rib-r b { position: absolute; inset: 0 0 16%; display: grid; place-items: center; font-size: 19px; font-weight: 900; color: #fff;
-  text-shadow: 0 2px 0 #9b1a1a; }
-.shp-feat-t { font-size: 26px; line-height: 28px; font-weight: 900; color: #2b1f55; text-shadow: 0 1px 0 rgba(255, 255, 255, .7); }
-.shp-clock { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 11px 0 7px; border-radius: 99px;
-  background: #fff6e2; box-shadow: 0 0 0 2px #f1d7a4, 0 2px 4px rgba(60, 30, 0, .18); font-size: 13px; font-weight: 900; color: #4a3520; }
-.shp-clock i { width: 15px; height: 15px; border-radius: 50%; border: 2.5px solid #4a3520; position: relative; }
-.shp-clock i::after { content: ''; position: absolute; left: 4px; top: 1px; width: 2.5px; height: 6px; background: #4a3520; border-radius: 2px;
-  box-shadow: 2px 3px 0 -0px #4a3520; }
-.shp-feat-art { position: relative; z-index: 1; width: 112%; margin-left: -8%; max-height: 118px; object-fit: contain; filter: drop-shadow(0 8px 10px rgba(60, 20, 120, .35)); }
-.shp-buy.ui-btn { position: absolute; left: 50%; bottom: -20px; transform: translateX(-50%); min-width: 150px; z-index: 3; font-size: 17px; }
-.shp-buy.ui-btn:not(:disabled):active { transform: translateX(-50%) translateY(3px) scale(.97); }
+  border-radius: 26px; box-shadow: 0 6px 0 rgba(70, 30, 110, .30), 0 14px 26px rgba(20, 8, 40, .30); }
+.shp-feat-rays { left: 45%; right: -30%; inset-block: -40%; opacity: .32; }
+.shp-feat-l { position: relative; z-index: 2; display: grid; justify-items: start; gap: 6px; min-width: 0; }
+.shp-rib-f, .shp-rib-r { position: relative; display: block; flex: none; }
+.shp-rib-f { width: 118px; }
+.shp-rib-r { width: 84px; }
+.shp-rib-f img, .shp-rib-r img { display: block; width: 100%; height: auto; }
+/* label areas: the ribbons' flat middle band (18%..82% x; the folded tails stay clear) */
+.shp-rib-f b, .shp-rib-r b { position: absolute; left: 18%; right: 18%; top: 10%; bottom: 26%; display: grid; place-items: center; text-transform: uppercase; }
+.shp-rib-f b { font-size: 13px; }
+.shp-rib-r b { font-size: 14px; }
+.shp-feat-t { font-size: 24px; line-height: 28px; font-weight: 900; color: #2b1f55; max-width: 100%; }
+.shp-feat-row { display: flex; align-items: center; gap: 6px; }
+.shp-clock { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px 0 7px; border-radius: 99px; white-space: nowrap;
+  background: #fff6e2; box-shadow: 0 0 0 2px #e7c98e; font-size: 13px; font-weight: 800; color: #3d2a14; }
+.shp-clock i { width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid #3d2a14; position: relative; flex: none; }
+.shp-clock i::after { content: ''; position: absolute; left: 3.5px; top: 1px; width: 2.5px; height: 5px; background: #3d2a14; border-radius: 2px; }
+.shp-buy.ui-btn { --h: 44px; min-width: 132px; font-size: 16px; margin-top: 2px; }
+.shp-feat-art { position: relative; z-index: 1; width: 100%; height: 128px; object-fit: contain; }
+.shp-trio { display: block; }
+.shp-trio img { position: absolute; height: auto; }
+.shp-trio img:not(.shp-ped) { filter: hue-rotate(-38deg) saturate(1.1) drop-shadow(0 4px 4px rgba(40, 10, 90, .3)); }
+.shp-trio img:nth-child(2) { left: 6%; width: 36%; bottom: 30px; }
+.shp-trio img:nth-child(4) { right: 6%; width: 36%; bottom: 30px; }
+.shp-trio img:nth-child(3) { left: 24%; width: 52%; bottom: 26px; z-index: 1; }
 
-/* ribbon headers (Treasury, Essentials, Boosts, Wardrobe): the label drawn on the blank violet ribbon */
-.shp-ribh { position: relative; width: min(64%, 236px); justify-self: center; margin-top: 8px; }
-.shp-ribh img { display: block; width: 100%; height: auto; filter: drop-shadow(0 4px 6px rgba(30, 10, 70, .35)); }
-.shp-ribh span { position: absolute; inset: 0 18% 4%; display: grid; place-items: center; font-size: 19px; color: #ffe7a0; white-space: nowrap;
-  -webkit-text-stroke: 1px #3a1466; paint-order: stroke fill; text-shadow: 0 2px 0 #2c0f50; }
+/* ribbon headers (Treasury, Essentials, Boosts, Wardrobe): label centred on the blank band (22%..78% x) */
+.shp-ribh { position: relative; width: min(66%, 240px); justify-self: center; margin-top: 4px; }
+.shp-ribh img { display: block; width: 100%; height: auto; }
+.shp-ribh span { position: absolute; left: 22%; right: 22%; top: 12%; bottom: 14%; display: grid; place-items: center; font-size: 18px; }
 
-/* the Wandering Merchant: the striped awning with its plaque, the wooden board, a lantern post on each side */
-.shp-merch { position: relative; margin: 2px calc(-1 * var(--gutter)) 0; padding: 0 var(--gutter); }
-.shp-awn { position: relative; margin: 0 calc(-1 * var(--gutter)); z-index: 2; }
-.shp-awn img { display: block; width: 100%; height: auto; filter: drop-shadow(0 6px 8px rgba(30, 10, 70, .35)); }
-.shp-awn h2 { position: absolute; left: 22%; right: 22%; top: 34%; bottom: 31%; margin: 0; display: grid; place-items: center;
-  font-size: clamp(16px, 5vw, 21px); color: #ffe39a; white-space: nowrap; -webkit-text-stroke: 1px #2c0f50; paint-order: stroke fill; text-shadow: 0 2px 0 #2c0f50; }
-.shp-post { position: absolute; top: 40px; width: 34px; height: auto; z-index: 3; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(30, 10, 70, .4)); }
+/* the Wandering Merchant: awning (inside the gutter), a lantern post each side of the board, the board holds the cards */
+.shp-merch { position: relative; display: grid; }
+.shp-awn { position: relative; z-index: 2; }
+.shp-awn img { display: block; width: 100%; height: auto; }
+.shp-awn h2 { position: absolute; left: 20%; right: 20%; top: 25%; bottom: 35%; margin: 0; display: grid; place-items: center; font-size: clamp(13px, 3.9vw, 16px); }
+.shp-post { position: absolute; top: 44px; width: 24px; height: auto; z-index: 1; pointer-events: none; }
 .shp-post.l { left: 0; transform: scaleX(-1); }
 .shp-post.r { right: 0; }
-.shp-board { position: relative; margin: -16px 12px 0; padding: 20px 8px 12px; display: grid; gap: 10px; border-radius: 0 0 16px 16px;
+.shp-board { position: relative; margin: -10px 26px 0; padding: 20px 8px 12px; display: grid; gap: 12px; border-radius: 0 0 16px 16px;
   background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0) 0 34px, rgba(0, 0, 0, .08) 34px 36px), linear-gradient(180deg, #8a5530, #6a3b1e 60%, #5a3019);
   box-shadow: inset 0 0 0 3px #3e2410, inset 0 4px 10px rgba(0, 0, 0, .35), 0 6px 0 rgba(40, 14, 6, .45), 0 12px 22px rgba(20, 8, 40, .3); }
-.shp-left.ui-chip { justify-self: center; margin-top: -4px; }
-.shp-more { justify-self: center; height: 34px; padding: 0 16px; border-radius: 99px; background: #fff6e2; box-shadow: 0 0 0 2px #e7b64a, 0 3px 0 #9a6a1e;
-  font-size: 13px; font-weight: 900; color: #4a2a80; }
+.shp-left.ui-chip { justify-self: center; }
+.shp-more { justify-self: center; height: 44px; padding: 0 18px; border-radius: 99px; background: #fff6e2; box-shadow: 0 0 0 2px #e7b64a, 0 3px 0 #9a6a1e;
+  font-size: 14px; font-weight: 800; color: #3a1f70; }
 
-/* two-part rarity card: the painted gradient top (9-slice) with the item on a gold pedestal, cream bottom, price button inside */
-.shp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+/* two-part rarity card: painted gradient top (9-slice frame) with the item resting on the pedestal; cream bottom; button inside */
+.shp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; align-items: stretch; }
 .shp-grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.shp-rc { position: relative; display: grid; border-radius: 16px; background: linear-gradient(180deg, #fff8e8, #f3e2bf);
-  box-shadow: 0 0 0 3px #e7b64a, 0 0 0 4px #9a6a1e, 0 5px 0 4px rgba(70, 30, 110, .28), 0 12px 20px rgba(20, 8, 40, .28); margin: 4px; }
-.shp-rc-top { position: relative; height: 110px; border: 10px solid transparent; border-radius: 14px 14px 6px 6px; margin: -2px -2px 0;
-  border-image: url(../assets/es2/shop/top_common.webp) 30 fill / 10px stretch; }
+.shp-rc { position: relative; display: grid; grid-template-rows: auto 1fr; border-radius: 16px; border: 3px solid #e7b64a; overflow: hidden;
+  background: linear-gradient(180deg, #fff8e8, #f3e2bf); box-shadow: 0 4px 0 rgba(70, 30, 110, .28), 0 10px 18px rgba(20, 8, 40, .26); }
+.shp-rc-top { position: relative; height: 104px; border: 10px solid transparent; border-image: url(../assets/es2/shop/top_common.webp) 30 fill / 10px stretch; }
 .shp-rc.r-rare .shp-rc-top { border-image-source: url(../assets/es2/shop/top_rare.webp); }
 .shp-rc.r-epic .shp-rc-top { border-image-source: url(../assets/es2/shop/top_epic.webp); }
-.shp-grid3 .shp-rc-top { height: 84px; }
-.shp-rar { position: absolute; left: -2px; top: -2px; z-index: 3; height: 20px; padding: 0 8px; display: grid; place-items: center; border-radius: 99px;
-  font-size: 10.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #fff; border: 2px solid #fff;
-  background: #3f9a2c; box-shadow: 0 2px 3px rgba(0, 0, 0, .25); }
-.r-rare .shp-rar { background: #2468d8; }
-.r-epic .shp-rar { background: #7a2fd6; }
-.shp-ped { position: absolute; left: 14%; right: 14%; bottom: -10px; width: 72%; height: auto; z-index: 1; }
-.shp-rc-art { position: absolute; left: 4%; bottom: 2px; z-index: 2; width: 92%; height: 94px; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 5px 6px rgba(20, 8, 40, .35)); }
-.shp-rc-art.s-haircolor { height: 70px; }
-.shp-grid3 .shp-rc-art { height: 66px; }
-.shp-dot { position: absolute; right: 2px; top: 0; z-index: 3; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 2px 3px rgba(0, 0, 0, .3); }
-.shp-rc-b { display: grid; justify-items: center; gap: 6px; padding: 12px 6px 9px; }
-.shp-rc-n { max-width: 100%; font-size: 13.5px; line-height: 17px; font-weight: 900; color: #2b1f55; text-align: center;
-  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 17px; }
-.shp-rc-b .ui-btn { min-width: 76%; }
-.shp-rc-b .sh-odds { display: grid; gap: 1px; text-align: center; font-size: 10.5px; color: #5a4a78; font-weight: 700; }
+.shp-grid3 .shp-rc-top { height: 100px; }
+.shp-rar { position: absolute; left: 0; top: 0; z-index: 3; height: 20px; padding: 0 8px; display: grid; place-items: center; border-radius: 99px;
+  font-size: 10.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #fff; border: 2px solid #fff; background: #2b7a1d; }
+.r-rare .shp-rar { background: #1f5fcc; }
+.r-epic .shp-rar { background: #6f27c8; }
+.shp-dot { position: absolute; right: 0; top: 0; z-index: 3; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #fff; }
 
-/* Treasury gem packs: cream cards with gold rims, the gem piles, ribbons on top; real money is off, so "Coming soon" */
-.shp-tsy { margin-top: 6px; }
-.shp-pack { position: relative; display: grid; justify-items: center; gap: 2px; padding: 14px 4px 8px; border-radius: 16px;
-  background: linear-gradient(180deg, #fff8e8, #f3e2bf); box-shadow: 0 0 0 3px #e7b64a, 0 0 0 4px #9a6a1e, 0 5px 0 4px rgba(70, 30, 110, .28), 0 12px 20px rgba(20, 8, 40, .28); margin: 4px; }
-.shp-pack-art { width: 88%; height: 62px; object-fit: contain; }
-.shp-pack-n { display: inline-flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 900; color: #2b1f55; }
+/* the stage: the pedestal at the floor, the item standing on its top face (61% of the pedestal's height up) */
+.shp-stage { position: absolute; inset: 0; --pw: 64%; }
+.shp-ped { position: absolute; left: calc((100% - var(--pw)) / 2); bottom: 2px; width: var(--pw); height: auto; z-index: 1; }
+.shp-rc-art { position: absolute; z-index: 2; left: 8%; width: 84%; bottom: 22px; height: 60px; object-fit: contain; object-position: 50% 100%;
+  filter: drop-shadow(0 3px 2px rgba(20, 8, 40, .35)); }
+.shp-stage.s-hair .shp-rc-art { height: 62px; bottom: 20px; }
+.shp-stage.s-hat .shp-rc-art { height: 52px; }
+.shp-stage.s-shoes .shp-rc-art { height: 42px; left: 18%; width: 64%; }
+.shp-stage.s-haircolor .shp-rc-art { height: 58px; }
+.shp-stage.s-chest .shp-rc-art { height: 56px; bottom: 18px; }
+.shp-grid3 .shp-stage { --pw: 74%; }
+.shp-rc-b { display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: 6px; padding: 8px 8px 10px; }
+.shp-rc-n { max-width: 100%; align-self: center; font-size: 14px; line-height: 17px; font-weight: 900; color: #2b1f55; text-align: center;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 34px; display: grid; place-items: center; }
+.shp-rc-b .ui-btn.shp-cbtn { --h: 44px; width: 100%; min-width: 0; font-size: 15px; }
+.shp-grid3 .shp-rc-b .ui-btn.shp-cbtn { font-size: 14px; padding: 0 6px 2px; }
+.shp-rc-b .sh-odds { display: grid; gap: 1px; text-align: center; font-size: 11px; color: #4a3a68; font-weight: 700; }
+
+/* Treasury gem packs: equal cream cards, the tag ribbon inside the top, the pile on its pedestal, "Coming soon" (real money off) */
+.shp-pack { position: relative; display: grid; grid-template-rows: 30px 104px auto auto; justify-items: center; gap: 4px; padding: 6px 4px 10px;
+  border-radius: 16px; border: 3px solid #e7b64a; background: linear-gradient(180deg, #fff8e8, #f3e2bf);
+  box-shadow: 0 4px 0 rgba(70, 30, 110, .28), 0 10px 18px rgba(20, 8, 40, .26); }
+.shp-pack-tag { position: relative; grid-row: 1; width: 92%; max-width: 100px; height: 30px; }
+.shp-pack-tag img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.shp-pack-tag b { position: absolute; left: 20%; right: 20%; top: 8%; bottom: 26%; display: grid; place-items: center; font-size: 11px; }
+.shp-pack .shp-stage { position: relative; grid-row: 2; inset: auto; width: 100%; height: 104px; --pw: 82%; }
+.shp-pack-art { position: absolute; z-index: 2; left: 10%; width: 80%; bottom: 26px; height: 64px; object-fit: contain; object-position: 50% 100%; }
+.shp-stage.own .shp-pack-art { bottom: 2px; height: 96px; left: 4%; width: 92%; }
+.shp-pack-n { grid-row: 3; display: inline-flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 900; color: #2b1f55; }
 .shp-pack-n img { width: 18px; height: 18px; }
-.shp-pack-tag { position: absolute; top: -14px; left: 50%; width: 96px; transform: translateX(-50%) rotate(-3deg); z-index: 2; }
-.shp-pack-tag img { display: block; width: 100%; height: auto; }
-.shp-pack-tag b { position: absolute; inset: 0 0 22%; display: grid; place-items: center; font-size: 11.5px; font-weight: 900; color: #fff; text-shadow: 0 1px 0 #8a1414; white-space: nowrap; }
-.shp-soon { height: 22px; padding: 0 9px; display: grid; place-items: center; border-radius: 99px; background: #e6e0ee; color: #5e5670;
-  font-size: 10.5px; font-weight: 900; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .08); white-space: nowrap; }
+.shp-soon { grid-row: 4; height: 24px; padding: 0 10px; display: grid; place-items: center; border-radius: 99px; background: #e4ddee; color: #4f4763;
+  font-size: 11px; font-weight: 800; white-space: nowrap; }
 
 @media (max-width: 370px) {
-  .shp-feat-t { font-size: 24px; line-height: 27px; }
-  .shp-rc-top { height: 96px; }
-  .shp-rc-art { height: 78px; }
-  .shp-board { margin-inline: 10px; padding-inline: 6px; }
+  .shp-feat-t { font-size: 22px; line-height: 26px; }
+  .shp-feat-in { grid-template-columns: minmax(0, 1fr) 36%; }
+  .shp-board { margin-inline: 22px; padding-inline: 6px; }
+  .shp-grid { column-gap: 8px; }
+  .shp-rc-b .ui-btn.shp-cbtn { font-size: 14px; }
 }
+
+/* the Merchant's set card: thumbnails on their own row, the name wraps (never cut), the price button on the right */
+.shp .wm-set { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "th th" "main buy"; align-items: center; gap: 8px 10px; }
+.shp .wm-set-th { grid-area: th; display: flex; gap: 6px; }
+.shp .wm-set-th img { width: 48px; height: 48px; object-fit: contain; border-radius: 12px; background: #f4ecff; padding: 3px; }
+.shp .wm-set-main { grid-area: main; min-width: 0; display: grid; gap: 2px; }
+.shp .wm-set-main .ui-t { white-space: normal; overflow: visible; text-overflow: clip; font-size: 15px; line-height: 19px; }
+.shp .wm-set-main .ui-s { white-space: normal; overflow: visible; text-overflow: clip; }
+.shp .wm-set-buy { grid-area: buy; display: grid; justify-items: center; gap: 2px; }
+.shp .tsy-th img { object-fit: contain; }
+
+/* the 3-elixir deal stands on the pedestal like every other item */
+.shp-trio .shp-ped { left: 6%; width: 88%; bottom: 0; }
+/* offer rows: the note wraps to a second line instead of an ellipsis */
+.shp .ui-row.pillrow.of-row { flex: none; height: auto; min-height: var(--h); padding-top: calc(var(--skin-in) + 4px); padding-bottom: calc(var(--skin-lip) + 4px); }
+.shp .of-row .ui-s { white-space: normal; overflow: visible; text-overflow: clip; }

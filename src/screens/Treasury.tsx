@@ -1,5 +1,5 @@
 import { Card, Btn, Chip, art } from '../components/PageArt'
-import { ItemThumb } from '../components/ItemThumb'
+import { ItemArt } from '../components/ItemArt'
 import { skySrc } from '../components/SkyIcon'
 import { useCountdown } from '../components/Rewards'
 import type { StoreOut, WardrobeItem, Product } from '../services/api'
@@ -8,6 +8,7 @@ import './treasury.css'
 import './shop2.css'
 import { RibbonH } from '../components/RibbonH'
 import ribSmall from '../assets/es2/shop/rib_small.webp'
+import pedestal from '../assets/es2/shop/pedestal.webp'
 import gemsS from '../assets/es2/shop/gems_s.webp'
 import gemsM from '../assets/es2/shop/gems_m.webp'
 import gemsChest from '../assets/es2/shop/gems_chest.webp'
@@ -25,7 +26,7 @@ function RThumb({ id, items }: { id: string; items: Record<string, WardrobeItem>
   const sw = items[id]?.recolour?.swatch
   return (
     <span className="tsy-th">
-      <ItemThumb id={id} />
+      <ItemArt id={id} />
       {sw && <i className="tsy-dot" style={{ background: SWATCH[sw] ?? '#999' }} />}
     </span>
   )
@@ -101,8 +102,11 @@ export function TreasuryPacks({ packs, onOpen }: { packs: Product[]; onOpen?: ()
         const tag = p.tag ?? TAG[p.id]
         return (
           <div key={p.id} className={`shp-pack esk-enter${onOpen ? ' esk-press' : ''}`} style={{ ['--i' as string]: i }} onClick={onOpen} role={onOpen ? 'button' : undefined}>
-            {tag && <span className="shp-pack-tag"><img src={ribSmall} alt="" draggable={false} /><b>{tag}</b></span>}
-            <img className="shp-pack-art" src={PACK_PILE[p.id] ?? PILE[Math.min(i, 2)]} alt="" draggable={false} />
+            {tag && <span className="shp-pack-tag"><img src={ribSmall} alt="" draggable={false} /><b className="esk-title">{tag}</b></span>}
+            <span className={`shp-stage s-pack${p.id === 'gems_1000' ? ' own' : ''}`}>
+              {p.id !== 'gems_1000' && <img className="shp-ped" src={pedestal} alt="" draggable={false} />}
+              <img className="shp-pack-art" src={PACK_PILE[p.id] ?? PILE[Math.min(i, 2)]} alt="" draggable={false} />
+            </span>
             <span className="shp-pack-n"><img src={skySrc('ic_gem')} alt="" />{p.gems.toLocaleString('en-US')}</span>
             <span className="shp-soon">{p.available && p.price_label ? p.price_label : 'Coming soon'}</span>
           </div>

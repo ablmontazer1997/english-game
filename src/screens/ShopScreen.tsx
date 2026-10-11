@@ -24,7 +24,7 @@ import tabOff from '../assets/es2/shop/tab_off.webp'
 import ribFeatured from '../assets/es2/shop/rib_featured.webp'
 import ribRed from '../assets/es2/shop/rib_red.webp'
 import { RibbonH } from '../components/RibbonH'
-import elixirs3 from '../assets/es2/shop/elixirs3.webp'
+import dyePink from '../assets/es2/shop/dye_pink.webp'
 import awning from '../assets/es2/shop/awning.webp'
 import lanternPost from '../assets/es2/shop/lantern_post.webp'
 import pedestal from '../assets/es2/shop/pedestal.webp'
@@ -48,11 +48,11 @@ type ShopTab = 'featured' | 'merchant' | 'chests' | 'treasury'
 const TABS: { id: ShopTab; t: string }[] = [{ id: 'featured', t: 'Featured' }, { id: 'merchant', t: 'Merchant' }, { id: 'chests', t: 'Chests' }, { id: 'treasury', t: 'Treasury' }]
 
 /** price button: coin or gem icon + amount; greys out when you can't afford it */
-function PriceBtn({ o, onBuy, disabled, small }: { o: Offer; onBuy: () => void; disabled?: boolean; small?: boolean }) {
+function PriceBtn({ o, onBuy, disabled, small, card }: { o: Offer; onBuy: () => void; disabled?: boolean; small?: boolean; card?: boolean }) {
   const { currencies } = useGame()
   const short = (o.price.gems ?? 0) > (currencies?.gems ?? 0) || (o.price.coins ?? 0) > (currencies?.coins ?? 0)
   return (
-    <Btn className={`${small ? 'sm ' : ''}${short ? 'short' : ''}`} onClick={onBuy} disabled={disabled}>
+    <Btn className={`${small ? 'sm ' : ''}${card ? 'shp-cbtn ' : ''}${short ? 'short' : ''}`} onClick={onBuy} disabled={disabled}>
       <img src={skySrc(o.price.gems != null ? 'ic_gem' : 'ic_coin')} alt="" />{priceLabel(o.price)}
     </Btn>
   )
@@ -133,7 +133,7 @@ export function ShopScreen({ onSeason }: { onSeason?: () => void } = {}) {
       <img className="pg-bg" src={bgShop2} alt="" draggable={false} />
       <div className="esk-scrim" />
       <div className="pg-scroll shp-scroll" ref={scrollRef}>
-        <div className="shp-sign esk-enter"><img src={signArt} alt="" draggable={false} /><h1>Shop</h1></div>
+        <div className="shp-sign esk-enter"><img src={signArt} alt="" draggable={false} /><h1 className="esk-title">Shop</h1></div>
         <div className="shp-tabs" role="tablist">
           {TABS.map((t) => (
             <button key={t.id} role="tab" aria-selected={tab === t.id} className={`shp-tab esk-press${tab === t.id ? ' on' : ''}`} onClick={() => pick(t.id)}>
@@ -146,16 +146,20 @@ export function ShopScreen({ onSeason }: { onSeason?: () => void } = {}) {
           <div className="shp-feat esk-enter">
             <div className="shp-feat-in">
               <div className="esk-rays shp-feat-rays" />
-              <i className="esk-spark" style={{ left: '58%', top: '14%' }} /><i className="esk-spark d" style={{ left: '90%', top: '30%', animationDelay: '-1s' }} /><i className="esk-spark" style={{ left: '66%', top: '70%', animationDelay: '-.5s' }} />
+              <i className="esk-spark" style={{ left: '62%', top: '12%' }} /><i className="esk-spark" style={{ left: '92%', top: '34%', animationDelay: '-1s' }} /><i className="esk-spark" style={{ left: '70%', top: '74%', animationDelay: '-.5s' }} />
               <div className="shp-feat-l">
-                <span className="shp-rib-f"><img src={ribFeatured} alt="" draggable={false} /><b>Featured</b></span>
+                <span className="shp-rib-f"><img src={ribFeatured} alt="" draggable={false} /><b className="esk-title">Featured</b></span>
                 <b className="shp-feat-t">{deal.title}</b>
-                {saving > 0 && <span className="shp-rib-r"><img src={ribRed} alt="" draggable={false} /><b>-{saving}%</b></span>}
-                <span className="shp-clock"><i aria-hidden />{dealLeft.label}</span>
+                <span className="shp-feat-row">
+                  {saving > 0 && <span className="shp-rib-r"><img src={ribRed} alt="" draggable={false} /><b className="esk-title">-{saving}%</b></span>}
+                  <span className="shp-clock"><i aria-hidden />{dealLeft.label}</span>
+                </span>
+                <DealBuy deal={deal} bought={!server && !!inventory?.dealBought} />
               </div>
-              <img className="shp-feat-art esk-float" src={deal.icon === 'potion3' ? elixirs3 : ICON_ART[deal.icon]} alt="" draggable={false} />
+              {deal.icon === 'potion3'
+                ? <span className="shp-feat-art shp-trio" aria-hidden><img className="shp-ped" src={pedestal} alt="" /><img className="esk-float" src={dyePink} alt="" /><img className="esk-float d1" src={dyePink} alt="" /><img className="esk-float d2" src={dyePink} alt="" /></span>
+                : <img className="shp-feat-art esk-float" src={ICON_ART[deal.icon]} alt="" draggable={false} />}
             </div>
-            <DealBuy deal={deal} bought={!server && !!inventory?.dealBought} />
           </div>
 
           {merchant && <MerchantSection m={merchant} onDone={refresh} preview onMore={() => pick('merchant')} />}
@@ -224,7 +228,7 @@ function DealBuy({ deal, bought }: { deal: Offer; bought: boolean }) {
     if (deal.id.includes('chest_')) showReward('Added to your chests', { chest: 'silver' })
   }
   return (
-    <Btn className="lg shp-buy esk-press" onClick={go} disabled={bought}>
+    <Btn className="shp-buy esk-press" onClick={go} disabled={bought}>
       {bought ? 'Bought' : msg ?? <><img src={skySrc(deal.price.gems != null ? 'ic_gem' : 'ic_coin')} alt="" />{priceLabel(deal.price)}{deal.price.gems != null ? ' gems' : ' coins'}</>}
     </Btn>
   )
@@ -244,8 +248,10 @@ function ChestCard({ o, odds, i = 0 }: { o: Offer; i?: number; odds?: { reward: 
     <div className={`shp-rc r-${rar} esk-enter`} style={{ ['--i' as string]: i }}>
       <div className="shp-rc-top">
         <span className="shp-rar">{RAR_LABEL[rar]}</span>
-        <img className="shp-ped" src={pedestal} alt="" draggable={false} />
-        <img className={`shp-rc-art esk-float d${i % 4}`} src={ICON_ART[o.icon]} alt="" draggable={false} />
+        <span className="shp-stage s-chest">
+          <img className="shp-ped" src={pedestal} alt="" draggable={false} />
+          <img className={`shp-rc-art esk-float d${i % 4}`} src={ICON_ART[o.icon]} alt="" draggable={false} />
+        </span>
       </div>
       <div className="shp-rc-b">
         <span className="shp-rc-n" onClick={() => odds && setShow(!show)} role={odds ? 'button' : undefined}>{msg ?? o.title.replace(' Chest', '')}{odds ? ' ⓘ' : ''}</span>
@@ -254,7 +260,7 @@ function ChestCard({ o, odds, i = 0 }: { o: Offer; i?: number; odds?: { reward: 
             <small key={k}>{Math.round(x.chance * 100)}% · {x.min != null ? `${x.min}–${x.max}` : x.amount} {x.reward === 'elixir' ? 'elixir' : x.reward}</small>
           ))}</span>
         )}
-        <PriceBtn o={o} onBuy={go} small />
+        <PriceBtn o={o} onBuy={go} card />
       </div>
     </div>
   )
@@ -307,14 +313,16 @@ function ItemCard({ it, onDone, i = 0 }: { it: WardrobeItem; onDone?: () => void
     <div className={`shp-rc r-${rar} esk-enter`} style={{ ['--i' as string]: i }}>
       <div className="shp-rc-top">
         <span className="shp-rar">{RAR_LABEL[rar]}</span>
-        <img className="shp-ped" src={pedestal} alt="" draggable={false} />
-        <ItemArt className={`shp-rc-art esk-float d${i % 4} s-${it.slot}`} id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />
+        <span className={`shp-stage s-${it.slot}`}>
+          <img className="shp-ped" src={pedestal} alt="" draggable={false} />
+          <ItemArt className={`shp-rc-art esk-float d${i % 4}`} id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />
+        </span>
         {it.recolour?.swatch && <i className="shp-dot" style={{ background: SWATCH[it.recolour.swatch] ?? '#999' }} />}
       </div>
       <div className="shp-rc-b">
         <span className="shp-rc-n" title={label}>{msg ?? label}</span>
-        {owned ? <Btn className="sm" name={worn ? 'btn_gold' : 'btn_green'} disabled={busy || worn} onClick={wear}>{worn ? 'Worn' : 'Wear'}</Btn>
-          : <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={go}>{c.armed ? 'Sure?' : <Price it={it} />}</Btn>}
+        {owned ? <Btn className="shp-cbtn" name={worn ? 'btn_gold' : 'btn_green'} disabled={busy || worn} onClick={wear}>{worn ? 'Worn' : 'Wear'}</Btn>
+          : <Btn className={`shp-cbtn${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={go}>{c.armed ? 'Sure?' : <Price it={it} />}</Btn>}
       </div>
     </div>
   )
@@ -337,7 +345,7 @@ function MerchantSection({ m, onDone, preview, onMore }: { m: Merchant; onDone: 
     setBusy(false)
   }
   return <section className="shp-merch esk-enter" style={{ ['--i' as string]: 1 }}>
-    <div className="shp-awn"><img src={awning} alt="" draggable={false} /><h2>Wandering Merchant</h2></div>
+    <div className="shp-awn"><img src={awning} alt="" draggable={false} /><h2 className="esk-title">Wandering Merchant</h2></div>
     <img className="shp-post l" src={lanternPost} alt="" draggable={false} />
     <img className="shp-post r" src={lanternPost} alt="" draggable={false} />
     <div className="shp-board">

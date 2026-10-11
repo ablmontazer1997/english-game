@@ -80,7 +80,7 @@
 @keyframes esk-card { from { opacity: 0; transform: translateY(18px) scale(.6); } }
 .esk-rv-card img { width: 52px; height: 52px; object-fit: contain; }
 .esk-rv-card b { font-size: 18px; line-height: 22px; font-weight: 900; color: #3a1d6e; }
-.esk-rv-card span { font-size: 12px; line-height: 14px; font-weight: 800; color: #6b4a8a; }
+.esk-rv-card span { text-align: center; font-size: 12px; line-height: 14px; font-weight: 800; color: #6b4a8a; }
 .esk-rv-note { position: relative; z-index: 2; margin: 0; max-width: 300px; text-align: center; font-size: 13px; line-height: 17px; font-weight: 700; color: #e9dcff; }
 .esk-rv .ui-btn { position: relative; z-index: 2; min-width: 160px; animation: esk-card .4s ease-out both; animation-delay: calc(var(--d0, 0ms) + 400ms); }
 
