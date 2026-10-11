@@ -7,6 +7,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { api, errorText } from '../services/api'
+import { lsToLook } from '../services/look'
 import { Btn, Panel } from '../components/PageArt'
 import { NameField, nameOk } from '../components/NameSheet'
 import { ORACLE_BANK, LEVELS, type OracleQ } from '../games/oracleBank'
@@ -106,7 +107,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   /** a quick look was picked (the avatar picture is retaken) */
   onLook: () => void
 }) {
-  const { account, patchMe } = useGame()
+  const { account, patchMe, mode } = useGame()
   const startAt = (() => {
     const i = Number(account?.flags?.intro_step ?? 0)
     const s = ORDER[i] ?? 'letter'
@@ -148,7 +149,8 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
     } catch { /* private mode: the default look stays */ }
   }
   const saveLook = () => {
-    if (look) { onLook(); patchMe({ flags: { look } }).catch(() => {}) }
+    // Phase B: the look lives on the account too (it used to stay in this browser only)
+    if (look) { onLook(); patchMe({ flags: { look } }).catch(() => {}); if (mode === 'http') api.saveLook(lsToLook()).catch(() => {}) }
     go('goal')
   }
   const saveGoal = async (n: number | null) => {

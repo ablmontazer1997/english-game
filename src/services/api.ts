@@ -53,12 +53,16 @@ export interface Topic {
   id: string; level: string; title: string; summary?: string; explanation?: string; rules?: any; examples?: any
   when_to_use?: any; common_mistakes?: any; kind?: string; covers?: string[]
 }
-export interface StartOut { session_id: string; stage: MapStage; expires_at: string; review_ratio: number; questions: ServerQuestion[]; hearts: number }
+export interface HintsState { free_left: number; free_per_day: number; cost_coins: number; used_today: number }
+export interface ContinueOffer { questions: number; cost_gems: number; cost_elixir: number; left: number }
+export interface StartOut { session_id: string; stage: MapStage; expires_at: string; review_ratio: number; questions: ServerQuestion[]; hearts: number; hints?: HintsState | null; continue?: ContinueOffer | null }
 export interface Streak {
   current: number; best: number; today_done: boolean; today_progress: { stages_won: number; review_correct: number }
   rule: string; freezes: number; freezes_max: number; last_active_day: string | null
+  /** Phase B: a Hearthfire that went out within 2 missed days can be relit for gems */
+  repair?: { lost: number; cost_gems: number; restores: number } | null
 }
-export interface RewardOut { xp: number; xp_base?: number; boosted?: boolean; coins: number; gems: number; items: { item_id: string; name: string }[]; chest: string | null }
+export interface RewardOut { xp: number; xp_base?: number; boosted?: boolean; coins: number; gems: number; items: { item_id: string; name: string; slot?: string; why?: string }[]; chest: string | null }
 export interface CompleteOut {
   stars: number; best_stars: number; first_clear: boolean; correct: number; total: number; accuracy: number; unverified?: number
   rewards: RewardOut; hearts_lost: number; elixir_used: boolean; level_up: boolean; level_completed: boolean
@@ -70,11 +74,30 @@ export interface ReviewOut { graded: number; correct: number; hearts_gained: num
 export interface ChestOdds { reward: string; min?: number; max?: number; amount?: number; chance: number }
 export interface ShopItem { id: string; name: string; slot: string; tier: string; rarity: string | null; price_gems: number | null; theme?: string; owned: boolean }
 export interface ShopOffer { id: string; title: string; note?: string; price: { gems?: number; coins?: number }; kind: string; odds?: ChestOdds[] }
-export interface ShopOut { items: ShopItem[]; offers: ShopOffer[]; gem_packs: { sku: string; gems: number; price_units: number; enabled: boolean }[] }
+export interface ShopOut { items: WardrobeItem[]; offers: ShopOffer[]; merchant?: Merchant; premium?: WardrobeItem[]; gem_packs: { sku: string; gems: number; price_units: number; enabled: boolean }[] }
+/** Phase B: one wardrobe catalogue for the 3D wardrobe, the shop and the merchant */
+export type Tier = 'free' | 'boss' | 'earned' | 'coin' | 'gem' | 'premium'
+export interface WardrobeItem {
+  id: string; name: string; slot: string; tier: Tier; rarity: string | null; price_gems: number | null; price_coins: number | null
+  theme?: string; owned: boolean; is_default?: boolean; how: string; buyable: boolean; limited: boolean; in_merchant: boolean
+  recolour?: { base: string; swatch: string }; world?: { id: string; level: string; index: number; global_index: number }
+}
+export interface Look {
+  body: 'boy' | 'girl'; tone: number; blush: number; hair: string; haircolor: string; eyes: string
+  hat: string | null; top: string | null; coat: string | null; pants: string | null; shoes: string | null; tint: Record<string, string>
+}
+export interface Merchant {
+  ends_at: number; items: WardrobeItem[]
+  set: { id: string; name: string; price_gems: number; full_gems: number; owned_all: boolean; items: WardrobeItem[] }
+}
+export interface WardrobeOut {
+  items: WardrobeItem[]; look: Look | null; look_saved: boolean; legacy: boolean; dyes: string[]
+  dye: { price_coins: number; swatches: string[] }; merchant: Merchant; default_look: Look
+}
 export interface ChestInfo { kind: 'wood' | 'silver' | 'epic'; title?: string; owned: number; price: { gems?: number; coins?: number }; odds: ChestOdds[] }
 export interface InventoryOut {
   items: { item_id: string; slot: string; source: string; acquired_at: string }[]
-  equipped: Record<string, string | null>; chests: { wood: number; silver: number; epic: number }; freezes: number; xpBoostUntil: number
+  equipped: Record<string, string | null>; look?: Look; chests: { wood: number; silver: number; epic: number }; freezes: number; xpBoostUntil: number
 }
 export interface ServerQuest extends Quest { claimable?: boolean }
 export type ServerLeague = League & { scoring?: string; week_start?: string; my_points?: number; entries: (League['entries'][number] & { bot?: boolean })[] }
@@ -187,6 +210,16 @@ export const api = {
   inventory: () => call<InventoryOut>('GET', '/v1/inventory'),
   equip: (slot: string, itemId: string | null) => call<InventoryOut>('PUT', '/v1/inventory/equip', { slot, item_id: itemId }),
   catalog: () => raw<CatalogItem[]>('GET', '/v1/catalog/items', undefined, null, 3),
+  // ---- Phase B: wardrobe ownership + economy sinks (every price is the server's)
+  wardrobe: () => call<WardrobeOut>('GET', '/v1/wardrobe'),
+  saveLook: (look: Partial<Look>, migrate = false) => call<{ look: Look; granted: string[] }>('PUT', '/v1/wardrobe/look', { look, migrate }),
+  wardrobeBuy: (itemId: string, wear = false) => call<{ ok: boolean; owned_item: string; wallet: Wallet; look?: Look }>('POST', '/v1/wardrobe/buy', { item_id: itemId, wear }),
+  merchant: () => call<Merchant>('GET', '/v1/merchant'),
+  buySet: (setId: string) => call<{ ok: boolean; owned_items: string[]; price_gems: number; wallet: Wallet }>('POST', '/v1/merchant/buy-set', { set_id: setId }),
+  hints: () => call<HintsState>('GET', '/v1/hints'),
+  useHint: () => call<{ charged_coins: number; hints: HintsState; wallet: Wallet }>('POST', '/v1/hints/use'),
+  continueSession: (sessionId: string, pay: 'elixir' | 'gems') => call<{ questions: ServerQuestion[]; wallet: Wallet; paid: string; continue: ContinueOffer }>('POST', `/v1/sessions/${encodeURIComponent(sessionId)}/continue`, { pay }),
+  repairStreak: () => call<{ streak: Streak; wallet: Wallet }>('POST', '/v1/streak/repair'),
   quests: () => call<ServerQuest[]>('GET', '/v1/quests'),
   claimQuest: (id: string) => call<{ reward: { coins?: number; gems?: number; potion?: number; chest?: 'wood' | 'silver' | 'epic' }; quests: ServerQuest[]; wallet: Wallet }>('POST', `/v1/quests/${encodeURIComponent(id)}/claim`),
   streak: () => call<Streak>('GET', '/v1/streak'),
@@ -207,7 +240,11 @@ export function errorText(e: unknown): string {
       case 'streak_not_alive': return 'Light your Hearthfire first: finish one exercise today'
       case 'hearts_full': return 'Your hearts are already full'
       case 'already_owned': return 'You already own it'
-      case 'not_for_sale': return 'Not for sale'
+      case 'not_for_sale': return e.message || 'Not for sale'
+      case 'not_in_merchant': return 'The Wandering Merchant does not carry it this week'
+      case 'not_enough_elixir': return 'No elixir left'
+      case 'already_continued': return 'You can continue a stage once'
+      case 'nothing_to_repair': return 'There is nothing to repair'
       case 'session_expired': return 'This round took too long. Start the stage again.'
       case 'bad_name': return 'Use 2 to 20 letters or numbers'
       default: return e.message || 'Something went wrong'

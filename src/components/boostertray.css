@@ -44,3 +44,12 @@
 .rescue p { margin: 0; font-size: 14.5px; font-weight: 700; color: #6b7192; }
 .rescue .cb { width: 100%; }
 .rescue-wrap { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 16px; }
+/* Phase B: the continue offer (+3 questions) and the price chip inside a rescue button */
+.rescue .rs-btn, .rescue .cb { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.rescue .rs-cost { display: inline-flex; align-items: center; gap: 3px; padding: 2px 9px; border-radius: 99px; font-size: 14px;
+  background: rgba(255, 255, 255, .92); color: #4a2590; text-shadow: none; }
+.rescue .rs-cost img { width: 16px; height: 16px; }
+.rescue .rs-short { filter: grayscale(.5); opacity: .7; }
+.rescue .rs-note { font-size: 12.5px; font-weight: 800; color: #b3264a; }
+.gate-card .gate-next { font-weight: 900; color: #c0384f; }
+.rescue .rs-btn { font-size: 18px; padding: 0 14px; }

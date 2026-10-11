@@ -87,3 +87,12 @@
   border-image: url(../assets/sky/pill.png) 0 182 0 91 fill / 0 30px 0 15px stretch;
 }
 
+
+/* Phase B: next-heart timer, a small chip hanging under the hearts pill */
+.pill-timer {
+  position: absolute; left: 14px; top: calc(100% - 1px); z-index: 1;
+  padding: 2px 7px 2px; border-radius: 99px; white-space: nowrap;
+  background: #fff6f2; border: 1px solid #ffd2c4; color: #c0384f;
+  font-size: 9.5px; line-height: 1.2; font-weight: 800; font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 5px rgba(120, 40, 60, .16); pointer-events: none;
+}

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import type { GameService } from './GameService'
 import { MockGameService } from './mockService'
 import { HttpGameService, toCurrencies } from './httpService'
+import { syncLook } from './look'
 import { api, errorText, type CompleteOut, type Streak, type ReviewOut, type Me } from './api'
 import type { Currencies, PlayerProfile, World, Quest, League, StageResult, Achievement, Inventory, Reward, ChestKind } from '../types/game'
 
@@ -54,6 +55,8 @@ interface GameStore {
   account: Me | null
   /** http mode: change the account (name, level, goal, intro flags); the store and the map follow */
   patchMe: (b: Parameters<typeof api.patchMe>[0]) => Promise<Me | null>
+  /** Phase B: relight a Hearthfire that went out (200 gems, within 2 missed days) */
+  repairStreak: () => Promise<{ ok: boolean; reason?: string }>
 }
 
 const Ctx = createContext<GameStore | null>(null)
@@ -94,6 +97,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       setCurrencies(c); setProfile(p); setWorlds(w); setQuests(q); setLeague(l); setInventory(inv); setAchievements(ach)
       if (http) setAccount(http.account)
       setReady(true)
+      // Phase B: the 3D look lives on the account; load it into the browser (first time: upload it)
+      if (http) syncLook().catch(() => { /* offline: the browser keeps its last look */ })
     } catch (e) {
       setError(errorText(e))
     }
@@ -203,10 +208,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setCurrencies(await service.getCurrencies()); setInventory(await service.getInventory()); setLeague(await service.getLeague())
   }, [])
   const noteHint = useCallback(() => { service.noteHint() }, [])
+  const repairStreak = useCallback(async () => {
+    if (!http) return { ok: false, reason: 'Not available here' }
+    try { const r = await api.repairStreak(); setStreak(r.streak); setCurrencies(toCurrencies(r.wallet)); return { ok: true } }
+    catch (e) { return { ok: false, reason: errorText(e) } }
+  }, [])
 
   const value: GameStore = { ready, mode: http ? 'http' : 'mock', error, currencies, profile, worlds, quests, league, service, http, streak, reviewDue,
     refresh, submitResult, applyComplete, applyReview, refreshReview, refillHearts, spend, drinkElixir, claimQuest,
-    inventory, achievements, claimAchievement, openChest, buy, seenLeagueResult, noteHint, toast, showReward, clearToast, setCurrencies, account, patchMe }
+    inventory, achievements, claimAchievement, openChest, buy, seenLeagueResult, noteHint, toast, showReward, clearToast, setCurrencies, account, patchMe, repairStreak }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

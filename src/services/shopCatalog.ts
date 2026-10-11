@@ -18,18 +18,18 @@ export interface Offer {
 
 export const ESSENTIALS: Offer[] = [
   { id: 'hearts_full', title: 'Full Hearts', note: 'Refill all hearts now', icon: 'heart', price: { gems: 15 } },
-  { id: 'elixir_1', title: 'Elixir', note: 'Save a lost stage, keep your heart', icon: 'potion', price: { gems: 10 } },
+  { id: 'elixir_1', title: 'Elixir', note: 'Continue a lost stage or keep your heart', icon: 'potion', price: { gems: 10 } },
   { id: 'elixir_3', title: '3 Elixirs', note: 'Best value for rescues', icon: 'potion3', price: { gems: 25 } },
 ]
 export const BOOSTS: Offer[] = [
   { id: 'xp_boost', title: 'Double XP · 15 min', note: 'Climb the league twice as fast', icon: 'xp', price: { coins: 250 } },
   { id: 'freeze', title: 'Streak Freeze', note: 'Covers one missed day (hold up to 2)', icon: 'flame', price: { coins: 300 } },
-  { id: 'coin_sack', title: 'Coin Sack', note: '1,000 coins for boosts and hints', icon: 'coins', price: { gems: 10 } },
+  { id: 'coin_sack', title: 'Coin Sack', note: '1,000 coins', icon: 'coins', price: { gems: 10 } },
 ]
 export const CHEST_OFFERS: Offer[] = [
   { id: 'chest_wood', title: 'Wooden Chest', note: '80–150 coins, maybe an elixir', icon: 'wood', price: { coins: 400 } },
-  { id: 'chest_silver', title: 'Silver Chest', note: 'Coins, gems, maybe an elixir', icon: 'silver', price: { gems: 30 } },
-  { id: 'chest_epic', title: 'Epic Chest', note: 'Lots of coins, 15–30 gems, elixirs', icon: 'epic', price: { gems: 80 } },
+  { id: 'chest_silver', title: 'Silver Chest', note: '400–700 coins, maybe an elixir', icon: 'silver', price: { gems: 30 } },
+  { id: 'chest_epic', title: 'Epic Chest', note: '1,000–1,600 coins and elixirs', icon: 'epic', price: { gems: 80 } },
 ]
 /** one featured offer per day, the same for everyone. Every id here must be a server offer (catalog.OFFERS):
  *  'Treasure Pile' (coin_big) was removed 10-11 because the server never sold it (Buy failed with 404). */

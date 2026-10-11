@@ -28,7 +28,7 @@ import { setMusic as playMusic } from './services/audio'
 import type { CurrencyId, Stage, MiniGameId } from './types/game'
 
 export function App() {
-  const { ready, quests, achievements, error, refresh, mode, reviewDue, worlds, account, patchMe } = useGame()
+  const { ready, quests, achievements, error, refresh, mode, reviewDue, worlds, account, patchMe, streak } = useGame()
   const initialTab = (typeof location !== 'undefined'
     ? (new URLSearchParams(location.search).get('tab') as Tab | null) : null) || 'map'
   const [tab, setTab] = useState<Tab>(initialTab)
@@ -61,6 +61,13 @@ export function App() {
     if (to === 'achievements') { setTab('profile'); setAchOpen(true) } else { setAchOpen(false); setTab(to) }
   }
   const toProfile = () => { setAchOpen(false); setTab('profile') }
+  // Phase B: a Hearthfire that just went out can be repaired for gems; offer it once a day
+  useEffect(() => {
+    if (!ready || mode !== 'http' || !streak?.repair) return
+    const day = new Date().toDateString()
+    try { if (localStorage.getItem('rc.repairSeen') === day) return; localStorage.setItem('rc.repairSeen', day) } catch { /* show it */ }
+    setHearth(true)
+  }, [ready, mode, streak?.repair])
   // the spaced review comes first each day (plan: "review first"), once, when something is due
   useEffect(() => {
     if (ready && mode === 'http' && reviewDue > 0 && !cauldronSeenToday() && !new URLSearchParams(location.search).has('nocauldron')) setCauldron(true)
@@ -68,6 +75,8 @@ export function App() {
   const curLevel = Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf([...worlds].reverse().find((w) => w.status === 'current')?.cefr ?? 'A1'))
   // retake the avatar picture on start and whenever the player leaves the wardrobe
   const [portraitV, setPortraitV] = useState(() => (portraitStale() ? 1 : 0))
+  // Phase B: a look loaded from the account or changed by Wear (shop, My Items, a boss treasure) retakes the portrait
+  useEffect(() => { const on = () => setPortraitV((v) => v + 1); addEventListener('rc-look', on); return () => removeEventListener('rc-look', on) }, [])
 
   const questBadge = ready && quests.some((q) => q.progress >= q.target && !q.done)
   const achBadge = ready && achievements.some((a) => a.progress >= a.target && !a.claimed)
@@ -119,7 +128,7 @@ export function App() {
           <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
 
           {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
-          {tab === 'quests' && <QuestsScreen />}
+          {tab === 'quests' && <QuestsScreen onGo={(to) => { if (to === 'cauldron' && mode === 'http') setCauldron(true); else setTab('map') }} />}
           {tab === 'shop' && <ShopScreen />}
           {tab === 'league' && <LeagueScreen />}
           {tab === 'profile' && <ProfileScreen onBuy={setShop} onCustomize={() => setCustomizing(true)} onAchievements={() => setAchOpen(true)} />}

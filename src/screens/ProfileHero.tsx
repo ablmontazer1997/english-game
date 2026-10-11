@@ -28,6 +28,9 @@ function useShowcase3d() {
   const [ready, setReady] = useState(false)
   const [frame, setFrame] = useState<Frame>({ gnd: 0.7578, top: 0.2231 })
   const post = (m: Record<string, unknown>) => ref.current?.contentWindow?.postMessage(m, '*')
+  // Phase B: a new look (Wear in the shop / My Items, or loaded from the account) reloads the 3D hero
+  const [v, setV] = useState(0)
+  useEffect(() => { const on = () => { setReady(false); setV((x) => x + 1) }; addEventListener('rc-look', on); return () => removeEventListener('rc-look', on) }, [])
   useEffect(() => {
     const on = (e: MessageEvent) => {
       if (!ref.current || e.source !== ref.current.contentWindow) return
@@ -58,7 +61,7 @@ function useShowcase3d() {
     post({ type: 'rc-anim', name: GESTURES[g.current++ % GESTURES.length], once: 1, fade: 0.2 })
     setTimeout(() => { busy.current = false }, 6000) // never stuck if a done message is missed
   }
-  return { ref, ready, frame, gesture, burst }
+  return { ref, ready, frame, gesture, burst, v }
 }
 
 /** heroH: the model's height (feet to hat tip) in px; podiumW: the podium's width in px */
@@ -74,7 +77,7 @@ function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: Re
       <img className="ph-podium" src={art('podium')} alt="" draggable={false} style={{ width: podiumW }} />
       <img className={`ph-2d${h3.ready || !fb ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
         style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
-      <iframe ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
+      <iframe key={h3.v} ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
         style={{ width: fw, height: fh, bottom: feetY - fh * (1 - frame.gnd) }} />
       <span className="ph-shadow" style={{ width: podiumW * 1.08, bottom: `calc(var(--pod-b) - ${Math.round(podiumW * 0.05)}px)` }} />
       {h3.burst > 0 && (

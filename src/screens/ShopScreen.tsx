@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { sfx } from '../services/audio'
 import { ItemThumb } from '../components/ItemThumb'
 import './serverstage.css'
-import type { ShopOut, ChestInfo, ShopItem } from '../services/api'
-import type { Currencies } from '../types/game'
+import { api, errorText, type ShopOut, type ChestInfo, type WardrobeItem, type Merchant } from '../services/api'
+import { wearItem } from '../services/look'
+import { toCurrencies } from '../services/httpService'
 import { useGame } from '../services/ServiceProvider'
-import { Card, Row, Btn, Slot, art, PAGE_BG, type ArtName } from '../components/PageArt'
+import { Card, Row, Btn, Slot, Chip, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import { ChestStrip, useCountdown } from '../components/Rewards'
 import { ESSENTIALS, BOOSTS, CHEST_OFFERS, GEM_PACKS, dealOfTheDay, priceLabel, type Offer, type OfferIcon } from '../services/shopCatalog'
@@ -58,16 +59,17 @@ function useServerShop() {
   const { http, currencies } = useGame()
   const [shop, setShop] = useState<ShopOut | null>(null)
   const [chests, setChests] = useState<ChestInfo[] | null>(null)
+  const [v, setV] = useState(0)
   useEffect(() => {
     if (!http) return
     http.shop().then(setShop).catch(() => {}); http.chests().then(setChests).catch(() => {})
-  }, [http, currencies?.gems])
-  return { shop, chests, http }
+  }, [http, currencies?.gems, currencies?.coins, v])
+  return { shop, chests, http, refresh: () => setV((n) => n + 1) }
 }
 /** one-line notes written for the row width (the server's longer notes do not fit a list row) */
 const SHORT_NOTE: Record<string, string> = {
-  hearts_full: 'Refill all hearts now', elixir_1: 'Keeps your heart on a lost boss', elixir_3: 'Best value for rescues',
-  xp_boost: 'Faster levels, no league effect', freeze: 'Covers one missed day', coin_sack: '1,000 coins',
+  hearts_full: 'Refill all hearts now', elixir_1: 'Continue a lost stage, or keep a heart', elixir_3: 'Best value for rescues',
+  xp_boost: 'Faster levels, no league effect', freeze: 'Covers one missed day', coin_sack: '1,000 coins for looks and hints',
   chest_wood: 'Odds shown', chest_silver: 'Odds shown', chest_epic: 'Odds shown',
 }
 const withServer = (o: Offer, shop: ShopOut | null): Offer => {
@@ -77,7 +79,7 @@ const withServer = (o: Offer, shop: ShopOut | null): Offer => {
 
 export function ShopScreen() {
   const { currencies, inventory, mode } = useGame()
-  const { shop, chests, http } = useServerShop()
+  const { shop, chests, refresh } = useServerShop()
   const server = mode === 'http'
   // the server has no daily discount: the banner features one offer at its normal price
   const deal = server ? (() => { const d = dealOfTheDay(); const base = withServer({ ...d, id: d.id.replace(/^deal:/, ''), was: undefined }, shop); return { ...base, note: 'Featured today' } })() : dealOfTheDay()
@@ -103,6 +105,8 @@ export function ShopScreen() {
           <img className="sh-banner-art" src={ICON_ART[deal.icon]} alt="" draggable={false} />
         </Card>
 
+        {server && shop?.merchant && <MerchantSection m={shop.merchant} onDone={refresh} />}
+
         <ChestStrip />
 
         <div className="ui-h">Essentials</div>
@@ -122,14 +126,24 @@ export function ShopScreen() {
         <div className="sh-grid3">
           {CHEST_OFFERS.map((o) => withServer(o, shop)).map((o) => <ChestCard key={o.id} o={o} odds={chests?.find((c) => 'chest_' + c.kind === o.id)?.odds} />)}
         </div>
-        {server && <p className="ui-note">Tap a chest's name to see its odds. Chests hold coins, gems and elixirs, never wardrobe items.</p>}
+        {server && <p className="ui-note">Tap a chest's name to see its odds. Chests hold coins and elixirs, never gems or wardrobe items.</p>}
 
         {server && shop && shop.items.length > 0 && <>
           <div className="ui-h">Wardrobe</div>
           <div className="sh-grid3">
-            {shop.items.filter((it) => it.tier === 'gem').map((it) => <ItemCard key={it.id} it={it} onBuy={(id) => http!.buyItem(id)} />)}
+            {shop.items.filter((it) => it.tier === 'coin').map((it) => <ItemCard key={it.id} it={it} onDone={refresh} />)}
           </div>
-          <p className="ui-note">Looks only: nothing here changes your score. Boss treasures cannot be bought; win them.</p>
+          <div className="sh-grid3 sh-gap">
+            {shop.items.filter((it) => it.tier === 'gem').map((it) => <ItemCard key={it.id} it={it} onDone={refresh} />)}
+          </div>
+          <p className="ui-note">Looks only: nothing here changes your score. Try anything on in Profile, Edit. Boss treasures and Hearthfire hats cannot be bought; win them.</p>
+          {!!shop.premium?.length && (
+            <Card className="reveal sh-prem">
+              <span className="sh-prem-th">{shop.premium.map((it) => <ItemThumb key={it.id} id={it.id} />)}</span>
+              <span className="sh-prem-main"><b className="ui-t">Archmage Circle</b><small className="ui-s">Star and Shadow cloaks, a monthly set. Premium, coming soon.</small></span>
+              <Btn className="sm" disabled>Soon</Btn>
+            </Card>
+          )}
         </>}
 
         <div className="ui-h">Gems</div>
@@ -184,24 +198,93 @@ function ChestCard({ o, odds }: { o: Offer; odds?: { reward: string; min?: numbe
   )
 }
 
-const SLOT_ART: Record<string, ArtName> = { hair: 'qi_crystal', haircolor: 'qi_potion', eyes: 'qi_star', palette: 'qi_potion' }
-/** a wardrobe item for gems (server catalogue); the 3D wardrobe's own thumbnail when it has one */
-function ItemCard({ it, onBuy }: { it: ShopItem; onBuy: (id: string) => Promise<{ ok: boolean; reason?: string; currencies?: Currencies }> }) {
+const SLOT_ART: Record<string, ArtName> = { hair: 'qi_crystal', haircolor: 'qi_potion', eyes: 'qi_star' }
+
+/** a two-tap buy: the first tap asks "Sure?", the second spends (3 s to change your mind) */
+function useConfirm() {
+  const [armed, setArmed] = useState(false)
+  useEffect(() => { if (!armed) return; const t = setTimeout(() => setArmed(false), 6000); return () => clearTimeout(t) }, [armed])
+  return { armed, arm: () => setArmed(true), disarm: () => setArmed(false) }
+}
+
+/** price chip inside a button: coin or gem icon + amount */
+const Price = ({ it }: { it: WardrobeItem }) => (
+  <><img src={skySrc(it.tier === 'coin' ? 'ic_coin' : 'ic_gem')} alt="" />{(it.tier === 'coin' ? it.price_coins : it.price_gems)?.toLocaleString('en-US')}</>
+)
+
+/** a wardrobe item of the one catalogue: buy in place (server price), then Wear */
+function ItemCard({ it, onDone }: { it: WardrobeItem; onDone?: () => void }) {
   const { currencies, setCurrencies } = useGame()
   const [msg, setMsg] = useState<string | null>(null)
   const [owned, setOwned] = useState(it.owned)
-  const short = (it.price_gems ?? 0) > (currencies?.gems ?? 0)
+  const [worn, setWorn] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const c = useConfirm()
+  useEffect(() => setOwned(it.owned), [it.owned])
+  const cost = (it.tier === 'coin' ? it.price_coins : it.price_gems) ?? 0
+  const short = cost > ((it.tier === 'coin' ? currencies?.coins : currencies?.gems) ?? 0)
+  const say = (t: string) => { setMsg(t); setTimeout(() => setMsg(null), 2200) }
   const go = async () => {
-    const r = await onBuy(it.id)
-    if (!r.ok) { setMsg(r.reason ?? 'Not possible'); setTimeout(() => setMsg(null), 2200); return }
-    setOwned(true); sfx('reveal'); if (r.currencies) setCurrencies(r.currencies)
+    if (short) { say(it.tier === 'coin' ? 'Not enough coins' : 'Not enough gems'); return }
+    if (!c.armed) { c.arm(); return }
+    c.disarm(); setBusy(true)
+    try {
+      const r = await api.wardrobeBuy(it.id)
+      setOwned(true); sfx('reveal'); setCurrencies(toCurrencies(r.wallet)); onDone?.()
+    } catch (e) { say(errorText(e)) }
+    setBusy(false)
+  }
+  const wear = async () => {
+    setBusy(true)
+    try { await wearItem(it.slot, it.id); setWorn(true) } catch (e) { say(errorText(e)) }
+    setBusy(false)
   }
   return (
     <Card name="card_square" className="reveal sh-card">
       <ItemThumb className="sh-card-art" id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />
-      <span className="sh-card-n sh-item-n" title={it.name}>{msg ?? it.name.replace(/\s*\(.*\)\s*$/, '')}</span>
-      {owned ? <Btn className="sm" disabled>Owned</Btn>
-        : <Btn className={`sm${short ? ' short' : ''}`} onClick={go}><img src={skySrc('ic_gem')} alt="" />{it.price_gems}</Btn>}
+      <span className="sh-card-n sh-item-n" title={it.name}>{msg ?? it.name}</span>
+      {owned ? <Btn className="sm" name={worn ? 'btn_gold' : 'btn_green'} disabled={busy || worn} onClick={wear}>{worn ? 'Worn' : 'Wear'}</Btn>
+        : <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={go}>{c.armed ? 'Sure?' : <Price it={it} />}</Btn>}
     </Card>
   )
+}
+
+/** the Wandering Merchant: 4 items + one set, the same for everyone, rotating every Monday (audit 5.3 C) */
+function MerchantSection({ m, onDone }: { m: Merchant; onDone: () => void }) {
+  const left = useCountdown(m.ends_at)
+  const { currencies, setCurrencies } = useGame()
+  const [msg, setMsg] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const c = useConfirm()
+  const set = m.set
+  const short = set.price_gems > (currencies?.gems ?? 0)
+  const buySet = async () => {
+    if (short) { setMsg('Not enough gems'); setTimeout(() => setMsg(null), 2200); return }
+    if (!c.armed) { c.arm(); return }
+    c.disarm(); setBusy(true)
+    try { const r = await api.buySet(set.id); sfx('reveal'); setCurrencies(toCurrencies(r.wallet)); onDone() } catch (e) { setMsg(errorText(e)); setTimeout(() => setMsg(null), 2200) }
+    setBusy(false)
+  }
+  return <>
+    <div className="ui-h wm-h">Wandering Merchant <Chip className="wm-left">{left.label}</Chip></div>
+    <div className="sh-grid wm-grid">
+      {m.items.map((it) => <ItemCard key={it.id} it={it} onDone={onDone} />)}
+    </div>
+    <Card className="reveal wm-set">
+      <span className="wm-set-th">{set.items.map((it) => <ItemThumb key={it.id} id={it.id} fallback={SLOT_ART[it.slot] ?? 'qi_star'} />)}</span>
+      <span className="wm-set-main">
+        <b className="ui-t">{set.name}</b>
+        <small className="ui-s">{msg ?? (set.owned_all ? 'You own the whole set' : `${set.items.filter((i) => !i.owned).length} items · 20% off`)}</small>
+      </span>
+      {set.owned_all ? <Btn className="sm" disabled>Owned</Btn> : (
+        <span className="wm-set-buy">
+          {set.full_gems > set.price_gems && <s>{set.full_gems}</s>}
+          <Btn className={`sm${short ? ' short' : ''}`} name={c.armed ? 'btn_gold' : 'btn_green'} disabled={busy} onClick={buySet}>
+            {c.armed ? 'Sure?' : <><img src={skySrc('ic_gem')} alt="" />{set.price_gems}</>}
+          </Btn>
+        </span>
+      )}
+    </Card>
+    <p className="ui-note">New wares every Monday. Epic cloaks and sets are sold only here, and some return months later.</p>
+  </>
 }

@@ -18,7 +18,10 @@ import { HintCtx, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import { ItemThumb } from '../components/ItemThumb'
 import { SpellLetter, hasLetter } from '../components/SpellLetter'
-import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic } from '../services/api'
+import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic, type HintsState } from '../services/api'
+import { toCurrencies } from '../services/httpService'
+import { wearItem } from '../services/look'
+import { useCountdown } from '../components/Rewards'
 import { planRounds, AnswerSheet, solve, type Round } from '../services/serverPlay'
 import { sfx, enterScene, leaveScene, quietStage, VOICE_GAMES } from '../services/audio'
 import '../components/gametitle.css'
@@ -79,12 +82,18 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   const hintFn = useRef<HintFn | null>(null)
   const [canHint, setCanHint] = useState(false)
   const [coach, setCoach] = useState(!!guided)   // the first-round line of the guided stage
+  // Phase B: 3 free hints a day then coins; "continue +3 questions" after a lost trial / boss / vault
+  const [hintState, setHintState] = useState<HintsState | null>(null)
+  const [extra, setExtra] = useState<Round[]>([])
+  const [extraN, setExtraN] = useState(0)
+  const [contLeft, setContLeft] = useState(0)
+  const [contErr, setContErr] = useState('')
   const registerHint = useCallback((fn: HintFn | null) => { hintFn.current = fn; setCanHint(!!fn) }, [])
   const level = Math.max(0, LV.indexOf(stage.cefr ?? 'A1'))
   const boss = stage.serverKind === 'boss' || stage.kind === 'boss'
 
   const plan = useMemo(() => session ? planRounds(session.questions, boss) : null, [session, boss])
-  const rounds: Round[] = plan?.rounds ?? []
+  const rounds: Round[] = useMemo(() => [...(plan?.rounds ?? []), ...extra], [plan, extra])
   const round = rounds[ri]
   // a stage with a speaking / listening game in any round has no music at all (lobby to result)
   const quiet = VOICE_GAMES.has(stage.miniGame) || rounds.some((r) => VOICE_GAMES.has(r.game))
@@ -93,13 +102,14 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   // start (or restart) the session
   useEffect(() => {
     let live = true
-    setPhase('loading'); setOut(null); setRi(0); setModal(null); hints.current = 0
+    setPhase('loading'); setOut(null); setRi(0); setModal(null); hints.current = 0; setExtra([]); setExtraN(0); setContErr('')
     if (stage.heartsApply && (currencies?.hearts ?? 0) <= 0) { setPhase('gate'); return }
     api.start(stage.id).then((s) => {
       if (!live) return
       if (!s.questions.length) { setErr('This stage has no questions yet. Try another one.'); setPhase('error'); return }
       setSession(s)
       sheet.current = new AnswerSheet(planRounds(s.questions, boss).answerMap)
+      setHintState(s.hints ?? null); setContLeft(s.continue?.left ?? 0)
       setPhase('intro')
     }).catch((e) => {
       if (!live) return
@@ -118,7 +128,25 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
     const fn = hintFn.current
     if (!fn || !fn()) return false
     hints.current++
+    // the hint is already on screen; the server counts it (free 3 a day, then it charges the coins)
+    try { const r = await api.useHint(); setHintState(r.hints); setCurrencies(toCurrencies(r.wallet)) } catch { /* offline: counted with the session */ }
     return true
+  }
+
+  /** "+3 questions" for an elixir or gems: the server adds them to this session, then they are played as one more round */
+  async function doContinue(pay: 'elixir' | 'gems') {
+    if (!session) return
+    setContErr('')
+    try {
+      const r = await api.continueSession(session.session_id, pay)
+      setCurrencies(toCurrencies(r.wallet)); setContLeft(r.continue?.left ?? 0)
+      const more = planRounds(r.questions, boss)
+      sheet.current.extend(more.answerMap)
+      setExtraN((n) => n + r.questions.length)
+      const at = rounds.length
+      setExtra((x) => [...x, ...more.rounds])
+      setRi(at); setPhase('play')
+    } catch (e) { setContErr(errorText(e)) }
   }
 
   async function send(useElixir: boolean) {
@@ -144,10 +172,10 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
     if (!session) return
     // items a game skipped (it ended early) are sent as unanswered: the server counts them wrong
     if (ri + 1 < rounds.length) { setPhase('between'); setTimeout(() => { setRi(ri + 1); setPhase('play') }, 1300); return }
-    const total = session.questions.length
+    const total = session.questions.length + extraN
     const acc = sheet.current.correct / Math.max(1, total)
-    // a lost boss/bonus costs a heart: an elixir can keep it (the server spends it)
-    if (stage.heartsApply && acc < 0.5 && (currencies?.potion ?? 0) > 0) { setPhase('rescue'); return }
+    // a lost trial / boss / vault costs a heart: continue (+3 questions) or an elixir can save it
+    if (stage.heartsApply && acc < 0.5 && (contLeft > 0 || (currencies?.potion ?? 0) > 0)) { setPhase('rescue'); return }
     send(false)
   }
 
@@ -158,7 +186,8 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
       <div className="gate-card pop">
         <div className="gate-heart"><HeartIcon size={44} /></div>
         <h2>Out of Hearts</h2>
-        <p>Bosses and treasure vaults need a heart. Review in the Overnight Cauldron (10 right answers brew a heart), wait for one to recharge, or get more.</p>
+        <p>Trials, bosses and treasure vaults need a heart. Review in the Overnight Cauldron (10 right answers brew a heart), wait for one to recharge, or get more.</p>
+        <NextHeart at={currencies?.heartsRefillAt ?? 0} />
         <button className="btn btn-gold big" onClick={onNeedHearts}>Get Hearts</button>
         <button className="btn btn-ghost big" onClick={onExit}>Back to Map</button>
       </div>
@@ -235,18 +264,27 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
     )
   }
 
-  if (phase === 'rescue') return (
-    <div className="stage-host full">
-      <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
-      <div className="rescue-wrap"><div className="rescue pop">
-        <div className="rescue-ic">🧪</div>
-        <h2>The {boss ? 'boss' : 'vault'} holds</h2>
-        <p>Drink an elixir to keep your heart. You have {currencies?.potion ?? 0}.</p>
-        <button className="cb cb-violet" onClick={() => send(true)}>Use Elixir</button>
-        <button className="cb cb-white" onClick={() => send(false)}>Give up (−1 ❤️)</button>
-      </div></div>
-    </div>
-  )
+  if (phase === 'rescue') {
+    const potion = currencies?.potion ?? 0, gems = currencies?.gems ?? 0
+    const what = boss ? 'boss' : stage.serverKind === 'trial' ? 'trial' : 'vault'
+    return (
+      <div className="stage-host full">
+        <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
+        <div className="rescue-wrap"><div className="rescue pop">
+          <div className="rescue-ic">🧪</div>
+          <h2>The {what} holds</h2>
+          <p>{contLeft > 0 ? 'Half the runes must land to win. Try 3 more questions?' : `Drink an elixir to keep your heart. You have ${potion}.`}</p>
+          {contLeft > 0 && (potion > 0
+            ? <button className="cb cb-violet rs-btn" onClick={() => doContinue('elixir')}>Continue: +3 questions<span className="rs-cost">🧪 1</span></button>
+            : <button className={`cb cb-violet rs-btn${gems < 15 ? ' rs-short' : ''}`} disabled={gems < 15} onClick={() => doContinue('gems')}>Continue: +3 questions<span className="rs-cost"><img src={skySrc('ic_gem')} alt="" />15</span></button>)}
+          {contLeft > 0 && potion === 0 && gems < 15 && <small className="rs-note">You need 15 gems or an elixir.</small>}
+          {potion > 0 && <button className="cb cb-white" onClick={() => send(true)}>Keep my heart<span className="rs-cost">🧪 1</span></button>}
+          {contErr && <small className="rs-note">{contErr}</small>}
+          <button className="cb cb-white" onClick={() => send(false)}>Give up (−1 ❤️)</button>
+        </div></div>
+      </div>
+    )
+  }
 
   if (phase === 'result' && out) return (
     <div className="stage-host full">
@@ -319,7 +357,8 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
       {phase === 'between' && (
         <div className="ss-between pop"><span>Round {ri + 2} of {rounds.length}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
       )}
-      <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint} free />
+      <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint}
+        free={!hintState} freeLeft={hintState?.free_left} cost={hintState?.cost_coins} />
     </div>
   )
 }
@@ -327,18 +366,22 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
 /** the boss drop, the level up and the level completed cards (rw-card style, like the app's reward popup) */
 function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | 'done'; out: CompleteOut; stage: Stage; onClose: () => void }) {
   useEffect(() => { sfx(kind === 'drop' ? 'reveal' : 'win') }, [kind])   // admin 4530: a new wardrobe item = reveal
+  const first = out.rewards.items?.[0]
+  const [worn, setWorn] = useState<string | null>(null)
   return (
     <div className="rw-scrim" onClick={onClose}>
       <div className="rw-card ss-modal" onClick={(e) => e.stopPropagation()}>
         <div className="rw-rays" />
         {kind === 'drop' && <>
-          <div className="rw-title">{stage.kind === 'boss' ? 'The boss dropped a treasure!' : 'Treasure found!'}</div>
+          <div className="rw-title">{out.rewards.items.some((i) => !i.why || i.why === 'Boss treasure') ? (stage.kind === 'boss' ? 'The boss dropped a treasure!' : 'Treasure found!') : 'You earned a new look!'}</div>
           <div className="rw-items">
             {out.rewards.items.map((it) => (
-              <div key={it.item_id} className="rw-big ss-drop"><ItemThumb id={it.item_id} fallback="chest_epic" /><b>{it.name}</b><span>New for your wardrobe</span></div>
+              <div key={it.item_id} className="rw-big ss-drop"><ItemThumb id={it.item_id} fallback="chest_epic" /><b>{it.name}</b><span>{it.why && it.why !== 'Boss treasure' ? it.why : 'New for your wardrobe'}</span></div>
             ))}
           </div>
-          <p className="rw-note">Wear it from your profile: Edit.</p>
+          {first?.slot && <Btn name="btn_green" className="lg" disabled={worn !== null} onClick={async () => {
+            setWorn('…'); try { await wearItem(first.slot!, first.item_id); setWorn('ok') } catch { setWorn(null) }
+          }}>{worn === 'ok' ? 'Wearing it' : 'Wear it now'}</Btn>}
         </>}
         {kind === 'level' && <>
           <div className="rw-title">Level up!</div>
@@ -355,4 +398,11 @@ function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | '
       </div>
     </div>
   )
+}
+
+/** the time to the next heart on the "Out of Hearts" card */
+function NextHeart({ at }: { at: number }) {
+  const t = useCountdown(at)
+  if (!at || t.ms <= 0) return null
+  return <p className="gate-next">Next heart in {t.label}</p>
 }

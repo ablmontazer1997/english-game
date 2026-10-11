@@ -14,7 +14,16 @@ const ICON: Record<string, ArtName> = {
   wwin: 'qi_star', wthree: 'qi_star', wcorrect: 'qi_crystal', wboss: 'qi_flame', wxp: 'qi_flame', all: 'qi_chest', days: 'qi_chest',
 }
 
-function QuestRow({ q, onClaim }: { q: Quest; onClaim: (id: string) => void }) {
+// Phase B (audit P1): every open quest has a "Go" to where it is played
+export type QuestGo = 'map' | 'cauldron'
+const goOf = (q: Quest): QuestGo | null => {
+  const k = q.id.split(':').pop()!
+  if (q.bonus || k === 'all' || k === 'days') return null
+  return k === 'cauldron' ? 'cauldron' : 'map'
+}
+
+function QuestRow({ q, onClaim, onGo }: { q: Quest; onClaim: (id: string) => void; onGo?: (to: QuestGo) => void }) {
+  const go = onGo ? goOf(q) : null
   const pct = Math.min(100, (q.progress / q.target) * 100)
   const ready = q.progress >= q.target && !q.done
   return (
@@ -31,13 +40,14 @@ function QuestRow({ q, onClaim }: { q: Quest; onClaim: (id: string) => void }) {
         {ready
           ? <Btn name="btn_gold" onClick={() => onClaim(q.id)}>Claim</Btn>
           : q.done ? <span className="q-check">✓</span>
-            : <RewardChips reward={q.reward} size={16} />}
+            : go ? <span className="q-trail"><RewardChips reward={q.reward} size={16} /><Btn className="sm q-go" onClick={() => onGo!(go)}>Go</Btn></span>
+              : <RewardChips reward={q.reward} size={16} />}
       </div>
     </Card>
   )
 }
 
-export function QuestsScreen() {
+export function QuestsScreen({ onGo }: { onGo?: (to: QuestGo) => void }) {
   const { quests, claimQuest } = useGame()
   const [period, setPeriod] = useState<'daily' | 'weekly'>('daily')
   const list = quests.filter((q) => q.period === period)
@@ -67,7 +77,7 @@ export function QuestsScreen() {
           ? 'New quests every day. Finish all three to win the daily chest.'
           : 'Bigger goals for the whole week. Finish your dailies on 5 days for an Epic Chest.'}</p>
 
-        {main.map((q) => <QuestRow key={q.id} q={q} onClaim={claimQuest} />)}
+        {main.map((q) => <QuestRow key={q.id} q={q} onClaim={claimQuest} onGo={onGo} />)}
         {bonus.map((q) => <QuestRow key={q.id} q={q} onClaim={claimQuest} />)}
 
         <ChestStrip />

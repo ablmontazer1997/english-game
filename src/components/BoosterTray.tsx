@@ -6,10 +6,12 @@ import './boostertray.css'
 /** The same two boosters, in the same spot, in every mini-game:
  *  💡 hint (paid in coins, applied by the game) and 🧪 elixir (count; spent on
  *  the rescue step when a stage is lost, so the heart is kept). */
-export function BoosterTray({ coins, elixirs, canHint, onHint, free }: {
+export function BoosterTray({ coins, elixirs, canHint, onHint, free, freeLeft, cost = HINT_COST }: {
   coins: number; elixirs: number; canHint: boolean; onHint: () => Promise<boolean>
-  /** server stages: hints are not charged (the server counts them per session) */
+  /** hints are not charged at all (old server stages) */
   free?: boolean
+  /** Phase B server stages: free hints left today (3 a day), then `cost` coins each (the server charges) */
+  freeLeft?: number; cost?: number
 }) {
   const [tip, setTip] = useState('')
   const el = useRef<HTMLDivElement>(null)
@@ -19,7 +21,8 @@ export function BoosterTray({ coins, elixirs, canHint, onHint, free }: {
 
   async function hint() {
     if (!canHint) return say('No hint in this game')
-    if (!free && coins < HINT_COST) return say(`A hint costs ${HINT_COST} coins`)
+    const paid = !free && !(freeLeft && freeLeft > 0)
+    if (paid && coins < cost) return say(`A hint costs ${cost} coins`)
     const used = await onHint()
     if (!used) return say('Nothing to hint right now')
     setPulse(true); setTimeout(() => setPulse(false), 500)
@@ -27,11 +30,14 @@ export function BoosterTray({ coins, elixirs, canHint, onHint, free }: {
 
   return (
     <div className="bt" ref={el} aria-label="Boosters">
-      <button className={`bt-btn${pulse ? ' pulse' : ''}${canHint ? '' : ' off'}`} onClick={hint} aria-label={`Hint, ${HINT_COST} coins`}>
+      <button className={`bt-btn${pulse ? ' pulse' : ''}${canHint ? '' : ' off'}`} onClick={hint}
+        aria-label={free ? 'Hint, free' : freeLeft && freeLeft > 0 ? `Hint, ${freeLeft} free today` : `Hint, ${cost} coins`}>
         <span className="bt-ic">💡</span>
-        {free ? <span className="bt-cost">free</span> : <span className="bt-cost"><img src={icCoin} alt="" />{HINT_COST}</span>}
+        {free ? <span className="bt-cost">free</span>
+          : freeLeft && freeLeft > 0 ? <span className="bt-cost">free ×{freeLeft}</span>
+            : <span className="bt-cost"><img src={icCoin} alt="" />{cost}</span>}
       </button>
-      <button className="bt-btn" onClick={() => say(free ? 'Lose a boss or vault? An elixir keeps your heart' : 'Lose a stage? An elixir lets you retry and keep your heart')} aria-label={`Elixirs: ${elixirs}`}>
+      <button className="bt-btn" onClick={() => say(free || freeLeft !== undefined ? 'Lose a trial, boss or vault? An elixir buys 3 more questions or keeps your heart' : 'Lose a stage? An elixir lets you retry and keep your heart')} aria-label={`Elixirs: ${elixirs}`}>
         <span className="bt-ic">🧪</span>
         <span className="bt-count">{elixirs}</span>
       </button>

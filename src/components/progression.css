@@ -111,3 +111,6 @@
 .rw-big b { font-size: 19px; font-weight: 900; color: #3c4160; }
 .rw-big span { font-size: 11px; font-weight: 800; color: #7d83a2; }
 .rw-note { margin: 0; font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: 700; color: #6b7192; text-align: center; }
+/* Phase B: quest rows carry a "Go" under their reward */
+.q-trail { display: grid; justify-items: center; gap: 4px; }
+.q-trail .q-go { min-width: 56px; }

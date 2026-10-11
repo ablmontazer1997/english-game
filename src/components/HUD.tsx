@@ -1,6 +1,7 @@
 import { useGame } from '../services/ServiceProvider'
 import { SkyIcon, skySrc, type SkyName } from './SkyIcon'
 import { usePortrait } from './Portrait'
+import { useCountdown } from './Rewards'
 import type { CurrencyId } from '../types/game'
 import './hud.css'
 
@@ -24,7 +25,8 @@ export function HUD({ onBuy, onSettings, onProfile }: { onBuy: (c: CurrencyId) =
       </button>
 
       <div className="hud-pills">
-        <Pill icon="ic_heart" value={`${currencies.hearts}/${currencies.heartsMax}`} onBuy={() => onBuy('hearts')} />
+        <Pill icon="ic_heart" value={`${currencies.hearts}/${currencies.heartsMax}`} onBuy={() => onBuy('hearts')}
+          sub={currencies.hearts < currencies.heartsMax ? <HeartTimer at={currencies.heartsRefillAt ?? 0} /> : null} />
         <Pill icon="ic_coin" value={fmt(currencies.coins)} onBuy={() => onBuy('coins')} />
         <Pill icon="ic_gem" value={fmt(currencies.gems)} onBuy={() => onBuy('gems')} />
       </div>
@@ -36,11 +38,20 @@ export function HUD({ onBuy, onSettings, onProfile }: { onBuy: (c: CurrencyId) =
   )
 }
 
-function Pill({ icon, value, onBuy, wide }: {
-  icon: SkyName; value: string; onBuy: () => void; wide?: boolean
+/** Phase B: when a heart is missing, the time to the next one hangs under the hearts pill */
+function HeartTimer({ at }: { at: number }) {
+  const t = useCountdown(at)
+  if (!at || t.ms <= 0) return null
+  const m = Math.floor(t.ms / 60000), s = Math.floor((t.ms % 60000) / 1000)
+  return <span className="pill-timer" aria-label={`Next heart in ${m} minutes`}>+1 in {m}:{String(s).padStart(2, '0')}</span>
+}
+
+function Pill({ icon, value, onBuy, wide, sub }: {
+  icon: SkyName; value: string; onBuy: () => void; wide?: boolean; sub?: React.ReactNode
 }) {
   return (
     <div className={`pill${wide ? ' wide' : ''}`}>
+      {sub}
       <img className="pill-bg" src={skySrc('pill')} alt="" draggable={false} />
       <SkyIcon name={icon} size={20} className="pill-ic" />
       <b className="pill-val">{value}</b>

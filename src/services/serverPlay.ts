@@ -153,6 +153,8 @@ export class AnswerSheet {
     this.last = now
   }
   has(qid: string) { return this.got.has(qid) }
+  /** Phase B: questions added by a "continue" bring their own answer converters */
+  extend(m: Map<string, (c: string) => unknown>) { m.forEach((v, k) => this.answerMap.set(k, v)) }
   get answers(): ServerAnswer[] { return [...this.got.values()] }
   get correct() { return this.answers.filter((a) => a.correct).length }
   get elapsed() { return Date.now() - this.t0 }
