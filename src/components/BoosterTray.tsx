@@ -37,14 +37,14 @@ export function BoosterTray({ coins, elixirs, canHint, onHint, free, freeLeft, c
           <span className="bt-ic bt-q">?</span>
         </button>
       )}
-      <button className={`bt-btn${pulse ? ' pulse' : ''}${canHint ? '' : ' off'}`} onClick={hint}
+      <button className={`bt-btn bt-hint${pulse ? ' pulse' : ''}${canHint ? '' : ' off'}`} onClick={hint}
         aria-label={free ? 'Hint, free' : freeLeft && freeLeft > 0 ? `Hint, ${freeLeft} free today` : `Hint, ${cost} coins`}>
         <span className="bt-ic">💡</span>
         {free ? <span className="bt-cost">free</span>
           : freeLeft && freeLeft > 0 ? <span className="bt-cost">free ×{freeLeft}</span>
             : <span className="bt-cost"><img src={icCoin} alt="" />{cost}</span>}
       </button>
-      <button className="bt-btn" onClick={() => say(free || freeLeft !== undefined ? 'Lose a trial, boss or vault? An elixir buys 3 more questions or keeps your heart' : 'Lose a stage? An elixir lets you retry and keep your heart')} aria-label={`Elixirs: ${elixirs}`}>
+      <button className="bt-btn bt-elixir" onClick={() => say(free || freeLeft !== undefined ? 'Lose a trial, boss or vault? An elixir buys 3 more questions or keeps your heart' : 'Lose a stage? An elixir lets you retry and keep your heart')} aria-label={`Elixirs: ${elixirs}`}>
         <span className="bt-ic">🧪</span>
         <span className="bt-count">{elixirs}</span>
       </button>

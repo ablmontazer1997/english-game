@@ -41,7 +41,20 @@ export function GameTitle({ title, count }: { title: string; count?: string }) {
   return (
     <div className="gt gt-slim">
       <TitleIntro title={title} />
-      {count && <div className="gt-count">{count}</div>}
+      {count && <GameProgress count={count} />}
+    </div>
+  )
+}
+
+/** ES redesign 10-11 (concepts 05 / 07): the round counter as a violet pill with a gold rim and one pip per round
+ *  (done pips gold, the current one glowing). Shared by every mini-game through GameTitle's `count` ("Spell 2 / 5"). */
+export function GameProgress({ count }: { count: string }) {
+  const m = count.match(/(\d+)\s*\/\s*(\d+)/)
+  const cur = m ? +m[1] : 0, total = m ? Math.min(+m[2], 12) : 0
+  return (
+    <div className={`gt-count${total ? ' gt-pp' : ''}`} aria-label={count}>
+      <span className="gt-pp-t">{count}</span>
+      {total > 0 && <span className="gt-pips" aria-hidden>{Array.from({ length: total }, (_, i) => <i key={i} className={i + 1 < cur ? 'done' : i + 1 === cur ? 'on' : ''} />)}</span>}
     </div>
   )
 }

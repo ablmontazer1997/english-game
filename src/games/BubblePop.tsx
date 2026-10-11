@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Task, ASK } from './Task'
 import { sfx } from '../services/audio'
 import type { MiniGameProps } from './types'
-import { BurstFx, FRAME_REACH, ORB_COLORS, drawFrame, drawOrb, drawWord, loadFrame, type OrbColor } from './bubbleOrb'
-import frameUrl from '../assets/games/bubble_frame.webp'
+import { BurstFx, ORB_COLORS, SPRITE_REACH, drawBubble, drawTapRing, drawWordPlate, loadSprites, type OrbColor } from './bubbleOrb'
+import bubViolet from '../assets/es2/games/bub_violet.webp'
+import bubBlue from '../assets/es2/games/bub_blue.webp'
+import bubGreen from '../assets/es2/games/bub_green.webp'
+import bubGold from '../assets/es2/games/bub_gold.webp'
+import plateViolet from '../assets/es2/games/plate_violet.webp'
+import sparkRing from '../assets/es2/games/spark_ring.webp'
+import timerRing from '../assets/es2/games/timer_ring.webp'
+import comboChip from '../assets/es2/games/combo_chip.webp'
+import '../components/eskit.css'
 import { GameTitle } from '../components/GameTitle'
 import './scene.css'
 import './bubblepop.css'
@@ -23,7 +30,7 @@ import { useStageCtl, usePausedRef, explain, payloadOf, bubbleMode } from './coa
    direction, and the frame shatters into tumbling gold shards. */
 
 const ROUND_SECONDS = 15
-const RC = 175.9 // 2πr for r=28, the timer ring circumference
+const RC2 = 490.1 // 2πr for r=78 on the painted timer ring (viewBox 220 x 197)
 
 
 function shuffle<T>(a: T[]): T[] {
@@ -79,6 +86,9 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
 
   const correctRef = useRef(0)
   const comboRef = useRef(0)
+  const [combo, setCombo] = useState(0)   // ES redesign: client-side streak chip (visual only, scoring unchanged)
+  const squash = useRef<Record<string, { t: number; ok: boolean }>>({})
+  const taps = useRef<{ x: number; y: number; r: number; t: number }[]>([])
   const maxComboRef = useRef(0)
   const lockedRef = useRef(false)
   const finishedRef = useRef(false)
@@ -118,12 +128,20 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
       text: o.text,
       correct: o.correct,
       col: ORB_COLORS[i % 4],
-      sz: o.text.length > 8 ? 96 : o.text.length > 5 ? 90 : 84,
+      // ES redesign 10-11: big bubbles as in the concept; long options (definitions) shrink them and wrap on the plate
+      sz: o.text.length > 24 ? 92 : o.text.length > 14 ? 100 : o.text.length > 8 ? 108 : 116,
     }))
   }, [item])
   bubblesRef.current = bubbles
   goneRef.current = gone
-  useEffect(() => { loadFrame(frameUrl) }, [])
+  // mock previews only (?mock=1): the screenshot checks read the live bubbles to tap a right or a wrong one
+  useEffect(() => {
+    if (typeof location === 'undefined' || !new URLSearchParams(location.search).has('mock')) return
+    const w = window as unknown as { __bp?: () => unknown }
+    w.__bp = () => bubblesRef.current.filter((b) => !goneRef.current.has(b.key)).map((b) => ({ ...phys.current[b.key], ok: b.correct }))
+    return () => { delete w.__bp }
+  }, [])
+  useEffect(() => { loadSprites({ purple: bubViolet, blue: bubBlue, green: bubGreen, gold: bubGold, plate: plateViolet, ring: sparkRing }) }, [])
 
   // seed physics for the new round: spread the bubbles low and let them rise
   useEffect(() => {
@@ -135,7 +153,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
     const p: Record<string, Phys> = {}
     bubbles.forEach((b, i) => {
       const r = b.sz / 2
-      const m = r * FRAME_REACH // keep the whole gold frame inside the field
+      const m = r * SPRITE_REACH // keep the whole bubble with its gem caps inside the field
       p[b.key] = {
         x: Math.min(w - m, Math.max(m, gx[i] * w + rnd(-14, 14))),
         y: Math.min(h - m, Math.max(m, gy[i] * h + rnd(-14, 14))),
@@ -202,20 +220,30 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
   const pick = useCallback((b: Bubble, px: number, py: number) => {
     if (lockedRef.current || gone.has(b.key)) return
     const pp = phys.current[b.key]
-    if (pp) burst(b, pp, px, py)
-    setGone((g) => new Set(g).add(b.key))
+    // concept 07: the tapped bubble squashes (90 ms) inside a ring of gold sparkles, then pops; a wrong one flashes red
+    lockedRef.current = true
+    squash.current[b.key] = { t: performance.now(), ok: !!b.correct }
+    if (pp) taps.current.push({ x: pp.x, y: pp.y, r: pp.r, t: performance.now() })
+    later(() => {
+      const p2 = phys.current[b.key]
+      if (p2) burst(b, p2, px, py)
+      delete squash.current[b.key]
+      setGone((g) => new Set(g).add(b.key))
+    }, 90)
     if (item) onAnswer?.(item.id, b.text, !!b.correct)
 
     if (b.correct) {
       lockedRef.current = true
       comboRef.current += 1
       if (comboRef.current > maxComboRef.current) maxComboRef.current = comboRef.current
+      setCombo(comboRef.current)
       correctRef.current += 1
       setScore((s) => s + 10 + comboRef.current * 2)
       showFb(true)
       later(advance, 780)
     } else {
       comboRef.current = 0
+      setCombo(0)
       lockedRef.current = true
       teach(b.text)
     }
@@ -268,7 +296,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
       const EASE = 0.03     // how quickly velocity eases toward its target (smooths out the motion)
       const live: string[] = []
       for (const key in phys.current) { if (!gone.has(key)) live.push(key) }
-      const lo = (r: number) => r * FRAME_REACH + 6   // wall margin = the frame reach beyond the orb
+      const lo = (r: number) => r * SPRITE_REACH + 4   // wall margin = the gem caps' reach beyond the orb
       for (const key of live) {
         const p = phys.current[key]
         p.ph += 0.006 * dt
@@ -293,7 +321,7 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
             const pb = phys.current[live[b2]]
             let dx = pb.x - pa.x, dy = pb.y - pa.y
             let d = Math.hypot(dx, dy)
-            const min = (pa.r + pb.r) * 1.35 + 8   // keep the gold frames from stacking
+            const min = (pa.r + pb.r) * 1.34 + 8   // keep the gem caps (top and bottom) from touching
             if (d < min) {
               if (d < 0.01) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d = Math.hypot(dx, dy) }
               const push = (min - d) / 2, ux = dx / d, uy = dy / d
@@ -359,10 +387,13 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
               mk.style.transform = `translate(${p.x - r}px, ${p.y + bob - r}px)`
               mk.style.width = mk.style.height = `${r * 2}px`
             }
-            drawOrb(ctx, p.x, p.y + bob, r, b.col, ease)
-            drawWord(ctx, p.x, p.y + bob, r, b.text, ease)
-            drawFrame(ctx, p.x, p.y + bob, r, ease)
+            const sq = squash.current[b.key], k = sq ? Math.min(1, (t - sq.t) / 90) : 0
+            const sx = sq ? 1 + 0.08 * k : 1, sy = sq ? 1 - 0.08 * k : 1
+            drawBubble(ctx, p.x, p.y + bob, r, b.col, ease, sx, sy, sq && !sq.ok ? 1 : 0)
+            drawWordPlate(ctx, p.x, p.y + bob, r * sx, b.text, ease)
           }
+          taps.current = taps.current.filter((q) => t - q.t < 460)
+          for (const q of taps.current) drawTapRing(ctx, q.x, q.y, q.r, (t - q.t) / 460)
           fx.current.update(dts)
           fx.current.draw(ctx, t)
         }
@@ -415,16 +446,15 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
     return <div className="bubblepop"><div className="bp-stage"><div className="bp-sky" /></div></div>
   }
 
-  const ringOffset = RC * (1 - timeLeft / ROUND_SECONDS)
-
   const ring = (
-    <div className="bp-ring">
-      <svg width="66" height="66" viewBox="0 0 66 66">
-        <circle cx="33" cy="33" r="28" fill="#fff" stroke="#E3E9F5" strokeWidth="6" />
-        <circle className="arc" cx="33" cy="33" r="28" fill="none" stroke="#3FA9E6" strokeWidth="6"
-          strokeLinecap="round" strokeDasharray={RC} strokeDashoffset={ringOffset} transform="rotate(-90 33 33)" />
+    <div className="bp-ring bp2-ring">
+      <img src={timerRing} alt="" draggable={false} />
+      <svg viewBox="0 0 220 197" aria-hidden>
+        <circle cx="106" cy="104.5" r="78" fill="none" stroke="#dfe9f6" strokeWidth="17" />
+        <circle className="arc" cx="106" cy="104.5" r="78" fill="none" stroke="#2fa2ec" strokeWidth="13"
+          strokeLinecap="round" strokeDasharray={RC2} strokeDashoffset={RC2 * (1 - timeLeft / ROUND_SECONDS)} transform="rotate(-90 106 104.5)" />
       </svg>
-      <div className="v"><b>{timeLeft}</b><s>SEC</s></div>
+      <div className="v"><b>{timeLeft}</b></div>
     </div>
   )
 
@@ -438,20 +468,18 @@ export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
 
         {/* admin 3697: same crest + cream prompt panel as every other mini-game */}
         <div className="bp-crest"><GameTitle title="Bubble Pop" count={`Bubble ${idx + 1} / ${items.length}`} /></div>
-        {ASK ? (
-          <div className="bp-prompt gs-panel has-task" data-coach="q">
-            <Task icon="tap" text={mode === 'syn' ? 'Pop the synonym of:' : 'Pop the meaning of:'} sub={timerOff ? 'Take your time' : 'Tap it before time runs out'} first={idx === 0} />
-            <div className="bp-trow"><b lang="en">{item.front}</b>{!timerOff && ring}</div>
-          </div>
-        ) : (
-          <>
-            <div className="bp-prompt gs-panel">
-              <span className="bp-pq">Pop the bubble for</span>
-              <b lang="en">{item.front}</b>
-            </div>
-            {ring}
-          </>
+        {combo >= 2 && (
+          <div className="bp2-combo" key={combo} aria-label={`Streak ${combo}`}><img src={comboChip} alt="" draggable={false} /><b>x{combo}</b></div>
         )}
+        {/* concept 07: the gold-rimmed violet task card with its gem crest; the word big in gold; the timer ring inside */}
+        <div className="bp-prompt bp2-card gs-panel" data-coach="q">
+          <div className="bp2-q">
+            <span className="bp2-ask">{mode === 'syn' ? 'Pop the synonym of:' : 'Pop the meaning of:'}</span>
+            <b lang="en">{item.front}</b>
+            {timerOff && <small>Take your time</small>}
+          </div>
+          {!timerOff && ring}
+        </div>
 
         <div className="bp-field" ref={fieldRef} data-coach="a" data-coach-parts=".bp-okmark">
           {ready && <canvas className="bp-canvas" ref={canvasRef} onPointerDown={onCanvasDown} />}

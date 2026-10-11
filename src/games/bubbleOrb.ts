@@ -366,3 +366,92 @@ function star(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, ro
   }
   ctx.closePath(); ctx.fill(); ctx.restore()
 }
+
+/* ---- ES redesign 10-11 (concept 07): painted bubble sprites ------------------------------------------------------------
+   The four glossy bubbles with gold gem caps, the dark word plate and the tap spark ring come from the approved concept's
+   GPT asset sheet (src/assets/es2/games). The sphere fills 0.88 of a sprite's width, centred; the caps reach 1.36 r above
+   and below the centre. No icons inside the bubbles (admin rule: nothing that hints at the answer). */
+export const SPRITE_REACH = 1.36
+const SPR: Partial<Record<OrbColor | 'plate' | 'ring', HTMLImageElement>> = {}
+export function loadSprites(urls: Record<OrbColor | 'plate' | 'ring', string>) {
+  for (const k of Object.keys(urls) as (OrbColor | 'plate' | 'ring')[]) {
+    if (SPR[k]) continue
+    const im = new Image(); im.src = urls[k]; SPR[k] = im
+  }
+}
+const ready = (im?: HTMLImageElement): im is HTMLImageElement => !!im && im.complete && im.naturalWidth > 0
+
+/** one bubble sprite; sx / sy squash it (tap), `flash` tints it red for a wrong pick */
+export function drawBubble(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, col: OrbColor, alpha = 1, sx = 1, sy = 1, flash = 0) {
+  const im = SPR[col]
+  if (!ready(im)) { drawOrb(ctx, x, y, r, col, alpha); return }
+  const w = (2 * r) / 0.88, h = w * im.naturalHeight / im.naturalWidth
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.scale(sx, sy)
+  ctx.drawImage(im, -w / 2, -h / 2, w, h)
+  if (flash > 0) {
+    ctx.globalCompositeOperation = 'source-atop'; ctx.globalAlpha = alpha * flash * .55
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fillStyle = '#ff2f4a'; ctx.fill()
+  }
+  ctx.restore()
+}
+
+/** the tap: the concept's ring of gold sparkles, growing and fading over `k` 0..1 */
+export function drawTapRing(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, k: number) {
+  const im = SPR.ring
+  if (!ready(im) || k >= 1) return
+  const s = r * (2.1 + k * 0.9), h = s * im.naturalHeight / im.naturalWidth
+  ctx.save(); ctx.globalAlpha = Math.max(0, 1 - k * k); ctx.drawImage(im, x - s / 2, y - h / 2, s, h); ctx.restore()
+}
+
+/** the dark word plate under a one-line word (caps kept, the middle stretched in x only); multi-line words get a drawn plate */
+export function drawPlate(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, alpha = 1) {
+  const im = SPR.plate
+  ctx.save(); ctx.globalAlpha = alpha
+  if (ready(im) && h <= w / 2.6) {
+    const iw = im.naturalWidth, ih = im.naturalHeight, cap = ih * 0.62, sc = h / ih, capW = cap * sc
+    const x0 = x - w / 2, y0 = y - h / 2
+    ctx.drawImage(im, 0, 0, cap, ih, x0, y0, capW, h)
+    ctx.drawImage(im, cap, 0, iw - 2 * cap, ih, x0 + capW, y0, Math.max(0, w - 2 * capW), h)
+    ctx.drawImage(im, iw - cap, 0, cap, ih, x0 + w - capW, y0, capW, h)
+  } else {
+    const rr = Math.min(h / 2, 16), x0 = x - w / 2, y0 = y - h / 2
+    ctx.beginPath(); ctx.roundRect(x0, y0, w, h, rr)
+    const g = ctx.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, '#5a26c4'); g.addColorStop(1, '#3a128e')
+    ctx.fillStyle = g; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#f2c24e'; ctx.stroke()
+  }
+  ctx.restore()
+}
+
+/** the word on its plate: the existing fit/wrap logic sizes the text, the plate is drawn to fit the lines */
+export function drawWordPlate(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, word: string, alpha = 1) {
+  ctx.save()
+  const FONT = (px: number) => `800 ${px}px Fredoka, system-ui, sans-serif`
+  const maxW = r * 1.5, parts = word.split(/\s+/)
+  const short = parts.length <= 2 && word.length <= 10
+  let px = Math.max(15, Math.round(r * (short ? 0.36 : 0.27))), lines: string[] = [word]
+  const fit = (p: number) => {
+    ctx.font = FONT(p)
+    for (let n = 1; n <= Math.min(3, parts.length); n++) {
+      const ls: string[] = []; let cur = ''
+      const total = ctx.measureText(word).width
+      for (const w of parts) { const t = cur ? cur + ' ' + w : w; if (cur && ctx.measureText(t).width > total / n + p * .6 && ls.length < n - 1) { ls.push(cur); cur = w } else cur = t }
+      ls.push(cur)
+      if (ls.every((l) => ctx.measureText(l).width <= maxW)) return ls
+    }
+    return null
+  }
+  for (; px >= 11; px--) { const ls = fit(px); if (ls) { lines = ls; break } }
+  ctx.font = FONT(px)
+  const lw = Math.max(...lines.map((l) => ctx.measureText(l).width))
+  const lh = px * 1.08, ph = lines.length * lh + px * 0.62, pw = Math.min(r * 1.86, lw + px * 1.5)
+  drawPlate(ctx, x, y, Math.max(pw, r * 1.1), ph, alpha)
+  ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(2, px * 0.14); ctx.strokeStyle = 'rgba(40, 14, 90, .9)'
+  const y0 = y + 1 - (lines.length - 1) * lh / 2
+  lines.forEach((l, k) => {
+    ctx.strokeText(l, x, y0 + k * lh)
+    const g = ctx.createLinearGradient(0, y0 + k * lh - px / 2, 0, y0 + k * lh + px / 2); g.addColorStop(0, '#fffbe8'); g.addColorStop(1, '#ffe08a')
+    ctx.fillStyle = g; ctx.fillText(l, x, y0 + k * lh)
+  })
+  ctx.restore()
+}
