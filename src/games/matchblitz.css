@@ -194,3 +194,6 @@
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; color: #e7ddff;
 }
+/* stages with the booster tray (audit 10-11 P0): the board leaves the right edge free, so the tray stands beside the
+   cards instead of on them or on the combo header */
+.stage-host .matchblitz .mb-board { margin-right: calc(70px + var(--safe-right, 0px)); }

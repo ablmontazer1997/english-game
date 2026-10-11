@@ -45,6 +45,9 @@ export function BoosterTray({ coins, elixirs, canHint, onHint, free }: {
 // side by side) in the largest gap. Re-checked on resize and once a second, because rounds change the layout.
 const OBSTACLES = '.gs-panel,.lp,.gtask,button:not(.bt-btn),.ws-scroll,.gg-tablet,.ot-q,.ot-opts,.tt-msg,.mc-card,.mc-stat,.mb-board,.mb-tbar,'
   + 'input,textarea,.ro-slots,.gs-pill,.gs-chip,.gt-ribbon,.gt-count,.bp-ring,.play-top,.swv-slot'
+  // audit 10-11 P0: the bubble field (bubbles are drawn on a canvas, so the field itself is the obstacle; it leaves a
+  // free strip at the bottom for the tray), the Match Blitz combo header and the Guild Letters letter
+  + ',.bp-field,.mb-combo,.gl-letter'
 function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const place = () => {

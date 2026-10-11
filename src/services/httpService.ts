@@ -8,8 +8,7 @@ import type {
   Currencies, PlayerProfile, World, Quest, League, SrsItem, MiniGameId, CurrencyId,
   Achievement, ChestKind, Reward, Inventory, Stage, LeagueTier,
 } from '../types/game'
-import { api, ApiError, errorText, type Wallet, type Me, type LevelMap, type MapWorld, type Streak, type LevelInfo, type ShopOut, type ChestInfo, type InventoryOut } from './api'
-import { buildAchievements, newProgress } from './progress'
+import { api, ApiError, errorText, type Wallet, type Me, type LevelMap, type MapWorld, type Streak, type LevelInfo, type ShopOut, type ChestInfo, type InventoryOut, type ServerAchievement } from './api'
 
 export const LEVEL_CODES = ['A1', 'A2', 'B1', 'B2', 'C1'] as const
 
@@ -61,14 +60,17 @@ function toWorld(w: MapWorld, levelLocked: boolean): World {
   }
 }
 
+const toAchievement = (a: ServerAchievement): Achievement => ({
+  id: a.id, cat: a.cat as Achievement['cat'], title: a.title, desc: a.desc, tier: a.tier, progress: a.progress, target: a.target,
+  reward: toReward(a.reward), claimed: a.claimed,
+})
+
 export class HttpGameService implements GameService {
   private me: Me | null = null
   private leagueTier: LeagueTier = 'bronze'
   private maps = new Map<string, LevelMap>()
   levels: LevelInfo[] = []
   streakBest = 0
-  // achievements are not on the server yet: shown from the server stats, claimed locally (no reward)
-  private achClaimed = new Set<string>(JSON.parse(lsGet('es.ach.claimed') ?? '[]'))
 
   // ---------------------------------------------------------------- reads
   async getProfile(): Promise<PlayerProfile> {
@@ -116,17 +118,8 @@ export class HttpGameService implements GameService {
     return { chests: { wood: inv.chests.wood ?? 0, silver: inv.chests.silver ?? 0, epic: inv.chests.epic ?? 0 }, freezes: inv.freezes, xpBoostUntil: inv.xpBoostUntil, dealBought: false }
   }
   async getAchievements(): Promise<Achievement[]> {
-    // the families that the server stats can fill; the rest stay at 0 until the server tracks them
-    const p = newProgress(this.leagueTier)
-    const worlds = toWorlds([...this.maps.values()])
-    const all = worlds.flatMap((w) => w.stages)
-    const done = all.filter((s) => s.stars > 0)
-    p.all.won = done.length; p.all.played = done.length
-    p.all.stars = done.reduce((a, s) => a + s.stars, 0); p.all.stars3 = done.filter((s) => s.stars === 3).length
-    p.all.bosses = done.filter((s) => s.kind === 'boss').length; p.all.perfectBoss = done.filter((s) => s.kind === 'boss' && s.stars === 3).length
-    p.streakBest = this.streakBest || (this.me?.streak ?? 0)
-    const ctx = { worldsDone: worlds.filter((w) => w.status === 'done').length, stagesDone: done.length, starsTotal: p.all.stars, level: this.me?.player_level ?? 1 }
-    return buildAchievements(p, ctx).map((a) => ({ ...a, claimed: this.achClaimed.has(a.id) }))
+    // audit 10-11 P0: progress and claims are the server's (GET /v1/achievements); a claim pays the gems on the card
+    return (await api.achievements()).map(toAchievement)
   }
 
   async getStageItems(): Promise<SrsItem[]> { return [] }   // server stages start a session instead (StageScreen)
@@ -155,8 +148,8 @@ export class HttpGameService implements GameService {
     return { quests, currencies: toCurrencies(r.wallet), reward: toReward(r.reward) }
   }
   async claimAchievement(id: string) {
-    this.achClaimed.add(id); lsSet('es.ach.claimed', JSON.stringify([...this.achClaimed]))
-    return { achievements: await this.getAchievements(), currencies: await this.getCurrencies(), reward: {} as Reward }
+    const r = await api.claimAchievement(id)
+    return { achievements: r.achievements.map(toAchievement), currencies: toCurrencies(r.wallet), reward: toReward(r.reward) }
   }
   async openChest(kind: ChestKind) {
     try {
@@ -182,12 +175,13 @@ export class HttpGameService implements GameService {
   async noteHint() { /* counted per session (hints_used) */ }
 
   // ---------------------------------------------------------------- server-only extras
+  /** the account as the server last sent it (intro state, chosen level, daily goal) */
+  get account(): Me | null { return this.me }
+  async patchMe(b: Parameters<typeof api.patchMe>[0]): Promise<Me> { this.me = await api.patchMe(b); return this.me }
   streak(): Promise<Streak> { return api.streak() }
   shop(): Promise<ShopOut> { return api.shop() }
   chests(): Promise<ChestInfo[]> { return api.chests() }
 }
 
-function lsGet(k: string) { try { return localStorage.getItem(k) } catch { return null } }
-function lsSet(k: string, v: string) { try { localStorage.setItem(k, v) } catch { /* private mode */ } }
 
 export { toCurrencies, toReward }

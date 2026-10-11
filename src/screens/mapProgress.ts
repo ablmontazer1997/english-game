@@ -26,7 +26,9 @@ export const cmpCursor = (a: Cursor, b: Cursor) => a.world - b.world || a.stage 
 /** the player's place from the stage statuses of every world (null before any data) */
 export function cursorOf(worlds: { stages: { status: StageStatus; optional?: boolean }[] }[]): Cursor | null {
   if (!worlds.length) return null
-  for (let w = 0; w < worlds.length; w++) {
+  // the LAST world with an open stage: a player placed at a higher level (intro, 10-11) still has the earlier
+  // levels open, but the hero stands on the road of the level they are on (one open road per level)
+  for (let w = worlds.length - 1; w >= 0; w--) {
     // optional (bonus) stages can be open beside the road's current stage: they never hold the hero
     const s = worlds[w].stages.findIndex((x) => x.status === 'current' && !x.optional)
     if (s >= 0) return { world: w, stage: s }

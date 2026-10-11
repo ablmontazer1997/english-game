@@ -1,0 +1,16 @@
+/* map tour coach marks: the page dims, one hole stays lit, a cream card with the Oracle says what it is */
+.mt { position: absolute; inset: 0; z-index: 60; }
+.mt-dim { position: absolute; inset: 0; background: rgba(24, 14, 56, .66); }
+.mt-hole { position: absolute; border-radius: 22px; box-shadow: 0 0 0 9999px rgba(24, 14, 56, .66), 0 0 0 3px #ffd66b, 0 0 22px 6px rgba(255, 214, 107, .55);
+  transition: left .25s, top .25s, width .25s, height .25s; pointer-events: none; }
+.mt-card { position: absolute; left: 14px; right: 14px; max-width: 380px; margin: 0 auto;
+  display: grid; grid-template-columns: 58px 1fr; gap: 4px 10px; align-items: center; padding: 12px 14px 12px 10px;
+  border-radius: 22px; border: 3px solid #e7c47a; background: linear-gradient(180deg, #fffdf6, #f7ecd4);
+  box-shadow: 0 0 0 2px #fff, 0 6px 0 #d9c49a, 0 14px 28px rgba(20, 10, 60, .35); color: #3d2a52; }
+.mt-face { width: 58px; height: 58px; object-fit: contain; grid-row: span 1; }
+.mt-tx b { font-family: var(--game); font-weight: 900; font-size: 18px; color: #5a2fc0; }
+.mt-tx p { margin: 2px 0 0; font-weight: 700; font-size: 14.5px; line-height: 1.32; color: #4a3f66; text-wrap: pretty; }
+.mt-btns { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.mt-count { font-weight: 800; font-size: 13px; color: #9a8ab0; }
+.mt-skip { margin-left: auto; border: 0; background: none; padding: 6px 4px; font: inherit; font-weight: 800; font-size: 14px; color: #8a7aa8; cursor: pointer; }
+.ui-btn.mt-next { min-width: 92px; }

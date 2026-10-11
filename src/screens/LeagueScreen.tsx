@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
+import { NameSheet } from '../components/NameSheet'
 import './serverstage.css'
 import { Card, Row, Btn, Chip, Slot, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import { RewardChips, useCountdown } from '../components/Rewards'
@@ -23,6 +25,7 @@ export function LeagueScreen() {
   const portrait = usePortrait()
   const left = useCountdown(league?.endsAt ?? 0)
   const boost = useCountdown(inventory?.xpBoostUntil ?? 0)
+  const [rename, setRename] = useState(false)
   if (!league) return <div className="screen pg" />
   const n = league.entries.length
   const myRank = league.entries.findIndex((e) => e.isMe) + 1
@@ -75,7 +78,8 @@ export function LeagueScreen() {
                   <span className="lg-nm">
                     {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className={`lg-dot${(e as { bot?: boolean }).bot ? ' lg-dot-bot' : ''}`} title={(e as { bot?: boolean }).bot ? 'practice rival' : undefined}
                       style={(e as { bot?: boolean }).bot ? undefined : { background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
-                    <span className="lg-nm-t">{e.isMe ? 'You' : e.name}</span>
+                    <span className="lg-nm-t">{e.isMe ? (server ? e.name : 'You') : e.name}</span>
+                    {e.isMe && server && <button className="lg-rename" onClick={() => setRename(true)} aria-label="Change your name">✎</button>}
                     {i < 10 && Object.keys(rw).length > 0 && <span className="lg-rw"><RewardChips reward={rw} size={14} /></span>}
                   </span>
                   <span className="ui-trail lg-lp">{e.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</span>
@@ -84,9 +88,10 @@ export function LeagueScreen() {
             )
           })}
         </div>
-        <p className="ui-note">You are #{myRank}. Rewards are paid when the week ends.{server && league.entries.some((e) => (e as { bot?: boolean }).bot) ? ' Grey crests are practice rivals until more players join.' : ''}</p>
+        <p className="ui-note">You are #{myRank}{server ? ' (tap ✎ to change your name)' : ''}. Rewards are paid when the week ends.{server && league.entries.some((e) => (e as { bot?: boolean }).bot) ? ' Grey crests are practice rivals until more players join.' : ''}</p>
       </div>
 
+      <NameSheet open={rename} onClose={() => setRename(false)} />
       {last && (
         <div className="rw-scrim">
           <div className="rw-card">

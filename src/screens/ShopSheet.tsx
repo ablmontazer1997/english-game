@@ -1,6 +1,8 @@
 import { useGame } from '../services/ServiceProvider'
 import { Sheet } from '../components/Sheet'
 import { OfferRow } from './ShopScreen'
+import { Row, Slot, Btn, art } from '../components/PageArt'
+import { skySrc } from '../components/SkyIcon'
 import { ESSENTIALS, BOOSTS } from '../services/shopCatalog'
 import type { CurrencyId } from '../types/game'
 import './screens.css'
@@ -13,8 +15,17 @@ const TITLES: Record<CurrencyId, string> = {
 const by = (id: string) => [...ESSENTIALS, ...BOOSTS].find((o) => o.id === id)!
 
 // the "+" on a HUD pill: the same offers as the Shop tab, right where you need them
-export function ShopSheet({ currency, onClose }: { currency: CurrencyId | null; onClose: () => void }) {
-  const { currencies } = useGame()
+export type GemSource = 'quests' | 'achievements' | 'league'
+/** where gems come from, each with a way to go there (audit 10-11 P0: the gem sheet was text only) */
+const GEM_SOURCES: { id: GemSource; title: string; note: string; icon: string }[] = [
+  { id: 'quests', title: 'Weekly quests', note: '10 to 20 gems each', icon: art('qi_chest') },
+  { id: 'achievements', title: 'Achievements', note: '2 to 10 gems each', icon: art('badge_1') },
+  { id: 'league', title: 'Weekly league', note: 'Top 10 win gems', icon: art('tier_2') },
+]
+
+export function ShopSheet({ currency, onClose, onGo }: { currency: CurrencyId | null; onClose: () => void; onGo?: (to: GemSource) => void }) {
+  const { currencies, achievements } = useGame()
+  const ready = achievements.filter((a) => a.progress >= a.target && !a.claimed).length
   if (!currency) return null
   const full = !!currencies && currencies.hearts >= currencies.heartsMax
   return (
@@ -32,9 +43,19 @@ export function ShopSheet({ currency, onClose }: { currency: CurrencyId | null; 
           <OfferRow o={by('coin_sack')} />
           <p className="ss-note">Coins come from every stage you play, from quests and from chests.</p>
         </>}
-        {currency === 'gems' && (
-          <p className="ss-note">Earn gems from weekly quests, achievements, level-ups, chests and top league finishes. Gem packs open when store payments go live.</p>
-        )}
+        {currency === 'gems' && <>
+          {GEM_SOURCES.map((g) => (
+            <Row key={g.id} className="reveal of-row">
+              <Slot src={g.icon} />
+              <span className="ui-main">
+                <b className="ui-t">{g.title}</b>
+                <small className="ui-s">{g.id === 'achievements' && ready ? `${ready} ready to claim` : g.note}</small>
+              </span>
+              <span className="ui-trail"><Btn onClick={() => { onClose(); onGo?.(g.id) }}><img src={skySrc('ic_gem')} alt="" />Go</Btn></span>
+            </Row>
+          ))}
+          <p className="ss-note">Level-ups (+5) and Treasure Vaults pay gems too. Gem packs open when store payments go live.</p>
+        </>}
       </div>
     </Sheet>
   )

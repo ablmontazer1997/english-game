@@ -21,11 +21,14 @@ import { WardrobeScreen } from './screens/WardrobeScreen'
 import { AchievementsScreen } from './screens/AchievementsScreen'
 import { RewardPopup } from './components/Rewards'
 import { PortraitCapture, portraitStale } from './components/Portrait'
+import { NameSheet } from './components/NameSheet'
+import { Onboarding, firstStageOf, useIntroNeeded } from './screens/Onboarding'
+import { MapTour } from './screens/MapTour'
 import { setMusic as playMusic } from './services/audio'
 import type { CurrencyId, Stage, MiniGameId } from './types/game'
 
 export function App() {
-  const { ready, quests, achievements, error, refresh, mode, reviewDue, worlds } = useGame()
+  const { ready, quests, achievements, error, refresh, mode, reviewDue, worlds, account, patchMe } = useGame()
   const initialTab = (typeof location !== 'undefined'
     ? (new URLSearchParams(location.search).get('tab') as Tab | null) : null) || 'map'
   const [tab, setTab] = useState<Tab>(initialTab)
@@ -36,11 +39,33 @@ export function App() {
   const [achOpen, setAchOpen] = useState(false)
   const [cauldron, setCauldron] = useState(false)
   const [hearth, setHearth] = useState(false)
+  // first run (10-11): the intro, then the guided first stage of the chosen level, then the map tour
+  const intro = useIntroNeeded()
+  const [guideLevel, setGuideLevel] = useState<string | null>(null)
+  const [guided, setGuided] = useState(false)
+  const [naming, setNaming] = useState(false)
+  useEffect(() => {
+    if (!guideLevel || !worlds.length) return
+    const st = firstStageOf(worlds, guideLevel)
+    setGuideLevel(null)
+    if (st) { setTab('map'); setGuided(true); setPlaying(st) }
+  }, [guideLevel, worlds])
+  const tour = mode === 'http' && !!account?.onboarded && account.flags?.tour === 'pending'
+  const endTour = () => { patchMe({ flags: { tour: 'done' } }).catch(() => { /* shown again next time */ }) }
+  const leaveStage = () => {
+    setPlaying(null)
+    if (guided) { setGuided(false); patchMe({ flags: { guided: 'done' } }).catch(() => {}) }
+  }
+  const goGems = (to: 'quests' | 'achievements' | 'league') => {
+    setPlaying(null); setCauldron(false)
+    if (to === 'achievements') { setTab('profile'); setAchOpen(true) } else { setAchOpen(false); setTab(to) }
+  }
+  const toProfile = () => { setAchOpen(false); setTab('profile') }
   // the spaced review comes first each day (plan: "review first"), once, when something is due
   useEffect(() => {
     if (ready && mode === 'http' && reviewDue > 0 && !cauldronSeenToday() && !new URLSearchParams(location.search).has('nocauldron')) setCauldron(true)
   }, [ready, mode, reviewDue])
-  const curLevel = Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf(worlds.find((w) => w.status === 'current')?.cefr ?? 'A1'))
+  const curLevel = Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf([...worlds].reverse().find((w) => w.status === 'current')?.cefr ?? 'A1'))
   // retake the avatar picture on start and whenever the player leaves the wardrobe
   const [portraitV, setPortraitV] = useState(() => (portraitStale() ? 1 : 0))
 
@@ -76,20 +101,22 @@ export function App() {
         error ? <Offline message={error} onRetry={refresh} /> : <Loader />
       ) : customizing ? (
         <WardrobeScreen onClose={() => { setCustomizing(false); setPortraitV((v) => v + 1) }} />
+      ) : intro ? (
+        <Onboarding onDone={(lv) => lv && setGuideLevel(lv)} onWardrobe={() => setCustomizing(true)} onLook={() => setPortraitV((v) => v + 1)} />
       ) : achOpen ? (
         <>
-          <HUD onBuy={setShop} onSettings={() => setSettings(true)} />
+          <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
           <AchievementsScreen onClose={() => setAchOpen(false)} />
         </>
       ) : cauldron ? (
         <CauldronScreen level={curLevel} onClose={() => setCauldron(false)} />
       ) : playing ? (
         mode === 'http'
-          ? <ServerStage stage={playing} onExit={() => setPlaying(null)} onNeedHearts={() => setShop('hearts')} />
+          ? <ServerStage stage={playing} onExit={leaveStage} onNeedHearts={() => setShop('hearts')} guided={guided} />
           : <StageScreen stage={playing} onExit={() => setPlaying(null)} onNeedHearts={() => setShop('hearts')} />
       ) : (
         <>
-          <HUD onBuy={setShop} onSettings={() => setSettings(true)} />
+          <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
 
           {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
           {tab === 'quests' && <QuestsScreen />}
@@ -98,17 +125,19 @@ export function App() {
           {tab === 'profile' && <ProfileScreen onBuy={setShop} onCustomize={() => setCustomizing(true)} onAchievements={() => setAchOpen(true)} />}
 
           <BottomNav tab={tab} onChange={setTab} badge={{ quests: questBadge, profile: achBadge }} />
+          {tour && tab === 'map' && !guideLevel && <MapTour onDone={endTour} />}
         </>
       )}
 
-      <ShopSheet currency={shop} onClose={() => setShop(null)} />
+      <ShopSheet currency={shop} onClose={() => setShop(null)} onGo={goGems} />
       {mode === 'http' && <HearthSheet open={hearth} onClose={() => setHearth(false)} />}
       <RewardPopup />
       {ready && portraitV > 0 && !customizing && !playing && <PortraitCapture version={portraitV} />}
 
       <Sheet open={settings} title="Settings" variant="light" onClose={() => setSettings(false)}>
-        <SettingsBody />
+        <SettingsBody server={mode === 'http'} onRename={() => { setSettings(false); setNaming(true) }} />
       </Sheet>
+      {mode === 'http' && <NameSheet open={naming} onClose={() => setNaming(false)} />}
     </div>
   )
 }
@@ -144,20 +173,29 @@ export function Offline({ message, onRetry }: { message: string; onRetry: () => 
   )
 }
 
-function SettingsBody() {
+function SettingsBody({ server, onRename }: { server: boolean; onRename: () => void }) {
+  const { account, profile } = useGame()
   const load = (k: string, d: boolean) => { try { const v = localStorage.getItem('rc.set.' + k); return v == null ? d : v === '1' } catch { return d } }
   const save = (k: string, v: boolean) => { try { localStorage.setItem('rc.set.' + k, v ? '1' : '0') } catch {} }
   const [sound, setSound] = useState(() => load('sound', true))
   const [music, setMusic] = useState(() => load('music', true))
   const [motion, setMotion] = useState(() => load('motion', false))
   const set = (k: string, sv: (v: boolean) => void) => (v: boolean) => { sv(v); save(k, v) }
-  const reset = () => { try { [...(new URLSearchParams(location.search).has('mock') ? ['runecast.save.v1'] : []), 'es.map.seen.v2', 'es.api.token', 'es.api.device', 'es.ach.claimed', 'es.review.day'].forEach((k) => localStorage.removeItem(k)) } catch {} location.reload() }
+  // mock previews only (?mock=1): wipe the local test save. Live players never see it (audit 10-11 P0).
+  const reset = () => { try { ['runecast.save.v1', 'es.map.seen.v2', 'es.ach.claimed', 'es.review.day'].forEach((k) => localStorage.removeItem(k)) } catch {} location.reload() }
+  const name = account?.display_name ?? profile?.name ?? ''
   return (
     <div>
+      {server && (
+        <div className="set-name">
+          <span><small>Your name</small><b>{name === 'Apprentice' ? 'Not chosen yet' : name}</b></span>
+          <button className="cb cb-white set-name-btn" onClick={onRename}>Change</button>
+        </div>
+      )}
       <Toggle label="Sound effects" icon={icSound} on={sound} onChange={set('sound', setSound)} />
       <Toggle label="Music" icon={icMusic} on={music} onChange={(v) => { set('music', setMusic)(v); playMusic(v) }} />
       <Checkbox label="Reduce motion" on={motion} onChange={set('motion', setMotion)} />
-      <button className="btn-candy-red" onClick={reset}>Reset test progress</button>
+      {!server && <button className="btn-candy-red" onClick={reset}>Reset test progress</button>}
     </div>
   )
 }

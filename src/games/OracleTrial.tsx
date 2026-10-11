@@ -45,7 +45,12 @@ function estimate(log: { level: number; ok: boolean }[]): number {
   return best
 }
 
-export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGameProps) {
+/** the intro's placement test (10-11): the adaptive run below on a bigger bank (server items + the local ones);
+ *  `onPlaced` gets the estimated level (0..4 = A1..C1) when the player taps Begin, `onExit` leaves the test */
+export interface Placement { bank: OracleQ[]; onPlaced: (lv: number) => void; onExit?: () => void }
+
+export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement }: MiniGameProps & { placement?: Placement }) {
+  const BANK = placement?.bank.length ? placement.bank : ORACLE_BANK
   // server mode: the stage's own questions in order, no adaptive placement
   const srvQs = useMemo<OracleQ[] | null>(() => srv ? srv.map((x) => ({
     id: x.qid, level: Math.max(0, LEVELS.indexOf(x.level as typeof LEVELS[number])), skill: x.payload.skill ?? 'Grammar',
@@ -109,8 +114,8 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGame
 
   const nextQ = (lv: number, idx = 0) => {
     if (srvQs) { setQ(srvQs[idx] ?? null); setPick(null); setVerdict(null); return }
-    const pool = ORACLE_BANK.filter((x) => x.level === lv && !used.current.has(x.id))
-    const src = pool.length ? pool : ORACLE_BANK.filter((x) => !used.current.has(x.id))
+    const pool = BANK.filter((x) => x.level === lv && !used.current.has(x.id))
+    const src = pool.length ? pool : BANK.filter((x) => !used.current.has(x.id))
     const next = src[(Math.random() * src.length) | 0]
     used.current.add(next.id)
     setQ(next); setPick(null); setVerdict(null)
@@ -159,6 +164,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGame
   }
 
   const finish = () => {
+    if (placement) { placement.onPlaced(done ?? estimate(log.current)); return }
     const right = log.current.filter((r) => r.ok).length
     onFinish({ correct: right, total: TOTAL, maxCombo: combo.current.max })
   }
@@ -170,6 +176,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGame
     <div className={`ot ot-lv${shownLevel}${verdict ? ' ot-' + verdict : ''}${done != null ? ' ot-done' : ''}`}>
       <img className="ot-plate" src={bgPlate} alt="" draggable={false} />
 
+      {placement?.onExit && <button className="stage-close ot-exit" onClick={placement.onExit} aria-label="Leave the test">✕</button>}
       <div className="ot-head">
         <TitleIntro title={srvQs ? 'Oracle' : 'Oracle Trial'} src={ribbon} className="ot-ribbon" />
         <div className="ot-count">{done != null ? 'Complete' : `Question ${n + 1} / ${TOTAL}`}</div>
@@ -231,9 +238,9 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp }: MiniGame
           <div className="ot-q">
             <span className="ot-skill">The Oracle has spoken</span>
             <p className="ot-level">{LEVELS[done]}</p>
-            <p className="ot-level-sub">Your adventure begins at level {LEVELS[done]}.</p>
+            <p className="ot-level-sub">{placement ? 'The Oracle will tell you more.' : `Your adventure begins at level ${LEVELS[done]}.`}</p>
           </div>
-          <div className="ot-actions"><button className="ot-check" onClick={finish}>Begin</button></div>
+          <div className="ot-actions"><button className="ot-check" onClick={finish}>{placement ? 'Continue' : 'Begin'}</button></div>
         </div>
       )}
     </div>

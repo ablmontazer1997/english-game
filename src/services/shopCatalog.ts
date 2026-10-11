@@ -31,12 +31,12 @@ export const CHEST_OFFERS: Offer[] = [
   { id: 'chest_silver', title: 'Silver Chest', note: 'Coins, gems, maybe an elixir', icon: 'silver', price: { gems: 30 } },
   { id: 'chest_epic', title: 'Epic Chest', note: 'Lots of coins, 15–30 gems, elixirs', icon: 'epic', price: { gems: 80 } },
 ]
-/** one discounted offer per day, the same for everyone */
+/** one featured offer per day, the same for everyone. Every id here must be a server offer (catalog.OFFERS):
+ *  'Treasure Pile' (coin_big) was removed 10-11 because the server never sold it (Buy failed with 404). */
 const DEALS: Offer[] = [
   { id: 'elixir_3', title: '3 Elixirs', note: 'Deal of the day', icon: 'potion3', price: { gems: 16 }, was: { gems: 25 } },
   { id: 'chest_silver', title: 'Silver Chest', note: 'Deal of the day', icon: 'silver', price: { gems: 20 }, was: { gems: 30 } },
   { id: 'xp_boost', title: 'Double XP · 15 min', note: 'Deal of the day', icon: 'xp', price: { coins: 150 }, was: { coins: 250 } },
-  { id: 'coin_big', title: 'Treasure Pile', note: '2,500 coins · deal of the day', icon: 'coins_big', price: { gems: 18 }, was: { gems: 25 } },
 ]
 export function dealOfTheDay(t = Date.now()): Offer {
   const d = DEALS[Math.floor(seeded('deal' + dayKey(t))() * DEALS.length)]

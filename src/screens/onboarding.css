@@ -1,0 +1,79 @@
+/* First-run intro (Onboarding.tsx): the Spellbook letter's parchment on the soft stage background, the kit's
+   green / cream buttons under it. One column, scrolls only when a phone is too short for a step. */
+.ob-scroll { position: absolute; inset: 0; z-index: 2; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: calc(18px + var(--safe-top)) 14px calc(16px + var(--safe-bottom)); }
+.ob-dots { display: flex; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(255, 255, 255, .72);
+  box-shadow: 0 2px 8px rgba(40, 30, 100, .12); flex: none; }
+.ob-dots i { width: 9px; height: 9px; border-radius: 50%; background: #d8cdea; }
+.ob-dots i.done { background: #a98ae6; }
+.ob-dots i.on { background: #7b3ff0; box-shadow: 0 0 0 3px rgba(123, 63, 240, .22); }
+.ob-card { width: 100%; display: flex; justify-content: center; flex: none; margin-top: 14px; }
+.ob-card .sl { margin-top: 0; }
+.ob-body { gap: 10px; }
+.ob-body .sl-title { margin-top: 0; }
+.ob-letter { font-size: 16px; }
+.ob-letter em { font-style: normal; font-weight: 900; color: #c3283c; }
+.ob-sign { margin: 2px 0 0; align-self: flex-end; font-family: var(--game); font-weight: 800; font-style: italic; font-size: 17px; color: #6a4a2a; }
+.ob-sign::before { content: '~ '; }
+.ob-small { font-size: 13.5px; color: #7a6248; }
+.ob-actions { width: min(100%, 390px); display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none;
+  margin-top: auto; padding-top: 4px; position: relative; z-index: 3; }
+.ui-btn.lg.ob-main { --h: 56px; min-width: min(78%, 270px); font-family: var(--game); font-size: 20px; padding-bottom: 4px; }
+.cb.ob-sec { min-height: 40px; font-size: 15px; padding: 0 18px; }
+.ob-row2 { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* look: two portrait cards */
+.ob-looks { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+.ob-look { display: grid; justify-items: center; gap: 6px; padding: 10px 6px 8px; border-radius: 18px; cursor: pointer;
+  background: rgba(255, 249, 232, .8); border: 3px solid transparent; box-shadow: 0 1px 2px rgba(120, 80, 30, .14);
+  font-family: var(--game); color: #4a2a14; transition: transform .15s; }
+.ob-look img { width: min(100%, 118px); aspect-ratio: 1; border-radius: 50%; object-fit: cover; background: #efe4ff;
+  border: 3px solid #fff; box-shadow: 0 3px 8px rgba(80, 50, 140, .22); }
+.ob-look b { font-size: 18px; font-weight: 900; }
+.ob-look.on { border-color: #8a4dff; background: #f6efff; transform: translateY(-2px); }
+
+/* goal + level: option rows on the paper */
+.ob-opts { width: 100%; display: grid; gap: 8px; }
+.ob-opt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px; padding: 6px 12px 6px 8px; cursor: pointer;
+  border-radius: 16px; border: 2px solid transparent; text-align: left; font: inherit;
+  background: rgba(255, 249, 232, .78); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 1px 2px rgba(120, 80, 30, .14); }
+.ob-opt.on { border-color: #8a4dff; background: #f6efff; }
+.ob-opt-n { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+  font-family: var(--game); font-weight: 900; font-size: 20px; color: #fff;
+  background: linear-gradient(180deg, #ffd66b, #e6a21a); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .5), 0 2px 0 #b7790e; }
+.ob-opt-n.ob-lv { background: linear-gradient(180deg, #b58cff, #7b3ff0); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .4), 0 2px 0 #5a24c0; font-size: 16px; }
+.ob-opt-tx { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.ob-opt-tx b { font-family: var(--game); font-weight: 900; font-size: 16px; color: #3d2a52; line-height: 1.15; }
+.ob-opt-tx small { font-weight: 700; font-size: 13px; color: #7a6a8a; line-height: 1.25; text-wrap: pretty; }
+.ob-oracle-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 12px 6px 6px; cursor: pointer; text-align: left; font: inherit;
+  border-radius: 18px; border: 3px solid #f5d27a; background: linear-gradient(180deg, #fff4cf, #ffe39a);
+  box-shadow: 0 3px 0 #d9a93a, 0 6px 12px rgba(120, 80, 10, .18); }
+.ob-oracle-btn img { width: 50px; height: 50px; object-fit: contain; flex: none; }
+.ob-oracle-btn span { display: grid; gap: 1px; min-width: 0; }
+.ob-oracle-btn b { font-family: var(--game); font-weight: 900; font-size: 15.5px; color: #6a3a00; line-height: 1.15; }
+.ob-oracle-btn small { font-weight: 700; font-size: 12.5px; color: #8a6a2a; }
+.ob-oracle-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d9a93a; }
+
+/* the verdict */
+.ob-oracle-face { width: 96px; height: 96px; object-fit: contain; margin-bottom: -6px; }
+.ob-big { margin: 0; font-family: var(--game); font-weight: 900; font-size: 46px; line-height: 1; color: #7b3ff0;
+  text-shadow: 0 2px 0 #fff, 0 4px 10px rgba(123, 63, 240, .25); }
+
+/* the placement test runs full screen in the Oracle's own scene; its close button leaves the test */
+.ob-oracle .ot-exit { z-index: 8; }
+
+.ob-link { border: 0; background: none; padding: 2px 6px; font: inherit; font-weight: 800; font-size: 13.5px; color: #8a6a48;
+  text-decoration: underline; text-decoration-color: rgba(138, 106, 72, .4); text-underline-offset: 3px; cursor: pointer; }
+@media (max-height: 760px) {
+  .ob-scroll { gap: 8px; padding-top: calc(10px + var(--safe-top)); }
+  .ob-body { gap: 7px; }
+  .ob-body .sl-title.sm { font-size: 21px; }
+  .ob-opts { gap: 6px; }
+  .ob-oracle-btn img { width: 40px; height: 40px; }
+  .ob-opt { min-height: 44px; padding-top: 3px; padding-bottom: 3px; }
+  .ob-opt-n { width: 34px; height: 34px; font-size: 17px; }
+  .ob-opt-n.ob-lv { font-size: 14px; }
+  .ob-opt-tx small { font-size: 12px; }
+  .ob-card { margin-top: 10px; }
+}

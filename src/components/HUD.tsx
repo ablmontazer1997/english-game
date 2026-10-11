@@ -10,14 +10,14 @@ function fmt(n: number) {
   return n >= 1000 ? n.toLocaleString('en-US') : String(n)
 }
 
-export function HUD({ onBuy, onSettings }: { onBuy: (c: CurrencyId) => void; onSettings: () => void }) {
+export function HUD({ onBuy, onSettings, onProfile }: { onBuy: (c: CurrencyId) => void; onSettings: () => void; onProfile?: () => void }) {
   const { currencies, profile } = useGame()
   const face = usePortrait()
   if (!currencies || !profile) return <div className="hud" />
 
   return (
     <div className="hud">
-      <button className="hud-avatar" aria-label={`Level ${profile.level}, ${profile.xp} of ${profile.xpToNext} XP`} onClick={onSettings}
+      <button className="hud-avatar" aria-label={`Profile. Level ${profile.level}, ${profile.xp} of ${profile.xpToNext} XP`} onClick={onProfile ?? onSettings}
         style={{ '--xp': `${Math.min(100, (profile.xp / Math.max(1, profile.xpToNext)) * 100)}%` } as React.CSSProperties}>
         <img src={face} alt="" className="hud-avatar-img" draggable={false} />
         <span className="hud-avatar-lvl">{profile.level}</span>

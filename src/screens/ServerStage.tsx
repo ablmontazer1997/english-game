@@ -25,6 +25,7 @@ import '../components/gametitle.css'
 import './stage.css'
 import './serverstage.css'
 import '../components/progression.css'
+import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
 
 type Phase = 'loading' | 'error' | 'gate' | 'intro' | 'play' | 'between' | 'sending' | 'rescue' | 'result'
 
@@ -52,7 +53,18 @@ function Rich({ text }: { text: string }) {
   return <>{parts.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p))}</>
 }
 
-export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onExit: () => void; onNeedHearts: () => void }) {
+/** the guided first stage after the intro (10-11): a wizard line on the lobby and on the first round; the per-game
+ *  tutorials (spotlight, demo) come later (Phase C) */
+function Coach({ children, onClose, className }: { children: React.ReactNode; onClose?: () => void; className?: string }) {
+  return (
+    <div className={`gd-coach pop${className ? ' ' + className : ''}`} role="note" onClick={onClose}>
+      <img src={oracleIdle} alt="" draggable={false} />
+      <p>{children}</p>
+    </div>
+  )
+}
+
+export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: Stage; onExit: () => void; onNeedHearts: () => void; guided?: boolean }) {
   const { currencies, applyComplete, setCurrencies, refreshReview } = useGame()
   const [phase, setPhase] = useState<Phase>('loading')
   const [err, setErr] = useState('')
@@ -66,6 +78,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
   const hints = useRef(0)
   const hintFn = useRef<HintFn | null>(null)
   const [canHint, setCanHint] = useState(false)
+  const [coach, setCoach] = useState(!!guided)   // the first-round line of the guided stage
   const registerHint = useCallback((fn: HintFn | null) => { hintFn.current = fn; setCanHint(!!fn) }, [])
   const level = Math.max(0, LV.indexOf(stage.cefr ?? 'A1'))
   const boss = stage.serverKind === 'boss' || stage.kind === 'boss'
@@ -179,6 +192,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="sl-lobby pop">
+          {guided && <Coach className="gd-top">This is a page of your Spellbook. Read the rule and the examples, then tap Start.</Coach>}
           <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={() => setPhase('play')} />
         </div>
       </div>
@@ -188,6 +202,7 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="lobby pop ss-lobby">
+          {guided && <Coach className="gd-top">Your first stage! Read the card, then tap Start.</Coach>}
           <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">
             {KIND_LABEL[stage.serverKind ?? ''] ?? 'Stage'} · {stage.cefr}
           </Panel>
@@ -295,6 +310,12 @@ export function ServerStage({ stage, onExit, onNeedHearts }: { stage: Stage; onE
         }}>Test: answer all</button>
       )}
       {AUTOPLAY && ri + 1 < rounds.length && <button className="ss-auto ss-auto2" onClick={roundDone}>Test: next round</button>}
+      {guided && coach && ri === 0 && phase === 'play' && (
+        <div className="gd-scrim" onClick={() => setCoach(false)}>
+          <Coach className="gd-mid">This round has no timer: take your time. Read the task at the top, then answer. Every right answer casts a spell!</Coach>
+          <Btn className="lg gd-go" onClick={() => setCoach(false)}>Let's go</Btn>
+        </div>
+      )}
       {phase === 'between' && (
         <div className="ss-between pop"><span>Round {ri + 2} of {rounds.length}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
       )}

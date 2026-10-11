@@ -93,3 +93,17 @@
 .ss-pips i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .45); }
 .ss-pips i.done { background: #ffd45a; }
 .ss-pips i.on { background: #fff; box-shadow: 0 0 0 2px #ffd45a; }
+
+/* guided first stage (intro 10-11): one wizard line on a cream card, never over the answers (top of the lobby,
+   bottom of the first round, tap to close) */
+.gd-coach { display: flex; align-items: center; gap: 10px; width: min(100%, 390px); padding: 8px 14px 8px 8px; flex: none;
+  border-radius: 18px; border: 3px solid #e7c47a; background: linear-gradient(180deg, #fffdf6, #f7ecd4);
+  box-shadow: 0 0 0 2px #fff, 0 4px 0 #d9c49a, 0 8px 16px rgba(40, 30, 100, .2); color: #3d2a52; }
+.gd-coach img { width: 46px; height: 46px; object-fit: contain; flex: none; }
+.gd-coach p { margin: 0; font-weight: 700; font-size: 14.5px; line-height: 1.3; text-wrap: pretty; }
+.gd-coach p b { color: #8a7aa8; font-size: 12.5px; font-weight: 800; white-space: nowrap; }
+.gd-coach.gd-top { margin-bottom: 4px; }
+.gd-scrim { position: absolute; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 16px; background: rgba(24, 14, 56, .55); }
+.ui-btn.lg.gd-go { --h: 52px; min-width: 180px; font-family: var(--game); font-size: 19px; }
+.sl-lobby .gd-coach.gd-top, .ss-lobby .gd-coach.gd-top { margin-right: 44px; width: min(calc(100% - 44px), 346px); }

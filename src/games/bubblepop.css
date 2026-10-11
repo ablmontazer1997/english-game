@@ -365,3 +365,5 @@
 .bubblepop .bp-prompt b { font-size: clamp(20px, 6.2vw, 26px); font-weight: 900; color: #5a2fc0; line-height: 1.1; overflow-wrap: anywhere; }
 .bubblepop .bp-ring { top: calc(122px + var(--safe-top, 0px)); right: 4%; }
 .bubblepop .bp-field { top: calc(200px + var(--safe-top, 0px)); bottom: calc(10px + var(--safe-bottom, 0px)); }
+/* server stages (booster tray on screen): the bubbles keep out of a bottom strip where the tray lies flat (audit 10-11) */
+.stage-host .bubblepop .bp-field { bottom: calc(80px + var(--safe-bottom, 0px)); }

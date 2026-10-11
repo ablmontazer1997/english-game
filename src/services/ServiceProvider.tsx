@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import type { GameService } from './GameService'
 import { MockGameService } from './mockService'
 import { HttpGameService, toCurrencies } from './httpService'
-import { api, errorText, type CompleteOut, type Streak, type ReviewOut } from './api'
+import { api, errorText, type CompleteOut, type Streak, type ReviewOut, type Me } from './api'
 import type { Currencies, PlayerProfile, World, Quest, League, StageResult, Achievement, Inventory, Reward, ChestKind } from '../types/game'
 
 // The app runs on the real backend (runecast-api). `?mock=1` keeps the old local mock for previews.
@@ -50,6 +50,10 @@ interface GameStore {
   showReward: (title: string, reward: Reward) => void
   clearToast: () => void
   setCurrencies: (c: Currencies) => void
+  /** http mode: the account (intro state, chosen level, daily goal, flags) */
+  account: Me | null
+  /** http mode: change the account (name, level, goal, intro flags); the store and the map follow */
+  patchMe: (b: Parameters<typeof api.patchMe>[0]) => Promise<Me | null>
 }
 
 const Ctx = createContext<GameStore | null>(null)
@@ -67,6 +71,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [streak, setStreak] = useState<Streak | null>(null)
   const [reviewDue, setReviewDue] = useState(0)
   const [toast, setToast] = useState<{ title: string; reward: Reward } | null>(null)
+  const [account, setAccount] = useState<Me | null>(null)
 
   const refreshReview = useCallback(async () => {
     if (!http) return
@@ -86,7 +91,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         refreshReview()
       }
       const ach = await service.getAchievements()
-      setCurrencies(c); setProfile(p); setWorlds(w); setQuests(q); setLeague(l); setInventory(inv); setAchievements(ach); setReady(true)
+      setCurrencies(c); setProfile(p); setWorlds(w); setQuests(q); setLeague(l); setInventory(inv); setAchievements(ach)
+      if (http) setAccount(http.account)
+      setReady(true)
     } catch (e) {
       setError(errorText(e))
     }
@@ -158,9 +165,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
     } catch { return {} }
   }, [])
   const claimAchievement = useCallback(async (id: string) => {
-    const { achievements: a, currencies: c, reward } = await service.claimAchievement(id); setAchievements(a); setCurrencies(c)
-    if (Object.keys(reward).length) setToast({ title: 'Achievement unlocked!', reward })
-    return reward
+    try {
+      const { achievements: a, currencies: c, reward } = await service.claimAchievement(id); setAchievements(a); setCurrencies(c)
+      if (Object.keys(reward).length) setToast({ title: 'Achievement unlocked!', reward })
+      return reward
+    } catch {
+      try { setAchievements(await service.getAchievements()) } catch { /* offline */ }
+      return {}
+    }
+  }, [])
+  const patchMe = useCallback(async (b: Parameters<typeof api.patchMe>[0]) => {
+    if (!http) return null
+    const me = await http.patchMe(b)
+    setAccount(me); setProfile(http.profileOf(me))
+    // a new level opens (or closes) maps; the league shows the new name
+    if (b.level) { try { setWorlds(await service.getWorlds()); setQuests(await service.getQuests()) } catch { /* later */ } }
+    if (b.display_name) { try { setLeague(await service.getLeague()) } catch { /* later */ } }
+    if (b.daily_goal) { try { setQuests(await service.getQuests()) } catch { /* later */ } }
+    return me
   }, [])
   const openChest = useCallback(async (k: ChestKind) => {
     const r = await service.openChest(k)
@@ -184,7 +206,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const value: GameStore = { ready, mode: http ? 'http' : 'mock', error, currencies, profile, worlds, quests, league, service, http, streak, reviewDue,
     refresh, submitResult, applyComplete, applyReview, refreshReview, refillHearts, spend, drinkElixir, claimQuest,
-    inventory, achievements, claimAchievement, openChest, buy, seenLeagueResult, noteHint, toast, showReward, clearToast, setCurrencies }
+    inventory, achievements, claimAchievement, openChest, buy, seenLeagueResult, noteHint, toast, showReward, clearToast, setCurrencies, account, patchMe }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

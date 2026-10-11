@@ -25,7 +25,11 @@ export interface Me {
   id: string; display_name: string; kind: string; level: string; timezone: string
   player_level: number; xp: number; xp_to_next: number; xp_total: number; streak: number
   xp_boost_until: number; league_opt_in: boolean; created_at: string
+  /** false = a new player who has not finished the first-run intro */
+  onboarded?: boolean; daily_goal?: number | null; flags?: MeFlags
 }
+export interface MeFlags { tour?: 'pending' | 'done'; intro_step?: number; look?: 'boy' | 'girl' | 'custom'; placement?: string; guided?: 'pending' | 'done' }
+export interface ServerAchievement { id: string; cat: string; title: string; desc: string; tier: number; progress: number; target: number; reward: { gems?: number }; claimed: boolean }
 export type Wallet = Currencies & { elixir: number }
 export interface LevelInfo { code: string; ordinal: number; title: string; world_count: number; unlocked: boolean; current: boolean }
 export interface MapStage {
@@ -159,7 +163,10 @@ export const api = {
   health: () => raw<{ ok: boolean; db: boolean; version: string }>('GET', '/health', undefined, null, 2),
   login: guestLogin,
   me: () => call<Me>('GET', '/v1/me'),
-  patchMe: (b: Partial<Pick<Me, 'display_name' | 'timezone' | 'league_opt_in' | 'level'>>) => call<Me>('PATCH', '/v1/me', b),
+  patchMe: (b: Partial<Pick<Me, 'display_name' | 'timezone' | 'league_opt_in' | 'level' | 'daily_goal'>> & { onboarded?: boolean; flags?: MeFlags }) => call<Me>('PATCH', '/v1/me', b),
+  achievements: () => call<ServerAchievement[]>('GET', '/v1/achievements'),
+  claimAchievement: (id: string) => call<{ reward: { gems?: number }; wallet: Wallet; achievements: ServerAchievement[] }>('POST', `/v1/achievements/${encodeURIComponent(id)}/claim`),
+  placementItems: (perLevel = 6) => call<ServerQuestion[]>('GET', `/v1/placement/items?per_level=${perLevel}`),
   levels: () => call<LevelInfo[]>('GET', '/v1/levels'),
   map: (level: string) => call<LevelMap>('GET', `/v1/map/${encodeURIComponent(level)}`),
   topic: (id: string) => call<Topic>('GET', `/v1/topics/${encodeURIComponent(id)}`),
@@ -202,6 +209,7 @@ export function errorText(e: unknown): string {
       case 'already_owned': return 'You already own it'
       case 'not_for_sale': return 'Not for sale'
       case 'session_expired': return 'This round took too long. Start the stage again.'
+      case 'bad_name': return 'Use 2 to 20 letters or numbers'
       default: return e.message || 'Something went wrong'
     }
   }

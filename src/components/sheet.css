@@ -74,3 +74,10 @@
 }
 .btn-candy-red:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .lsheet { animation: none } }
+/* Settings: the player's league name with a Change button (audit 10-11 P0: rename) */
+.set-name { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 8px; border-radius: 16px;
+  background: rgba(255, 249, 232, .9); border: 2px solid #f0dcae; }
+.set-name span { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.set-name small { font-size: 12.5px; font-weight: 800; color: #8a7aa8; }
+.set-name b { font-size: 17px; font-weight: 900; color: #3d2a52; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cb.set-name-btn { min-height: 38px; font-size: 14px; padding: 0 16px; flex: none; }
