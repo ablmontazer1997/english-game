@@ -33,3 +33,7 @@
 .ec-tip { margin: 0; font-weight: 900; font-size: 17px; color: #2a2550; text-shadow: 0 0 6px rgba(255, 255, 255, .9), 0 0 2px #fff; }
 .ec-type { width: 100%; display: grid; gap: 10px; }
 .ec-type input { min-height: 54px; padding: 0 16px; font: inherit; font-size: 17px; font-weight: 700; color: #2a2550; }
+/* audit 10-11 §6 #9: since the task label sits in the card (10-08) the card ran over the crystal row and hid the line;
+   its bottom now stays just above the crystals and it grows upward */
+.ec-card { top: auto; bottom: 37.5%; }
+.ec-note { top: 33%; }

@@ -81,3 +81,8 @@
 .set-name small { font-size: 12.5px; font-weight: 800; color: #8a7aa8; }
 .set-name b { font-size: 17px; font-weight: 900; color: #3d2a52; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cb.set-name-btn { min-height: 38px; font-size: 14px; padding: 0 16px; flex: none; }
+/* Phase C: daily goal in Settings (1 / 2 / 3 stages a day) */
+.set-goal-btns { flex: none !important; display: flex !important; gap: 6px; }
+.set-goal-b { width: 38px; height: 38px; border-radius: 12px; font-size: 17px; font-weight: 800; color: #5a2fc0;
+  background: #fff; border: 2px solid #d9cdf5; box-shadow: 0 3px 0 #d9cdf5; }
+.set-goal-b.on { background: #7d4ff0; border-color: #7d4ff0; color: #fff; box-shadow: 0 3px 0 #5a24c0; }

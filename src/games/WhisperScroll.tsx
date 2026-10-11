@@ -6,6 +6,7 @@ import { useHint } from './boosters'
 import bgPlate from '../assets/games/whisper/ws_bg.webp'
 import scrollImg from '../assets/games/whisper/ws_scroll.webp'
 import './whisperscroll.css'
+import { useStageCtl, explain } from './coach'
 
 // Whisper Scroll — listening. The scroll whispers a sentence (browser speech
 // synthesis, free, no network); two words on the parchment are missing. Tap the
@@ -49,7 +50,8 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
   const words = useMemo(() => line.text.split(' '), [line])
   const options = useMemo(() => shuffle([...line.gaps.map((g) => words[g]), ...line.extra]), [line, words])
   const [fill, setFill] = useState<string[]>([])
-  const [state, setState] = useState<'play' | 'ok' | 'bad'>('play')
+  const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
+  const ctl = useStageCtl()
   const [talking, setTalking] = useState(false)
   const right = useRef(0)
   const combo = useRef({ now: 0, max: 0 })
@@ -86,7 +88,14 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
       }, OK_MS)
     } else {
       combo.current.now = 0
-      setTimeout(() => { setFill([]); setState('play'); speak(line.text, 0.7, setTalking) }, BAD_MS)
+      // Phase C: the right words go into the gaps (green), the scroll whispers it slowly, then the shared card
+      setTimeout(() => {
+        setFill(line.gaps.map((g) => words[g])); setState('reveal'); speak(line.text, 0.7, setTalking)
+        ctl.wrong({ answer: line.text, label: 'The scroll said', yours: fill.join(' / '), ...explain(srv?.[round]?.payload) }).then(() => {
+          if (round + 1 >= lines.length) onFinish({ correct: right.current, total: lines.length, maxCombo: combo.current.max })
+          else setRound(round + 1)
+        })
+      }, BAD_MS * 0.7)
     }
   }
 
@@ -98,7 +107,7 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
 
       <div className="gs-panel ws-taskp"><Task icon="listen" text="Listen and fill the gaps" sub="Tap the words that you hear" first={round === 0} /></div>
 
-      <div className="ws-scroll" style={{ backgroundImage: `url(${scrollImg})` }}>
+      <div className="ws-scroll" style={{ backgroundImage: `url(${scrollImg})` }} data-coach="q">
         <p className="ws-line">
           {words.map((w, i) => {
             if (!line.gaps.includes(i)) return <span key={i} className="ws-w">{w} </span>
@@ -124,12 +133,13 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="ws-ui">
-        <div className="ws-opts lp">
+        <div className="ws-opts lp" data-coach="a">
           {options.map((o, i) => (
-            <button key={o + i} className={`ws-opt${fill.includes(o) ? ' used' : ''}`} disabled={fill.includes(o) || state !== 'play'} onClick={() => pick(o)}>{o}</button>
+            <button key={o + i} className={`ws-opt${fill.includes(o) ? ' used' : ''}`} disabled={fill.includes(o) || state !== 'play'} onClick={() => pick(o)}
+              data-demo={ctl.practice && options.indexOf(o) === i && line.gaps.some((g) => words[g] === o) ? line.gaps.findIndex((g) => words[g] === o) : undefined}>{o}</button>
           ))}
         </div>
-        <button className="cb cb-green ws-check" onClick={check} disabled={fill.length !== line.gaps.length || state !== 'play'}>Check</button>
+        <button className="cb cb-green ws-check" data-demo={ctl.practice ? 99 : undefined} onClick={check} disabled={fill.length !== line.gaps.length || state !== 'play'}>Check</button>
       </div>
     </div>
   )

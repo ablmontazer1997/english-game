@@ -1,0 +1,113 @@
+/* Phase C: the shared wrong-answer card, the tutorial spotlight + ghost hand, Focus mode.
+   Kit: cream panel with the gold rim (= .gs-panel), Fredoka, flat violet accents like the task label. */
+
+/* ---- wrong-answer card: a bottom sheet over a light veil (the scene and the highlighted answer stay visible) */
+.wfb-scrim { position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+  background: linear-gradient(180deg, rgba(16, 10, 44, 0) 35%, rgba(16, 10, 44, .42)); animation: wfb-fade .18s ease-out both; }
+@keyframes wfb-fade { from { opacity: 0 } }
+.wfb { width: min(100%, 420px); box-sizing: border-box; display: grid; gap: 8px; padding: 12px 14px 14px; text-align: left; color: #3d2a52;
+  background: linear-gradient(180deg, #fffdf6, #f9f0dd); border: 3px solid #e7c47a; border-radius: 24px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .95), 0 12px 28px rgba(30, 20, 80, .35); animation: wfb-up .26s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes wfb-up { from { transform: translateY(40px); opacity: 0 } }
+.wfb-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.wfb-head > b { font-size: 19px; font-weight: 800; color: #b23a48; flex: none; }
+.wfb-x { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #e5525f; }
+.wfb-x svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 3.4; stroke-linecap: round; }
+.wfb-yours { margin-left: auto; min-width: 0; max-width: 55%; font-size: 14px; font-weight: 700; color: #9a7f86;
+  text-decoration-color: #e5525f; text-decoration-thickness: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wfb-ans { display: grid; gap: 2px; padding: 8px 12px; border-radius: 14px; background: #eaf8df; border: 2px solid #8fd46a; }
+.wfb-ans small { font-size: 12px; font-weight: 800; letter-spacing: .02em; color: #3f8a24; text-transform: uppercase; }
+.wfb-ans b { font-size: 19px; font-weight: 800; color: #24561a; line-height: 1.25; overflow-wrap: anywhere; }
+.wfb-mean { font-size: 14px; font-weight: 600; color: #3f6a32; line-height: 1.3; }
+.wfb-rule { margin: 0; display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 12px; background: #7d4ff0;
+  color: #fff; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.wfb-rule span { flex: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; display: grid; place-items: center; margin-top: -1px; }
+.wfb-rule svg { width: 14px; height: 14px; fill: none; stroke: #7d4ff0; stroke-width: 2.4; stroke-linejoin: round; }
+.wfb-whybtn { justify-self: start; min-height: 34px; padding: 0 16px; border-radius: 99px; font-size: 15px; font-weight: 800; color: #5a2fc0;
+  background: #fff; border: 2px solid #c9b3ff; box-shadow: 0 3px 0 #d9cdf5; }
+.wfb-whybtn:active { transform: translateY(2px); box-shadow: 0 1px 0 #d9cdf5; }
+.wfb-why { margin: 0; padding: 8px 12px; border-radius: 12px; border: 2px dashed rgba(125, 79, 240, .35); background: #fff;
+  font-size: 15px; font-weight: 600; line-height: 1.38; color: #3d2a52; animation: wfb-fade .2s ease-out; text-wrap: pretty; }
+.cb.wfb-go { min-height: 50px; font-size: 20px; width: 100%; margin-top: 2px; }
+
+/* ---- tutorial: dim with holes, coach card, ghost hand */
+.stage-host.tut-on .stage-close { z-index: 40; }
+.tut { position: absolute; inset: 0; z-index: 32; }
+.tut-dim { position: absolute; inset: 0; display: block; pointer-events: none; }
+.tut-ring { fill: none; stroke: #ffe08a; stroke-width: 3; stroke-dasharray: 9 7; animation: tut-ants 1.2s linear infinite; }
+@keyframes tut-ants { to { stroke-dashoffset: -32 } }
+.tut-block { position: absolute; inset: 0; }
+.tut-coach { position: absolute; left: 50%; transform: translateX(-50%); width: min(calc(100% - 28px), 380px); box-sizing: border-box;
+  display: grid; gap: 10px; padding: 10px 12px 12px; border-radius: 20px; border: 3px solid #e7c47a; color: #3d2a52;
+  background: linear-gradient(180deg, #fffdf6, #f7ecd4); box-shadow: 0 0 0 2px #fff, 0 4px 0 #d9c49a, 0 10px 22px rgba(20, 10, 60, .35); }
+.tut-coach-mid { top: 50%; transform: translate(-50%, -50%); }
+.tut-line { display: flex; align-items: center; gap: 10px; }
+.tut-line img { width: 50px; height: 50px; object-fit: contain; flex: none; }
+.tut-line p { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; text-wrap: pretty; }
+.tut-btns { display: flex; gap: 10px; }
+.tut-btns .cb { min-height: 44px; font-size: 17px; }
+.tut-btns .tut-skip { flex: 0 0 auto; padding: 0 16px; }
+.tut-btns .tut-next { flex: 1; }
+.gh-hand { position: absolute; left: 0; top: 0; z-index: 2; width: 0; height: 0; pointer-events: none;
+  transition: transform .62s cubic-bezier(.45, .05, .25, 1); }
+.gh-hand svg { position: absolute; left: -12px; top: -6px; width: 54px; height: 54px; max-width: none; fill: rgba(255, 255, 255, .9); stroke: #5a2fc0;
+  stroke-width: 1.5; stroke-linejoin: round; filter: drop-shadow(0 4px 8px rgba(40, 10, 100, .5)); }
+.gh-ripple { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #ffe08a;
+  animation: gh-ripple .55s ease-out both; }
+@keyframes gh-ripple { from { transform: scale(.3); opacity: 1 } to { transform: scale(1.5); opacity: 0 } }
+.gh-press { outline: 4px solid #ffe08a !important; outline-offset: 2px; transition: outline .1s; }
+.tut-banner { position: absolute; z-index: 31; top: calc(15px + var(--safe-top)); left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 99px; white-space: nowrap;
+  background: #7d4ff0; color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(40, 10, 100, .35); pointer-events: none; }
+.tut-banner b { padding: 2px 10px; border-radius: 99px; background: #fff; color: #5a2fc0; font-weight: 800; }
+.tut-scrim { position: absolute; inset: 0; z-index: 32; background: rgba(16, 10, 44, .55); }
+.tut-ready { top: 50%; transform: translate(-50%, -50%); }
+.tut-count { display: grid; place-items: center; pointer-events: auto; }
+.tut-count b { font-size: 120px; font-weight: 800; color: #fff; text-shadow: 0 6px 0 #5a2fc0, 0 0 30px rgba(255, 224, 138, .8);
+  animation: tut-count .65s ease-out both; }
+@keyframes tut-count { from { transform: scale(1.6); opacity: 0 } 30% { opacity: 1 } to { transform: scale(.9); opacity: .2 } }
+/* the real round waits underneath while the "?" replay plays on top */
+.game-host.gh-hidden { visibility: hidden; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .wfb, .wfb-scrim, .tut-ring, .gh-ripple, .tut-count b { animation: none; }
+  .gh-hand { transition: none; }
+}
+
+/* ---- Focus mode: untimed, calm. The scenes stay (text keeps its painted backing) but are washed out and still;
+   ambient effects, particles and the game-name ribbon are gone; the question text is a little larger. */
+.stage-host.focus .sky, .stage-host.focus .game-host { background-color: #f3eefb; }
+.stage-host.focus :is(.gs-plate, .ro-plate, .ws-plate, .tt-plate, .ot-plate, .bb2-backdrop, .swv-mirror) {
+  filter: saturate(.35) brightness(1.12) contrast(.9); }
+.stage-host.focus :is(.gg, .matchblitz, .mc-root) { background-blend-mode: luminosity; background-color: rgba(243, 238, 251, .55); }
+.stage-host.focus :is(.bp-amb, .bp-cloud, .bp-bushes, .cr-mist, .pm-bubbles, .pm-smoke, .ot-sparks, .ro-gate-glow, .swv-glow,
+  .mb-burst, .mb-rays, .gg-portal-glow, .ot-glow, .ot-ring) { display: none !important; }
+.stage-host.focus .game-host *, .stage-host.focus .game-host *::before, .stage-host.focus .game-host *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+.stage-host.focus [data-coach="q"] :is(p, b, .bp-trow > b) { font-size: 1.08em; }
+.stage-host.focus .bubblepop .bp-sky { filter: saturate(.4) brightness(1.1); }
+.ss-focus-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 4px; border-radius: 99px; background: rgba(255, 255, 255, .92);
+  color: #5a2fc0; font-size: 13px; font-weight: 800; box-shadow: 0 2px 6px rgba(20, 10, 60, .3); }
+.ss-focus-chip i { width: 18px; height: 18px; border-radius: 50%; background: #7d4ff0; display: grid; place-items: center; }
+.ss-focus-chip svg { width: 12px; height: 12px; fill: none; stroke: #fff; stroke-width: 2.6; }
+
+/* lobby toggle */
+.fx-toggle { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 8px 10px 8px 12px; border-radius: 16px;
+  border: 2px solid #e7c47a; background: rgba(255, 253, 246, .96); color: #3d2a52; text-align: left; box-shadow: 0 3px 0 #d9c49a; }
+.fx-toggle:active { transform: translateY(2px); box-shadow: 0 1px 0 #d9c49a; }
+.fx-toggle .fx-t { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.fx-toggle .fx-t b { font-size: 15.5px; font-weight: 800; }
+.fx-toggle .fx-t small { font-size: 12.5px; font-weight: 600; color: #6e5a7f; line-height: 1.25; }
+.fx-sw { flex: none; width: 46px; height: 28px; border-radius: 99px; background: #d9d2e6; position: relative; transition: background .2s; }
+.fx-sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s; }
+.fx-toggle.on .fx-sw { background: #7d4ff0; }
+.fx-toggle.on .fx-sw::after { transform: translateX(18px); }
+.gp-wrap { position: absolute; inset: 0; }
+.wfb-ans b { white-space: pre-line; }
+.wfb-ans.long b { font-size: 15.5px; font-weight: 700; }
+.tut-in { animation: wfb-fade .25s ease-out both; }
+/* practice: the banner takes the top row, so the round counter ("1 / 1") under it is hidden */
+.gp-wrap.tut-try .gt-count, .gp-wrap.tut-try .ot-count { visibility: hidden; }
+@media (max-width: 374px) { .tut-banner span { display: none; } }
+/* the practice item skips the game-name ribbon intro (it would cross the spotlight) */
+.gh-prac .gt-intro { display: none; }

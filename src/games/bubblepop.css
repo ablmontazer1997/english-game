@@ -367,3 +367,5 @@
 .bubblepop .bp-field { top: calc(200px + var(--safe-top, 0px)); bottom: calc(10px + var(--safe-bottom, 0px)); }
 /* server stages (booster tray on screen): the bubbles keep out of a bottom strip where the tray lies flat (audit 10-11) */
 .stage-host .bubblepop .bp-field { bottom: calc(80px + var(--safe-bottom, 0px)); }
+/* Phase C: an invisible marker over the right bubble for the tutorial's ghost hand */
+.bubblepop .bp-okmark { position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; }

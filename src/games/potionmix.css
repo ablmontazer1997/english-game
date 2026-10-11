@@ -91,3 +91,5 @@
 .pm-bad .pm-mix { animation: pm-shake .4s; }
 @keyframes pm-shake { 25% { transform: translateX(-8px) } 75% { transform: translateX(8px) } }
 .pm-tag { border-color: color-mix(in srgb, var(--liq, #b27cff) 45%, #fff); box-shadow: 0 0 0 2px #fff, 0 0 18px color-mix(in srgb, var(--liq, #b27cff) 80%, transparent), 0 4px 0 #cbb8f0; }
+/* Phase C: after a wrong brew the right word shows in green */
+.pm-word.pm-right { text-shadow: 0 0 16px #8fe56a, 0 3px 0 #2f7d1c; }

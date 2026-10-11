@@ -6,6 +6,9 @@ import { HUD } from './components/HUD'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { Sheet } from './components/Sheet'
 import { Toggle, Checkbox } from './components/Controls'
+import { useFocusPref } from './games/coach'
+
+const DAILY_GOALS = [{ n: 1, t: 'Casual' }, { n: 2, t: 'Regular' }, { n: 3, t: 'Serious' }]
 import { MapScreen } from './screens/MapScreen'
 import { QuestsScreen } from './screens/QuestsScreen'
 import { LeagueScreen } from './screens/LeagueScreen'
@@ -183,7 +186,11 @@ export function Offline({ message, onRetry }: { message: string; onRetry: () => 
 }
 
 function SettingsBody({ server, onRename }: { server: boolean; onRename: () => void }) {
-  const { account, profile } = useGame()
+  const { account, profile, patchMe } = useGame()
+  // Phase C (audit §2 Settings): daily goal, Focus mode and the game tutorials live here too
+  const [focusOn, setFocusOn] = useFocusPref(account?.flags, server ? (on) => { patchMe({ flags: { focus: on ? 'on' : 'off' } }).catch(() => {}) } : null)
+  const [tutReset, setTutReset] = useState(false)
+  const goal = account?.daily_goal ?? null
   const load = (k: string, d: boolean) => { try { const v = localStorage.getItem('rc.set.' + k); return v == null ? d : v === '1' } catch { return d } }
   const save = (k: string, v: boolean) => { try { localStorage.setItem('rc.set.' + k, v ? '1' : '0') } catch {} }
   const [sound, setSound] = useState(() => load('sound', true))
@@ -201,6 +208,25 @@ function SettingsBody({ server, onRename }: { server: boolean; onRename: () => v
           <button className="cb cb-white set-name-btn" onClick={onRename}>Change</button>
         </div>
       )}
+      {server && (
+        <div className="set-name set-goal">
+          <span><small>Daily goal: stages a day</small><b>{DAILY_GOALS.find((g) => g.n === goal)?.t ?? 'Not set'}</b></span>
+          <span className="set-goal-btns">{DAILY_GOALS.map((g) => (
+            <button key={g.n} className={`set-goal-b${g.n === goal ? ' on' : ''}`} aria-pressed={g.n === goal}
+              onClick={() => { patchMe({ daily_goal: g.n }).catch(() => {}) }}>{g.n}</button>
+          ))}</span>
+        </div>
+      )}
+      {server && (
+        <div className="set-name">
+          <span><small>Game tutorials</small><b>{tutReset ? 'Will show again' : 'Shown once'}</b></span>
+          <button className="cb cb-white set-name-btn" disabled={tutReset} onClick={() => {
+            try { localStorage.removeItem('rc.tut') } catch { /* private mode */ }
+            patchMe({ flags: { tut: 'reset' } }).then(() => setTutReset(true)).catch(() => {})
+          }}>Show again</button>
+        </div>
+      )}
+      <Checkbox label="Focus mode: no timers, calm screen" on={focusOn} onChange={setFocusOn} />
       <Toggle label="Sound effects" icon={icSound} on={sound} onChange={set('sound', setSound)} />
       <Toggle label="Music" icon={icMusic} on={music} onChange={(v) => { set('music', setMusic)(v); playMusic(v) }} />
       <Checkbox label="Reduce motion" on={motion} onChange={set('motion', setMotion)} />

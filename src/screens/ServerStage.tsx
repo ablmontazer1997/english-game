@@ -3,7 +3,7 @@
 // what the server awarded (stars, XP, coins, gems, the boss drop, level up).
 // Same look as StageScreen (lobby -> play -> result); the reward modals reuse rw-card.
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { HeartIcon } from '../components/Icon'
 import { Panel, Art, Btn, Card, Chip } from '../components/PageArt'
@@ -14,6 +14,8 @@ import icCoin from '../assets/sky/ic_coin.png'
 import icHeart from '../assets/sky/ic_heart.png'
 import type { Stage, ServerQuestion } from '../types/game'
 import { gameFor } from '../games/registry'
+import { GamePlay } from '../games/GamePlay'
+import { useTutorials, useFocusPref } from '../games/coach'
 import { HintCtx, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import { ItemThumb } from '../components/ItemThumb'
@@ -56,8 +58,8 @@ function Rich({ text }: { text: string }) {
   return <>{parts.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p))}</>
 }
 
-/** the guided first stage after the intro (10-11): a wizard line on the lobby and on the first round; the per-game
- *  tutorials (spotlight, demo) come later (Phase C) */
+/** the guided first stage after the intro (10-11): a wizard line on the lobby. Phase C: the first round's old coach note
+ *  is gone; every game's first-time tutorial (games/GamePlay.tsx) teaches it instead */
 function Coach({ children, onClose, className }: { children: React.ReactNode; onClose?: () => void; className?: string }) {
   return (
     <div className={`gd-coach pop${className ? ' ' + className : ''}`} role="note" onClick={onClose}>
@@ -68,7 +70,16 @@ function Coach({ children, onClose, className }: { children: React.ReactNode; on
 }
 
 export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: Stage; onExit: () => void; onNeedHearts: () => void; guided?: boolean }) {
-  const { currencies, applyComplete, setCurrencies, refreshReview } = useGame()
+  const { currencies, applyComplete, setCurrencies, refreshReview, account, patchMe, mode } = useGame()
+  // Phase C: first-time tutorials per game (account flag `tut`) and Focus mode (account flag `focus`, locked at Start)
+  const http = mode === 'http'
+  const saveTut = useCallback((g: string[]) => { patchMe({ flags: { tut: g } }).catch(() => { /* kept locally */ }) }, [patchMe])
+  const saveFocus = useCallback((on: boolean) => { patchMe({ flags: { focus: on ? 'on' : 'off' } }).catch(() => {}) }, [patchMe])
+  const tuts = useTutorials(account?.flags, http ? saveTut : null)
+  const [focusPref, setFocusPref] = useFocusPref(account?.flags, http ? saveFocus : null)
+  const [focus, setFocus] = useState(false)
+  const [tutOn, setTutOn] = useState(false)
+  const begin = () => { setFocus(focusPref); setPhase('play') }
   const [phase, setPhase] = useState<Phase>('loading')
   const [err, setErr] = useState('')
   const [session, setSession] = useState<StartOut | null>(null)
@@ -81,7 +92,6 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   const hints = useRef(0)
   const hintFn = useRef<HintFn | null>(null)
   const [canHint, setCanHint] = useState(false)
-  const [coach, setCoach] = useState(!!guided)   // the first-round line of the guided stage
   // Phase B: 3 free hints a day then coins; "continue +3 questions" after a lost trial / boss / vault
   const [hintState, setHintState] = useState<HintsState | null>(null)
   const [extra, setExtra] = useState<Round[]>([])
@@ -97,7 +107,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   const round = rounds[ri]
   // a stage with a speaking / listening game in any round has no music at all (lobby to result)
   const quiet = VOICE_GAMES.has(stage.miniGame) || rounds.some((r) => VOICE_GAMES.has(r.game))
-  useEffect(() => { quietStage(quiet); return () => quietStage(false) }, [quiet])
+  useEffect(() => { quietStage(quiet || focus); return () => quietStage(false) }, [quiet, focus])
 
   // start (or restart) the session
   useEffect(() => {
@@ -153,7 +163,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
     if (!session) return
     setPhase('sending')
     try {
-      const r = await api.complete(session.session_id, sheet.current.answers, hints.current, useElixir)
+      const r = await api.complete(session.session_id, sheet.current.answers, hints.current, useElixir, focus)
       setOut(r)
       setCurrencies({ ...r.wallet })
       applyComplete(r, stage.cefr ?? r.me.level)
@@ -222,7 +232,8 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="sl-lobby pop">
           {guided && <Coach className="gd-top">This is a page of your Spellbook. Read the rule and the examples, then tap Start.</Coach>}
-          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={() => setPhase('play')} />
+          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={begin} />
+          <FocusToggle on={focusPref} set={setFocusPref} />
         </div>
       </div>
     )
@@ -256,9 +267,10 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
             {stage.heartsApply && <Chip className="ss-heart"><img src={icHeart} alt="" />{session.hearts}</Chip>}
           </div>
           </Card>
-          <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={() => setPhase('play')}>
+          <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={begin}>
             {boss ? 'Fight' : 'Start'}
           </Panel>
+          <FocusToggle on={focusPref} set={setFocusPref} />
         </div>
       </div>
     )
@@ -310,6 +322,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
           {out.streak.today_done && <span>🔥 Hearthfire {out.streak.current} day{out.streak.current === 1 ? '' : 's'}</span>}
           {out.hearts_lost > 0 && <span>−{out.hearts_lost} ❤️</span>}
           {out.elixir_used && <span>🧪 elixir used, heart kept</span>}
+          {out.focus && <span>Focus mode: up to 2 stars, no league points</span>}
         </p>
         </Card>
         {out.rewards.items?.length ? <Art name="chest_open" className="result-chest" /> : null}
@@ -325,21 +338,22 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   if (!round) return null
   const Game = gameFor(round.game)
   return (
-    <div className="stage-host full">
+    <div className={`stage-host full${focus ? ' focus' : ''}${tutOn ? ' tut-on' : ''}`}>
       <div className="sky" />
       <SceneAudio id={round.game} />
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="play-top">
         <div className="play-hearts"><img src={icHeart} alt="" /><b>{currencies?.hearts ?? session?.hearts ?? 0}</b></div>
         {rounds.length > 1 && <span className="ss-pips" aria-label={`Round ${ri + 1} of ${rounds.length}`}>{rounds.map((_, k) => <i key={k} className={k < ri ? 'done' : k === ri ? 'on' : ''} />)}</span>}
+        {focus && <span className="ss-focus-chip"><i><FocusIc /></i>Focus</span>}
       </div>
-      <div className={`game-host${FULL_BLEED.has(round.game) ? ' bleed' : ''}`}>
-        <HintCtx.Provider value={registerHint}>
-          <Suspense fallback={<div className="game-wait">…</div>}>
-            <Game key={`${attempt}:${ri}`} items={round.items} world={stage.paint} srv={round.qs as ServerQuestion[]} onAnswer={onAnswer} onFinish={roundDone} level={level} />
-          </Suspense>
-        </HintCtx.Provider>
-      </div>
+      <HintCtx.Provider value={registerHint}>
+        <GamePlay Game={Game} game={round.game} gameKey={`${attempt}:${ri}`} bleed={FULL_BLEED.has(round.game)} cefr={stage.cefr}
+          props={{ items: round.items, world: stage.paint, srv: round.qs as ServerQuestion[], onAnswer, onFinish: roundDone, level }}
+          focus={focus} need={tuts.need} mark={tuts.mark} onTut={setTutOn}
+          tray={(help) => <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint}
+            free={!hintState} freeLeft={hintState?.free_left} cost={hintState?.cost_coins} onHelp={help} />} />
+      </HintCtx.Provider>
       {AUTOPLAY && session && (
         <button className="ss-auto" onClick={() => {
           // keep ~2 s per item so the server's minimum play time is met
@@ -348,18 +362,22 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         }}>Test: answer all</button>
       )}
       {AUTOPLAY && ri + 1 < rounds.length && <button className="ss-auto ss-auto2" onClick={roundDone}>Test: next round</button>}
-      {guided && coach && ri === 0 && phase === 'play' && (
-        <div className="gd-scrim" onClick={() => setCoach(false)}>
-          <Coach className="gd-mid">This round has no timer: take your time. Read the task at the top, then answer. Every right answer casts a spell!</Coach>
-          <Btn className="lg gd-go" onClick={() => setCoach(false)}>Let's go</Btn>
-        </div>
-      )}
       {phase === 'between' && (
         <div className="ss-between pop"><span>Round {ri + 2} of {rounds.length}</span><b>{MG_LABEL[rounds[ri + 1]?.game] ?? ''}</b></div>
       )}
-      <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint}
-        free={!hintState} freeLeft={hintState?.free_left} cost={hintState?.cost_coins} />
     </div>
+  )
+}
+
+function FocusIc() { return <svg viewBox="0 0 24 24" aria-hidden><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.5" /></svg> }
+
+/** Phase C: the lobby switch for Focus mode (untimed, calm screen; at most 2 stars, no league points) */
+export function FocusToggle({ on, set }: { on: boolean; set: (v: boolean) => void }) {
+  return (
+    <button className={`fx-toggle${on ? ' on' : ''}`} role="switch" aria-checked={on} onClick={() => set(!on)}>
+      <span className="fx-t"><b>Focus mode</b><small>No timers, calm screen. Up to 2 stars, no league points.</small></span>
+      <span className="fx-sw" aria-hidden />
+    </button>
   )
 }
 

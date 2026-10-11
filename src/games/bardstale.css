@@ -34,3 +34,5 @@
 .bdt-panel > .bdt-row:nth-child(3) { animation-delay: .07s } .bdt-panel > .bdt-row:nth-child(4) { animation-delay: .14s }
 .bdt-panel > .bdt-row:nth-child(5) { animation-delay: .21s } .bdt-panel > .bdt-row:nth-child(6) { animation-delay: .28s }
 @keyframes bdt-deal { from { transform: translateX(-30px) rotate(-3deg); opacity: 0 } }
+/* Phase C: after a wrong tale the cards show their right numbers */
+.bdt-reveal .bdt-num { background: radial-gradient(circle at 35% 30%, #c8f5a8, #4fbf34 60%); }

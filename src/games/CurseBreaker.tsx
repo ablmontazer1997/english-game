@@ -5,6 +5,7 @@ import { burst, flyTo, shake } from './fx'
 import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl, explain } from './coach'
 import { CURSES } from './banks/curse'
 import { fromSrv, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
@@ -36,11 +37,17 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
   const [picked, setPicked] = useState<string | null>(null)
   const [cleared, setCleared] = useState(0)
   const [score] = useState(makeScore)
+  const ctl = useStageCtl()
 
   useEffect(() => { setFound(false); setMisses([]); setShown(false); setState('find'); setPicked(null) }, [c])
 
   const next = () => { if (round + 1 >= lines.length) onFinish(score.out(lines.length)); else setRound(round + 1) }
-  const lose = () => { score.miss(); setState('bad'); setTimeout(next, 2600) }
+  // Phase C: the sentence shows the fix in place, then the shared card (the right sentence and why)
+  const lose = (yours?: string) => {
+    score.miss(); setState('bad')
+    const right = tokens.map((t, i) => (i === c.bad ? c.fix : t)).filter(Boolean).join(' ')
+    setTimeout(() => ctl.wrong({ answer: right, label: 'The right sentence', yours, ...explain(c) }, 1800).then(next), 700)
+  }
 
   useHint(() => {
     if (state !== 'find' || shown) return false
@@ -72,10 +79,10 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
         if (!misses.length) score.hit(); else score.miss()
         setCleared((n) => n + 1); setState('ok'); setTimeout(next, 1800)
       })
-    } else { shake(word, 10); burst(word, { color: ['#3b1466', '#6b5d7a'], n: 12, up: true, dist: 60, size: 14, ms: 1100 }); lose() }
+    } else { shake(word, 10); burst(word, { color: ['#3b1466', '#6b5d7a'], n: 12, up: true, dist: 60, size: 14, ms: 1100 }); lose(f || '(remove it)') }
   }
 
-  const tip = state === 'find' ? 'Find the cursed word' : state === 'fix' ? 'Choose the spell that breaks the curse' : state === 'ok' ? 'Curse broken!' : c.why
+  const tip = state === 'find' ? 'Find the cursed word' : state === 'fix' ? 'Choose the spell that breaks the curse' : state === 'ok' ? 'Curse broken!' : ''
   return (
     <div className={`gs cbk cbk-s-${state}`} style={{ '--clear': cleared / lines.length, '--cbr': `${cleared <= 0 ? 0 : cleared >= lines.length ? 170 : Math.round(1 + 27 * cleared / lines.length)}%` } as React.CSSProperties}>
       <div className="gs-scene">
@@ -93,7 +100,7 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
       <div className="gs-title"><GameTitle title="Curse Breaker" count={`Curse ${round + 1} / ${lines.length}`} /></div>
 
       <div className="gs-ui cbk-low">
-      <div className="gs-panel cbk-card">
+      <div className="gs-panel cbk-card" data-coach="q">
         {ASK && (state === 'find' || state === 'fix') && <Task className="cbk-task" icon={state === 'find' ? 'find' : 'fix'}
           text={state === 'find' ? 'Tap the wrong word' : 'Pick the right word'} sub={state === 'find' ? 'One word in this sentence is wrong' : undefined} first={round === 0} />}
         {tokens.map((t, i) => {
@@ -102,14 +109,14 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
             misses.includes(i) ? 'miss' : '',
             isBad && (found || shown) ? 'cursed' : '',
             isBad && state === 'ok' ? 'fixed' : ''].join(' ')
-          return <button key={i} data-w={i} className={cls} onClick={() => tap(i)} disabled={state !== 'find'}>
+          return <button key={i} data-w={i} className={cls} onClick={() => tap(i)} disabled={state !== 'find'} data-demo={ctl.practice && isBad ? 0 : undefined}>
             {isBad && state === 'ok' ? (c.fix || <s>{t}</s>) : isBad && state === 'bad' ? <><s>{t}</s> {c.fix}</> : t}
           </button>
         })}
       </div>
-      <div className={`cbk-fixes${state === 'fix' ? ' on' : ''}`}>
+      <div className={`cbk-fixes${state === 'fix' ? ' on' : ''}`} data-coach="a">
         {fixes.map((f) => (
-          <button key={f} className={`gs-gold cbk-fix${picked === f ? (f === c.fix ? ' right' : ' wrong') : ''}`} disabled={state !== 'fix' || !!picked} onClick={(e) => choose(f, e.currentTarget)}>
+          <button key={f} className={`gs-gold cbk-fix${picked === f ? (f === c.fix ? ' right' : ' wrong') : ''}`} disabled={state !== 'fix' || !!picked} onClick={(e) => choose(f, e.currentTarget)} data-demo={ctl.practice && f === c.fix ? 1 : undefined}>
             {f || '(remove it)'}
           </button>
         ))}

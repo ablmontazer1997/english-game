@@ -11,6 +11,7 @@ import ribbon from '../assets/pages/ribbon_gold.png'
 import { TitleIntro } from '../components/GameTitle'
 import { ORACLE_BANK, LEVELS, type OracleQ } from './oracleBank'
 import './oracletrial.css'
+import { useStageCtl, explain } from './coach'
 
 // Oracle Trial — the adaptive placement test. English only. Every right answer
 // asks a harder question, every wrong one an easier one; after TOTAL questions
@@ -52,9 +53,10 @@ export interface Placement { bank: OracleQ[]; onPlaced: (lv: number) => void; on
 export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement }: MiniGameProps & { placement?: Placement }) {
   const BANK = placement?.bank.length ? placement.bank : ORACLE_BANK
   // server mode: the stage's own questions in order, no adaptive placement
-  const srvQs = useMemo<OracleQ[] | null>(() => srv ? srv.map((x) => ({
+  const ctl = useStageCtl()
+  const srvQs = useMemo<(OracleQ & { rule?: string; why?: string })[] | null>(() => srv ? srv.map((x) => ({
     id: x.qid, level: Math.max(0, LEVELS.indexOf(x.level as typeof LEVELS[number])), skill: x.payload.skill ?? 'Grammar',
-    prompt: x.payload.prompt, answer: x.payload.answer, wrong: x.payload.wrong ?? [],
+    prompt: x.payload.prompt, answer: x.payload.answer, wrong: x.payload.wrong ?? [], ...explain(x.payload),
   })) : null, [srv])
   const TOTAL = srvQs ? srvQs.length : TOTAL_PLACEMENT
   const [level, setLevel] = useState(srvQs ? Math.max(0, Math.min(4, lvProp ?? 0)) : START_LEVEL)
@@ -139,7 +141,11 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
       burst(265, 14, 1.2)
     }
     const nl = srvQs ? level : Math.max(0, Math.min(LEVELS.length - 1, level + (ok ? 1 : -1)))
-    setTimeout(() => {
+    // Phase C: in a stage (never in the placement test) a wrong answer shows the shared card first
+    const pause = !ok && srvQs && !placement
+      ? new Promise<void>((res) => setTimeout(() => ctl.wrong({ ...(/_{2,}/.test(q.prompt) ? { answer: q.prompt.replace(/_{2,}/, q.answer), label: 'The right sentence' } : { answer: q.answer }), yours: pick, rule: (q as { rule?: string }).rule, why: (q as { why?: string }).why }, REACT_MS - 500).then(res), 500))
+      : new Promise<void>((res) => setTimeout(res, REACT_MS))
+    pause.then(() => {
       setMood('idle')
       const nn = n + 1
       if (nn >= TOTAL && srvQs) { finish(); return }
@@ -149,7 +155,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
         return
       }
       setN(nn); setLevel(nl); nextQ(nl, nn)
-    }, REACT_MS)
+    })
   }
 
   function skip() {
@@ -212,23 +218,23 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
 
       {done == null && q && (
         <div className="ot-ui">
-          <div className="ot-q">
+          <div className="ot-q" data-coach="q">
             <Task className="gtask-row" icon="tap" text="Choose the right answer" sub="Then tap Check" first={n === 0} />
             <span className="ot-skill">{q.skill}</span>
             <p>{q.prompt}</p>
           </div>
-          <div className="ot-opts">
+          <div className="ot-opts" data-coach="a">
             {options.map((o) => {
               const cls = 'ot-opt'
                 + (pick === o ? ' sel' : '')
                 + (verdict && o === q.answer ? ' right' : '')
                 + (verdict === 'bad' && pick === o ? ' wrong' : '')
-              return <button key={o} className={cls} disabled={!!verdict} onClick={() => setPick(o)}>{o}</button>
+              return <button key={o} className={cls} disabled={!!verdict} onClick={() => setPick(o)} data-demo={ctl.practice && o === q.answer ? 0 : undefined}>{o}</button>
             })}
           </div>
           <div className="ot-actions">
             <button className="ot-skip" onClick={skip} disabled={!!verdict}>Skip</button>
-            <button className="ot-check" onClick={check} disabled={!pick || !!verdict}>Check</button>
+            <button className="ot-check" onClick={check} disabled={!pick || !!verdict} data-demo={ctl.practice ? 1 : undefined}>Check</button>
           </div>
         </div>
       )}

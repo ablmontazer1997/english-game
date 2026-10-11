@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
+import { useStageCtl, explain, payloadOf, bubbleMode } from './coach'
 
 function shuffle<T>(a: T[]): T[] {
   const b = [...a]
@@ -10,7 +11,8 @@ function shuffle<T>(a: T[]): T[] {
 
 // The classic 4-option meaning quiz. Also the fallback for any mini-game not yet
 // given its own implementation.
-export function QuizGame({ items, onFinish, onAnswer }: MiniGameProps) {
+export function QuizGame({ items, onFinish, onAnswer, srv }: MiniGameProps) {
+  const ctl = useStageCtl()
   const [idx, setIdx] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [combo, setCombo] = useState(0)
@@ -28,10 +30,12 @@ export function QuizGame({ items, onFinish, onAnswer }: MiniGameProps) {
     const nextCorrect = ok ? correct + 1 : correct
     if (ok) { setCorrect(nextCorrect); setCombo((c) => { const n = c + 1; setMaxCombo((m) => Math.max(m, n)); return n }) }
     else setCombo(0)
-    setTimeout(() => {
+    const go = () => {
       if (idx + 1 < items.length) { setIdx(idx + 1); setPicked(null) }
       else onFinish({ correct: nextCorrect, total: items.length || 1, maxCombo: Math.max(maxCombo, ok ? combo + 1 : 0) })
-    }, 620)
+    }
+    if (ok) setTimeout(go, 620)
+    else setTimeout(() => ctl.wrong({ answer: item.back, yours: opt, ...explain(payloadOf(srv, item.id)) }, 600).then(go), 450)
   }
 
   if (!item) return <div className="game-wait">…</div>
@@ -39,14 +43,14 @@ export function QuizGame({ items, onFinish, onAnswer }: MiniGameProps) {
   return (
     <div className="quiz">
       {combo >= 2 && <div className="combo-flag pop" key={combo}>Combo ×{combo}</div>}
-      <div className="quiz-prompt reveal" key={item.id}>
-        <Task className="gtask-row" icon="tap" text="Pick the meaning of:" first={idx === 0} />
+      <div className="quiz-prompt reveal" key={item.id} data-coach="q">
+        <Task className="gtask-row" icon="tap" text={bubbleMode(payloadOf(srv, item.id)) === 'syn' ? 'Pick the synonym of:' : 'Pick the meaning of:'} first={idx === 0} />
         <b className="prompt-word">{item.front}</b>
       </div>
-      <div className="quiz-options">
+      <div className="quiz-options" data-coach="a">
         {options.map((opt) => {
           const state = picked ? (opt === item.back ? 'ok' : opt === picked ? 'bad' : 'dim') : ''
-          return <button key={opt} className={`opt ${state}`} disabled={!!picked} onClick={() => choose(opt)}>{opt}</button>
+          return <button key={opt} className={`opt ${state}`} disabled={!!picked} onClick={() => choose(opt)} data-demo={ctl.practice && opt === item.back ? 0 : undefined}>{opt}</button>
         })}
       </div>
     </div>

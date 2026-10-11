@@ -4,6 +4,7 @@ import type { MiniGameProps } from './types'
 import { burst, pop } from './fx'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl, explain } from './coach'
 import { RUNE_WORDS } from './banks/runetype'
 import { fromSrv, hush, levelOf, makeScore, pick, speak } from './kit'
 import bgPlate from '../assets/games/runetype/rt_bg.webp'
@@ -28,6 +29,7 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
   const [tries, setTries] = useState(0)
   const [score] = useState(makeScore)
+  const ctl = useStageCtl()
 
   useEffect(() => {
     setTyped(''); setBad([]); setState('play'); setTries(0)
@@ -44,8 +46,11 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     setBad(wrong); setState('bad')
     if (tries + 1 >= TRIES) {
       score.miss()
-      setTimeout(() => { setTyped(w.word); setBad([]); setState('reveal'); speak(w.word) }, 800)
-      setTimeout(next, 2600)
+      // Phase C: the word is spelled out (and spoken), then the shared card
+      setTimeout(() => {
+        setTyped(w.word); setBad([]); setState('reveal'); speak(w.word)
+        ctl.wrong({ answer: w.word, meaning: w.clue, yours: s, ...explain(w) }, 1800).then(next)
+      }, 800)
     } else {
       setTries(tries + 1)
       setTimeout(() => { setTyped(s.slice(0, wrong[0])); setBad([]); setState('play') }, 850)
@@ -85,7 +90,7 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-scene"><img className="gs-plate" src={bgPlate} alt="" draggable={false} /></div>
       <div className="gs-title"><GameTitle title="Rune Type" count={`Rune ${round + 1} / ${words.length}`} /></div>
 
-      <div className="gs-ui gs-panel rt-clue">
+      <div className="gs-ui gs-panel rt-clue" data-coach="q">
         <Task className="gtask-row" icon="type" text="Spell the word" sub="Listen, then tap the letters" first={round === 0} />
         <p>{w.clue}</p>
         <button className="gs-orb rt-say" aria-label="Hear the word" onClick={() => speak(w.word)}>
@@ -99,10 +104,10 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         ))}
       </div>
 
-      <div className="gs-ui rt-kb">
+      <div className="gs-ui rt-kb" data-coach="a">
         {ROWS.map((row, r) => (
           <div className="rt-row" key={r}>
-            {[...row].map((c) => <button key={c} className="rt-key" onClick={() => press(c)}>{c}</button>)}
+            {[...row].map((c) => <button key={c} className="rt-key" onClick={() => press(c)} data-demo={ctl.practice && w.word.includes(c) ? w.word.indexOf(c) : undefined}>{c}</button>)}
             {r === 2 && <button className="rt-key rt-back" aria-label="Delete" onClick={back}>←</button>}
           </div>
         ))}

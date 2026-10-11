@@ -128,6 +128,7 @@ import heroNormal from '../assets/games/boss2/hero.webp'
 import heroHurt from '../assets/games/boss2/hero_hurt.webp'
 import heroCheer from '../assets/games/boss2/hero_cheer.webp'
 import './bossbattle.css'
+import { useStageCtl, explain, payloadOf, bubbleMode } from './coach'
 
 // Boss Battle: the player's mage against the Grammar Boss on the sky-island arena.
 // Every right answer is a spell (cast pose, a bolt flying to the boss, impact, damage number);
@@ -267,7 +268,8 @@ function shuffle<T>(a: T[]): T[] {
   return b
 }
 
-export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) {
+export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGameProps) {
+  const ctl = useStageCtl()
   const boss = useMemo(() => bossFor(world), [world])
   const BOSS_IMG = boss.img
   // the world's own arena (admin 4565/4575): its plate + the fighters' feet line measured on that plate's top surface
@@ -522,7 +524,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
   }
 
   // wrong answer: the boss winds up, lunges and throws a rune stone at the mage
-  const strike = () => {
+  const strike = (yours?: string) => {
     sfx('wrong'); setGolem('attack')
     golemEl.current?.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(3%) rotate(2deg)', offset: 0.35 },
       { transform: 'translateX(-7%) rotate(-3deg)', offset: 0.7 }, { transform: 'translateX(0)' }], { duration: 620, easing: 'ease-in-out' })
@@ -550,14 +552,17 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
           burst(heroEl.current?.querySelector('.bb2-core'), { color: ['#ffffff', '#ffb3b3', '#d9c7a8'], n: 10, dist: 70, size: 10 })
           number('-1 ♥', 'hero', HERO_AT.x, HERO_AT.y - HERO_AT.h - 10)
         }
+        // Phase C: after the hit lands, the shared card (right answer, rule, "Why?")
+        const it = round?.item
+        const card = () => it ? ctl.wrong({ answer: it.back, label: it.ask ? `${it.ask} ${it.front}` : bubbleMode(payloadOf(srv, it.id)) === 'syn' ? `A synonym of "${it.front}"` : `"${it.front}" means`, yours, ...explain(payloadOf(srv, it.id)) }, 600) : Promise.resolve()
         if (r.current.lives <= 0) {
           say('The monster wins…', 'bad', 1800); sfx('lose')
           if (hero3d) later(() => heroFrame.current?.contentWindow?.postMessage({ type: 'rc-cry' }, '*'), 700)
-          later(finish, 1900)
+          later(() => { card().then(finish) }, 1900)
         } else {
           say('Ouch!', 'bad')
           later(() => { setGolem(rest()); setHero('normal') }, 1000)
-          later(next, 1700)
+          later(() => { card().then(next) }, 1100)
         }
       })
     }, 230)
@@ -573,7 +578,7 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
       cast()
     } else {
       r.current.combo = 0
-      strike()
+      strike(round.opts[i])
     }
   }
 
@@ -647,19 +652,19 @@ export function BossBattle({ items, onFinish, onAnswer, world }: MiniGameProps) 
 
       {round && (
         <div className="gs-ui bb2-bottom" ref={bottomEl}>
-          <div className="gs-panel bb2-q">
+          <div className="gs-panel bb2-q" data-coach="q">
             <Task className="gtask-row" icon="tap" text="Pick the right answer" sub="Each right answer hits the boss" first={idx === 0} />
             <span className="bb2-gem" aria-hidden />
-            <p>{round.item.ask ? <>{round.item.ask} <b>{round.item.front}</b></> : <>Choose the meaning of: <b>{round.item.front}</b></>}</p>
+            <p>{round.item.ask ? <>{round.item.ask} <b>{round.item.front}</b></> : <>{bubbleMode(payloadOf(srv, round.item.id)) === 'syn' ? 'Choose the synonym of:' : 'Choose the meaning of:'} <b>{round.item.front}</b></>}</p>
             <span className="gt-count">Question {idx + 1} / {total}</span>
           </div>
-          <div className="bb2-opts">
+          <div className="bb2-opts" data-coach="a">
             {round.opts.map((t, i) => {
               const ok = t === round.item.back
               const st = picked?.i === i ? (picked.ok ? ' ok' : ' bad') : picked && !picked.ok && ok ? ' right' : ''
               return (
                 <button key={t + i} className={`gs-pill bb2-opt${st}${gone.has(i) ? ' gone' : ''}`}
-                  disabled={!!picked || gone.has(i)} onClick={() => pick(i, ok)}>{t}</button>
+                  disabled={!!picked || gone.has(i)} onClick={() => pick(i, ok)} data-demo={ctl.practice && ok ? 0 : undefined}>{t}</button>
               )
             })}
           </div>

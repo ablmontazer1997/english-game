@@ -5,6 +5,7 @@ import type { MiniGameProps } from './types'
 import gateImg from '../assets/sky/portal.png'
 import sceneBg from '../assets/gapgate_bg.webp'
 import { useHint } from './boosters'
+import { useStageCtl, explain, payloadOf } from './coach'
 import './gapgate.css'
 
 const ADVANCE_OK_MS = 720 // pause after a correct answer (let the gate open)
@@ -25,7 +26,10 @@ interface Option {
   correct: boolean
 }
 
-export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
+export function GapGate({ items, onFinish, onAnswer, srv }: MiniGameProps) {
+  const ctl = useStageCtl()
+  // the tutorial's practice plays one gate (the other items only give the wrong words)
+  const N = ctl.practice ? Math.min(1, items.length) : items.length
   const [idx, setIdx] = useState(0)
   const [, setCorrect] = useState(0)
   const [combo, setCombo] = useState(0)
@@ -45,6 +49,9 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
   const timer = useRef<number | null>(null)
 
   const item = items[idx]
+  // synonym rows (10-11): the gate shows the definition, so the word is found from its meaning, not from a synonym
+  const pay = payloadOf(srv, item?.id)
+  const clue = (typeof pay.definition === 'string' && pay.definition) || item?.back || ''
 
   // Build the 4 options: correct front + 3 distractor WORDS from other items' front.
   const options = useMemo<Option[]>(() => {
@@ -81,10 +88,10 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
     clearTimer()
     onFinish({
       correct: correctRef.current,
-      total: items.length || 1,
+      total: N || 1,
       maxCombo: maxComboRef.current,
     })
-  }, [clearTimer, items.length, onFinish])
+  }, [clearTimer, N, onFinish])
 
   const advance = useCallback(() => {
     setChosen(null)
@@ -93,9 +100,9 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
     setOpened(false)
     setLocked(false)
     setGone(new Set())
-    if (idx + 1 < items.length) setIdx((i) => i + 1)
+    if (idx + 1 < N) setIdx((i) => i + 1)
     else finish()
-  }, [idx, items.length, finish])
+  }, [idx, N, finish])
 
   useHint(() => {
     if (locked || !item) return false
@@ -124,7 +131,8 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
       setCombo(0)
       setShake(true)
       setReveal(true)
-      timer.current = window.setTimeout(advance, ADVANCE_BAD_MS)
+      // Phase C: the shared card (right word, its meaning, the rule, "Why?"); the right gate stays lit behind it
+      ctl.wrong({ answer: item.front, meaning: clue, yours: o.text, ...explain(pay) }, ADVANCE_BAD_MS).then(advance)
     }
   }
 
@@ -149,7 +157,7 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
 
   return (
     <div className={`gg ${shake ? 'gg-shake' : ''}`} style={{ backgroundImage: `url(${sceneBg})` }}>
-      <GameTitle title="Gap Gate" count={`Gate ${idx + 1} / ${items.length}`} />
+      <GameTitle title="Gap Gate" count={`Gate ${idx + 1} / ${N}`} />
       <div className="gg-hud">
         {combo >= 2 && (
           <span className="gg-combo pop" key={combo}>
@@ -163,10 +171,10 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
         <span className="gg-portal-glow" aria-hidden />
       </div>
 
-      <div className="gg-tablet">
+      <div className="gg-tablet" data-coach="q">
         <Task className="gtask-row" icon="tap" text="Pick the missing word" sub="Its meaning is below" first={idx === 0} />
         <p className="gg-clue">
-          Spell for <span className="gg-mean">{item.back}</span>
+          Spell for <span className="gg-mean">{clue}</span>
         </p>
 
         <div className="gg-blank" dir="ltr">
@@ -188,7 +196,7 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
 
       </div>
 
-      <div className="gg-options">
+      <div className="gg-options" data-coach="a">
         {options.map((o) => {
           const isChosen = chosen?.key === o.key
           const state = isChosen ? (o.correct ? 'ok' : 'bad') : ''
@@ -200,6 +208,7 @@ export function GapGate({ items, onFinish, onAnswer }: MiniGameProps) {
               className={`gg-opt ${state} ${showRight}${gone.has(o.key) ? ' gone' : ''}`}
               disabled={locked || gone.has(o.key)}
               onClick={() => pick(o)}
+              data-demo={ctl.practice && o.correct ? 0 : undefined}
               dir="ltr"
             >
               {o.text}

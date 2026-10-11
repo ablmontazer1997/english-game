@@ -270,7 +270,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   if (step === 'level') return frame(
     <Parchment tag="The Oracle">
       <h2 className="sl-title sm">How well do you know English?</h2>
-      <div className="ob-opts">
+      <div className="ob-opts ob-lvopts">
         {LEVEL_CARDS.map((c, i) => (
           <button key={i} className={`ob-opt${level === i ? ' on' : ''}`} onClick={() => setLevel(i)} aria-pressed={level === i}>
             <span className="ob-opt-n ob-lv">{LEVELS[i]}</span>

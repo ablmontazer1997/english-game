@@ -54,3 +54,5 @@
 .ws-opt:active { transform: translateY(2px); box-shadow: 0 0 0 2px #fff, 0 2px 0 #dccaa2; }
 .ws-opt.used { opacity: .3; }
 .ws-check { width: 100%; }
+/* Phase C: after a wrong check the right words fill the gaps */
+.ws-reveal .ws-gap.filled { background: linear-gradient(180deg, #8fe56a, #4fbf34); box-shadow: 0 0 12px rgba(120, 220, 80, .8); }

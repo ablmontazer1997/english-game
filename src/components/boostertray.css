@@ -53,3 +53,6 @@
 .rescue .rs-note { font-size: 12.5px; font-weight: 800; color: #b3264a; }
 .gate-card .gate-next { font-weight: 900; color: #c0384f; }
 .rescue .rs-btn { font-size: 18px; padding: 0 14px; }
+/* Phase C: "?" replays the game's tutorial */
+.bt-ic.bt-q { font-size: 26px; font-weight: 800; color: #7d4ff0; font-family: var(--sans); }
+.bt.flat .bt-help { order: 0; }

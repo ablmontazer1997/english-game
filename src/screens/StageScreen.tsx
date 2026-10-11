@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { HeartIcon } from '../components/Icon'
 import { Panel, Art } from '../components/PageArt'
@@ -7,8 +7,12 @@ import wordCard from '../assets/games/word_card.png'
 import icEnergy from '../assets/sky/ic_energy.png'
 import icCoin from '../assets/sky/ic_coin.png'
 import icHeart from '../assets/sky/ic_heart.png'
-import type { Stage, SrsItem, StageResult } from '../types/game'
+import type { Stage, SrsItem, StageResult, ServerQuestion } from '../types/game'
 import { gameFor } from '../games/registry'
+import { GamePlay } from '../games/GamePlay'
+import { useTutorials, useFocusPref, fetchSamples } from '../games/coach'
+import { SRS_GAMES, srsOf } from '../services/serverPlay'
+import { FocusToggle } from './ServerStage'
 import { HintCtx, HINT_COST, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import '../components/gametitle.css'
@@ -57,7 +61,22 @@ export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { sta
     ? { stageId: stage.id, correct: 8, total: 10, stars: 3, heartsLost: 0, xpGained: 126, coinsGained: 85 }
     : null)
 
-  useEffect(() => { service.getStageItems(stage.id, stage.miniGame).then(setItems) }, [stage, service])
+  // Phase C: previews play real sample items from the server (with their rule / why); the local bank only offline
+  const [srv, setSrv] = useState<ServerQuestion[] | undefined>(undefined)
+  useEffect(() => {
+    let live = true
+    fetchSamples(stage.miniGame, stage.cefr ?? 'A1', 5).then((qs) => {
+      if (!live) return
+      if (qs) { setSrv(qs); setItems(SRS_GAMES.has(stage.miniGame) ? qs.map(srsOf) : qs.map((q) => ({ id: q.qid, front: '', back: '', distractors: [], mastery: 0 }))) }
+      else service.getStageItems(stage.id, stage.miniGame).then((x) => live && setItems(x))
+    })
+    return () => { live = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage.id, stage.miniGame, stage.cefr, service])
+  const tuts = useTutorials(undefined, null)
+  const [focusPref, setFocusPref] = useFocusPref(undefined, null)
+  const [focus, setFocus] = useState(false)
+  const [tutOn, setTutOn] = useState(false)
   // speaking / listening games: no music for the whole stage (admin msg 4310)
   useEffect(() => { quietStage(VOICE_GAMES.has(stage.miniGame)); return () => quietStage(false) }, [stage.miniGame])
   // fanfare or a soft sad chord when the result card appears
@@ -107,16 +126,17 @@ export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { sta
         <h2 className="lobby-title">{stage.title}</h2>
         <p className="lobby-sub">Learn 3 runes, then cast them</p>
         <div className="lobby-cards">
-          {items.slice(0, 3).map((it) => (
+          {items.filter((it) => it.front).slice(0, 3).map((it) => (
             <div className="lobby-card" style={{ backgroundImage: `url(${wordCard})` }} key={it.id}>
               <b>{it.front}</b><span>{it.back}</span>
             </div>
           ))}
         </div>
         <Panel name="btn_gold" className="lobby-start btn-h" inner="lobby-start-in"
-          disabled={!items.length} onClick={() => items.length && setPhase('play')}>
+          disabled={!items.length} onClick={() => { if (items.length) { setFocus(focusPref); setPhase('play') } }}>
           Start
         </Panel>
+        <FocusToggle on={focusPref} set={setFocusPref} />
       </div>
     </div>
   )
@@ -163,21 +183,22 @@ export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { sta
   // play — dispatch to the mini-game for this stage
   const Game = gameFor(stage.miniGame)
   return (
-    <div className="stage-host full">
+    <div className={`stage-host full${focus ? ' focus' : ''}${tutOn ? ' tut-on' : ''}`}>
       <div className="sky" />
       <SceneAudio id={stage.miniGame} />
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="play-top">
         <div className="play-hearts"><img src={icHeart} alt="" /><b>{hearts}</b></div>
       </div>
-      <div className={`game-host${FULL_BLEED.has(stage.miniGame) ? ' bleed' : ''}`}>
-        {items.length
-          ? <HintCtx.Provider value={registerHint}><Suspense fallback={<div className="game-wait">…</div>}><Game key={run} items={items} world={stage.paint} onFinish={handleFinish} level={Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf(stage.cefr ?? 'A1'))} /></Suspense></HintCtx.Provider>
-          : <div className="game-wait">…</div>}
-      </div>
-      {!NO_BOOSTERS.has(stage.miniGame) && (
-        <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint} />
-      )}
+      {items.length
+        ? <HintCtx.Provider value={registerHint}>
+          <GamePlay Game={Game} game={stage.miniGame} gameKey={String(run)} bleed={FULL_BLEED.has(stage.miniGame)} cefr={stage.cefr}
+            props={{ items, srv, world: stage.paint, onFinish: handleFinish, level: Math.max(0, ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf(stage.cefr ?? 'A1')) }}
+            focus={focus} need={tuts.need} mark={tuts.mark} onTut={setTutOn}
+            tray={(help) => NO_BOOSTERS.has(stage.miniGame) ? null
+              : <BoosterTray coins={currencies?.coins ?? 0} elixirs={currencies?.potion ?? 0} canHint={canHint} onHint={onHint} onHelp={help} />} />
+        </HintCtx.Provider>
+        : <div className="game-host"><div className="game-wait">…</div></div>}
     </div>
   )
 }

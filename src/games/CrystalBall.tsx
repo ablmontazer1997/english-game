@@ -5,6 +5,7 @@ import { burst, shake } from './fx'
 import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl, explain } from './coach'
 import { VISIONS } from './banks/crystal'
 import { fromSrv, hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import bgPlate from '../assets/games/crystal/cr_bg.webp'
@@ -31,6 +32,7 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const [picked, setPicked] = useState<string | null>(null)
   const [gone, setGone] = useState<string[]>([])
   const [score] = useState(makeScore)
+  const ctl = useStageCtl()
   const playId = useRef(0)
   const q = qi >= 0 ? v.questions[qi] : null
   const opts = useMemo(() => (q ? shuffle([q.answer, ...q.wrong]) : []), [q])
@@ -78,11 +80,14 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     }
     if (o === q.answer) { score.hit(); burst(el, { color: ['#ffe27a', '#8fe56a', '#ffffff'], n: 14, dist: 70 }) }
     else { score.miss(); shake(el) }
-    setTimeout(() => {
+    const go = () => {
       if (qi + 1 < v.questions.length) setQi(qi + 1)
       else if (vi + 1 < visions.length) setVi(vi + 1)
       else onFinish(score.out(total))
-    }, o === q.answer ? 1000 : 1700)
+    }
+    // Phase C: a wrong answer: the right option lights up, then the shared card (rule + why per question)
+    if (o === q.answer) setTimeout(go, 1000)
+    else setTimeout(() => ctl.wrong({ answer: q.answer, label: q.q, yours: o, ...explain(q) }, 1000).then(go), 700)
   }
 
   const who = line >= 0 ? v.lines[line][0] : null
@@ -98,8 +103,8 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Crystal Ball" count={`Question ${Math.min(done + 1, total)} / ${total}`} /></div>
 
-      <div className="gs-ui cr-player">
-        <button className="gs-orb cr-play" aria-label={line >= 0 ? 'Stop' : 'Play'} onClick={() => (line >= 0 ? stop() : play())}>
+      <div className="gs-ui cr-player" data-coach="q">
+        <button className="gs-orb cr-play" data-demo={ctl.practice ? 0 : undefined} aria-label={line >= 0 ? 'Stop' : 'Play'} onClick={() => (line >= 0 ? stop() : play())}>
           {line >= 0
             ? <svg viewBox="0 0 24 24" width="40%" height="40%"><rect x="5" y="5" width="14" height="14" rx="2" fill="#fff" /></svg>
             : <svg viewBox="0 0 24 24" width="46%" height="46%"><path d="M8 5v14l11-7z" fill="#fff" /></svg>}
@@ -107,7 +112,7 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         <div className="cr-bar"><i style={{ width: `${prog}%` }} /><b style={{ left: `${prog}%` }} /></div>
       </div>
 
-      <div className="gs-ui gs-panel cr-q">
+      <div className="gs-ui gs-panel cr-q" data-coach="a">
         {!q ? (
           <>
             <Task className="gtask-row" icon="listen" text="Listen to the vision" sub="Questions come after it" first={true} />
@@ -121,7 +126,7 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
             <p className="cr-ask">{q.q}</p>
             {opts.map((o) => (
               <button key={o} className={`gs-pill cr-opt${picked && o === q.answer ? ' right' : ''}${picked === o && o !== q.answer ? ' wrong' : ''}${gone.includes(o) ? ' gone' : ''}`}
-                disabled={!!picked || gone.includes(o)} onClick={(e) => choose(o, e.currentTarget)}>{o}</button>
+                disabled={!!picked || gone.includes(o)} onClick={(e) => choose(o, e.currentTarget)} data-demo={ctl.practice && o === q.answer ? 1 : undefined}>{o}</button>
             ))}
           </>
         )}

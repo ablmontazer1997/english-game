@@ -3,6 +3,7 @@ import { Task } from './Task'
 import type { MiniGameProps, SrsItem } from './types'
 import matchBg from '../assets/games/mb_bg2.webp'
 import './matchblitz.css'
+import { useStageCtl, usePausedRef, explain, payloadOf } from './coach'
 
 // ---- Faithful port of the approved "Match Blitz" (#mb) mini-game from
 // pipeline/games.html. Timed pair-matching: LEFT column holds the fronts
@@ -49,7 +50,12 @@ interface Drag {
   hotKey: string | null
 }
 
-export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
+export function MatchBlitz({ items, onFinish, onAnswer, srv }: MiniGameProps) {
+  const ctl = useStageCtl()
+  const pausedRef = usePausedRef()
+  // Phase C: no clock in Focus mode and in the tutorial's practice board; it stands still while a card is open
+  const timerOff = ctl.focus || ctl.practice
+  const taught = useRef(new Set<string>())
   // Shuffle all items once, then split into consecutive boards so every pair
   // gets attempted; the right column is shuffled again per board.
   const boards = useMemo<SrsItem[][]>(
@@ -119,8 +125,9 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
 
   // Countdown.
   useEffect(() => {
-    if (items.length === 0) return
+    if (items.length === 0 || timerOff) return
     const id = setInterval(() => {
+      if (pausedRef.current) return
       setTimeLeft((t) => {
         if (t <= 0) {
           clearInterval(id)
@@ -323,6 +330,13 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
       comboCountRef.current = 0
       setCombo(0)
       showFeedback(false)
+      // Phase C: the first miss on a word shows the shared card with its right pair
+      const wp = d.side === 'L' ? d.pid : tp, wrongBack = current[d.side === 'L' ? tp : d.pid]?.back
+      const w = current[wp]
+      if (w && !taught.current.has(w.id)) {
+        taught.current.add(w.id)
+        ctl.wrong({ answer: `${w.front} = ${w.back}`, label: 'The right pair', yours: wrongBack ? `${w.front} = ${wrongBack}` : undefined, ...explain(payloadOf(srv, w.id)) })
+      }
     }
   }
 
@@ -387,8 +401,8 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
     return <div className="mb-wait">Nothing to match</div>
   }
 
-  const fillPct = Math.min(100, (Math.max(0, timeLeft) / START_SECONDS) * 100)
-  const timeText = `0:${String(Math.max(0, timeLeft)).padStart(2, '0')}`
+  const fillPct = timerOff ? 100 : Math.min(100, (Math.max(0, timeLeft) / START_SECONDS) * 100)
+  const timeText = timerOff ? 'No timer' : `0:${String(Math.max(0, timeLeft)).padStart(2, '0')}`
   const comboText = `x${Math.max(1, combo)}`
 
   return (
@@ -416,9 +430,9 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
           <div className="mb-tt">{timeText}</div>
         </div>
 
-        <div className="gs-panel mb-taskp"><Task className="" icon="match" text="Match the pairs" sub="Tap a word, then its meaning" first={true} /></div>
+        <div className="gs-panel mb-taskp" data-coach="q"><Task className="" icon="match" text="Match the pairs" sub="Drag each word to its meaning" first={true} /></div>
 
-        <div className="mb-board" ref={boardRef}>
+        <div className="mb-board" ref={boardRef} data-coach="a">
           <svg className="mb-lines" ref={linesRef} />
           {current.map((pair, slot) => {
             const lpid = slot
@@ -430,6 +444,7 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
                   className={cardCls('L', lpid)}
                   data-side="L"
                   data-pid={lpid}
+                  data-demo={ctl.practice && lpid === 0 ? 0 : undefined}
                   onPointerDown={(e) => onDown(e, 'L', lpid)}
                 >
                   {pair.front}
@@ -438,6 +453,7 @@ export function MatchBlitz({ items, onFinish, onAnswer }: MiniGameProps) {
                   className={cardCls('R', rpid)}
                   data-side="R"
                   data-pid={rpid}
+                  data-demo={ctl.practice && rpid === 0 ? 1 : undefined}
                   onPointerDown={(e) => onDown(e, 'R', rpid)}
                 >
                   {rpair?.back}

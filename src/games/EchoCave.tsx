@@ -5,6 +5,7 @@ import { burst, pop } from './fx'
 import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl } from './coach'
 import { ECHO } from './banks/echo'
 import { fromSrv, canListen, hush, levelOf, listen, makeScore, norm, pick, speak } from './kit'
 import bgPlate from '../assets/games/echo/ec_bg.webp'
@@ -50,6 +51,7 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const [note, setNote] = useState('')
   const [score] = useState(makeScore)
   const mic = canListen()
+  const ctl = useStageCtl()
 
   useEffect(() => {
     setLit(words.map(() => false)); setState('play'); setTries(0); setTyped(''); setNote('')
@@ -84,8 +86,9 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       score.hit(); setState('ok'); setTimeout(next, 1400)
     } else if (tries + 1 >= TRIES) {
       if (line._qid) onAnswer?.(line._qid, said[0] ?? '', false)
-      score.miss(); setState('bad'); setNote(`It was: "${line.text}"`)
-      setTimeout(next, 2400)
+      // Phase C: the shared card with the sentence; it is spoken once more, slowly
+      score.miss(); setState('bad'); setNote('')
+      setTimeout(() => { speak(line.text, { rate: 0.8, onState: setTalking }); ctl.wrong({ answer: line.text, label: 'Say it like this', yours: said[0] }, 2000).then(next) }, 600)
     } else {
       setTries(tries + 1); setState('bad')
       setNote(said.length ? `I heard: "${said[0]}". Listen and try again.` : 'I could not hear you. Try again.')
@@ -118,7 +121,7 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-title"><GameTitle title="Echo Cave" count={`Echo ${round + 1} / ${lines.length}`} /></div>
 
       {note && <div className="gs-ui ec-note">{note}</div>}
-      <div className="gs-ui gs-panel ec-card">
+      <div className="gs-ui gs-panel ec-card" data-coach="q">
         <Task className="gtask-row" icon="speak" text={mic ? "Listen, then say it" : "Listen, then type it"} sub="Tap the speaker to hear it" first={round === 0} />
         <p className="ec-line">
           {line.text.split(' ').map((w, i) => <span key={i} className={lit[i] ? 'on' : ''}>{w} </span>)}
@@ -135,10 +138,10 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         {words.map((_, i) => <img key={i} src={crystal} alt="" draggable={false} className={lit[i] ? 'on' : ''} />)}
       </div>
 
-      <div className="gs-ui ec-act">
+      <div className="gs-ui ec-act" data-coach="a">
         {mic ? (
           <>
-            <button className="gs-orb ec-mic" aria-label="Say it" onClick={say} disabled={state !== 'play'}>
+            <button className="gs-orb ec-mic" data-demo={ctl.practice ? 0 : undefined} aria-label="Say it" onClick={say} disabled={state !== 'play'}>
               <span className="ec-arc l" /><span className="ec-arc r" />
               <svg viewBox="0 0 24 24" width="46%" height="46%"><path fill="#fff" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z" /></svg>
             </button>

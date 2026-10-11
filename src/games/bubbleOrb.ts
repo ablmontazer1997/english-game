@@ -109,7 +109,9 @@ export function drawWord(ctx: CanvasRenderingContext2D, x: number, y: number, r:
     return lines
   }
   let best: { px: number; lines: string[] } | null = null
-  for (let px = Math.max(16, r * 0.46); px >= 11 && !best; px -= 1) {
+  // Phase C (synonym bubbles, admin 4817): a short single word reads larger than a phrase
+  const short = parts.length <= 2 && word.length <= 10
+  for (let px = Math.max(16, r * (short ? 0.54 : 0.46)); px >= 11 && !best; px -= 1) {
     for (let n = 1; n <= Math.min(3, parts.length); n++) {
       const lines = wrap(px, n)
       if (lines.every((l) => ctx.measureText(l).width <= maxW) && lines.length * px * 1.05 <= maxH) { best = { px, lines }; break }

@@ -6,6 +6,7 @@ import sceneBg from '../assets/pages/bg_profile.webp'
 import cardBack from '../assets/games/mc_back.png'
 import cardFront from '../assets/games/mc_front.png'
 import { useHint } from './boosters'
+import { useStageCtl, explain, payloadOf } from './coach'
 import './memorycrystals.css'
 
 // one unified magical card (new design system): decorated back, parchment face
@@ -48,7 +49,9 @@ function buildDeck(items: SrsItem[]): Card[] {
 // Memory Crystals — a concentration game. Each SRS item becomes two face-down
 // crystal tiles (english word + its Persian meaning); flip two, and a shared
 // item.id locks them face-up with a gold glow. A wrong flip breaks the combo.
-export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
+export function MemoryCrystals({ items, onFinish, onAnswer, srv }: MiniGameProps) {
+  const ctl = useStageCtl()
+  const taught = useRef(new Set<string>())
   const deck = useMemo(() => buildDeck(items), [items])
   const pairCount = Math.min(items.length, MAX_PAIRS)
 
@@ -77,10 +80,13 @@ export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
   }, [pairCount])
 
   // Opening peek: all cards face-up, then they flip over.
+  // the face-up preview starts once nothing covers the board (tutorial spotlight, a card)
+  const previewed = useRef(false)
   useEffect(() => {
-    const t = setTimeout(() => setPreview(false), PREVIEW_MS)
+    if (ctl.paused || previewed.current) return
+    const t = setTimeout(() => { previewed.current = true; setPreview(false) }, PREVIEW_MS)
     return () => clearTimeout(t)
-  }, [])
+  }, [ctl.paused])
 
   useHint(() => {
     if (preview || lockRef.current || doneRef.current) return false
@@ -130,6 +136,13 @@ export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
       setCombo(0)
       setWrong(next)
       lockRef.current = true
+      // Phase C: a word flipped with the wrong meaning (first time for that word): the shared card with its pair
+      const word = a.face === 'front' ? a : b.face === 'front' ? b : null, mean = a.face === 'back' ? a : b.face === 'back' ? b : null
+      const wi = word && mean ? items.find((x) => x.id === word.pairId) : undefined
+      if (wi && mean && !taught.current.has(wi.id)) {
+        taught.current.add(wi.id)
+        setTimeout(() => ctl.wrong({ answer: `${wi.front} = ${wi.back}`, label: 'The right pair', yours: `${wi.front} = ${mean.text}`, ...explain(payloadOf(srv, wi.id)) }), FLIP_BACK_MS)
+      }
       timer.current = setTimeout(() => {
         setFlipped([])
         setWrong([])
@@ -163,10 +176,11 @@ export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
         </div>
       </div>
 
-      <div className="gs-panel mc-taskp"><Task icon="match" text="Find the matching pairs" sub="Flip two crystals at a time" first={attempts === 0} /></div>
+      <div className="gs-panel mc-taskp" data-coach="q"><Task icon="match" text="Find the matching pairs" sub="Flip two crystals at a time" first={attempts === 0} /></div>
 
       <div
         className="mc-grid"
+        data-coach="a"
         style={{ '--mc-cols': String(cols) } as CSSProperties}
         aria-label="Memory crystals"
       >
@@ -187,6 +201,7 @@ export function MemoryCrystals({ items, onFinish, onAnswer }: MiniGameProps) {
               disabled={isMatched}
               aria-pressed={isUp}
               onClick={() => onTap(card)}
+              data-demo={ctl.practice && card.pairId === deck[0]?.pairId ? (card.face === 'front' ? 0 : 1) : undefined}
             >
               <span className="mc-inner">
                 <span className="mc-back" aria-hidden={isUp} style={{ backgroundImage: `url(${cardBack})` }} />

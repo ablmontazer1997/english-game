@@ -41,7 +41,8 @@ export function MapChromeAlt(p: Props) {
   const review = (cls: string) => showReview && (
     <button className={`${cls} mla-review${p.reviewDue ? ' has-due' : ''}`} onClick={p.onCauldron} aria-label={`Review, ${p.reviewDue} words due`}>
       <img src={art('qi_potion')} alt="" draggable={false} />
-      <span className="mla-tx"><b>{p.reviewDue > 99 ? '99+' : p.reviewDue} due</b><small>Review</small></span>
+      {/* audit 10-11 §2: "0 due" on day one read as broken; nothing due now says so */}
+      <span className="mla-tx"><b>{p.reviewDue > 99 ? '99+ due' : p.reviewDue > 0 ? `${p.reviewDue} due` : 'All clear'}</b><small>Review</small></span>
     </button>
   )
   const hearth = (cls: string) => showStreak && st && (

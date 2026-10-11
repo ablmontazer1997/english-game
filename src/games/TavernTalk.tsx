@@ -3,6 +3,7 @@ import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl } from './coach'
 import bgPlate from '../assets/games/tavern/tt_bg.webp'
 import kIdle from '../assets/games/tavern/tt_idle.webp'
 import kTalk from '../assets/games/tavern/tt_talk.webp'
@@ -95,6 +96,7 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
   const right = useRef(0), asked = useRef(0)
   const combo = useRef({ now: 0, max: 0 })
   const chatEnd = useRef<HTMLDivElement>(null)
+  const ctl = useStageCtl()
 
   // mouth flaps while speaking: swap closed/open art ~7 times a second
   useEffect(() => {
@@ -143,7 +145,10 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
         }
         setBusy(false)
       }
-      if (c.reply) setTimeout(go, c.next === 'stay' ? 200 : 2600); else go()
+      // Phase C: after the innkeeper's answer to a wrong reply, the shared card shows the reply that works
+      const good = !c.ok ? sc.script[node].choices.find((x) => x.ok) : undefined
+      if (good) setTimeout(() => ctl.wrong({ answer: good.say, label: 'A better reply', yours: c.say }, c.next === 'stay' ? 200 : 2600).then(go), c.reply ? 1400 : 300)
+      else if (c.reply) setTimeout(go, c.next === 'stay' ? 200 : 2600); else go()
     }, 500)
   }
 
@@ -172,7 +177,7 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       <GameTitle title="Tavern Talk" />
 
       {/* admin 4364: task + mission at the top again; the innkeeper is sized to the space left between it and the chat */}
-      <div className="tt-mission lp">
+      <div className="tt-mission lp" data-coach="q">
         <Task className="gtask-row" icon="speak" text="Pick what you would say" sub="Or tap the mic and say it" first={si === 0 && node === 0} />
         <span className="tt-coin">🪙</span>
         <div><b>Mission</b><p>{sc.mission}</p></div>
@@ -192,9 +197,9 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
         </div>
         {note && <div className="tt-note">{note}</div>}
         {!done ? (
-          <div className="tt-choices">
+          <div className="tt-choices" data-coach="a">
             {sc.script[node].choices.map((c, i) => (
-              <button key={node + ':' + i} className={`tt-choice${hinted === i ? ' hinted' : ''}`} disabled={busy} onClick={() => choose(i)}>{c.say}</button>
+              <button key={node + ':' + i} className={`tt-choice${hinted === i ? ' hinted' : ''}`} disabled={busy} onClick={() => choose(i)} data-demo={ctl.practice && c.ok ? 0 : undefined}>{c.say}</button>
             ))}
             <button className={`tt-mic${listening ? ' on' : ''}`} aria-label="Say it" onClick={mic} disabled={busy}>
               <svg viewBox="0 0 24 24" width="28" height="28"><path fill="#fff" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z" /></svg>

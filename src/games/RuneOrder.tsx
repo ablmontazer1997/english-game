@@ -8,6 +8,7 @@ import gateClosed from '../assets/games/runeorder/ro_gate_closed.webp'
 import gateOpen from '../assets/games/runeorder/ro_gate_open.webp'
 import tileImg from '../assets/games/runeorder/ro_tile.webp'
 import './runeorder.css'
+import { useStageCtl, explain } from './coach'
 
 // Rune Order — grammar by building the sentence. The rune tiles hold the words
 // out of order; tap them into the slots, then Cast. The right order opens the
@@ -34,14 +35,15 @@ function shuffle<T>(a: T[]): T[] {
 export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
   const sents = useMemo(() => srv ? srv.map((q) => String(q.payload.text ?? '').trim()) : SENTENCES, [srv])
   const [round, setRound] = useState(0)
-  const words = useMemo(() => sents[round].split(' '), [round])
+  const words = useMemo(() => sents[round].split(' '), [round, sents])
   const tiles = useMemo<Tile[]>(() => {
     let t = shuffle(words.map((word, id) => ({ id, word })))
     while (t.every((x, i) => x.id === i)) t = shuffle(t) // never hand over the answer
     return t
   }, [words])
   const [placed, setPlaced] = useState<number[]>([])
-  const [state, setState] = useState<'play' | 'ok' | 'bad'>('play')
+  const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
+  const ctl = useStageCtl()
   const right = useRef(0)
   const combo = useRef({ now: 0, max: 0 })
 
@@ -51,7 +53,7 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
   useHint(() => {
     if (state !== 'play') return false
     let k = 0
-    while (k < placed.length && placed[k] === k) k++
+    while (k < placed.length && wordOf(placed[k]) === words[k]) k++
     if (k >= words.length) return false
     setPlaced(Array.from({ length: k + 1 }, (_, i) => i))
     return true
@@ -66,19 +68,26 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
     const ok = sentence === sents[round]
     if (srv?.[round]) onAnswer?.(srv[round].qid, sentence, ok)
     setState(ok ? 'ok' : 'bad')
+    const next = () => {
+      if (round + 1 >= sents.length) onFinish({ correct: right.current, total: sents.length, maxCombo: combo.current.max })
+      else setRound(round + 1)
+    }
     if (ok) {
       right.current++; combo.current.now++; combo.current.max = Math.max(combo.current.max, combo.current.now)
-      setTimeout(() => {
-        if (round + 1 >= sents.length) onFinish({ correct: right.current, total: sents.length, maxCombo: combo.current.max })
-        else setRound(round + 1)
-      }, OK_MS)
+      setTimeout(next, OK_MS)
     } else {
       combo.current.now = 0
-      setTimeout(() => { setPlaced([]); setState('play') }, BAD_MS)
+      // Phase C: no silent reset: the runes move into the right order (green), then the shared card
+      setTimeout(() => {
+        setPlaced(words.map((_, i) => i)); setState('reveal')
+        ctl.wrong({ answer: sents[round], label: 'The right order', yours: sentence, ...explain(srv?.[round]?.payload) }).then(next)
+      }, BAD_MS * 0.6)
     }
   }
 
   const wordOf = (id: number) => tiles.find((t) => t.id === id)!.word
+  // ghost hand order: the first tile of each word in sentence order (repeated words: any copy works)
+  const demoAt = (id: number) => id
   const tileStyle = { backgroundImage: `url(${tileImg})` }
 
   return (
@@ -93,7 +102,7 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="ro-ui">
-        <div className="ro-slots lp" aria-label="Your sentence">
+        <div className="ro-slots lp" aria-label="Your sentence" data-coach="q">
           <Task className="gtask-row" icon="order" text="Put the words in order" sub="Tap them to build the sentence" first={round === 0} />
           {words.map((_, i) => {
             const id = placed[i]
@@ -102,13 +111,13 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
               : <button key={i} className="ro-tile ro-placed" style={tileStyle} onClick={() => unplace(id)}>{wordOf(id)}</button>
           })}
         </div>
-        <div className="ro-pool">
+        <div className="ro-pool" data-coach="a">
           {tiles.map((t, i) => (
             <button key={t.id} className={`ro-tile${placed.includes(t.id) ? ' used' : ''}`} style={{ ...tileStyle, '--tilt': `${((i * 37) % 9) - 4}deg` } as React.CSSProperties}
-              disabled={placed.includes(t.id)} onClick={() => place(t.id)}>{t.word}</button>
+              disabled={placed.includes(t.id)} onClick={() => place(t.id)} data-demo={ctl.practice ? demoAt(t.id) : undefined}>{t.word}</button>
           ))}
         </div>
-        <button className="cb cb-green ro-cast" onClick={cast} disabled={placed.length !== words.length || state !== 'play'}>Cast</button>
+        <button className="cb cb-green ro-cast" data-demo={ctl.practice ? 99 : undefined} onClick={cast} disabled={placed.length !== words.length || state !== 'play'}>Cast</button>
       </div>
     </div>
   )

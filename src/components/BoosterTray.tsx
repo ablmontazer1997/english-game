@@ -6,12 +6,14 @@ import './boostertray.css'
 /** The same two boosters, in the same spot, in every mini-game:
  *  💡 hint (paid in coins, applied by the game) and 🧪 elixir (count; spent on
  *  the rescue step when a stage is lost, so the heart is kept). */
-export function BoosterTray({ coins, elixirs, canHint, onHint, free, freeLeft, cost = HINT_COST }: {
+export function BoosterTray({ coins, elixirs, canHint, onHint, free, freeLeft, cost = HINT_COST, onHelp }: {
   coins: number; elixirs: number; canHint: boolean; onHint: () => Promise<boolean>
   /** hints are not charged at all (old server stages) */
   free?: boolean
   /** Phase B server stages: free hints left today (3 a day), then `cost` coins each (the server charges) */
   freeLeft?: number; cost?: number
+  /** Phase C: "?" replays this game's tutorial (null while it plays) */
+  onHelp?: (() => void) | null
 }) {
   const [tip, setTip] = useState('')
   const el = useRef<HTMLDivElement>(null)
@@ -30,6 +32,11 @@ export function BoosterTray({ coins, elixirs, canHint, onHint, free, freeLeft, c
 
   return (
     <div className="bt" ref={el} aria-label="Boosters">
+      {onHelp !== undefined && (
+        <button className={`bt-btn bt-help${onHelp ? '' : ' off'}`} onClick={() => onHelp?.()} aria-label="How to play">
+          <span className="bt-ic bt-q">?</span>
+        </button>
+      )}
       <button className={`bt-btn${pulse ? ' pulse' : ''}${canHint ? '' : ' off'}`} onClick={hint}
         aria-label={free ? 'Hint, free' : freeLeft && freeLeft > 0 ? `Hint, ${freeLeft} free today` : `Hint, ${cost} coins`}>
         <span className="bt-ic">💡</span>

@@ -7,6 +7,7 @@ import frameUrl from '../assets/games/bubble_frame.webp'
 import { GameTitle } from '../components/GameTitle'
 import './scene.css'
 import './bubblepop.css'
+import { useStageCtl, usePausedRef, explain, payloadOf, bubbleMode } from './coach'
 
 /* Bubble Pop — a real bubble field, not fixed slots.
 
@@ -48,7 +49,13 @@ interface Phys { x: number; y: number; vx: number; vy: number; ph: number; r: nu
 // an ambient rising bubble
 interface Amb { el: HTMLDivElement; x: number; y: number; r: number; vy: number; ph: number; amp: number; sway: number }
 
-export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
+export function BubblePop({ items, onFinish, onAnswer, srv }: MiniGameProps) {
+  const ctl = useStageCtl()
+  const pausedRef = usePausedRef()
+  // Phase C: no clock in Focus mode and in the tutorial's practice bubble; it stands still while a card is open
+  const timerOff = ctl.focus || ctl.practice
+  const marks = useRef<Record<string, HTMLDivElement | null>>({})   // practice: one marker per bubble (the ghost hand taps the right one)
+  const revealRef = useRef<string | null>(null)          // the right bubble glows after a wrong pick / time out
   const [idx, setIdx] = useState(0)
   const [score, setScore] = useState(0)
   const [timeLeft, setTimeLeft] = useState(ROUND_SECONDS)
@@ -79,6 +86,8 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
   const fbTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const item = items[idx]
+  const pay = payloadOf(srv, item?.id)
+  const mode = bubbleMode(pay)   // 'syn': 1-2 word synonyms; 'def': definitions (older items, syn_ok = false)
 
   useLayoutEffect(() => {
     const el = fieldRef.current
@@ -173,6 +182,7 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
       later(finish, 850)
     } else {
       lockedRef.current = false
+      revealRef.current = null
       setGone(new Set())
       setFb((f) => ({ ...f, show: false }))
       setIdx((i) => i + 1)
@@ -206,9 +216,24 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
       later(advance, 780)
     } else {
       comboRef.current = 0
-      showFb(false)
+      lockedRef.current = true
+      teach(b.text)
     }
-  }, [gone, burst, showFb, later, advance, item, onAnswer])
+  }, [gone, burst, later, advance, item, onAnswer, showFb])   // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Phase C: the right bubble glows, then the shared card (the synonym + the definition, rule, "Why?"), then the next word */
+  function teach(yours?: string) {
+    if (!item) return
+    const right = bubblesRef.current.find((x) => x.correct)
+    revealRef.current = right?.key ?? null
+    const def = typeof pay.definition === 'string' ? pay.definition : undefined
+    later(() => {
+      ctl.wrong({
+        answer: item.back, label: mode === 'syn' ? `A synonym of "${item.front}"` : `"${item.front}" means`, yours,
+        meaning: mode === 'syn' && def && def !== item.back ? def : undefined, ...explain(pay),
+      }, 900).then(advance)
+    }, 450)
+  }
 
   // hit-test the canvas against the live orbs (topmost first)
   const onCanvasDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -325,6 +350,15 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
             const ease = 1 - (1 - fadeIn) * (1 - fadeIn)   // ease-out
             const scale = 0.6 + 0.4 * ease
             const r = p.r * scale
+            if (revealRef.current === b.key) {   // the right answer, lit in place behind the card
+              ctx.save(); ctx.beginPath(); ctx.arc(p.x, p.y + bob, r * 1.32, 0, Math.PI * 2)
+              ctx.fillStyle = 'rgba(143, 229, 106, .55)'; ctx.shadowColor = '#8fe56a'; ctx.shadowBlur = 24; ctx.fill(); ctx.restore()
+            }
+            const mk = marks.current[b.key]   // practice only: markers follow the bubbles (ghost hand, checks)
+            if (mk) {
+              mk.style.transform = `translate(${p.x - r}px, ${p.y + bob - r}px)`
+              mk.style.width = mk.style.height = `${r * 2}px`
+            }
             drawOrb(ctx, p.x, p.y + bob, r, b.col, ease)
             drawWord(ctx, p.x, p.y + bob, r, b.text, ease)
             drawFrame(ctx, p.x, p.y + bob, r, ease)
@@ -343,15 +377,16 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
     if (!item || over) return
     lockedRef.current = false
     setTimeLeft(ROUND_SECONDS)
+    if (timerOff) return
     const id = setInterval(() => {
       setTimeLeft((s) => {
-        if (lockedRef.current) return s
+        if (lockedRef.current || pausedRef.current) return s
         if (s <= 1) {
           clearInterval(id)
           lockedRef.current = true
           comboRef.current = 0
-          showFb(false)
-          later(advance, 700)
+          if (item) onAnswer?.(item.id, '', false)
+          teach()
           return 0
         }
         return s - 1
@@ -404,9 +439,9 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
         {/* admin 3697: same crest + cream prompt panel as every other mini-game */}
         <div className="bp-crest"><GameTitle title="Bubble Pop" count={`Bubble ${idx + 1} / ${items.length}`} /></div>
         {ASK ? (
-          <div className="bp-prompt gs-panel has-task">
-            <Task icon="tap" text="Pop the meaning of:" sub="Tap it before time runs out" first={idx === 0} />
-            <div className="bp-trow"><b lang="en">{item.front}</b>{ring}</div>
+          <div className="bp-prompt gs-panel has-task" data-coach="q">
+            <Task icon="tap" text={mode === 'syn' ? 'Pop the synonym of:' : 'Pop the meaning of:'} sub={timerOff ? 'Take your time' : 'Tap it before time runs out'} first={idx === 0} />
+            <div className="bp-trow"><b lang="en">{item.front}</b>{!timerOff && ring}</div>
           </div>
         ) : (
           <>
@@ -418,8 +453,11 @@ export function BubblePop({ items, onFinish, onAnswer }: MiniGameProps) {
           </>
         )}
 
-        <div className="bp-field" ref={fieldRef}>
+        <div className="bp-field" ref={fieldRef} data-coach="a">
           {ready && <canvas className="bp-canvas" ref={canvasRef} onPointerDown={onCanvasDown} />}
+          {ctl.practice && bubbles.filter((b) => !gone.has(b.key)).map((b) => (
+            <div key={b.key} className="bp-okmark" ref={(el) => { marks.current[b.key] = el }} data-demo={b.correct ? 0 : undefined} data-bad={b.correct ? undefined : 1} aria-hidden />
+          ))}
         </div>
 
         <div className={`bp-fb ${fb.show ? 'show' : ''}`}>

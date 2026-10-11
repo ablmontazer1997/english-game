@@ -5,6 +5,7 @@ import { burst, pop } from './fx'
 import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl, explain } from './coach'
 import { TALES } from './banks/bard'
 import { fromSrv, hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
@@ -32,7 +33,8 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     return c
   }, [t])
   const [order, setOrder] = useState<number[]>([])
-  const [state, setState] = useState<'play' | 'ok' | 'bad'>('play')
+  const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
+  const ctl = useStageCtl()
   const [score] = useState(makeScore)
 
   useEffect(() => { setOrder([]); setState('play') }, [t])
@@ -65,7 +67,12 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       setTimeout(() => { hush(); if (round + 1 >= tales.length) onFinish(score.out(tales.length)); else setRound(round + 1) }, 2600)
     } else {
       score.miss(); fxSfx('wrong', .4)
-      setTimeout(() => { setOrder([]); setState('play') }, 1200)
+      // Phase C: the cards take their right numbers, then the shared card, then the next tale
+      setTimeout(() => {
+        setOrder(t.lines.map((_, i) => i)); setState('reveal')
+        ctl.wrong({ answer: t.lines.map((x, i) => `${i + 1}. ${x}`).join('\n'), label: 'The right order', ...explain(t) })
+          .then(() => { hush(); if (round + 1 >= tales.length) onFinish(score.out(tales.length)); else setRound(round + 1) })
+      }, 900)
     }
   }
 
@@ -80,13 +87,14 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Bard's Tale" count={`Tale ${round + 1} / ${tales.length}`} /></div>
 
-      <div className="gs-ui gs-panel bdt-panel">
+      <div className="gs-ui gs-panel bdt-panel" data-coach="a">
         <Task className="gtask-row" icon="order" text="Put the story in order" sub="Tap the lines from first to last" first={round === 0} />
         <p className="bdt-title">“{t.title}”</p>
         {cards.map((c) => {
           const n = order.indexOf(c.id)
           return (
-            <button key={c.id} className={`bdt-row${n >= 0 ? ' placed' : ''}`} style={{ '--k': n } as React.CSSProperties} onClick={(e) => tap(c.id, e.currentTarget)}>
+            <button key={c.id} className={`bdt-row${n >= 0 ? ' placed' : ''}`} style={{ '--k': n } as React.CSSProperties} onClick={(e) => tap(c.id, e.currentTarget)}
+              data-demo={ctl.practice ? c.id : undefined}>
               <span className="bdt-num">{n >= 0 ? n + 1 : ''}</span>
               <span className="bdt-card" style={{ backgroundImage: `url(${card})` }}>
                 <span className="bdt-text">{c.text}</span><i className="bdt-grip" />
@@ -95,7 +103,7 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           )
         })}
       </div>
-      <div className="gs-ui bdt-go"><button className="gs-go" onClick={tell} disabled={order.length !== t.lines.length || state !== 'play'}>Tell the tale</button></div>
+      <div className="gs-ui bdt-go"><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={tell} disabled={order.length !== t.lines.length || state !== 'play'}>Tell the tale</button></div>
     </div>
   )
 }

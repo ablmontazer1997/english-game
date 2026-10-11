@@ -3,6 +3,7 @@ import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl, explain } from './coach'
 import { POTIONS } from './banks/potion'
 import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
@@ -84,7 +85,12 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const r = recipes[round]
   const shelf = useMemo(() => shuffle([...r.parts, ...r.extra].map((t, id) => ({ id, t }))), [r])
   const [poured, setPoured] = useState<number[]>([])
-  const [state, setState] = useState<'play' | 'ok' | 'bad'>('play')
+  const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
+  const ctl = useStageCtl()
+  const rightIds = useMemo(() => {
+    const used = new Set<number>()
+    return r.parts.map((p) => { const b = shelf.find((x) => x.t === p && !used.has(x.id)); if (b) used.add(b.id); return b?.id ?? -1 })
+  }, [r, shelf])
   const [fly, setFly] = useState<Fly | null>(null)
   const [score] = useState(makeScore)
   const root = useRef<HTMLDivElement>(null), surface = useRef<HTMLSpanElement>(null)
@@ -127,7 +133,13 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       setTimeout(() => { if (round + 1 >= recipes.length) onFinish(score.out(recipes.length)); else setRound(round + 1) }, 1900)
     } else {
       score.miss(); sfx('whoosh', 0.5)
-      setTimeout(() => { setPoured([]); setState('play') }, 1200)
+      // Phase C: the right bottles go in (shown as the brewed word), then the shared card, then the next potion
+      const yours = poured.map(text).join(' + ')
+      setTimeout(() => {
+        setPoured(rightIds.filter((id) => id >= 0)); setState('reveal')
+        ctl.wrong({ answer: `${r.parts.join(' + ')} = ${r.answer}`, meaning: r.clue, yours, ...explain(r) })
+          .then(() => { if (round + 1 >= recipes.length) onFinish(score.out(recipes.length)); else setRound(round + 1) })
+      }, 1000)
     }
   }
 
@@ -142,26 +154,27 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Potion Mix" count={`Potion ${round + 1} / ${recipes.length}`} /></div>
 
-      <div className="gs-ui gs-panel pm-goal"><Task className="gtask-row" icon="build" text="Brew a word that means:" sub="Pour the right bottles in" first={round === 0} /><p>{r.clue}</p></div>
+      <div className="gs-ui gs-panel pm-goal" data-coach="q"><Task className="gtask-row" icon="build" text="Brew a word that means:" sub="Pour the right bottles in" first={round === 0} /><p>{r.clue}</p></div>
 
       <div className="gs-ui pm-mix">
-        {state === 'ok'
-          ? <span className="pm-word">{r.answer}</span>
+        {state === 'ok' || state === 'reveal'
+          ? <span className={`pm-word${state === 'reveal' ? ' pm-right' : ''}`}>{r.answer}</span>
           : poured.map((id, i) => (
             <span key={id} className="pm-part">{i > 0 && <i className="pm-plus">+</i>}<button className="pm-tag" style={{ '--liq': colorOf(id) } as React.CSSProperties} onClick={() => unpour(id)}>{text(id)}</button></span>
           ))}
       </div>
 
-      <div className="gs-ui pm-shelf" style={{ '--n': shelf.length } as React.CSSProperties}>
+      <div className="gs-ui pm-shelf" data-coach="a" style={{ '--n': shelf.length } as React.CSSProperties}>
         {shelf.map((b) => (
           <button key={b.id} className={`pm-bottle${poured.includes(b.id) ? ' used' : ''}${fly?.id === b.id ? ' flying' : ''}`}
-            disabled={poured.includes(b.id) || state !== 'play'} onClick={(e) => pour(b.id, e.currentTarget)}>
+            disabled={poured.includes(b.id) || state !== 'play'} onClick={(e) => pour(b.id, e.currentTarget)}
+            data-demo={ctl.practice && rightIds.includes(b.id) ? rightIds.indexOf(b.id) : undefined}>
             <img src={BOTTLES[b.id % BOTTLES.length]} alt="" draggable={false} />
             <span>{b.t}</span>
           </button>
         ))}
       </div>
-      <div className="gs-ui pm-go"><button className="gs-go" onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
+      <div className="gs-ui pm-go"><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
       {fly && <PourFx key={fly.key} f={fly} />}
     </div>
   )

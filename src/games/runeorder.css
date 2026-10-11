@@ -44,3 +44,5 @@
 @keyframes ro-no { 20% { translate: -5px 0 } 40% { translate: 5px 0 } 60% { translate: -3px 0 } 80% { translate: 3px 0 } }
 .ro-ok .ro-placed { border-color: #ffd86a; background: linear-gradient(180deg, #fff6c9, #ffe27a) !important; box-shadow: 0 0 0 2px #fff, 0 4px 0 #d9a92a, 0 0 14px rgba(255, 210, 80, .9); }
 .ro-cast { width: 100%; }
+/* Phase C: after a wrong cast the runes move into the right order */
+.ro-reveal .ro-placed { border-color: #8fd46a; background: linear-gradient(180deg, #f0ffe4, #c8f5a8) !important; box-shadow: 0 0 0 2px #fff, 0 4px 0 #4caa2c, 0 0 12px rgba(120, 220, 80, .7); }

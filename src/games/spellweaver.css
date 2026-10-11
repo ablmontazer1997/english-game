@@ -45,3 +45,5 @@
 .swv-bad .swv-tile.in:nth-child(2n) { animation-delay: .08s }
 @keyframes swv-fall { 20% { transform: rotate(-8deg) } 100% { transform: translateY(80px) rotate(25deg); opacity: 0 } }
 .swv-pool .swv-tile.rope { transition: opacity .2s, transform .15s; }
+/* Phase C: after a wrong weave the loom shows the right sentence */
+.swv-reveal .swv-tile.in { filter: hue-rotate(-150deg) saturate(1.1) drop-shadow(0 0 10px rgba(120, 220, 80, .9)); }

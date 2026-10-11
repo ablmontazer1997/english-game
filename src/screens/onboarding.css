@@ -77,3 +77,25 @@
   .ob-opt-tx small { font-size: 12px; }
   .ob-card { margin-top: 10px; }
 }
+/* Phase C: the level step fits 360x740 without scrolling: on short phones only the chosen level shows its line */
+@media (max-height: 760px) {
+  .ob-lvopts .ob-opt:not(.on) .ob-opt-tx small { display: none; }
+  .ob-lvopts .ob-opt { min-height: 42px; }
+  .ob-oracle-btn { padding-top: 4px; padding-bottom: 4px; }
+  .ob-body .sl-tag { width: 170px; }
+}
+/* the ribbon tag never spills over the ribbon ends */
+.ob-paper .sl-tag .lobby-tag-in { white-space: nowrap; overflow: hidden; text-overflow: clip; }
+@media (max-height: 900px) {
+  .ob-lvopts .ob-opt:not(.on) .ob-opt-tx small { display: none; }
+  .ob-lvopts .ob-opt:not(.on) { min-height: 46px; }
+}
+@media (max-height: 760px) {
+  .ob-lvopts .ob-opt:not(.on) { min-height: 38px; }
+  .ob-lvopts { gap: 5px; }
+  .ob-body .sl-title.sm { font-size: 19px; }
+  .ob-body { gap: 5px; }
+}
+/* Phase C: the paper height snaps to whole strips, so on short phones the step's main button could fall below the fold
+   (360x740 level step: ~117 px). The buttons stay pinned at the bottom of the scroll area instead. */
+.ob-actions { position: sticky; bottom: 0; }

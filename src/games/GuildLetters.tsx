@@ -5,6 +5,7 @@ import { burst } from './fx'
 import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
+import { useStageCtl } from './coach'
 import { LETTERS } from './banks/guild'
 import { fromSrv, levelOf, makeScore, pick } from './kit'
 import { sfx } from '../services/audio'
@@ -46,6 +47,7 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
   const [tip, setTip] = useState(0) // how many key groups are shown as tips
   const [score] = useState(makeScore)
   const [sending, setSending] = useState(false)
+  const ctl = useStageCtl()
   const count = text.trim() ? text.trim().split(/\s+/).length : 0
 
   useEffect(() => { setText(''); setChecks(null); setTip(0); setSending(false) }, [l])
@@ -78,7 +80,7 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
       <div className="gs-scene">
         <img className="gs-plate" src={bgPlate} alt="" draggable={false} />
         <div className="gs-at gl-owl" aria-hidden><img src={owl} alt="" draggable={false} /></div>
-        <div className="gs-at gl-letter" style={{ fontSize: `${letterSize}cqh` }}>
+        <div data-coach="q" className="gs-at gl-letter" style={{ fontSize: `${letterSize}cqh` }}>
           <p>{l.body}</p><p className="gl-from">– {l.from}</p>
         </div>
       </div>
@@ -86,21 +88,22 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
 
       {!checks ? (
         <>
-          <div className="gs-ui gs-panel gl-write">
+          <div className="gs-ui gs-panel gl-write" data-coach="a">
             <Task className="gtask-row" icon="type" text="Write a reply" sub="Answer the letter above" first={round === 0} />
             <b className="gl-task">{l.task}</b>
             {tip > 0 && <p className="gl-tips">Try: {l.keys.slice(0, tip).map((g) => g.join(' / ')).join('  ·  ')}</p>}
-            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Write your reply…" spellCheck={false} />
+            <textarea data-demo={ctl.practice ? 0 : undefined} value={text} onChange={(e) => setText(e.target.value)} placeholder="Write your reply…" spellCheck={false} />
             <span className={`gl-count${count >= l.minWords ? ' ok' : ''}`}>{count} / {l.minWords} words</span>
           </div>
-          <div className="gs-ui gl-go"><button className="gs-go violet" disabled={!count || sending} onClick={send}>Send with the owl</button></div>
+          <div className="gs-ui gl-go"><button className="gs-go violet" data-demo={ctl.practice ? 1 : undefined} disabled={!count || sending} onClick={send}>Send with the owl</button></div>
         </>
       ) : (
         <>
           <div className="gs-ui gs-panel gl-write gl-review">
             <div className="gl-stars">{[0, 1, 2].map((i) => <span key={i} className={i < stars ? 'on' : ''}>★</span>)}</div>
             <ul>{checks.map((c) => <li key={c.label} className={c.ok ? 'ok' : 'no'}>{c.ok ? '✓' : '✗'} {c.label}</li>)}</ul>
-            <details><summary>See a model reply</summary><p>{l.sample}</p></details>
+            {/* Phase C: when the reply missed something, the model reply opens by itself */}
+            <details open={!(checks[0].ok && checks[1].ok)}><summary>See a model reply</summary><p>{l.sample}</p></details>
           </div>
           <div className="gs-ui gl-go"><button className="gs-go" onClick={next}>{round + 1 >= letters.length ? 'Finish' : 'Next letter'}</button></div>
         </>

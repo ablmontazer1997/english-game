@@ -14,6 +14,7 @@ import tileRope from '../assets/games/weave/sw_tile_rope.webp'
 import tileViolet from '../assets/games/weave/sw_tile_violet.webp'
 import './scene.css'
 import './spellweaver.css'
+import { useStageCtl, explain } from './coach'
 
 // Spell Weaver — sentence transformation. The source spell must be rewoven as
 // the badge commands (make it passive, report it, start with Never…). Weave the
@@ -28,7 +29,13 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const s = spells[round]
   const tiles = useMemo(() => shuffle([...s.answer, ...s.extra].map((t, id) => ({ id, t }))), [s])
   const [woven, setWoven] = useState<number[]>([])
-  const [state, setState] = useState<'play' | 'ok' | 'bad'>('play')
+  const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
+  const ctl = useStageCtl()
+  // the tiles that spell the answer, in order (decoys never), for the reveal and the ghost hand
+  const rightIds = useMemo(() => {
+    const used = new Set<number>()
+    return s.answer.map((a) => { const t = tiles.find((x) => x.t === a && !used.has(x.id)); if (t) used.add(t.id); return t?.id ?? -1 })
+  }, [s, tiles])
   const [score] = useState(makeScore)
   const [pend, setPend] = useState<number | null>(null) // tile in flight to its slot
 
@@ -63,7 +70,13 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       setTimeout(() => { if (round + 1 >= spells.length) onFinish(score.out(spells.length)); else setRound(round + 1) }, 2000)
     } else {
       score.miss(); fxSfx('whoosh', .5)
-      setTimeout(() => { setWoven([]); setState('play') }, 1000)
+      // Phase C: no silent reset: the loom shows the right sentence, then the shared card, then the next spell
+      const yours = woven.map(text).join(' ')
+      setTimeout(() => {
+        setWoven(rightIds.filter((id) => id >= 0)); setState('reveal')
+        ctl.wrong({ answer: s.answer.join(' '), label: 'The right sentence', yours, ...explain(s) })
+          .then(() => { if (round + 1 >= spells.length) onFinish(score.out(spells.length)); else setRound(round + 1) })
+      }, 900)
     }
   }
 
@@ -86,18 +99,19 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
 
       {/* admin 4793: the loom rides up under the HUD; task card, chips and Weave sit together at the bottom */}
       <div className="gs-ui swv-dock">
-        <div className={`gs-panel swv-source${ASK ? ' has-task' : ''}`}>
+        <div className={`gs-panel swv-source${ASK ? ' has-task' : ''}`} data-coach="q">
           {ASK && <Task icon="build" text={cap(s.cmd)} sub="Tap the words in the right order" first={round === 0} />}
           <p>{s.source}</p>
           {!ASK && <span className="swv-cmd">{s.cmd}</span>}
         </div>
-        <div className="swv-pool">
+        <div className="swv-pool" data-coach="a">
           {tiles.map((x) => (
             <button key={x.id} className={`swv-tile rope${woven.includes(x.id) || pend === x.id ? ' used' : ''}`} style={{ backgroundImage: `url(${tileRope})` }}
-              disabled={woven.includes(x.id) || pend !== null || state !== 'play'} onClick={(e) => add(x.id, e.currentTarget)}>{x.t}</button>
+              disabled={woven.includes(x.id) || pend !== null || state !== 'play'} onClick={(e) => add(x.id, e.currentTarget)}
+              data-demo={ctl.practice && rightIds.includes(x.id) ? rightIds.indexOf(x.id) : undefined}>{x.t}</button>
           ))}
         </div>
-        <div className="swv-go"><button className="gs-go" onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
+        <div className="swv-go"><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
       </div>
     </div>
   )

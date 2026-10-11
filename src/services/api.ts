@@ -28,7 +28,11 @@ export interface Me {
   /** false = a new player who has not finished the first-run intro */
   onboarded?: boolean; daily_goal?: number | null; flags?: MeFlags
 }
-export interface MeFlags { tour?: 'pending' | 'done'; intro_step?: number; look?: 'boy' | 'girl' | 'custom'; placement?: string; guided?: 'pending' | 'done' }
+export interface MeFlags { tour?: 'pending' | 'done'; intro_step?: number; look?: 'boy' | 'girl' | 'custom'; placement?: string; guided?: 'pending' | 'done'
+  /** Phase C: games whose tutorial was seen (a patch adds to the stored list; 'reset' clears it) */
+  tut?: string[] | 'reset'
+  /** Phase C: Focus mode (untimed, calm) for the next stages */
+  focus?: 'on' | 'off' }
 export interface ServerAchievement { id: string; cat: string; title: string; desc: string; tier: number; progress: number; target: number; reward: { gems?: number }; claimed: boolean }
 export type Wallet = Currencies & { elixir: number }
 export interface LevelInfo { code: string; ordinal: number; title: string; world_count: number; unlocked: boolean; current: boolean }
@@ -66,7 +70,7 @@ export interface RewardOut { xp: number; xp_base?: number; boosted?: boolean; co
 export interface CompleteOut {
   stars: number; best_stars: number; first_clear: boolean; correct: number; total: number; accuracy: number; unverified?: number
   rewards: RewardOut; hearts_lost: number; elixir_used: boolean; level_up: boolean; level_completed: boolean
-  unlocked: string[]; srs_updated: number; league_points: number; graded: { qid: string; correct: boolean }[]
+  unlocked: string[]; srs_updated: number; league_points: number; focus?: boolean; graded: { qid: string; correct: boolean }[]
   wallet: Wallet; me: Me; streak: Streak
 }
 export interface ReviewToday { due_count: number; new_tomorrow: number; items: ServerQuestion[] }
@@ -196,8 +200,8 @@ export const api = {
   // a stage start only opens a session (nothing is spent), so it is safe to retry
   start: (stageId: string) => call<StartOut>('POST', `/v1/stages/${encodeURIComponent(stageId)}/start`, undefined, { retry: true }),
   // a session completes once (409 already_completed on a repeat), so a retry can never pay twice
-  complete: (sessionId: string, answers: ServerAnswer[], hintsUsed = 0, useElixir = false) =>
-    call<CompleteOut>('POST', `/v1/sessions/${encodeURIComponent(sessionId)}/complete`, { answers, hints_used: hintsUsed, use_elixir: useElixir }, { retry: true }),
+  complete: (sessionId: string, answers: ServerAnswer[], hintsUsed = 0, useElixir = false, focus = false) =>
+    call<CompleteOut>('POST', `/v1/sessions/${encodeURIComponent(sessionId)}/complete`, { answers, hints_used: hintsUsed, use_elixir: useElixir, focus }, { retry: true }),
   reviewToday: (limit = 25) => call<ReviewToday>('GET', `/v1/review/today?limit=${limit}`),
   // only due items are scheduled; a repeat finds nothing due, so it is safe to retry
   reviewSubmit: (answers: ServerAnswer[]) => call<ReviewOut>('POST', '/v1/review/submit', { answers }, { retry: true }),
