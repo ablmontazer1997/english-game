@@ -88,3 +88,5 @@
 /* Focus (admin 4857): the owl and the letter stay lit; the letter gets its own parchment card, since the painted one is hidden */
 .stage-host.focus .gl :is(.gl-owl, .gl-letter) { visibility: visible; }
 .stage-host.focus .gl .gl-letter { background: #f8edd2; border-radius: 12px; box-shadow: 0 0 0 2px #e7c47a; transform: none; padding: 2% 3%; }
+.stage-host.focus .gl .gl-letter { height: auto; max-height: 24%; }
+.stage-host.focus .gl [data-coach="q"] p { font-size: 1em; }
