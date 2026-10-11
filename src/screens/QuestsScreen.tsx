@@ -5,6 +5,7 @@ import { RewardChips, ChestStrip, useCountdown } from '../components/Rewards'
 import { dayEnd, weekEnd } from '../services/progress'
 import questIcon from '../assets/sky/nav2_quests.png'
 import type { Quest } from '../types/game'
+import { SeasonEntry } from './SeasonPassScreen'
 import './pages.css'
 import '../components/progression.css'
 
@@ -47,7 +48,7 @@ function QuestRow({ q, onClaim, onGo }: { q: Quest; onClaim: (id: string) => voi
   )
 }
 
-export function QuestsScreen({ onGo }: { onGo?: (to: QuestGo) => void }) {
+export function QuestsScreen({ onGo, onSeason }: { onGo?: (to: QuestGo) => void; onSeason?: () => void }) {
   const { quests, claimQuest } = useGame()
   const [period, setPeriod] = useState<'daily' | 'weekly'>('daily')
   const list = quests.filter((q) => q.period === period)
@@ -63,6 +64,7 @@ export function QuestsScreen({ onGo }: { onGo?: (to: QuestGo) => void }) {
           <h1 className="pg-title-t">Quests</h1>
           <Chip>{left.label}</Chip>
         </Card>
+        {onSeason && <SeasonEntry onOpen={onSeason} />}
 
         <div className="seg reveal" style={{ ['--seg-track' as string]: `url(${art('pnl_row6')})` }}>
           <span className="seg-pill" style={{

@@ -1,0 +1,29 @@
+/* Phase D: the real-money Treasury in the shop (prefix tsy-). Everything is locked "Coming soon". */
+.tsy-h { display: flex; align-items: center; gap: 8px; }
+.tsy-h .tsy-soon { margin-left: auto; font-size: var(--fs-micro); }
+.tsy-starter, .tsy-prem { display: grid; gap: 8px; }
+.tsy-row1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tsy-row1 .ui-t { flex: 1 1 auto; min-width: 0; font-size: 17px; }
+.tsy-row1 .ui-chip { flex: none; font-size: var(--fs-micro); }
+.tsy-row2 { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.tsy-row2 .ui-s { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.tsy-row2 .ui-btn { flex: none; }
+.tsy-starter-th, .tsy-prem-th { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tsy-th { position: relative; width: 46px; height: 46px; flex: none; border-radius: 14px; overflow: hidden;
+  background: radial-gradient(circle at 50% 40%, #fff, #f1e9ff); box-shadow: 0 1px 3px rgba(60, 40, 120, .18); }
+.tsy-th img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.tsy-dot { position: absolute; right: 3px; top: 3px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25); }
+.tsy-plus { display: inline-flex; align-items: center; gap: 3px; height: 30px; padding: 0 10px; border-radius: 999px;
+  background: #f1e9ff; color: #4a2590; font-weight: 900; font-size: 15px; }
+.tsy-plus img { width: 18px; height: 18px; object-fit: contain; }
+.tsy-pack { position: relative; }
+.tsy-tag { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); z-index: 1; white-space: nowrap;
+  padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; color: #5a3a00;
+  background: linear-gradient(180deg, #ffe9a8, #f5c451); box-shadow: 0 1px 3px rgba(120, 80, 0, .3); }
+.tsy-pack .ui-btn.sm { min-width: 0; width: 100%; padding: 0 6px 2px; }
+.tsy-season { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.tsy-season > img { width: 44px; height: 44px; object-fit: contain; }
+.tsy-season-main { min-width: 0; display: grid; gap: 2px; }
+.tsy-season-main .ui-s { white-space: normal; }
+@media (max-width: 370px) { .tsy-th { width: 40px; height: 40px; border-radius: 12px; } .tsy-starter-th, .tsy-prem-th { gap: 5px; } }

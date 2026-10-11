@@ -1,0 +1,51 @@
+/* Phase D: Season Pass (prefix ssn-) */
+.ssn-head { display: grid; gap: 6px; }
+.ssn-season { font-family: var(--game); font-size: 20px; line-height: 1.15; font-weight: 900; color: var(--ink-d); }
+.ssn-tier { font-size: var(--fs-body); font-weight: 700; color: var(--ink-m); }
+.ssn-tier b { color: #6f3fd0; font-weight: 900; }
+.ssn-bar { grid-template-columns: minmax(0, 1fr) auto; }
+.ssn-bar b { white-space: nowrap; }
+.ssn-how { font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: 700; color: var(--ink-l); }
+.ssn-err { margin: 0; }
+
+.ssn-cols { display: grid; grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1fr); gap: 6px; align-items: end;
+  padding: 0 2px; margin-bottom: -4px; }
+.ssn-cols b { text-align: center; font-size: var(--fs-caption); font-weight: 900; color: #3d2f72; text-transform: uppercase;
+  letter-spacing: .06em; text-shadow: 0 1px 0 rgba(255, 255, 255, .8); }
+.ssn-cols-p em { display: block; font-style: normal; font-size: 10.5px; letter-spacing: .02em; text-transform: none; color: #a0306a; }
+
+.ssn-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1fr); gap: 6px; align-items: stretch; }
+.ssn-n { align-self: center; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 12px; font-weight: 900; color: #fff; background: #b6add0; box-shadow: 0 2px 0 rgba(60, 40, 120, .25); }
+.ssn-row.is-reached .ssn-n { background: linear-gradient(180deg, #a978ff, #6f3fd0); }
+.ssn-row.is-cur .ssn-n { background: linear-gradient(180deg, #ffe08a, #e9a920); color: #5a3a00; box-shadow: 0 0 0 3px rgba(255, 224, 138, .55); }
+
+.ssn-cell { --pad: 8px; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 64px; position: relative; }
+.ssn-row:not(.is-reached) .ssn-free .ssn-prize { opacity: .72; }
+.ssn-prize { display: grid; justify-items: center; gap: 1px; min-width: 0; flex: 1 1 auto; }
+.ssn-prize small { max-width: 100%; font-size: 11px; line-height: 1.15; font-weight: 800; color: var(--ink-m); text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ssn-pic { width: 34px; height: 34px; object-fit: contain; display: block; filter: drop-shadow(0 2px 3px rgba(40, 60, 120, .25)); }
+.ssn-item { border-radius: 10px; background: radial-gradient(circle at 50% 40%, #fff, #f1e9ff); }
+.ssn-dye { border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(60, 40, 120, .3); width: 28px; height: 28px; margin: 3px; }
+.ssn-wait { flex: none; font-size: 10.5px; font-weight: 800; color: var(--ink-l); white-space: nowrap; }
+.ssn-cell .ui-btn.sm { min-width: 58px; padding: 0 8px 2px; flex: none; }
+.ssn-cell .q-check { flex: none; width: 28px; height: 28px; }
+
+/* premium: shown, locked (payments are off) */
+.ssn-prem .ssn-prize { opacity: .6; filter: saturate(.75); }
+.ssn-lock { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: #fffdf6; color: #a0306a; box-shadow: 0 1px 4px rgba(60, 40, 120, .25); }
+.ssn-lock svg { width: 13px; height: 13px; }
+
+.ssn-premcard { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.ssn-premcard-main { min-width: 0; display: grid; gap: 2px; }
+.ssn-premcard-main .ui-s { white-space: normal; }
+
+/* the entry card (Quests page and the shop) */
+.ssn-entry { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.ssn-entry > img { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(40, 60, 120, .25)); }
+.ssn-entry-main { min-width: 0; display: grid; gap: 4px; }
+.ssn-entry-main .ui-s { white-space: normal; }
+.ssn-entry .q-prog { grid-template-columns: minmax(0, 1fr) auto; }
+.ssn-entry .q-prog b { white-space: nowrap; }

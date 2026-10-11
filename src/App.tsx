@@ -27,6 +27,9 @@ import { PortraitCapture, portraitStale } from './components/Portrait'
 import { NameSheet } from './components/NameSheet'
 import { Onboarding, firstStageOf, useIntroNeeded } from './screens/Onboarding'
 import { MapTour } from './screens/MapTour'
+import { SeasonPassScreen } from './screens/SeasonPassScreen'
+import { ReminderSheet } from './components/ReminderSheet'
+import { isOn as remindersOn, pushSupported, shouldOffer, turnOff as remindersOff, turnOn as remindersTurnOn } from './services/push'
 import { setMusic as playMusic } from './services/audio'
 import type { CurrencyId, Stage, MiniGameId } from './types/game'
 
@@ -47,6 +50,16 @@ export function App() {
   const [guideLevel, setGuideLevel] = useState<string | null>(null)
   const [guided, setGuided] = useState(false)
   const [naming, setNaming] = useState(false)
+  // Phase D: Season Pass screen + the reminder offer after a won stage (never on load)
+  const [seasonOpen, setSeasonOpen] = useState(false)
+  const [wonPending, setWonPending] = useState(false)
+  const [remind, setRemind] = useState(false)
+  useEffect(() => { const on = () => setWonPending(true); addEventListener('es-stage-won', on); return () => removeEventListener('es-stage-won', on) }, [])
+  useEffect(() => {
+    if (!wonPending || playing || mode !== 'http' || !account?.onboarded) return
+    setWonPending(false)
+    if (shouldOffer()) setTimeout(() => setRemind(true), 900)   // no cleanup: clearing wonPending re-runs this effect
+  }, [wonPending, playing, mode, account?.onboarded])
   useEffect(() => {
     if (!guideLevel || !worlds.length) return
     const st = firstStageOf(worlds, guideLevel)
@@ -120,6 +133,11 @@ export function App() {
           <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
           <AchievementsScreen onClose={() => setAchOpen(false)} />
         </>
+      ) : seasonOpen ? (
+        <>
+          <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
+          <SeasonPassScreen onClose={() => setSeasonOpen(false)} />
+        </>
       ) : cauldron ? (
         <CauldronScreen level={curLevel} onClose={() => setCauldron(false)} />
       ) : playing ? (
@@ -131,8 +149,9 @@ export function App() {
           <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
 
           {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
-          {tab === 'quests' && <QuestsScreen onGo={(to) => { if (to === 'cauldron' && mode === 'http') setCauldron(true); else setTab('map') }} />}
-          {tab === 'shop' && <ShopScreen />}
+          {tab === 'quests' && <QuestsScreen onGo={(to) => { if (to === 'cauldron' && mode === 'http') setCauldron(true); else setTab('map') }}
+            onSeason={mode === 'http' ? () => setSeasonOpen(true) : undefined} />}
+          {tab === 'shop' && <ShopScreen onSeason={mode === 'http' ? () => setSeasonOpen(true) : undefined} />}
           {tab === 'league' && <LeagueScreen />}
           {tab === 'profile' && <ProfileScreen onBuy={setShop} onCustomize={() => setCustomizing(true)} onAchievements={() => setAchOpen(true)} />}
 
@@ -150,6 +169,7 @@ export function App() {
         <SettingsBody server={mode === 'http'} onRename={() => { setSettings(false); setNaming(true) }} />
       </Sheet>
       {mode === 'http' && <NameSheet open={naming} onClose={() => setNaming(false)} />}
+      {mode === 'http' && <ReminderSheet open={remind} onClose={() => setRemind(false)} />}
     </div>
   )
 }
@@ -226,11 +246,39 @@ function SettingsBody({ server, onRename }: { server: boolean; onRename: () => v
           }}>Show again</button>
         </div>
       )}
+      {server && <ReminderRow />}
       <Checkbox label="Focus mode: no timers, calm screen" on={focusOn} onChange={setFocusOn} />
       <Toggle label="Sound effects" icon={icSound} on={sound} onChange={set('sound', setSound)} />
       <Toggle label="Music" icon={icMusic} on={music} onChange={(v) => { set('music', setMusic)(v); playMusic(v) }} />
       <Checkbox label="Reduce motion" on={motion} onChange={set('motion', setMotion)} />
       {!server && <button className="btn-candy-red" onClick={reset}>Reset test progress</button>}
+    </div>
+  )
+}
+
+/** Phase D: the daily reminder (English Spell's own Web Push). On = ask + subscribe; off = unsubscribe everywhere */
+function ReminderRow() {
+  const [on, setOn] = useState<boolean | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<string | null>(null)
+  useEffect(() => { remindersOn().then(setOn).catch(() => setOn(false)) }, [])
+  if (!pushSupported()) return (
+    <div className="set-name"><span><small>Daily reminder</small><b>Not available in this browser</b></span></div>
+  )
+  const blocked = typeof Notification !== 'undefined' && Notification.permission === 'denied'
+  const flip = async () => {
+    if (busy || on == null) return
+    setBusy(true); setMsg(null)
+    try {
+      if (on) { await remindersOff(); setOn(false) }
+      else { const ok = await remindersTurnOn(); setOn(ok); if (!ok) setMsg('Your browser blocked it. Allow notifications for this site, then try again.') }
+    } catch { setMsg('Could not change it right now. Try again later.') }
+    setBusy(false)
+  }
+  return (
+    <div className="set-name">
+      <span><small>Daily reminder</small><b>{msg ?? (blocked ? 'Blocked in your browser' : on ? 'On, near your play time' : 'Off')}</b></span>
+      <button className="cb cb-white set-name-btn" disabled={busy || on == null} onClick={flip}>{busy ? '…' : on ? 'Turn off' : 'Turn on'}</button>
     </div>
   )
 }

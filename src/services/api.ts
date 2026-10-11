@@ -70,7 +70,8 @@ export interface RewardOut { xp: number; xp_base?: number; boosted?: boolean; co
 export interface CompleteOut {
   stars: number; best_stars: number; first_clear: boolean; correct: number; total: number; accuracy: number; unverified?: number
   rewards: RewardOut; hearts_lost: number; elixir_used: boolean; level_up: boolean; level_completed: boolean
-  unlocked: string[]; srs_updated: number; league_points: number; focus?: boolean; graded: { qid: string; correct: boolean }[]
+  unlocked: string[]; srs_updated: number; league_points: number; focus?: boolean
+  season?: { added: number; season_xp?: number; tier?: number; tier_up?: boolean; capped?: boolean }; graded: { qid: string; correct: boolean }[]
   wallet: Wallet; me: Me; streak: Streak
 }
 export interface ReviewToday { due_count: number; new_tomorrow: number; items: ServerQuestion[] }
@@ -78,7 +79,30 @@ export interface ReviewOut { graded: number; correct: number; hearts_gained: num
 export interface ChestOdds { reward: string; min?: number; max?: number; amount?: number; chance: number }
 export interface ShopItem { id: string; name: string; slot: string; tier: string; rarity: string | null; price_gems: number | null; theme?: string; owned: boolean }
 export interface ShopOffer { id: string; title: string; note?: string; price: { gems?: number; coins?: number }; kind: string; odds?: ChestOdds[] }
-export interface ShopOut { items: WardrobeItem[]; offers: ShopOffer[]; merchant?: Merchant; premium?: WardrobeItem[]; gem_packs: { sku: string; gems: number; price_units: number; enabled: boolean }[] }
+export interface ShopOut { items: WardrobeItem[]; offers: ShopOffer[]; merchant?: Merchant; premium?: WardrobeItem[]; store?: StoreOut }
+// ---- Phase D (admin 4839): English Spell's own store. Real money is OFF: every product says "Coming soon".
+export interface Product {
+  id: string; kind: 'gems' | 'starter' | 'premium' | 'season'; title: string; gems: number; tag?: string
+  price_label: string | null; available: boolean; cta: string; items?: string[]; includes?: string[]; days?: number
+}
+export interface StoreOut {
+  payments_enabled: boolean; products: Product[]
+  starter: { eligible: boolean; ends_at: number | null; bought: boolean }
+  premium: { active: boolean; until: number | null; cloaks: string[]; set: { name: string; season_id: string; items: string[] } }
+  starter_items: string[]; starter_gems: number
+}
+export type TrackReward = { coins?: number; gems?: number; elixir?: number; chest?: 'wood' | 'silver' | 'epic'; dye?: string; item?: string }
+export interface SeasonTier {
+  tier: number; xp: number; free: TrackReward; premium: TrackReward; reached: boolean
+  free_claimed: boolean; premium_claimed: boolean; free_claimable: boolean; premium_claimable: boolean
+}
+export interface SeasonOut {
+  season_id: string; name: string; theme: string; accent: string; starts_at: number; ends_at: number; xp: number; tier: number
+  tier_xp: number; tiers_total: number; xp_today: number; xp_daily_cap: number; premium: boolean; premium_available: boolean
+  rules: { stage_win: number; per_star: number; stage_lost: number; focus_max: number; quest: { daily: number; weekly: number } }
+  tiers: SeasonTier[]
+}
+export interface PushStatus { enabled: boolean; subscribed: boolean; devices: number; public_key: string | null; reminder_hour: number }
 /** Phase B: one wardrobe catalogue for the 3D wardrobe, the shop and the merchant */
 export type Tier = 'free' | 'boss' | 'earned' | 'coin' | 'gem' | 'premium'
 export interface WardrobeItem {
@@ -229,6 +253,14 @@ export const api = {
   streak: () => call<Streak>('GET', '/v1/streak'),
   league: () => call<ServerLeague>('GET', '/v1/league'),
   leagueSeen: () => call<unknown>('POST', '/v1/league/seen'),
+  // ---- Phase D: store (locked), Season Pass, Web Push reminders
+  store: () => call<StoreOut>('GET', '/v1/store'),
+  season: () => call<SeasonOut>('GET', '/v1/season'),
+  seasonClaim: (tier: number, track: 'free' | 'premium') => call<{ reward: TrackReward & { instead_of?: string }; wallet: Wallet; season: SeasonOut }>('POST', '/v1/season/claim', { tier, track }),
+  pushKey: () => raw<{ enabled: boolean; public_key: string | null }>('GET', '/v1/push/key', undefined, null, 2),
+  pushStatus: () => call<PushStatus>('GET', '/v1/push/status'),
+  pushSubscribe: (sub: PushSubscriptionJSON) => call<PushStatus>('POST', '/v1/push/subscribe', { endpoint: sub.endpoint, keys: sub.keys, user_agent: navigator.userAgent.slice(0, 200) }),
+  pushUnsubscribe: (endpoint?: string) => call<PushStatus>('POST', '/v1/push/unsubscribe', { endpoint: endpoint ?? null }),
 }
 
 /** a short line for the player from any error */
@@ -251,6 +283,10 @@ export function errorText(e: unknown): string {
       case 'nothing_to_repair': return 'There is nothing to repair'
       case 'session_expired': return 'This round took too long. Start the stage again.'
       case 'bad_name': return 'Use 2 to 20 letters or numbers'
+      case 'payments_disabled': return 'Coming soon'
+      case 'premium_locked': return 'The premium track is coming soon'
+      case 'tier_locked': return 'Earn more season XP to reach this tier'
+      case 'already_claimed': return 'Already claimed'
       default: return e.message || 'Something went wrong'
     }
   }

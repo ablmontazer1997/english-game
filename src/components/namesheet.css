@@ -10,3 +10,7 @@
 .nm-sheet { display: grid; gap: 12px; justify-items: center; padding: 4px 2px 6px; }
 .nm-note { margin: 0; text-align: center; font-size: 14px; font-weight: 700; color: #6b7192; line-height: 1.35; }
 .nm-err { margin: -4px 0 0; color: #c3283c; font-weight: 800; font-size: 14px; text-align: center; }
+/* Phase D: the reminder offer (prefix rmd-) */
+.rmd-art { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(200, 90, 20, .3)); }
+.rmd-small { font-size: 12.5px; color: #8a7aa8; }
+.cb.rmd-later { min-height: 40px; padding: 0 20px; font-size: 14px; }

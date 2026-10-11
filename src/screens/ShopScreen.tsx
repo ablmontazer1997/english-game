@@ -9,6 +9,7 @@ import { useGame } from '../services/ServiceProvider'
 import { Card, Row, Btn, Slot, Chip, art, PAGE_BG, type ArtName } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import { ChestStrip, useCountdown } from '../components/Rewards'
+import { Treasury } from './Treasury'
 import { ESSENTIALS, BOOSTS, CHEST_OFFERS, GEM_PACKS, dealOfTheDay, priceLabel, type Offer, type OfferIcon } from '../services/shopCatalog'
 import { dayEnd } from '../services/progress'
 import './pages.css'
@@ -77,7 +78,7 @@ const withServer = (o: Offer, shop: ShopOut | null): Offer => {
   return so ? { ...o, title: o.id === 'freeze' ? 'Frost Ward' : o.title, note: SHORT_NOTE[o.id] ?? o.note, price: so.price } : o
 }
 
-export function ShopScreen() {
+export function ShopScreen({ onSeason }: { onSeason?: () => void } = {}) {
   const { currencies, inventory, mode } = useGame()
   const { shop, chests, refresh } = useServerShop()
   const server = mode === 'http'
@@ -137,26 +138,20 @@ export function ShopScreen() {
             {shop.items.filter((it) => it.tier === 'gem').map((it) => <ItemCard key={it.id} it={it} onDone={refresh} />)}
           </div>
           <p className="ui-note">Looks only: nothing here changes your score. Try anything on in Profile, Edit. Boss treasures and Hearthfire hats cannot be bought; win them.</p>
-          {!!shop.premium?.length && (
-            <Card className="reveal sh-prem">
-              <span className="sh-prem-th">{shop.premium.map((it) => <ItemThumb key={it.id} id={it.id} />)}</span>
-              <span className="sh-prem-main"><b className="ui-t">Archmage Circle</b><small className="ui-s">Star and Shadow cloaks, a monthly set. Premium, coming soon.</small></span>
-              <Btn className="sm" disabled>Soon</Btn>
-            </Card>
-          )}
         </>}
 
-        <div className="ui-h">Gems</div>
-        <div className="sh-grid">
-          {GEM_PACKS.map((p, i) => (
-            <Card key={p.n} name="card_square" className="reveal sh-card">
-              <img className="sh-card-art" src={art(GEM_ART[i])} alt="" draggable={false} />
-              <span className="sh-card-n"><img src={art('gem_s')} alt="" />{p.n.toLocaleString('en-US')}</span>
-              <Btn className="sm" disabled>{p.price}</Btn>
-            </Card>
-          ))}
-        </div>
-        <p className="ui-note">Gem packs open when store payments go live. Until then, earn gems from quests, achievements, chests, level-ups and the league.</p>
+        {server && shop?.store ? <Treasury st={shop.store} premium={shop.premium ?? []} onSeason={onSeason} /> : <>
+          <div className="ui-h">Gems</div>
+          <div className="sh-grid">
+            {GEM_PACKS.map((p, i) => (
+              <Card key={p.n} name="card_square" className="reveal sh-card">
+                <img className="sh-card-art" src={art(GEM_ART[i])} alt="" draggable={false} />
+                <span className="sh-card-n"><img src={art('gem_s')} alt="" />{p.n.toLocaleString('en-US')}</span>
+                <Btn className="sm" disabled>{p.price}</Btn>
+              </Card>
+            ))}
+          </div>
+        </>}
       </div>
     </div>
   )

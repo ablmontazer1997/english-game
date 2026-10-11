@@ -188,3 +188,11 @@
   .mw-puff { animation: none; }
   .rtoken-halo { animation: none; opacity: .8; }
 }
+
+/* Phase D: the stage-type icon rides the pad's upper shoulder (away from the side pill), readable at pad size */
+.padic {
+  position: absolute; left: -14cqw; top: -22cqw; width: 58cqw; height: auto; pointer-events: none; z-index: 2;
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 3px 4px rgba(40, 30, 90, .35));
+}
+.rtoken.flip .padic { left: auto; right: -14cqw; }
+.rtoken.is-locked .padic { filter: grayscale(.35) brightness(1.04) drop-shadow(0 0 1.5px #fff) drop-shadow(0 3px 4px rgba(40, 30, 90, .3)); opacity: .9; }

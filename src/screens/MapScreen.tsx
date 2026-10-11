@@ -202,6 +202,16 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: 
   )
 }
 
+
+// Phase D (admin 4839 #6): stage-type icons on the pads (GPT image, cut by alpha; fix/padicons)
+const PAD_ICONS = import.meta.glob('../assets/padicons/pk_*.webp', { eager: true, import: 'default' }) as Record<string, string>
+const KIND_ICON: Record<string, string> = { lesson: 'lesson', practice: 'practice', practice2: 'echoes', trial: 'trial', boss: 'boss', bonus: 'treasure' }
+const KIND_NAME: Record<string, string> = { lesson: 'Spellbook', practice: 'Practice', practice2: 'Echoes', trial: 'Trial', boss: 'Boss fight', bonus: 'Treasure' }
+const padIcon = (s: Stage): string | null => {
+  const k = KIND_ICON[s.serverKind ?? (s.kind === 'treasure' ? 'bonus' : s.kind)]
+  return k ? PAD_ICONS[`../assets/padicons/pk_${k}.webp`] ?? null : null
+}
+
 // test-only: ?mapdemo=1 shows a button that finishes the current stage, to watch the advance
 const DEMO = typeof location !== 'undefined' && new URLSearchParams(location.search).has('mapdemo')
 
@@ -217,16 +227,19 @@ function RoadToken({ stage, node, width, onPlay, look, beat }: {
   const arriving = beat?.kind === 'arrive' && current
   // a finished pad is a ruin; it breaks first (whole while it cracks, the ruin under the flying shards)
   const pad = look === 'ruined' || phase === 'burst' ? padRuin : skySrc('pad_base')
+  const kindIcon = padIcon(stage)
+  const kindName = KIND_NAME[stage.serverKind ?? ''] ?? ''
   return (
     <div className={`rtoken${current ? ' is-current' : ''}${locked ? ' is-locked' : ''}${look === 'ruined' ? ' is-ruined' : ''}${phase ? ` is-${phase}` : ''}${arriving ? ' is-arriving' : ''}${node.x > 0.55 ? ' flip' : ''}`}
       style={{ left: `${node.x * 100}%`, top: `${node.y * 100}%`, width }}>
       {current && <span className="rtoken-halo" aria-hidden />}
       <button className="rtoken-btn" disabled={stage.status === 'locked'}
         onClick={() => stage.status !== 'locked' && onPlay(stage)}
-        aria-label={stage.status === 'locked' ? `Level ${stage.index} locked` : `Play level ${stage.index}`}>
+        aria-label={`${stage.status === 'locked' ? `Level ${stage.index} locked` : `Play level ${stage.index}`}${kindName ? `, ${kindName}` : ''}`}>
         <img className="rtoken-pad" src={pad} alt="" draggable={false} />
         <PadBreak phase={phase} padSrc={skySrc('pad_base')} />
         {locked && <img className="rtoken-lock" src={skySrc('pad_lock')} alt="" draggable={false} />}
+        {kindIcon && look !== 'ruined' && !phase && <img className="padic" src={kindIcon} alt="" draggable={false} />}
         {done && look === 'ruined' && (
           <span className="rtoken-stars">
             {[0, 1, 2].map((i) => (

@@ -168,6 +168,8 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
       setCurrencies({ ...r.wallet })
       applyComplete(r, stage.cefr ?? r.me.level)
       setPhase('result')
+      // Phase D: a won stage is the good moment to offer the daily reminder (App shows it back on the map)
+      if (r.stars > 0) window.dispatchEvent(new CustomEvent('es-stage-won'))
       // the boss drop / level up modals follow the result card
       if (r.rewards.items?.length) setModal('drop')
       else if (r.level_completed) setModal('done')
