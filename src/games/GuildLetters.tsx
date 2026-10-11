@@ -95,7 +95,7 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
             <textarea data-demo={ctl.practice ? 0 : undefined} value={text} onChange={(e) => setText(e.target.value)} placeholder="Write your reply…" spellCheck={false} />
             <span className={`gl-count${count >= l.minWords ? ' ok' : ''}`}>{count} / {l.minWords} words</span>
           </div>
-          <div className="gs-ui gl-go"><button className="gs-go violet" data-demo={ctl.practice ? 1 : undefined} disabled={!count || sending} onClick={send}>Send with the owl</button></div>
+          <div className="gs-ui gl-go" data-focus-keep=""><button className="gs-go violet" data-demo={ctl.practice ? 1 : undefined} disabled={!count || sending} onClick={send}>Send with the owl</button></div>
         </>
       ) : (
         <>
@@ -105,7 +105,7 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
             {/* Phase C: when the reply missed something, the model reply opens by itself */}
             <details open={!(checks[0].ok && checks[1].ok)}><summary>See a model reply</summary><p>{l.sample}</p></details>
           </div>
-          <div className="gs-ui gl-go"><button className="gs-go" onClick={next}>{round + 1 >= letters.length ? 'Finish' : 'Next letter'}</button></div>
+          <div className="gs-ui gl-go" data-focus-keep=""><button className="gs-go" onClick={next}>{round + 1 >= letters.length ? 'Finish' : 'Next letter'}</button></div>
         </>
       )}
     </div>

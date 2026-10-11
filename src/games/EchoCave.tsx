@@ -138,7 +138,7 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         {words.map((_, i) => <img key={i} src={crystal} alt="" draggable={false} className={lit[i] ? 'on' : ''} />)}
       </div>
 
-      <div className="gs-ui ec-act" data-coach="a">
+      <div className="gs-ui ec-act" data-coach="a" data-coach-parts=".ec-mic, .ec-tip, .ec-type">
         {mic ? (
           <>
             <button className="gs-orb ec-mic" data-demo={ctl.practice ? 0 : undefined} aria-label="Say it" onClick={say} disabled={state !== 'play'}>

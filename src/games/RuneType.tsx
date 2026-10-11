@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
 import { burst, pop } from './fx'
@@ -27,6 +27,23 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
   const [typed, setTyped] = useState('')
   const [bad, setBad] = useState<number[]>([])
   const [state, setState] = useState<'play' | 'ok' | 'bad' | 'reveal'>('play')
+  // Phase E: a long clue grows the panel past the slots' fixed 31% line; the slots then sit 12px under the panel
+  const clueEl = useRef<HTMLDivElement>(null)
+  const [slotTop, setSlotTop] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    const el = clueEl.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const m = () => {
+      const p = el.offsetParent as HTMLElement | null
+      if (!p) return
+      const below = el.offsetTop + el.offsetHeight + 12
+      setSlotTop(below > p.clientHeight * 0.31 ? below : null)
+    }
+    m()
+    const ro = new ResizeObserver(m)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   const [tries, setTries] = useState(0)
   const [score] = useState(makeScore)
   const ctl = useStageCtl()
@@ -90,7 +107,7 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-scene"><img className="gs-plate" src={bgPlate} alt="" draggable={false} /></div>
       <div className="gs-title"><GameTitle title="Rune Type" count={`Rune ${round + 1} / ${words.length}`} /></div>
 
-      <div className="gs-ui gs-panel rt-clue" data-coach="q">
+      <div className="gs-ui gs-panel rt-clue" data-coach="q" ref={clueEl}>
         <Task className="gtask-row" icon="type" text="Spell the word" sub="Listen, then tap the letters" first={round === 0} />
         <p>{w.clue}</p>
         <button className="gs-orb rt-say" aria-label="Hear the word" onClick={() => speak(w.word)}>
@@ -98,7 +115,7 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         </button>
       </div>
 
-      <div className="gs-ui rt-slots" style={{ '--n': w.word.length } as React.CSSProperties}>
+      <div className="gs-ui rt-slots" style={{ '--n': w.word.length, ...(slotTop != null ? { top: slotTop } : {}) } as React.CSSProperties}>
         {[...w.word].map((_, i) => (
           <span key={i} className={`rt-slot${typed[i] ? ' full' : ''}${bad.includes(i) ? ' bad' : ''}`}>{typed[i] ?? ''}</span>
         ))}

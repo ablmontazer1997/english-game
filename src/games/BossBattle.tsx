@@ -627,7 +627,7 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
 
       <div className="gs-title"><GameTitle title="Boss Battle" /></div>
 
-      <div className="gs-ui bb2-hud" ref={hudEl}>
+      <div className="gs-ui bb2-hud" ref={hudEl} data-focus-keep="">
         <div className="gs-panel bb2-hp">
           <b>You</b>
           <div className="bb2-row">
@@ -648,7 +648,7 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
         </div>
       </div>
 
-      {banner && <div key={banner.text + idx} className={`bb2-banner ${banner.kind}`}>{banner.text}</div>}
+      {banner && <div key={banner.text + idx} className={`bb2-banner ${banner.kind}`} data-focus-keep="">{banner.text}</div>}
 
       {round && (
         <div className="gs-ui bb2-bottom" ref={bottomEl}>
@@ -658,7 +658,7 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
             <p>{round.item.ask ? <>{round.item.ask} <b>{round.item.front}</b></> : <>{bubbleMode(payloadOf(srv, round.item.id)) === 'syn' ? 'Choose the synonym of:' : 'Choose the meaning of:'} <b>{round.item.front}</b></>}</p>
             <span className="gt-count">Question {idx + 1} / {total}</span>
           </div>
-          <div className="bb2-opts" data-coach="a">
+          <div className="bb2-opts" data-coach="a" data-coach-parts=".bb2-opt">
             {round.opts.map((t, i) => {
               const ok = t === round.item.back
               const st = picked?.i === i ? (picked.ok ? ' ok' : ' bad') : picked && !picked.ok && ok ? ' right' : ''

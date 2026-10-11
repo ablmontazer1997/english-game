@@ -156,7 +156,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
 
       <div className="gs-ui gs-panel pm-goal" data-coach="q"><Task className="gtask-row" icon="build" text="Brew a word that means:" sub="Pour the right bottles in" first={round === 0} /><p>{r.clue}</p></div>
 
-      <div className="gs-ui pm-mix">
+      <div className="gs-ui pm-mix" data-focus-keep="">
         {state === 'ok' || state === 'reveal'
           ? <span className={`pm-word${state === 'reveal' ? ' pm-right' : ''}`}>{r.answer}</span>
           : poured.map((id, i) => (
@@ -164,7 +164,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           ))}
       </div>
 
-      <div className="gs-ui pm-shelf" data-coach="a" style={{ '--n': shelf.length } as React.CSSProperties}>
+      <div className="gs-ui pm-shelf" data-coach="a" data-coach-parts=".pm-bottle" style={{ '--n': shelf.length } as React.CSSProperties}>
         {shelf.map((b) => (
           <button key={b.id} className={`pm-bottle${poured.includes(b.id) ? ' used' : ''}${fly?.id === b.id ? ' flying' : ''}`}
             disabled={poured.includes(b.id) || state !== 'play'} onClick={(e) => pour(b.id, e.currentTarget)}
@@ -174,7 +174,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           </button>
         ))}
       </div>
-      <div className="gs-ui pm-go"><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
+      <div className="gs-ui pm-go" data-focus-keep=""><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
       {fly && <PourFx key={fly.key} f={fly} />}
     </div>
   )

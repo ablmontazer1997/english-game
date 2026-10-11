@@ -114,7 +114,7 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
           </button>
         })}
       </div>
-      <div className={`cbk-fixes${state === 'fix' ? ' on' : ''}`} data-coach="a">
+      <div className={`cbk-fixes${state === 'fix' ? ' on' : ''}`} data-coach="a" data-coach-parts=".cbk-fix">
         {fixes.map((f) => (
           <button key={f} className={`gs-gold cbk-fix${picked === f ? (f === c.fix ? ' right' : ' wrong') : ''}`} disabled={state !== 'fix' || !!picked} onClick={(e) => choose(f, e.currentTarget)} data-demo={ctl.practice && f === c.fix ? 1 : undefined}>
             {f || '(remove it)'}

@@ -6,6 +6,7 @@ import { dayEnd, weekEnd } from '../services/progress'
 import questIcon from '../assets/sky/nav2_quests.png'
 import type { Quest } from '../types/game'
 import { SeasonEntry } from './SeasonPassScreen'
+import { EventsCard } from './Events'
 import './pages.css'
 import '../components/progression.css'
 
@@ -64,6 +65,7 @@ export function QuestsScreen({ onGo, onSeason }: { onGo?: (to: QuestGo) => void;
           <h1 className="pg-title-t">Quests</h1>
           <Chip>{left.label}</Chip>
         </Card>
+        <EventsCard />
         {onSeason && <SeasonEntry onOpen={onSeason} />}
 
         <div className="seg reveal" style={{ ['--seg-track' as string]: `url(${art('pnl_row6')})` }}>

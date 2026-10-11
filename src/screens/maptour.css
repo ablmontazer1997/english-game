@@ -1,6 +1,8 @@
 /* map tour coach marks: the page dims, one hole stays lit, a cream card with the Oracle says what it is */
 .mt { position: absolute; inset: 0; z-index: 60; }
-.mt-dim { position: absolute; inset: 0; background: rgba(24, 14, 56, .66); }
+.mt-dim { position: absolute; inset: 0; display: block; pointer-events: none; }
+.mt-ring { fill: none; stroke: #ffd66b; stroke-width: 3; }
+.mt-glow { fill: none; stroke: rgba(255, 214, 107, .6); stroke-width: 10; filter: blur(4px); }
 .mt-hole { position: absolute; border-radius: 22px; box-shadow: 0 0 0 9999px rgba(24, 14, 56, .66), 0 0 0 3px #ffd66b, 0 0 22px 6px rgba(255, 214, 107, .55);
   transition: left .25s, top .25s, width .25s, height .25s; pointer-events: none; }
 .mt-card { position: absolute; left: 14px; right: 14px; max-width: 380px; margin: 0 auto;
@@ -11,6 +13,6 @@
 .mt-tx b { font-family: var(--game); font-weight: 900; font-size: 18px; color: #5a2fc0; }
 .mt-tx p { margin: 2px 0 0; font-weight: 700; font-size: 14.5px; line-height: 1.32; color: #4a3f66; text-wrap: pretty; }
 .mt-btns { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 6px; }
-.mt-count { font-weight: 800; font-size: 13px; color: #9a8ab0; }
-.mt-skip { margin-left: auto; border: 0; background: none; padding: 6px 4px; font: inherit; font-weight: 800; font-size: 14px; color: #8a7aa8; cursor: pointer; }
+.mt-count { font-weight: 800; font-size: 13px; color: #75679a; }
+.mt-skip { margin-left: auto; border: 0; background: none; padding: 6px 4px; font: inherit; font-weight: 800; font-size: 14px; color: #65568a; cursor: pointer; }
 .ui-btn.mt-next { min-width: 92px; }

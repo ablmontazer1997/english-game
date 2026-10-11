@@ -1,0 +1,28 @@
+/* Phase E: weekly events (prefix ev-). Map pill = the status bar's painted card; Quests = a cream card with two rows. */
+.evp { position: absolute; left: var(--ml-side); top: calc(var(--ml-top) + 66px); display: flex; align-items: center; gap: 6px;
+  max-width: calc(100% - 2 * var(--ml-side)); padding: 5px 12px 7px 6px; border: 0; filter: drop-shadow(0 4px 10px rgba(20, 60, 110, .22)); }
+.evp > img { width: 30px; height: 30px; object-fit: contain; flex: none; }
+.evp-tx { display: grid; text-align: left; line-height: 1.1; min-width: 0; }
+.evp-tx b { font-size: 13.5px; font-weight: 900; color: #3c4160; white-space: nowrap; }
+.evp-tx small { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; color: #6c7294; white-space: nowrap; }
+.evp.is-on .evp-tx small { color: #8a5a00; }
+.evp-live, .evr-chip.is-on { font-style: normal; }
+.evp-live { padding: 1px 6px; border-radius: 99px; background: #e5525f; color: #fff; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; }
+.evp:active { transform: scale(.97); }
+
+.evc { display: grid; gap: 8px; }
+.evc-h { display: flex; align-items: center; justify-content: space-between; }
+.evr { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 8px 8px 6px;
+  border-radius: 16px; background: rgba(255, 255, 255, .6); border: 2px solid rgba(190, 165, 115, .35); }
+.evr.is-on { background: #fff6d8; border-color: #e9b949; }
+.evr-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #f1e9ff; }
+.evr.is-on .evr-ic { background: #ffe9a8; }
+.evr-ic img { width: 34px; height: 34px; object-fit: contain; }
+.evr-main { display: grid; gap: 2px; min-width: 0; }
+.evr-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.evr-top b { font-size: 15px; font-weight: 900; color: var(--ink-d, #3d2a52); }
+.evr-top small { font-size: 11.5px; font-weight: 800; color: var(--ink-l, #7d83a2); }
+.evr-blurb { font-size: 12.5px; line-height: 1.3; font-weight: 700; color: var(--ink-m, #4a3f66); text-wrap: pretty; }
+.evr-chip { --h: 26px; font-size: 11.5px; white-space: nowrap; }
+.evr-chip.is-on { color: #8a5a00; }
+@media (max-width: 370px) { .evr { grid-template-columns: 38px minmax(0, 1fr); } .evr-ic { width: 38px; height: 38px; } .evr-chip { grid-column: 2; justify-self: start; } }

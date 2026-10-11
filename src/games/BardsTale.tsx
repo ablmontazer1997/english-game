@@ -103,7 +103,7 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           )
         })}
       </div>
-      <div className="gs-ui bdt-go"><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={tell} disabled={order.length !== t.lines.length || state !== 'play'}>Tell the tale</button></div>
+      <div className="gs-ui bdt-go" data-focus-keep=""><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={tell} disabled={order.length !== t.lines.length || state !== 'play'}>Tell the tale</button></div>
     </div>
   )
 }

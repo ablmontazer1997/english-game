@@ -111,13 +111,13 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
               : <button key={i} className="ro-tile ro-placed" style={tileStyle} onClick={() => unplace(id)}>{wordOf(id)}</button>
           })}
         </div>
-        <div className="ro-pool" data-coach="a">
+        <div className="ro-pool" data-coach="a" data-coach-parts=".ro-tile">
           {tiles.map((t, i) => (
             <button key={t.id} className={`ro-tile${placed.includes(t.id) ? ' used' : ''}`} style={{ ...tileStyle, '--tilt': `${((i * 37) % 9) - 4}deg` } as React.CSSProperties}
               disabled={placed.includes(t.id)} onClick={() => place(t.id)} data-demo={ctl.practice ? demoAt(t.id) : undefined}>{t.word}</button>
           ))}
         </div>
-        <button className="cb cb-green ro-cast" data-demo={ctl.practice ? 99 : undefined} onClick={cast} disabled={placed.length !== words.length || state !== 'play'}>Cast</button>
+        <button className="cb cb-green ro-cast" data-focus-keep="" data-demo={ctl.practice ? 99 : undefined} onClick={cast} disabled={placed.length !== words.length || state !== 'play'}>Cast</button>
       </div>
     </div>
   )

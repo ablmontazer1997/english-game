@@ -48,8 +48,10 @@ export function MapTour({ onDone }: { onDone: () => void }) {
       const r = el?.getBoundingClientRect(), h = host?.getBoundingClientRect()
       setVh(h?.height ?? innerHeight)
       if (!r || !h || !r.width) { setBox(null); return }
-      const pad = 6
-      setBox({ x: r.left - h.left - pad, y: r.top - h.top - pad, w: r.width + pad * 2, h: r.height + pad * 2 })
+      // tight to the element, never past the screen edges (the League tab hole used to stick out above the tab bar)
+      const pad = 5
+      const x = Math.max(2, r.left - h.left - pad), y = Math.max(2, r.top - h.top - pad)
+      setBox({ x, y, w: Math.min(h.width - 2, r.right - h.left + pad) - x, h: Math.min(h.height - 2, r.bottom - h.top + pad) - y })
     }
     read()
     const t = setInterval(read, 400)
@@ -63,9 +65,19 @@ export function MapTour({ onDone }: { onDone: () => void }) {
   const last = i === MARKS.length - 1
   return (
     <div className="mt" role="dialog" aria-label={`Tour: ${m.title}`}>
-      {box
-        ? <div className="mt-hole" style={{ left: box.x, top: box.y, width: box.w, height: box.h }} />
-        : <div className="mt-dim" />}
+      {/* Phase E (admin 4847): an SVG mask, like the game tutorials. The old 9999px box-shadow hole rendered as a pale
+          wash on some phones, so the lit element barely stood out from the map. */}
+      <svg className="mt-dim" width="100%" height="100%" aria-hidden>
+        <defs>
+          <mask id="mt-holes">
+            <rect width="100%" height="100%" fill="#fff" />
+            {box && <rect x={box.x} y={box.y} width={box.w} height={box.h} rx="18" fill="#000" />}
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="rgba(8, 5, 26, .8)" mask="url(#mt-holes)" />
+        {box && <rect className="mt-glow" x={box.x} y={box.y} width={box.w} height={box.h} rx="18" />}
+        {box && <rect className="mt-ring" x={box.x} y={box.y} width={box.w} height={box.h} rx="18" />}
+      </svg>
       <div className={`mt-card pop ${below ? 'below' : 'above'}`} key={i}
         style={box ? (below ? { top: Math.min(vh - 210, box.y + box.h + 14) } : { bottom: Math.max(12, vh - box.y + 14) }) : { top: '40%' }}>
         <img className="mt-face" src={oracleIdle} alt="" draggable={false} />

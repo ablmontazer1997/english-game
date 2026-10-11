@@ -7,7 +7,7 @@ import type { MiniGameProps } from './types'
 import type { MiniGameId, ServerQuestion } from '../types/game'
 import { SRS_GAMES, srsOf } from '../services/serverPlay'
 import { HintCtx } from './boosters'
-import { StageCtlCtx, useWrongCard, fetchSamples, Spotlight, TutBanner, TutReady, Countdown, TIMED, type StageCtl, type TutStep } from './coach'
+import { StageCtlCtx, useWrongCard, fetchSamples, Spotlight, FocusVeil, TutBanner, TutReady, Countdown, TIMED, type StageCtl, type TutStep } from './coach'
 
 type Tut = { step: TutStep; qs: ServerQuestion[] | null | undefined; n: number; replay: boolean }
 
@@ -99,6 +99,8 @@ export function GamePlay({ Game, game, gameKey, props, bleed, cefr, focus, need,
         </div>
       )}
       {waiting && <div className="game-host"><div className="game-wait">…</div></div>}
+      {/* Phase E: Focus mode = black around the question and the answers (not while a tutorial teaches) */}
+      {focus && !tut && <FocusVeil getRoot={getRoot} getHost={getHost} />}
       {tray(help)}
       {tut && (tut.step === 'look' || tut.step === 'demo') && tut.qs !== undefined && (
         <Spotlight game={game} step={tut.step} getRoot={getRoot} getHost={getHost} canDemo={!!practiceQs}

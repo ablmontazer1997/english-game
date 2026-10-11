@@ -97,6 +97,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   const [extra, setExtra] = useState<Round[]>([])
   const [extraN, setExtraN] = useState(0)
   const [contLeft, setContLeft] = useState(0)
+  const [contGems, setContGems] = useState(10)   // Phase E: the server's continue price (was a hard-coded 15)
   const [contErr, setContErr] = useState('')
   const registerHint = useCallback((fn: HintFn | null) => { hintFn.current = fn; setCanHint(!!fn) }, [])
   const level = Math.max(0, LV.indexOf(stage.cefr ?? 'A1'))
@@ -119,7 +120,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
       if (!s.questions.length) { setErr('This stage has no questions yet. Try another one.'); setPhase('error'); return }
       setSession(s)
       sheet.current = new AnswerSheet(planRounds(s.questions, boss).answerMap)
-      setHintState(s.hints ?? null); setContLeft(s.continue?.left ?? 0)
+      setHintState(s.hints ?? null); setContLeft(s.continue?.left ?? 0); setContGems(s.continue?.cost_gems ?? 10)
       setPhase('intro')
     }).catch((e) => {
       if (!live) return
@@ -290,8 +291,8 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
           <p>{contLeft > 0 ? 'Half the runes must land to win. Try 3 more questions?' : `Drink an elixir to keep your heart. You have ${potion}.`}</p>
           {contLeft > 0 && (potion > 0
             ? <button className="cb cb-violet rs-btn" onClick={() => doContinue('elixir')}>Continue: +3 questions<span className="rs-cost">🧪 1</span></button>
-            : <button className={`cb cb-violet rs-btn${gems < 15 ? ' rs-short' : ''}`} disabled={gems < 15} onClick={() => doContinue('gems')}>Continue: +3 questions<span className="rs-cost"><img src={skySrc('ic_gem')} alt="" />15</span></button>)}
-          {contLeft > 0 && potion === 0 && gems < 15 && <small className="rs-note">You need 15 gems or an elixir.</small>}
+            : <button className={`cb cb-violet rs-btn${gems < contGems ? ' rs-short' : ''}`} disabled={gems < contGems} onClick={() => doContinue('gems')}>Continue: +3 questions<span className="rs-cost"><img src={skySrc('ic_gem')} alt="" />{contGems}</span></button>)}
+          {contLeft > 0 && potion === 0 && gems < contGems && <small className="rs-note">You need {contGems} gems or an elixir.</small>}
           {potion > 0 && <button className="cb cb-white" onClick={() => send(true)}>Keep my heart<span className="rs-cost">🧪 1</span></button>}
           {contErr && <small className="rs-note">{contErr}</small>}
           <button className="cb cb-white" onClick={() => send(false)}>Give up (−1 ❤️)</button>
@@ -315,7 +316,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         <Card className="ss-card ss-card-c">
         <p className="ss-card-p ss-strong">{out.correct} of {out.total} runes cast{out.first_clear ? ' · first clear' : ''}</p>
         <div className="result-rewards ss-rw">
-          <span className="rwd"><img src={icEnergy} alt="" /><b>{out.rewards.xp}</b><small>{out.rewards.boosted ? 'XP ×2' : 'XP'}</small></span>
+          <span className="rwd"><img src={icEnergy} alt="" /><b>{out.rewards.xp}</b><small>{out.rewards.boosted || out.rewards.double_xp ? 'XP ×2' : 'XP'}</small></span>
           <span className="rwd"><img src={icCoin} alt="" /><b>{out.rewards.coins}</b></span>
           {!!out.rewards.gems && <span className="rwd"><img src={skySrc('ic_gem')} alt="" /><b>{out.rewards.gems}</b></span>}
         </div>
@@ -324,6 +325,9 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
           {out.streak.today_done && <span>🔥 Hearthfire {out.streak.current} day{out.streak.current === 1 ? '' : 's'}</span>}
           {out.hearts_lost > 0 && <span>−{out.hearts_lost} ❤️</span>}
           {out.elixir_used && <span>🧪 elixir used, heart kept</span>}
+          {out.rewards.double_xp && <span>Double XP Wednesday</span>}
+          {!!out.rewards.boss_rush?.gems && <span>Boss Rush +{out.rewards.boss_rush.gems} gems{out.rewards.boss_rush.left ? ` (${out.rewards.boss_rush.left} more today)` : ''}</span>}
+          {out.rewards.boss_rush && !out.rewards.boss_rush.gems && <span>Boss Rush: today's 2 rewards are taken</span>}
           {out.focus && <span>Focus mode: up to 2 stars, no league points</span>}
         </p>
         </Card>

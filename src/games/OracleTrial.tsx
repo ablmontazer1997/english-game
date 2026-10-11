@@ -223,7 +223,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
             <span className="ot-skill">{q.skill}</span>
             <p>{q.prompt}</p>
           </div>
-          <div className="ot-opts" data-coach="a">
+          <div className="ot-opts" data-coach="a" data-coach-parts=".ot-opt">
             {options.map((o) => {
               const cls = 'ot-opt'
                 + (pick === o ? ' sel' : '')
@@ -232,7 +232,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
               return <button key={o} className={cls} disabled={!!verdict} onClick={() => setPick(o)} data-demo={ctl.practice && o === q.answer ? 0 : undefined}>{o}</button>
             })}
           </div>
-          <div className="ot-actions">
+          <div className="ot-actions" data-focus-keep="">
             <button className="ot-skip" onClick={skip} disabled={!!verdict}>Skip</button>
             <button className="ot-check" onClick={check} disabled={!pick || !!verdict} data-demo={ctl.practice ? 1 : undefined}>Check</button>
           </div>
@@ -246,7 +246,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
             <p className="ot-level">{LEVELS[done]}</p>
             <p className="ot-level-sub">{placement ? 'The Oracle will tell you more.' : `Your adventure begins at level ${LEVELS[done]}.`}</p>
           </div>
-          <div className="ot-actions"><button className="ot-check" onClick={finish}>{placement ? 'Continue' : 'Begin'}</button></div>
+          <div className="ot-actions" data-focus-keep=""><button className="ot-check" onClick={finish}>{placement ? 'Continue' : 'Begin'}</button></div>
         </div>
       )}
     </div>

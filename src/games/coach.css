@@ -14,8 +14,9 @@
 .wfb-head > b { font-size: 19px; font-weight: 800; color: #b23a48; flex: none; }
 .wfb-x { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #e5525f; }
 .wfb-x svg { width: 15px; height: 15px; fill: none; stroke: #fff; stroke-width: 3.4; stroke-linecap: round; }
-.wfb-yours { margin-left: auto; min-width: 0; max-width: 55%; font-size: 14px; font-weight: 700; color: #9a7f86;
-  text-decoration-color: #e5525f; text-decoration-thickness: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Phase E: darker (was #9a7f86, ~3.7:1 on cream) and up to 2 lines instead of a cut-off single line */
+.wfb-yours { margin-left: auto; min-width: 0; max-width: 55%; font-size: 14px; line-height: 1.2; font-weight: 700; color: #74515b; text-align: right;
+  text-decoration-color: #e5525f; text-decoration-thickness: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .wfb-ans { display: grid; gap: 2px; padding: 8px 12px; border-radius: 14px; background: #eaf8df; border: 2px solid #8fd46a; }
 .wfb-ans small { font-size: 12px; font-weight: 800; letter-spacing: .02em; color: #3f8a24; text-transform: uppercase; }
 .wfb-ans b { font-size: 19px; font-weight: 800; color: #24561a; line-height: 1.25; overflow-wrap: anywhere; }
@@ -36,6 +37,8 @@
 .tut { position: absolute; inset: 0; z-index: 32; }
 .tut-dim { position: absolute; inset: 0; display: block; pointer-events: none; }
 .tut-ring { fill: none; stroke: #ffe08a; stroke-width: 3; stroke-dasharray: 9 7; animation: tut-ants 1.2s linear infinite; }
+/* Phase E: a soft gold glow around each hole, so the lit area separates from the dim even on pale art */
+.tut-glow { fill: none; stroke: rgba(255, 214, 107, .55); stroke-width: 9; filter: blur(3px); }
 @keyframes tut-ants { to { stroke-dashoffset: -32 } }
 .tut-block { position: absolute; inset: 0; }
 .tut-coach { position: absolute; left: 50%; transform: translateX(-50%); width: min(calc(100% - 28px), 380px); box-sizing: border-box;
@@ -74,12 +77,17 @@
   .gh-hand { transition: none; }
 }
 
-/* ---- Focus mode: untimed, calm. The scenes stay (text keeps its painted backing) but are washed out and still;
-   ambient effects, particles and the game-name ribbon are gone; the question text is a little larger. */
-.stage-host.focus .sky, .stage-host.focus .game-host { background-color: #f3eefb; }
-.stage-host.focus :is(.gs-plate, .ro-plate, .ws-plate, .tt-plate, .ot-plate, .bb2-backdrop, .swv-mirror) {
-  filter: saturate(.35) brightness(1.12) contrast(.9); }
-.stage-host.focus :is(.gg, .matchblitz, .mc-root) { background-blend-mode: luminosity; background-color: rgba(243, 238, 251, .55); }
+/* ---- Focus mode (Phase E, admin 4847 Q11: "black, so the focus is on that one piece"): untimed and still. A black veil
+   (FocusVeil) covers the painted scene; only the question, the answer parts and the action buttons show through.
+   Ambient effects, particles and animations are off; the question text is a little larger. */
+.stage-host.focus, .stage-host.focus .sky, .stage-host.focus .game-host { background: #07060c; }
+.fx-veil { position: absolute; inset: 0; z-index: 4; display: block; pointer-events: none; }
+/* the HUD keeps its own light-on-dark look over black */
+.stage-host.focus .play-hearts b { color: #fff; }
+.stage-host.focus .stage-close { box-shadow: 0 0 0 2px rgba(255, 255, 255, .25); }
+/* Bubble Pop's answer area IS the painted field: in Focus it turns black and the bubbles float on it */
+.stage-host.focus .bubblepop .bp-stage, .stage-host.focus .bubblepop .bp-field { background: #07060c; }
+.stage-host.focus .bubblepop :is(.bp-sky, .bp-cloud, .bp-bushes) { display: none; }
 .stage-host.focus :is(.bp-amb, .bp-cloud, .bp-bushes, .cr-mist, .pm-bubbles, .pm-smoke, .ot-sparks, .ro-gate-glow, .swv-glow,
   .mb-burst, .mb-rays, .gg-portal-glow, .ot-glow, .ot-ring) { display: none !important; }
 .stage-host.focus .game-host *, .stage-host.focus .game-host *::before, .stage-host.focus .game-host *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; }

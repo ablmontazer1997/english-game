@@ -5,6 +5,10 @@
 //    hand demo, then one untimed practice item; the "?" button in the booster tray replays it.
 // Games mark their question panel with data-coach="q", their answer area with data-coach="a", and (in practice
 // only) the elements the ghost hand taps with data-demo="<order>".
+// Phase E (admin 4847): an answer area that is mostly painted scene (a tall board, a field) names its real parts with
+// data-coach-parts="<selector>": the tutorial hole is then the box around those parts only, and Focus mode lights each
+// part on its own. Anything else Focus mode must keep visible (an action button, the innkeeper's line) is marked
+// data-focus-keep.
 
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
@@ -167,20 +171,52 @@ export function useFocusPref(flags: { focus?: string } | undefined, save: ((on: 
 }
 
 // ---- the spotlight overlay
-type Box = { x: number; y: number; w: number; h: number }
+export type Box = { x: number; y: number; w: number; h: number }
 const PAD = 8
+type R = { l: number; t: number; r: number; b: number }
+const visible = (el: Element) => { const r = el.getBoundingClientRect(); return r.width >= 4 && r.height >= 4 && getComputedStyle(el).visibility !== 'hidden' }
+const rectOf = (el: Element): R => { const r = el.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom } }
+const union = (rs: R[]): R => rs.reduce((a, c) => ({ l: Math.min(a.l, c.l), t: Math.min(a.t, c.t), r: Math.max(a.r, c.r), b: Math.max(a.b, c.b) }))
 
-function boxesIn(root: HTMLElement | null, host: HTMLElement | null): Box[] {
+/** the lit areas of a game root, in host coordinates.
+ *  mode 'tut': one box per data-coach / data-focus-keep element (an area with data-coach-parts shrinks to the box
+ *  around its parts; the action buttons are lit too, the ghost hand taps them);
+ *  mode 'focus': the question, each answer part on its own, and every data-focus-keep element. */
+export function boxesIn(root: HTMLElement | null, host: HTMLElement | null, mode: 'tut' | 'focus' = 'tut', pad = PAD): Box[] {
   if (!root || !host) return []
   const H = host.getBoundingClientRect()
-  const out: Box[] = []
-  root.querySelectorAll<HTMLElement>('[data-coach]').forEach((el) => {
-    const r = el.getBoundingClientRect()
-    if (r.width < 4 || r.height < 4) return
-    const x = Math.max(4, r.left - H.left - PAD), y = Math.max(4, r.top - H.top - PAD)
-    out.push({ x, y, w: Math.min(H.width - 4, r.right - H.left + PAD) - x, h: Math.min(H.height - 4, r.bottom - H.top + PAD) - y })
+  const rs: R[] = []
+  root.querySelectorAll<HTMLElement>('[data-coach], [data-focus-keep]').forEach((el) => {
+    if (!visible(el)) return
+    const sel = el.dataset.coachParts
+    const parts = sel ? [...el.querySelectorAll(sel)].filter(visible) : []
+    if (!parts.length) rs.push(rectOf(el))
+    else if (mode === 'focus') parts.forEach((p) => rs.push(rectOf(p)))
+    else rs.push(union(parts.map(rectOf)))
   })
-  return out
+  return rs.map((r) => {
+    const x = Math.max(2, r.l - H.left - pad), y = Math.max(2, r.t - H.top - pad)
+    return { x, y, w: Math.min(H.width - 2, r.r - H.left + pad) - x, h: Math.min(H.height - 2, r.b - H.top + pad) - y }
+  }).filter((b) => b.w > 0 && b.h > 0)
+}
+
+/** where a card of height `ch` covers the least of the holes (ties: the middle of the biggest free band); null = centred */
+export function placeCard(boxes: Box[], hostH: number, ch: number, top = 64, bottom = 16): number | null {
+  const lo = top, hi = hostH - bottom - ch
+  if (hi < lo) return null
+  const cover = (y: number) => boxes.reduce((s, b) => s + Math.max(0, Math.min(y + ch, b.y + b.h) - Math.max(y, b.y)) * b.w, 0)
+  // free bands first: the biggest band that fits the card, centred in it
+  const ys = boxes.map((b) => [b.y, b.y + b.h]).sort((a, b) => a[0] - b[0])
+  const gaps: [number, number][] = []
+  let at = lo
+  for (const [a, b] of ys) { if (a > at) gaps.push([at, a]); at = Math.max(at, b) }
+  if (hostH - bottom > at) gaps.push([at, hostH - bottom])
+  const fit = gaps.filter(([a, b]) => b - a >= ch + 12).sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0]
+  if (fit) return Math.round(fit[0] + (fit[1] - fit[0] - ch) / 2)
+  // no free band: slide the card to where it hides the least of the lit areas
+  let best = lo, bestC = Infinity
+  for (let y = lo; y <= hi; y += 6) { const c = cover(y); if (c < bestC - 1) { best = y; bestC = c } }
+  return best
 }
 function demoTargets(root: HTMLElement | null): HTMLElement[] {
   if (!root) return []
@@ -219,17 +255,11 @@ export function Spotlight({ game, step, getRoot, getHost, onNext, onSkip, canDem
     return () => { alive = false; clearInterval(t); removeEventListener('resize', m) }
   }, [getRoot, getHost, step])
 
-  // the coach card goes into the biggest free band (above, between or below the holes)
+  // the coach card goes into the biggest free band; with none, where it hides the least of the lit areas
   useLayoutEffect(() => {
     const ch = coach.current?.offsetHeight ?? 90
     if (!size.h) return
-    const ys = boxes.map((b) => [b.y, b.y + b.h]).sort((a, b) => a[0] - b[0])
-    const gaps: [number, number][] = []
-    let at = 64   // under the HUD row
-    for (const [a, b] of ys) { if (a > at) gaps.push([at, a]); at = Math.max(at, b) }
-    if (size.h - 16 > at) gaps.push([at, size.h - 16])
-    const best = gaps.sort((a, b) => (b[1] - b[0]) - (a[1] - a[0]))[0]
-    setCoachAt(best && best[1] - best[0] >= ch + 12 ? best[0] + (best[1] - best[0] - ch) / 2 : null)
+    setCoachAt(placeCard(boxes, size.h, ch))
   }, [boxes, size, step])
 
   // ghost hand: glide to each target, tap it (a ripple + a press glow on the element), then rest
@@ -273,7 +303,8 @@ export function Spotlight({ game, step, getRoot, getHost, onNext, onSkip, canDem
             {boxes.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="18" fill="#000" />)}
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="rgba(16, 10, 44, .7)" mask="url(#tut-holes)" />
+        <rect width="100%" height="100%" fill="rgba(8, 5, 26, .84)" mask="url(#tut-holes)" />
+        {boxes.map((b, i) => <rect key={'g' + i} className="tut-glow" x={b.x} y={b.y} width={b.w} height={b.h} rx="18" />)}
         {boxes.map((b, i) => <rect key={i} className="tut-ring" x={b.x} y={b.y} width={b.w} height={b.h} rx="18" />)}
       </svg>
       {/* taps on the dim do nothing; the holes stay visible but the game waits for the coach */}
@@ -297,6 +328,40 @@ export function Spotlight({ game, step, getRoot, getHost, onNext, onSkip, canDem
         </div>
       )}
     </div>
+  )
+}
+
+/** Phase E (admin 4847, Q11): Focus mode is BLACK. A black veil over the whole scene with tight windows on the
+ *  question, each answer part and the data-focus-keep elements (action buttons, a spoken line). The veil does not
+ *  catch taps; the game underneath plays as usual. */
+export function FocusVeil({ getRoot, getHost }: { getRoot: () => HTMLElement | null; getHost: () => HTMLElement | null }) {
+  const [boxes, setBoxes] = useState<Box[]>([])
+  const [size, setSize] = useState({ w: 0, h: 0 })
+  useLayoutEffect(() => {
+    let alive = true
+    const m = () => {
+      const host = getHost()
+      if (!alive || !host) return
+      const H = host.getBoundingClientRect()
+      setSize((s) => (s.w === H.width && s.h === H.height ? s : { w: H.width, h: H.height }))
+      const next = boxesIn(getRoot(), host, 'focus', 4)
+      setBoxes((old) => (JSON.stringify(old) === JSON.stringify(next) ? old : next))
+    }
+    m()
+    const t = setInterval(m, 250)
+    addEventListener('resize', m)
+    return () => { alive = false; clearInterval(t); removeEventListener('resize', m) }
+  }, [getRoot, getHost])
+  return (
+    <svg className="fx-veil" width={size.w} height={size.h} aria-hidden>
+      <defs>
+        <mask id="fx-holes">
+          <rect width="100%" height="100%" fill="#fff" />
+          {boxes.map((b, i) => <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} rx="16" fill="#000" />)}
+        </mask>
+      </defs>
+      <rect width="100%" height="100%" fill="#07060c" mask="url(#fx-holes)" />
+    </svg>
   )
 }
 

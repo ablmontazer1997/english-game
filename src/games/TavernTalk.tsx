@@ -191,11 +191,11 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="tt-ui">
-        <div className="tt-chat">
+        <div className="tt-chat" data-focus-keep="">
           {log.slice(-2).map((m, i) => <div key={log.length - 2 + i} className={`tt-msg ${m.who}`}>{m.text}</div>)}
           <div ref={chatEnd} />
         </div>
-        {note && <div className="tt-note">{note}</div>}
+        {note && <div className="tt-note" data-focus-keep="">{note}</div>}
         {!done ? (
           <div className="tt-choices" data-coach="a">
             {sc.script[node].choices.map((c, i) => (
@@ -206,7 +206,7 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
             </button>
           </div>
         ) : (
-          <button className="cb cb-green tt-finish" onClick={() => {
+          <button className="cb cb-green tt-finish" data-focus-keep="" onClick={() => {
             if (si + 1 < scenes.length) {
               // next scene: a new mission with a new partner line
               const nx = scenes[si + 1]

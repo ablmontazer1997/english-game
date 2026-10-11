@@ -432,7 +432,7 @@ export function MatchBlitz({ items, onFinish, onAnswer, srv }: MiniGameProps) {
 
         <div className="gs-panel mb-taskp" data-coach="q"><Task className="" icon="match" text="Match the pairs" sub="Drag each word to its meaning" first={true} /></div>
 
-        <div className="mb-board" ref={boardRef} data-coach="a">
+        <div className="mb-board" ref={boardRef} data-coach="a" data-coach-parts=".mb-row">
           <svg className="mb-lines" ref={linesRef} />
           {current.map((pair, slot) => {
             const lpid = slot

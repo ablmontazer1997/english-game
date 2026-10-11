@@ -6,6 +6,7 @@ import { dayEnd } from '../services/progress'
 import atlasIcon from '../assets/atlas/icon.png'
 import questIcon from '../assets/sky/nav2_quests.png'
 import './mapalt.css'
+import { MapEventPill } from './Events'
 
 /* Map chrome. Admin 10-05 (msg 4004) picked c, now the default; ?maplayout=a|b still shows the other drafts.
    a: daily quests as a row of small cards under the HUD, the chest is the 4th card
@@ -137,6 +138,7 @@ export function MapChromeAlt(p: Props) {
           {claimable && <i className="mla-dot" />}
         </button>
       </div>
+      {p.http && <MapEventPill onOpen={p.onQuests} />}
       {atlasCard}
     </div>
   )

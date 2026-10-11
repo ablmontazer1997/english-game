@@ -181,6 +181,7 @@ export function MemoryCrystals({ items, onFinish, onAnswer, srv }: MiniGameProps
       <div
         className="mc-grid"
         data-coach="a"
+        data-coach-parts=".mc-card"
         style={{ '--mc-cols': String(cols) } as CSSProperties}
         aria-label="Memory crystals"
       >

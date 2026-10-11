@@ -66,7 +66,9 @@ export interface Streak {
   /** Phase B: a Hearthfire that went out within 2 missed days can be relit for gems */
   repair?: { lost: number; cost_gems: number; restores: number } | null
 }
-export interface RewardOut { xp: number; xp_base?: number; boosted?: boolean; coins: number; gems: number; items: { item_id: string; name: string; slot?: string; why?: string }[]; chest: string | null }
+/** Phase E: a weekly event from GET /v1/events (days: 0 = Monday ... 6 = Sunday, the player's local days) */
+export interface EventOut { id: 'boss_rush' | 'double_xp' | string; title: string; icon: string; blurb: string; short: string; active: boolean; starts_at: number; ends_at: number; days: number[] }
+export interface RewardOut { xp: number; xp_base?: number; boosted?: boolean; double_xp?: boolean; boss_rush?: { gems: number; left: number } | null; coins: number; gems: number; items: { item_id: string; name: string; slot?: string; why?: string }[]; chest: string | null }
 export interface CompleteOut {
   stars: number; best_stars: number; first_clear: boolean; correct: number; total: number; accuracy: number; unverified?: number
   rewards: RewardOut; hearts_lost: number; elixir_used: boolean; level_up: boolean; level_completed: boolean
@@ -256,6 +258,7 @@ export const api = {
   // ---- Phase D: store (locked), Season Pass, Web Push reminders
   store: () => call<StoreOut>('GET', '/v1/store'),
   season: () => call<SeasonOut>('GET', '/v1/season'),
+  events: () => call<{ now: number; events: EventOut[] }>('GET', '/v1/events'),
   seasonClaim: (tier: number, track: 'free' | 'premium') => call<{ reward: TrackReward & { instead_of?: string }; wallet: Wallet; season: SeasonOut }>('POST', '/v1/season/claim', { tier, track }),
   pushKey: () => raw<{ enabled: boolean; public_key: string | null }>('GET', '/v1/push/key', undefined, null, 2),
   pushStatus: () => call<PushStatus>('GET', '/v1/push/status'),

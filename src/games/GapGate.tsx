@@ -196,7 +196,7 @@ export function GapGate({ items, onFinish, onAnswer, srv }: MiniGameProps) {
 
       </div>
 
-      <div className="gg-options" data-coach="a">
+      <div className="gg-options" data-coach="a" data-coach-parts=".gg-opt">
         {options.map((o) => {
           const isChosen = chosen?.key === o.key
           const state = isChosen ? (o.correct ? 'ok' : 'bad') : ''

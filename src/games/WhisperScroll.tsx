@@ -122,7 +122,7 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="ws-listen">
-        <button className="ws-playbtn" aria-label="Play" onClick={() => speak(line.text, 0.95, setTalking)}>
+        <button className="ws-playbtn" data-focus-keep="" aria-label="Play" onClick={() => speak(line.text, 0.95, setTalking)}>
           <span className="ws-wave l" /><span className="ws-wave r" />
           <svg viewBox="0 0 24 24" width="30" height="30"><path d="M8 5v14l11-7z" fill="#fff" /></svg>
         </button>
@@ -133,13 +133,13 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
       </div>
 
       <div className="ws-ui">
-        <div className="ws-opts lp" data-coach="a">
+        <div className="ws-opts lp" data-coach="a" data-coach-parts=".ws-opt">
           {options.map((o, i) => (
             <button key={o + i} className={`ws-opt${fill.includes(o) ? ' used' : ''}`} disabled={fill.includes(o) || state !== 'play'} onClick={() => pick(o)}
               data-demo={ctl.practice && options.indexOf(o) === i && line.gaps.some((g) => words[g] === o) ? line.gaps.findIndex((g) => words[g] === o) : undefined}>{o}</button>
           ))}
         </div>
-        <button className="cb cb-green ws-check" data-demo={ctl.practice ? 99 : undefined} onClick={check} disabled={fill.length !== line.gaps.length || state !== 'play'}>Check</button>
+        <button className="cb cb-green ws-check" data-focus-keep="" data-demo={ctl.practice ? 99 : undefined} onClick={check} disabled={fill.length !== line.gaps.length || state !== 'play'}>Check</button>
       </div>
     </div>
   )

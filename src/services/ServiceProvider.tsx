@@ -55,7 +55,7 @@ interface GameStore {
   account: Me | null
   /** http mode: change the account (name, level, goal, intro flags); the store and the map follow */
   patchMe: (b: Parameters<typeof api.patchMe>[0]) => Promise<Me | null>
-  /** Phase B: relight a Hearthfire that went out (200 gems, within 2 missed days) */
+  /** Phase B: relight a Hearthfire that went out (30 gems since Phase E, within 2 missed days) */
   repairStreak: () => Promise<{ ok: boolean; reason?: string }>
 }
 

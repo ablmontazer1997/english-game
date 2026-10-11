@@ -86,7 +86,7 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         <img className="gs-plate" src={bgPlate} alt="" draggable={false} />
         <img className="swv-mirror" src={bgPlate} alt="" draggable={false} />
         <span className="gs-at swv-glow" aria-hidden />
-        <div className="gs-at swv-line" aria-label="Your spell">
+        <div className="gs-at swv-line" aria-label="Your spell" data-focus-keep="">
           {s.answer.map((_, i) => {
             const id = woven[i]
             return id === undefined
@@ -104,14 +104,14 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           <p>{s.source}</p>
           {!ASK && <span className="swv-cmd">{s.cmd}</span>}
         </div>
-        <div className="swv-pool" data-coach="a">
+        <div className="swv-pool" data-coach="a" data-coach-parts=".swv-tile">
           {tiles.map((x) => (
             <button key={x.id} className={`swv-tile rope${woven.includes(x.id) || pend === x.id ? ' used' : ''}`} style={{ backgroundImage: `url(${tileRope})` }}
               disabled={woven.includes(x.id) || pend !== null || state !== 'play'} onClick={(e) => add(x.id, e.currentTarget)}
               data-demo={ctl.practice && rightIds.includes(x.id) ? rightIds.indexOf(x.id) : undefined}>{x.t}</button>
           ))}
         </div>
-        <div className="swv-go"><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
+        <div className="swv-go" data-focus-keep=""><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
       </div>
     </div>
   )

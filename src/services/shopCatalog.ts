@@ -24,18 +24,18 @@ export const ESSENTIALS: Offer[] = [
 export const BOOSTS: Offer[] = [
   { id: 'xp_boost', title: 'Double XP · 15 min', note: 'Climb the league twice as fast', icon: 'xp', price: { coins: 250 } },
   { id: 'freeze', title: 'Streak Freeze', note: 'Covers one missed day (hold up to 2)', icon: 'flame', price: { coins: 300 } },
-  { id: 'coin_sack', title: 'Coin Sack', note: '1,000 coins', icon: 'coins', price: { gems: 10 } },
+  { id: 'coin_sack', title: 'Coin Sack', note: '1,000 coins', icon: 'coins', price: { gems: 15 } },
 ]
 export const CHEST_OFFERS: Offer[] = [
-  { id: 'chest_wood', title: 'Wooden Chest', note: '80–150 coins, maybe an elixir', icon: 'wood', price: { coins: 400 } },
-  { id: 'chest_silver', title: 'Silver Chest', note: '400–700 coins, maybe an elixir', icon: 'silver', price: { gems: 30 } },
-  { id: 'chest_epic', title: 'Epic Chest', note: '1,000–1,600 coins and elixirs', icon: 'epic', price: { gems: 80 } },
+  { id: 'chest_wood', title: 'Wooden Chest', note: '80–150 coins, maybe an elixir', icon: 'wood', price: { coins: 300 } },
+  { id: 'chest_silver', title: 'Silver Chest', note: '400–700 coins, maybe an elixir', icon: 'silver', price: { gems: 15 } },
+  { id: 'chest_epic', title: 'Epic Chest', note: '1,000–1,600 coins and elixirs', icon: 'epic', price: { gems: 35 } },
 ]
 /** one featured offer per day, the same for everyone. Every id here must be a server offer (catalog.OFFERS):
  *  'Treasure Pile' (coin_big) was removed 10-11 because the server never sold it (Buy failed with 404). */
 const DEALS: Offer[] = [
   { id: 'elixir_3', title: '3 Elixirs', note: 'Deal of the day', icon: 'potion3', price: { gems: 16 }, was: { gems: 25 } },
-  { id: 'chest_silver', title: 'Silver Chest', note: 'Deal of the day', icon: 'silver', price: { gems: 20 }, was: { gems: 30 } },
+  { id: 'chest_silver', title: 'Silver Chest', note: 'Deal of the day', icon: 'silver', price: { gems: 10 }, was: { gems: 15 } },
   { id: 'xp_boost', title: 'Double XP · 15 min', note: 'Deal of the day', icon: 'xp', price: { coins: 150 }, was: { coins: 250 } },
 ]
 export function dealOfTheDay(t = Date.now()): Offer {

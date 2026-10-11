@@ -14,6 +14,9 @@
 }
 .pg-scroll {
   position: absolute; inset: 0; z-index: 1;
+  /* Phase E: content fades out under the floating HUD instead of showing through between its pills */
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px));
   overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
   padding: calc(var(--hud-h) + var(--safe-top) + 8px) var(--gutter)
            calc(var(--nav-h) + var(--safe-bottom) + 24px);
