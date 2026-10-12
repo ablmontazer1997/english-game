@@ -104,28 +104,27 @@ export function CrystalBall({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       <div className="gs-title"><GameTitle title="Crystal Ball" count={`Question ${Math.min(done + 1, total)} / ${total}`} /></div>
 
       <div className="gs-ui cr-player" data-coach="q">
-        <button className="gs-orb cr-play" data-demo={ctl.practice ? 0 : undefined} aria-label={line >= 0 ? 'Stop' : 'Play'} onClick={() => (line >= 0 ? stop() : play())}>
-          {line >= 0
-            ? <svg viewBox="0 0 24 24" width="40%" height="40%"><rect x="5" y="5" width="14" height="14" rx="2" fill="#fff" /></svg>
-            : <svg viewBox="0 0 24 24" width="46%" height="46%"><path d="M8 5v14l11-7z" fill="#fff" /></svg>}
+        <button className="cr-play" data-demo={ctl.practice ? 0 : undefined} aria-label={line >= 0 ? 'Stop' : 'Play'} onClick={() => (line >= 0 ? stop() : play())}>
+          {/* ES2 concept 18: the painted play button; while the vision speaks a stop square sits on it */}
+          {line >= 0 && <svg viewBox="0 0 24 24" width="34%" height="34%"><rect x="5" y="5" width="14" height="14" rx="2" fill="#fff" /></svg>}
         </button>
         <div className="cr-bar"><i style={{ width: `${prog}%` }} /><b style={{ left: `${prog}%` }} /></div>
       </div>
 
-      <div className="gs-ui gs-panel cr-q" data-coach="a">
+      <div className="gs-ui gs-panel cr-q k9 k-panel" data-coach="a">
         {!q ? (
           <>
-            <Task className="gtask-row" icon="listen" text="Listen to the vision" sub="Questions come after it" first={true} />
+            <Task className="gtask-row k-ic" icon="listen" text="Listen to the vision" sub="Questions come after it" first={true} />
             <p className="cr-ask">{v.title}</p>
             <p className="cr-sub">{heard ? 'Ready? The oracle has questions.' : 'Listen to the vision…'}</p>
-            <button className="gs-go" disabled={!heard} onClick={() => { stop(); fxSfx('whoosh', .5); setQi(0) }}>I'm ready</button>
+            <button className="gs-go k-btn k-green" disabled={!heard} onClick={() => { stop(); fxSfx('whoosh', .5); setQi(0) }}>I'm ready</button>
           </>
         ) : (
           <>
-            <Task className="gtask-row" icon="tap" text="Answer the question" first={qi === 0} />
+            <Task className="gtask-row k-ic" icon="tap" text="Answer the question" first={qi === 0} />
             <p className="cr-ask">{q.q}</p>
             {opts.map((o) => (
-              <button key={o} className={`gs-pill cr-opt${picked && o === q.answer ? ' right' : ''}${picked === o && o !== q.answer ? ' wrong' : ''}${gone.includes(o) ? ' gone' : ''}`}
+              <button key={o} className={`gs-pill cr-opt k9 k-tile${picked && o === q.answer ? ' right' : ''}${picked === o && o !== q.answer ? ' wrong' : ''}${gone.includes(o) ? ' gone' : ''}`}
                 disabled={!!picked || gone.includes(o)} onClick={(e) => choose(o, e.currentTarget)} data-demo={ctl.practice && o === q.answer ? 1 : undefined}>{o}</button>
             ))}
           </>

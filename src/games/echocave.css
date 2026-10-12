@@ -37,3 +37,33 @@
    its bottom now stays just above the crystals and it grows upward */
 .ec-card { top: auto; bottom: 37.5%; }
 .ec-note { top: 33%; }
+
+/* ===== ES2 concept 17 (admin 5202): task plate with the scroll under the HUD; one cream card with the line where each word
+   waits under a painted rune block until it is said, the painted speaker + snail; the big painted mic between the echo
+   arcs. The live cave and wisp stay. ===== */
+.ec-taskp { top: calc(62px + var(--safe-top, 0px)); left: 4%; right: 4%; }
+.ec-taskp .gtask { margin: 0; }
+.ec .ec-card.k9 { bottom: 30%; left: 4%; right: 4%; padding: 14px 10px 14px 16px; gap: 6px; border-radius: 0; background: none; box-shadow: none; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+.ec .ec-line { text-align: left; line-height: 1.55; color: #2a1f5c; }
+.ec .ec-line > span { display: inline-block; margin: 0 2px 4px 0; }
+.ec .ec-line > span.on { color: #2a1f5c; text-shadow: none; animation: ec2-show .35s ease-out; }
+@keyframes ec2-show { from { transform: scale(.7); opacity: 0; } }
+.ec .ec-line > span.ec-hid i { color: transparent; display: inline-block; min-width: 28px; padding: 0 4px;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p17/hidden_word_block.webp) 43 34 44 36 fill / 12px 10px 12px 10px stretch; }
+.ec .ec-line i { font-style: normal; }
+.ec .ec-say { width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: url(../assets/es2/k/p17/btn_speaker.webp) center / contain no-repeat; filter: drop-shadow(0 4px 6px rgba(60, 20, 140, .35)); }
+.ec .ec-say:active { transform: scale(.93); }
+.ec .ec-slow { width: 44px; height: 44px; display: grid; place-items: center; border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 16px 16px 16px 17px stretch; }
+.ec .ec-slow img { width: 26px; height: 21px; object-fit: contain; }
+.ec .ec-act { top: auto; bottom: calc(5% + var(--safe-bottom, 0px)); }
+.ec .ec-mic { position: relative; width: min(32cqw, 128px); height: min(32cqw, 128px); padding: 0; border: 0; border-radius: 50%; box-shadow: none;
+  background: url(../assets/es2/k/p17/btn_mic_big.webp) center / contain no-repeat; filter: drop-shadow(0 8px 14px rgba(60, 20, 140, .4)); }
+.ec .ec-mic:active { transform: scale(.95); }
+.ec-ring { position: absolute; top: 50%; height: auto; pointer-events: none; transform: translateY(-50%); }
+.ec-ring.li { right: 100%; width: 20%; margin-right: 6%; } .ec-ring.lo { right: 100%; width: 30%; margin-right: 24%; }
+.ec-ring.ri { left: 100%; width: 20%; margin-left: 6%; } .ec-ring.ro { left: 100%; width: 30%; margin-left: 24%; }
+.ec-hearing .ec-ring { animation: ec2-ring .8s ease-in-out infinite alternate; }
+.ec-hearing .ec-ring.lo, .ec-hearing .ec-ring.ro { animation-delay: .4s; }
+@keyframes ec2-ring { to { opacity: .45; transform: translateY(-50%) scale(1.1); } }
+.ec .ec-tip { font-size: 18px; }
+.ec .ec-note { top: auto; bottom: calc(30% + 150px); }

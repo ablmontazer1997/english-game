@@ -35,3 +35,25 @@
 @keyframes cr-yes { 40% { transform: scale(1.05) } }
 .cr-spot.on { animation: cr-speak .5s ease-in-out infinite alternate; }
 @keyframes cr-speak { to { transform: scale(1.06) } }
+
+/* ===== ES2 concept 18 (admin 5202): the painted play button and audio bar (track, fill, knob), the task plate with the
+   speaker disc on the cream card, painted answer tiles, green I'm ready. The live ball and plate stay. ===== */
+.cr .cr-play { width: 64px; height: 64px; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; box-shadow: none;
+  background: url(../assets/es2/k/p18/btn_play.webp) center / contain no-repeat; filter: drop-shadow(0 5px 8px rgba(60, 20, 140, .4)); }
+.cr .cr-play:active { transform: scale(.94); }
+.cr .cr-bar { height: 28px; border-radius: 0; background: none; box-shadow: none; border: 0 solid transparent;
+  border-image: url(../assets/es2/k/p18/audio_bar_track.webp) 19 20 22 21 fill / 10px 10px 11px 10px stretch; }
+.cr .cr-bar i { top: 4px; bottom: 5px; left: 3px; border-radius: 0; max-width: calc(100% - 6px); background: none;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p18/audio_bar_fill.webp) 20 21 22 23 fill / 9px 9px 10px 9px stretch; }
+.cr .cr-bar b { width: 34px; height: 34px; border: 0; border-radius: 0; box-shadow: none; background: url(../assets/es2/k/p18/audio_knob.webp) center / contain no-repeat; }
+.cr .cr-q.k9 { padding: 0 14px 16px; border-radius: 0; background: none; box-shadow: none; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+.cr .cr-q .gtask { margin: -16px -12px 4px; }
+.cr .cr-ask { color: #2a1f5c; }
+.cr .cr-sub { color: #4a3f6e; }
+.cr .cr-q .gs-go.k-btn { min-height: 60px; font-size: 26px; border-radius: 0; background: none; box-shadow: none; }
+.cr .cr-opt.k9 { min-height: 48px; border-radius: 0; background: none; box-shadow: none; color: #2a1f5c; }
+.cr .cr-opt.k9.right { background: none; box-shadow: none; color: #1f6a12; filter: drop-shadow(0 0 6px rgba(110, 220, 70, .95)); }
+.cr .cr-opt.k9.wrong { background: none; box-shadow: none; color: #a3261a; filter: drop-shadow(0 0 6px rgba(240, 80, 70, .95)); }
+.cr .cr-opt.gone { visibility: hidden; }
+/* batch-3 shot fixes: the audio bar stops short of the booster tray column */
+.cr .cr-player { right: 74px; }

@@ -9,6 +9,7 @@ import kIdle from '../assets/games/tavern/tt_idle.webp'
 import kTalk from '../assets/games/tavern/tt_talk.webp'
 import kHappy from '../assets/games/tavern/tt_happy.webp'
 import kThink from '../assets/games/tavern/tt_think.webp'
+import coinIc from '../assets/es2/k/kit/icon_coin.webp'
 import './taverntalk.css'
 
 // Tavern Talk — a spoken role-play with a mission. Prototype: the shopkeeper
@@ -177,11 +178,14 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
       <GameTitle title="Tavern Talk" />
 
       {/* admin 4364: task + mission at the top again; the innkeeper is sized to the space left between it and the chat */}
-      <div className="tt-mission lp" data-coach="q">
-        <Task className="gtask-row" icon="speak" text="Pick what you would say" sub="Or tap the mic and say it" first={si === 0 && node === 0} />
-        <span className="tt-coin">🪙</span>
-        <div><b>Mission</b><p>{sc.mission}</p></div>
-        {price != null && <span className={`tt-price${price < 10 ? ' ok' : ''}`}>{price}</span>}
+      {/* ES2 concept 19: the task plate (mic disc) with the painted MISSION strip hanging under it */}
+      <div className="tt-mission tt2-mission" data-coach="q">
+        <Task className="gtask-row k-ic" icon="speak" text="Pick what you would say" sub="Or tap the mic and say it" first={si === 0 && node === 0} />
+        <div className="tt-mstrip">
+          <img className="tt-coin2" src={coinIc} alt="" />
+          <b>Mission</b><p>{sc.mission}</p>
+          {price != null && <span className={`tt-price${price < 10 ? ' ok' : ''}`}>{price}</span>}
+        </div>
       </div>
 
       <div className="tt-keeper" aria-hidden>
@@ -202,11 +206,11 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
               <button key={node + ':' + i} className={`tt-choice${hinted === i ? ' hinted' : ''}`} disabled={busy} onClick={() => choose(i)} data-demo={ctl.practice && c.ok ? 0 : undefined}>{c.say}</button>
             ))}
             <button className={`tt-mic${listening ? ' on' : ''}`} aria-label="Say it" onClick={mic} disabled={busy}>
-              <svg viewBox="0 0 24 24" width="28" height="28"><path fill="#fff" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z" /></svg>
+              <svg viewBox="0 0 24 24" width="30" height="30"><path fill="#fff" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11z" /></svg>
             </button>
           </div>
         ) : (
-          <button className="cb cb-green tt-finish" data-focus-keep="" onClick={() => {
+          <button className="k-btn k-green tt-finish" data-focus-keep="" onClick={() => {
             if (si + 1 < scenes.length) {
               // next scene: a new mission with a new partner line
               const nx = scenes[si + 1]

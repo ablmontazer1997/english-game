@@ -113,3 +113,9 @@
 .stage-host .lp { border: 0 solid transparent; border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; background: none; box-shadow: none; border-radius: 0; filter: var(--k-lift); }
 
 @media (prefers-reduced-motion: reduce) { .gtask-b.first { animation: none; } }
+
+/* task plate icon variants (per concept): k-scroll = the painted scroll at the left; k-ic = the task's own icon in a white disc */
+.gtask-b.k-scroll .gtask-ic { display: block; width: 46px; height: 30px; margin: 0 -4px 0 -14px; border-radius: 0; background: url(../assets/es2/k/kit/scroll_icon.webp) center / contain no-repeat; }
+.gtask-b.k-scroll .gtask-ic svg { display: none; }
+.gtask-b.k-ic .gtask-ic { display: grid; width: 34px; height: 34px; margin-left: -10px; color: #6d2fe6; background: #fff; box-shadow: 0 0 0 2px #f3c652; }
+.gtask-b.k-scroll .gtask-t, .gtask-b.k-ic .gtask-t { align-items: flex-start; text-align: left; }

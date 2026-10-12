@@ -50,3 +50,31 @@
 .tt-finish { width: 100%; }
 .tt-choice.hinted { background: linear-gradient(180deg, #fff6c9, #ffe27a); box-shadow: 0 4px 0 #d9a92a, 0 0 16px rgba(255, 210, 80, .9); animation: tt-glow 1.2s ease-in-out infinite; }
 @keyframes tt-glow { 50% { box-shadow: 0 4px 0 #d9a92a, 0 0 24px rgba(255, 210, 80, 1) } }
+
+/* ===== ES2 concept 19 (admin 5202): task plate with the mic disc and the painted MISSION strip under it, the innkeeper's
+   line in the painted speech bubble, painted reply cards, the tall painted mic, green finish. Live plate and innkeeper stay. ===== */
+.tt .tt2-mission { display: grid; gap: 0; padding: 0; margin-top: 10px; background: none; box-shadow: none; border: 0; }
+.tt .tt2-mission .gtask { margin: 0; position: relative; z-index: 2; }
+.tt .tt2-mission > .tt-mstrip { display: flex; align-items: center; gap: 6px; flex: none; margin: -12px 4% 0; padding: 14px 12px 6px 14px; min-height: 40px; position: relative; z-index: 1;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p19/mission_strip.webp) 37 39 34 81 fill / 14px 15px 13px 30px stretch; }
+.tt .tt-mstrip .tt-coin2 { width: 20px; height: 20px; flex: none; }
+.tt .tt-mstrip b { flex: none; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #6d2fe6; }
+.tt .tt-mstrip p { margin: 0; flex: 1; min-width: 0; font-size: 12.5px; font-weight: 800; line-height: 1.25; color: #2a1f5c; }
+.tt .tt-mstrip .tt-price { flex: none; min-width: 30px; height: 30px; font-size: 13px; }
+.tt .tt-msg { box-shadow: none; }
+.tt .tt-msg.npc { max-width: 90%; padding: 16px 14px 8px; border-radius: 0; background: none; color: #2a1f5c; font-size: 15px; font-weight: 800;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p19/speech_bubble_up.webp) 79 40 34 137 fill / 24px 14px 12px 40px stretch; filter: drop-shadow(0 4px 8px rgba(20, 6, 50, .25)); }
+.tt .tt-msg.me { border: 2px solid #f3c652; box-shadow: 0 0 0 1.5px #8a5a10; }
+.tt .tt-choice { min-height: 46px; padding: 4px 16px 6px; border-radius: 0; background: none; box-shadow: none; color: #2a1f5c;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p19/reply_card.webp) 33 33 31 35 fill / 14px 14px 13px 15px stretch; filter: drop-shadow(0 3px 5px rgba(20, 6, 50, .2)); }
+.tt .tt-choice:active { transform: translateY(2px); box-shadow: none; }
+.tt .tt-choice.hinted { background: none; box-shadow: none; filter: drop-shadow(0 0 8px rgba(255, 210, 80, 1)); animation: none; }
+.tt .tt-mic { width: 62px; border-radius: 0; box-shadow: none; background: none; border: 0 solid transparent;
+  border-image: url(../assets/es2/k/p19/btn_mic_tall.webp) 65 38 65 38 fill / 30px 18px 30px 18px stretch; filter: drop-shadow(0 5px 8px rgba(60, 20, 140, .35)); }
+.tt .tt-mic.on { animation: tt2-rec 1s ease-in-out infinite; }
+@keyframes tt2-rec { 50% { filter: drop-shadow(0 0 10px rgba(190, 140, 255, 1)); } }
+.tt .tt-finish { min-height: 58px; font-size: 22px; }
+/* batch-3 shot fixes: two-line mission and reply text stay inside the painted strip / cards; the title stays on one line at 360 */
+.tt .tt2-mission > .tt-mstrip { padding: 15px 12px 12px 14px; }
+.tt .tt-choice { height: auto; padding: 7px 16px 10px; line-height: 1.2; }
+.tt .tt2-mission .gtask-t b { font-size: clamp(15px, 4.6vw, 19px); white-space: nowrap; }

@@ -56,3 +56,36 @@
 .ws-check { width: 100%; }
 /* Phase C: after a wrong check the right words fill the gaps */
 .ws-reveal .ws-gap.filled { background: linear-gradient(180deg, #8fe56a, #4fbf34); box-shadow: 0 0 12px rgba(120, 220, 80, .8); }
+
+/* ===== ES2 concept 16 (admin 5202): task plate with the scroll, the painted scroll with gem rollers, painted gap slots
+   (glow in CSS), the big painted play button between two sound waves, cream Replay / Slow chips, the word tiles on a
+   cream panel, green Check. The live plate stays. ===== */
+.ws { padding-top: calc(60px + var(--safe-top, 0px)); }
+.ws .ws-taskp { width: min(96%, 380px); margin: 4px auto 0; padding: 0; background: none; box-shadow: none; }
+.ws .ws-taskp .gtask { margin: 0; }
+.ws .ws2-scroll { aspect-ratio: auto; min-height: 132px; margin-top: 12px; padding: 30px 52px 26px; background: none;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p16/scroll_parchment.webp) 148 81 63 81 fill / 52px 40px 30px 40px stretch; }
+.ws .ws-line { color: #2a1f5c; font-size: 17px; }
+.ws .ws-gap { min-width: 70px; height: 32px; border-radius: 0; background: none; box-shadow: none; border: 0 solid transparent;
+  border-image: url(../assets/es2/k/p16/gap_slot_glow.webp) 40 50 40 50 fill / 15px 18px 15px 18px stretch; filter: drop-shadow(0 0 6px rgba(170, 120, 255, .8)); animation: ws2-gap 1.8s ease-in-out infinite; }
+@keyframes ws2-gap { 50% { filter: drop-shadow(0 0 11px rgba(170, 120, 255, 1)); } }
+.ws .ws-gap.filled { padding: 0 12px 2px; color: #fff; text-shadow: 0 1px 0 rgba(40, 10, 90, .6); animation: none; }
+.ws.ws-ok .ws-gap.filled, .ws.ws-reveal .ws-gap.filled { background: none; box-shadow: none; filter: drop-shadow(0 0 8px rgba(110, 220, 70, 1));
+  border-image: url(../assets/es2/k/p09/word_tile_fixed.webp) 29 28 29 29 fill / 14px 14px 14px 14px stretch; }
+.ws.ws-bad .ws-gap.filled { background: none; filter: drop-shadow(0 0 8px rgba(255, 80, 70, 1));
+  border-image: url(../assets/es2/k/p09/word_tile_wrong.webp) 31 33 37 33 fill / 14px 15px 16px 15px stretch; }
+.ws .ws-playbtn { width: 88px; height: 88px; border: 0; border-radius: 50%; box-shadow: none; background: url(../assets/es2/k/p16/btn_play_big.webp) center / contain no-repeat;
+  filter: drop-shadow(0 6px 10px rgba(60, 20, 140, .4)); }
+.ws .ws-playbtn:active { transform: scale(.94); box-shadow: none; }
+.ws-wave2 { position: absolute; top: 50%; width: 30px; height: auto; margin-top: -27px; opacity: .85; pointer-events: none; }
+.ws-wave2.l { left: -42px; } .ws-wave2.r { right: -42px; }
+.ws-talking .ws-wave2 { animation: ws2-wave .6s ease-in-out infinite alternate; }
+@keyframes ws2-wave { to { opacity: 1; transform: scale(1.12); } }
+.ws .ws-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 3px 18px 6px; font: inherit; font-size: 15px; font-weight: 900; color: #2a1f5c; background: none;
+  border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 16px 16px 16px 17px stretch; }
+.ws .ws-chip img { width: 26px; height: 21px; object-fit: contain; }
+.ws .ws-chip:active { transform: translateY(2px); }
+.ws .ws-opts.k9 { padding: 14px 12px 16px; gap: 8px; border-radius: 0; background: none; box-shadow: none; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .3)); }
+.ws .ws-opt.k9 { min-height: 46px; padding: 2px 16px 5px; border-radius: 0; background: none; box-shadow: none; color: #2a1f5c; }
+.ws .ws-opt.used { visibility: hidden; }
+.ws .ws-check { width: 100%; min-height: 60px; font-size: 26px; }

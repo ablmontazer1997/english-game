@@ -4,7 +4,9 @@ import type { MiniGameProps } from './types'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import bgPlate from '../assets/games/whisper/ws_bg.webp'
-import scrollImg from '../assets/games/whisper/ws_scroll.webp'
+import waveL from '../assets/es2/k/p16/sound_wave_left.webp'
+import waveR from '../assets/es2/k/p16/sound_wave_right.webp'
+import snail from '../assets/es2/k/p16/icon_snail.webp'
 import './whisperscroll.css'
 import { useStageCtl, explain } from './coach'
 
@@ -105,9 +107,10 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
       <img className="ws-plate" src={bgPlate} alt="" draggable={false} />
       <GameTitle title="Whisper Scroll" count={`Scroll ${round + 1} / ${lines.length}`} />
 
-      <div className="gs-panel ws-taskp"><Task icon="listen" text="Listen and fill the gaps" sub="Tap the words that you hear" first={round === 0} /></div>
+      <div className="ws-taskp"><Task icon="listen" text="Listen and fill the gaps" sub="Tap the words you hear" first={round === 0} className="k-scroll" /></div>
 
-      <div className="ws-scroll" style={{ backgroundImage: `url(${scrollImg})` }} data-coach="q">
+      {/* ES2 concept 16: the painted scroll (9-slice), painted gap slots, the big play button with sound waves */}
+      <div className="ws-scroll ws2-scroll" data-coach="q">
         <p className="ws-line">
           {words.map((w, i) => {
             if (!line.gaps.includes(i)) return <span key={i} className="ws-w">{w} </span>
@@ -116,30 +119,29 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
             const k = gapNo
             return f
               ? <button key={i} className="ws-gap filled" onClick={() => unpick(k)}>{f}</button>
-              : <span key={i} className="ws-gap" />
+              : <span key={i} className="ws-gap" aria-label="gap" />
           })}
         </p>
       </div>
 
       <div className="ws-listen">
         <button className="ws-playbtn" data-focus-keep="" aria-label="Play" onClick={() => speak(line.text, 0.95, setTalking)}>
-          <span className="ws-wave l" /><span className="ws-wave r" />
-          <svg viewBox="0 0 24 24" width="30" height="30"><path d="M8 5v14l11-7z" fill="#fff" /></svg>
+          <img className="ws-wave2 l" src={waveL} alt="" draggable={false} /><img className="ws-wave2 r" src={waveR} alt="" draggable={false} />
         </button>
         <div className="ws-small">
-          <button className="cb cb-white" onClick={() => speak(line.text, 0.95, setTalking)}>Replay</button>
-          <button className="cb cb-white" onClick={() => speak(line.text, 0.6, setTalking)}>🐢 Slow</button>
+          <button className="ws-chip" onClick={() => speak(line.text, 0.95, setTalking)}>Replay</button>
+          <button className="ws-chip" onClick={() => speak(line.text, 0.6, setTalking)}><img src={snail} alt="" />Slow</button>
         </div>
       </div>
 
       <div className="ws-ui">
-        <div className="ws-opts lp" data-coach="a" data-coach-parts=".ws-opt">
+        <div className="ws-opts lp k9 k-panel" data-coach="a" data-coach-parts=".ws-opt">
           {options.map((o, i) => (
-            <button key={o + i} className={`ws-opt${fill.includes(o) ? ' used' : ''}`} disabled={fill.includes(o) || state !== 'play'} onClick={() => pick(o)}
+            <button key={o + i} className={`ws-opt k9 k-tile${fill.includes(o) ? ' used' : ''}`} disabled={fill.includes(o) || state !== 'play'} onClick={() => pick(o)}
               data-demo={ctl.practice && options.indexOf(o) === i && line.gaps.some((g) => words[g] === o) ? line.gaps.findIndex((g) => words[g] === o) : undefined}>{o}</button>
           ))}
         </div>
-        <button className="cb cb-green ws-check" data-focus-keep="" data-demo={ctl.practice ? 99 : undefined} onClick={check} disabled={fill.length !== line.gaps.length || state !== 'play'}>Check</button>
+        <button className="k-btn k-green ws-check" data-focus-keep="" data-demo={ctl.practice ? 99 : undefined} onClick={check} disabled={fill.length !== line.gaps.length || state !== 'play'}>Check</button>
       </div>
     </div>
   )
