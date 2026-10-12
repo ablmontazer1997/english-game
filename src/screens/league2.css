@@ -1,0 +1,96 @@
+/* ES redesign 10-12, concept 03 League (admin 4935). Prefix lg2-. Art: assets/es2/league (a6 sheet), arena bg (a7). */
+.lg2 .pg-scroll { gap: 10px; grid-auto-rows: max-content; --pin: 70px;
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + var(--pin) + 44px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px), #000 calc(100% - var(--nav-h) - var(--safe-bottom) - var(--pin) - 44px), transparent calc(100% - var(--nav-h) - var(--safe-bottom) - var(--pin) - 14px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px), #000 calc(100% - var(--nav-h) - var(--safe-bottom) - var(--pin) - 44px), transparent calc(100% - var(--nav-h) - var(--safe-bottom) - var(--pin) - 14px)); }
+
+/* ---- crest, title with the rules button, timer ---- */
+.lg2-head { display: grid; justify-items: center; gap: 2px; margin-top: 0; }
+.lg2-crest { width: 80px; margin-bottom: -6px; height: auto; filter: drop-shadow(0 0 18px rgba(255, 214, 120, .75)) drop-shadow(0 8px 10px rgba(20, 8, 40, .45)); }
+.lg2-title { margin: 2px 0 0; display: inline-flex; align-items: center; gap: 8px; font-family: Fredoka, var(--sans); font-size: clamp(24px, 7.4vw, 29px);
+  line-height: 1.1; font-weight: 800; color: #2e1670;
+  text-shadow: 0 0 0 #fff, 2px 0 0 #fff, -2px 0 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff, 1.5px 1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px -1.5px 0 #fff, 0 4px 6px rgba(20, 8, 40, .35); }
+/* the rules ("i") button: a 30 px disc inside a 44 px hit area */
+.lg2-info { position: relative; width: 30px; height: 30px; flex: none; border-radius: 50%; border: 2.5px solid #fff; padding: 0; cursor: pointer;
+  font: italic 900 17px/1 Georgia, serif; color: #fff; background: linear-gradient(180deg, #9a62ff, #6a2be0); box-shadow: 0 2px 0 #3d1490, 0 3px 8px rgba(20, 8, 40, .35); }
+.lg2-info::after { content: ''; position: absolute; inset: -9px; }
+.lg2-timer { --h: 30px; font-size: 13px; }
+
+/* ---- the six tiers ---- */
+.lg2-ladder { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; align-items: end; }
+.lg2-step { display: grid; justify-items: center; gap: 3px; min-width: 0; }
+.lg2-step-art { position: relative; width: 40px; height: 40px; display: grid; place-items: end center; }
+.lg2-step-art > img:first-child { max-width: 100%; max-height: 100%; filter: drop-shadow(0 3px 4px rgba(20, 8, 40, .4)); }
+.lg2-step.locked .lg2-step-art > img:first-child { filter: grayscale(.55) brightness(.82) drop-shadow(0 3px 4px rgba(20, 8, 40, .4)); opacity: .9; }
+.lg2-lock { position: absolute; left: 50%; bottom: 2px; width: 18px; transform: translateX(-50%); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .4)); }
+.lg2-step.on .lg2-step-art { width: 46px; height: 48px; }
+.lg2-step small { font-size: 12px; line-height: 15px; font-weight: 900; color: #fff; text-shadow: 0 1px 0 #2a1060, 0 0 2px #2a1060, 0 0 4px #2a1060; white-space: nowrap; }
+.lg2-step.on small { padding: 1px 8px; border-radius: 99px; color: #4a2a00; text-shadow: none; background: linear-gradient(180deg, #ffe08a, #f0a51e); box-shadow: 0 1.5px 0 #9a6a1e; }
+
+/* ---- the podium on the gold-framed cream panel ---- */
+.lg2-podium { position: relative; display: grid; grid-template-columns: 1fr 1.12fr 1fr; align-items: end; gap: 4px; margin-top: 24px;
+  border: solid transparent; border-width: 30px 22px 16px; border-image: url(../assets/es2/league/frame.webp) 64 64 36 64 fill / 30px 22px 16px stretch;
+  filter: drop-shadow(0 5px 0 rgba(70, 30, 110, .28)) drop-shadow(0 10px 16px rgba(20, 8, 40, .3)); }
+.lg2-pod { display: grid; justify-items: center; min-width: 0; }
+.lg2-pod-fig { position: relative; display: grid; place-items: center; margin-bottom: -6px; z-index: 1; }
+.lg2-pod-face { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; background: #efe6ff;
+  border: 3px solid #fff; box-shadow: 0 0 0 3px var(--ring, #8b4dff), 0 6px 10px rgba(20, 8, 40, .35); }
+.lg2-pod.p1 .lg2-pod-face { width: 76px; height: 76px; box-shadow: 0 0 0 3.5px #f0b02a, 0 0 16px rgba(255, 200, 80, .9), 0 6px 10px rgba(20, 8, 40, .35); }
+.lg2-pod.p2 .lg2-pod-face { box-shadow: 0 0 0 3px #b9c3d6, 0 6px 10px rgba(20, 8, 40, .35); }
+.lg2-pod.p3 .lg2-pod-face { box-shadow: 0 0 0 3px #d08a52, 0 6px 10px rgba(20, 8, 40, .35); }
+.lg2-crown { position: absolute; top: -34px; left: 50%; width: 46px; margin-left: -23px; z-index: 2; filter: drop-shadow(0 3px 4px rgba(60, 30, 0, .45)); }
+.lg2-laurel { position: absolute; bottom: -4px; width: 30px; z-index: -1; }
+.lg2-laurel.l { left: -20px; }
+.lg2-laurel.r { right: -20px; }
+.lg2-plinth { position: relative; width: 100%; display: grid; place-items: center; }
+.lg2-plinth img { width: 100%; height: auto; filter: drop-shadow(0 4px 4px rgba(40, 20, 60, .3)); }
+.lg2-plinth b { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); font-size: 15px; font-weight: 900; color: #fff;
+  text-shadow: 0 1px 0 rgba(60, 30, 0, .7), 0 0 3px rgba(60, 30, 0, .6); }
+.lg2-pod.p1 .lg2-plinth { margin-bottom: 4px; }
+.lg2-pod-t { display: grid; justify-items: center; gap: 0; margin-top: 2px; min-width: 0; max-width: 100%; }
+.lg2-pod-t b { font-size: 14px; line-height: 18px; font-weight: 900; color: #2a1d5a; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lg2-pod-t small { font-size: 12px; line-height: 15px; font-weight: 800; color: #5a4a80; }
+.lg2-pod.p1 .lg2-pod-t b { font-size: 15px; }
+.lg2-pod.is-me .lg2-pod-t b { color: #6a2be0; }
+
+/* ---- zone ribbons (green promotion; the same art tinted red for demotion) ---- */
+.lg2-zone { position: relative; justify-self: center; width: min(86%, 330px); height: 36px; margin: -4px 0; display: grid; place-items: center;
+  background: url(../assets/es2/league/rib_green.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 4px rgba(20, 8, 40, .35)); }
+.lg2-zone span { font-size: 13px; font-weight: 900; color: #fff; text-shadow: 0 1px 0 #1d5a12, 0 0 2px #1d5a12; letter-spacing: .02em; }
+.lg2-zone.down { filter: hue-rotate(-115deg) saturate(1.3) drop-shadow(0 3px 4px rgba(20, 8, 40, .35)); margin: 4px auto; width: 86%; }
+.lg2-zone.down span { text-shadow: 0 1px 0 #6a1010, 0 0 2px #6a1010; }
+
+/* ---- the list on the cream card; your own row sticks above the nav ---- */
+.lg2-list { display: grid; gap: 0; border: 14px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 44 fill / 14px stretch;
+  filter: drop-shadow(0 4px 0 rgba(70, 30, 110, .28)) drop-shadow(0 8px 14px rgba(20, 8, 40, .25)); }
+.lg2-li + .lg2-li .lg2-row:not(.is-me) { border-top: 1.5px solid rgba(150, 120, 190, .25); }
+.lg2-row { display: grid; grid-template-columns: 26px 40px minmax(0, 1fr) auto auto auto; align-items: center; column-gap: 10px; min-height: 48px; padding: 0 6px; }
+.lg2-rank { font-size: 15px; font-weight: 900; color: #6a5a90; text-align: center; }
+.lg2-face { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #efe6ff; border: 2px solid #fff; box-shadow: 0 0 0 2.5px var(--ring, #8b4dff); }
+.lg2-nm { min-width: 0; font-size: 15px; font-weight: 900; color: #2a1d5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lg2-lp { grid-column: 6; font-size: 14px; font-weight: 900; color: #4a3f70; white-space: nowrap; text-align: right; }
+.lg2-you { font-style: normal; padding: 1px 8px; border-radius: 99px; font-size: 12px; font-weight: 900; color: #6a2be0; background: #fff; }
+.lg2-row.is-mine { background: #efe4ff; border-radius: 12px; }
+.lg2-row.is-me.lg2-pin { position: absolute; z-index: 5; left: calc(var(--gutter) - 4px); right: calc(var(--gutter) - 4px); bottom: calc(var(--nav-h) + var(--safe-bottom) + 18px);
+  padding: 0 10px; min-height: 60px;
+  border: solid transparent; border-width: 10px 18px; border-image: url(../assets/es2/league/bar_violet.webp) 40 60 40 60 fill / 10px 18px stretch;
+  filter: drop-shadow(0 4px 8px rgba(40, 10, 90, .45)); }
+.lg2-row.is-me .lg2-rank, .lg2-row.is-me .lg2-nm, .lg2-row.is-me .lg2-lp { color: #fff; text-shadow: 0 1px 2px rgba(30, 6, 70, .6); }
+.lg2-row.is-me .lg2-face { box-shadow: 0 0 0 2.5px #ffd45a; }
+.lg2-row.is-down .lg2-rank { color: #c0392b; }
+.lg2-note { margin: 0; justify-self: center; display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 99px;
+  background: rgba(46, 18, 96, .72); color: #fff; font-size: 12.5px; font-weight: 800; }
+
+/* ---- the rules sheet ---- */
+.lg2-rules { display: grid; gap: 10px; font-size: 14px; line-height: 1.45; color: #2a1d5a; }
+.lg2-rules p { margin: 0; }
+.lg2-rules .up { color: #1e7a2e; } .lg2-rules .down { color: #b3261e; }
+.lg2-rw { display: grid; gap: 6px; }
+.lg2-rw span { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: #f4edff; }
+.lg2-rw b { font-weight: 900; min-width: 74px; }
+.lg2-small { font-size: 12.5px; color: #5a4a80; }
+@media (max-width: 370px) {
+  .lg2-pod-face { width: 54px; height: 54px; }
+  .lg2-pod.p1 .lg2-pod-face { width: 66px; height: 66px; }
+  .lg2-row { column-gap: 8px; }
+}

@@ -2,7 +2,25 @@ import { useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { NameSheet } from '../components/NameSheet'
 import './serverstage.css'
-import { Card, Row, Btn, Chip, Slot, art, PAGE_BG, type ArtName } from '../components/PageArt'
+import { Btn, Chip } from '../components/PageArt'
+import { Sheet } from '../components/Sheet'
+import defBoy from '../assets/character/portrait_default_m.webp'
+import defGirl from '../assets/character/portrait_default_f.webp'
+import bgLeague from '../assets/es2/league/bg_league2.webp'
+import crBronze from '../assets/es2/league/crest_bronze.webp'
+import crSilver from '../assets/es2/league/crest_silver.webp'
+import crGold from '../assets/es2/league/crest_gold.webp'
+import crRuby from '../assets/es2/league/crest_ruby.webp'
+import crAstral from '../assets/es2/league/crest_astral.webp'
+import crLegend from '../assets/es2/league/crest_legend.webp'
+import crown from '../assets/es2/league/crown.webp'
+import lockArt from '../assets/es2/league/lock.webp'
+import laurelL from '../assets/es2/league/laurel_l.webp'
+import laurelR from '../assets/es2/league/laurel_r.webp'
+import plGold from '../assets/es2/league/plinth_gold.webp'
+import plSilver from '../assets/es2/league/plinth_silver.webp'
+import plBronze from '../assets/es2/league/plinth_bronze.webp'
+import './league2.css'
 import { RewardChips, useCountdown } from '../components/Rewards'
 import { usePortrait } from '../components/Portrait'
 import { leagueReward, TIERS } from '../services/progress'
@@ -10,14 +28,12 @@ import type { LeagueTier } from '../types/game'
 import './pages.css'
 import '../components/progression.css'
 
-// five painted tier crests for six tiers: Legend reuses the top crest with a golden glow
-const TIER_ART: Record<LeagueTier, ArtName> = {
-  bronze: 'tier_2', silver: 'tier_1', gold: 'tier_4', ruby: 'tier_3', astral: 'tier_5', legend: 'tier_5',
-}
 const LABEL: Record<LeagueTier, string> = {
   bronze: 'Bronze', silver: 'Silver', gold: 'Gold', ruby: 'Ruby', astral: 'Astral', legend: 'Legend',
 }
-const DISC: ArtName[] = ['rank_gold', 'rank_silver', 'rank_bronze']
+// ES redesign concept 03 (admin 4935): the a6 sheet's six crests, podium plinths, crown, laurels, zone ribbons; a7 arena
+const CREST: Record<LeagueTier, string> = { bronze: crBronze, silver: crSilver, gold: crGold, ruby: crRuby, astral: crAstral, legend: crLegend }
+const PLINTH = [plGold, plSilver, plBronze]
 
 export function LeagueScreen() {
   const { league, inventory, seenLeagueResult, showReward, mode } = useGame()
@@ -26,6 +42,7 @@ export function LeagueScreen() {
   const left = useCountdown(league?.endsAt ?? 0)
   const boost = useCountdown(inventory?.xpBoostUntil ?? 0)
   const [rename, setRename] = useState(false)
+  const [rules, setRules] = useState(false)
   if (!league) return <div className="screen pg" />
   const n = league.entries.length
   const myRank = league.entries.findIndex((e) => e.isMe) + 1
@@ -38,66 +55,101 @@ export function LeagueScreen() {
     if (Object.keys(r).length) showReward('League rewards', r)
   }
 
+  const entries = league.entries as (typeof league.entries[number] & { bot?: boolean })[]
+  const top = entries.slice(0, 3), rest = entries.slice(3)
+  const anyBot = entries.some((e) => e.bot)
+  const me = entries.find((e) => e.isMe)
+  const face = (e: { name: string; isMe: boolean }) => e.isMe ? portrait : (e.name.charCodeAt(0) + e.name.length) % 2 ? defGirl : defBoy
+  const ring = (e: { name: string; isMe: boolean }) => e.isMe ? '#8b4dff' : `hsl(${(e.name.charCodeAt(0) * 47 + e.name.length * 13) % 360} 70% 58%)`
+  const Podium = ({ e, place }: { e: typeof entries[number]; place: 1 | 2 | 3 }) => (
+    <div className={`lg2-pod p${place}${e.isMe ? ' is-me' : ''}`}>
+      <span className="lg2-pod-fig">
+        {place === 1 && <><img className="lg2-laurel l" src={laurelL} alt="" draggable={false} /><img className="lg2-laurel r" src={laurelR} alt="" draggable={false} />
+          <img className="lg2-crown esk-float" src={crown} alt="" draggable={false} /></>}
+        <img className="lg2-pod-face" src={face(e)} alt="" draggable={false} style={{ ['--ring' as string]: ring(e) }} />
+      </span>
+      <span className="lg2-plinth"><img src={PLINTH[place - 1]} alt="" draggable={false} /><b>{place}</b></span>
+      <span className="lg2-pod-t"><b>{e.isMe ? (server ? e.name : 'You') : e.name}</b><small>{e.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</small></span>
+    </div>
+  )
+
   return (
-    <div className="screen pg">
-      <img className="pg-bg" src={PAGE_BG.league} alt="" draggable={false} />
+    <div className="screen pg lg2">
+      <img className="pg-bg" src={bgLeague} alt="" draggable={false} />
       <div className="pg-scroll">
-        <div className="lg-hero reveal">
-          <img className={`lg-trophy${league.tier === 'legend' ? ' lg-legend' : ''}`} src={art(TIER_ART[league.tier])} alt="" draggable={false} />
-          <div className="lg-name">{LABEL[league.tier]} League</div>
-          <Chip>Ends in {left.label}</Chip>
+        <div className="lg2-head esk-enter">
+          <img className="lg2-crest esk-float" src={CREST[league.tier]} alt="" draggable={false} />
+          <h1 className="lg2-title">{LABEL[league.tier]} League
+            <button className="lg2-info esk-press" onClick={() => setRules(true)} aria-label="How the league works">i</button></h1>
+          <Chip className="lg2-timer">Ends in {left.label}</Chip>
         </div>
 
-        {/* the ladder: where you are and what's next */}
-        <div className="lg-ladder">
+        {/* the ladder: where you are and what's next (locked tiers dimmed with a padlock) */}
+        <div className="lg2-ladder esk-enter" style={{ ['--i' as string]: 1 }}>
           {TIERS.map((t, i) => (
-            <span key={t} className={`lg-step${i === ti ? ' on' : i < ti ? ' past' : ''}`}>
-              <img src={art(TIER_ART[t])} alt="" draggable={false} className={t === 'legend' ? 'lg-legend' : ''} />
+            <span key={t} className={`lg2-step${i === ti ? ' on' : i < ti ? ' past' : ' locked'}`}>
+              <span className="lg2-step-art"><img src={CREST[t]} alt="" draggable={false} />{i > ti && <img className="lg2-lock" src={lockArt} alt="" draggable={false} />}</span>
               <small>{LABEL[t]}</small>
             </span>
           ))}
         </div>
 
-        <Card className="lg-how">
-          {server
-            ? <span>Every stage earns <b>points</b> for what you answer right (10 × correct × accuracy, up to 400 a day). Boosts and purchases never count. When the week ends, the <b className="up">top 3</b> move up{league.demoteCount ? <>, the <b className="down">bottom 3</b> move down</> : null}.</span>
-            : <span>Win stages to earn <b>XP</b>. When the week ends, the <b className="up">top 3</b> move up a league{league.demoteCount ? <>, the <b className="down">bottom 3</b> move down</> : null}.</span>}
-          {!server && boost.ms > 0 && <span className="lg-boost">Double XP · {boost.label}</span>}
-        </Card>
+        {top.length > 0 && <div className="lg2-podium esk-enter" style={{ ['--i' as string]: 2 }}>
+          {top[1] && <Podium e={top[1]} place={2} />}
+          <Podium e={top[0]} place={1} />
+          {top[2] && <Podium e={top[2]} place={3} />}
+        </div>}
+        {league.promoteCount > 0 && <div className="lg2-zone up esk-enter" style={{ ['--i' as string]: 3 }}><span>▲ Promotion zone ▲</span></div>}
 
-        <div className="lg-list">
-          {league.entries.map((e, i) => {
-            const zone = i < league.promoteCount ? 'promote' : i >= n - league.demoteCount ? 'demote' : ''
-            const rw = leagueReward(i + 1)
+        {rest.length > 0 && <div className="lg2-list esk-enter" style={{ ['--i' as string]: 4 }}>
+          {rest.map((e, k) => {
+            const i = k + 3
             return (
-              <div key={e.playerId}>
-                {i === league.promoteCount && league.promoteCount > 0 && <div className="lg-cut up"><span>▲ Promotion zone</span></div>}
-                {i === n - league.demoteCount && <div className="lg-cut down"><span>▼ Demotion zone</span></div>}
-                <Row name={e.isMe ? 'pnl_row6v' : 'pnl_row6'} className={`lg-row ${zone}${e.isMe ? ' lg-row-me' : ''}`}>
-                  <Slot src={i < 3 ? art(DISC[i]) : undefined} className="lg-rank"><span>{i + 1}</span></Slot>
-                  <span className="lg-nm">
-                    {e.isMe ? <img className="lg-face" src={portrait} alt="" /> : <i className={`lg-dot${(e as { bot?: boolean }).bot ? ' lg-dot-bot' : ''}`} title={(e as { bot?: boolean }).bot ? 'practice rival' : undefined}
-                      style={(e as { bot?: boolean }).bot ? undefined : { background: `hsl(${(e.name.charCodeAt(0) * 47) % 360} 70% 62%)` }}>{e.name[0]}</i>}
-                    <span className="lg-nm-t">{e.isMe ? (server ? e.name : 'You') : e.name}</span>
-                    {e.isMe && server && <button className="lg-rename" onClick={() => setRename(true)} aria-label="Change your name">✎</button>}
-                    {i < 10 && Object.keys(rw).length > 0 && <span className="lg-rw"><RewardChips reward={rw} size={14} /></span>}
-                  </span>
-                  <span className="ui-trail lg-lp">{e.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</span>
-                </Row>
+              <div key={e.playerId} className="lg2-li">
+                {i === n - league.demoteCount && league.demoteCount > 0 && <div className="lg2-zone down"><span>▼ Demotion zone ▼</span></div>}
+                <div className={`lg2-row${e.isMe ? ' is-mine' : ''}${i >= n - league.demoteCount ? ' is-down' : ''}`}>
+                  <span className="lg2-rank">{i + 1}</span>
+                  <img className="lg2-face" src={face(e)} alt="" draggable={false} style={{ ['--ring' as string]: ring(e) }} />
+                  <span className="lg2-nm">{e.isMe ? (server ? e.name : 'You') : e.name}</span>
+                  {e.isMe && <i className="lg2-you">You</i>}
+                  <span className="lg2-lp">{e.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</span>
+                </div>
               </div>
             )
           })}
-        </div>
-        <p className="ui-note">You are #{myRank}{server ? ' (tap ✎ to change your name)' : ''}. Rewards are paid when the week ends.{server && league.entries.some((e) => (e as { bot?: boolean }).bot) ? ' Grey crests are practice rivals until more players join.' : ''}</p>
+        </div>}
       </div>
 
+      {/* your own row, pinned above the nav (concept 03), also when you are on the podium */}
+      {me && <div className="lg2-row is-me lg2-pin">
+        <span className="lg2-rank">{myRank}</span>
+        <img className="lg2-face" src={portrait} alt="" draggable={false} />
+        <span className="lg2-nm">{server ? me.name : 'You'}</span>
+        <i className="lg2-you">You</i>
+        {server && <button className="lg-rename" onClick={() => setRename(true)} aria-label="Change your name">✎</button>}
+        <span className="lg2-lp">{me.lp.toLocaleString('en-US')} {server ? 'pts' : 'XP'}</span>
+      </div>}
+
+      <Sheet open={rules} title="How the league works" onClose={() => setRules(false)} variant="light">
+        <div className="lg2-rules">
+          <p>{server
+            ? <>Every stage earns <b>points</b> for what you answer right (10 × correct × accuracy, up to 400 a day). Boosts and purchases never count.</>
+            : <>Win stages to earn <b>XP</b>.</>}
+            {' '}When the week ends, the <b className="up">top {league.promoteCount}</b> move up{league.demoteCount ? <>, the <b className="down">bottom {league.demoteCount}</b> move down</> : null}.</p>
+          {!server && boost.ms > 0 && <p className="lg-boost">Double XP · {boost.label}</p>}
+          <div className="lg2-rw">
+            {[1, 2, 3, 4].map((r) => <span key={r}><b>{r === 4 ? '#4 to #10' : `#${r}`}</b><RewardChips reward={leagueReward(r)} size={18} /></span>)}
+          </div>
+          <p className="lg2-small">You are #{myRank}. Rewards are paid when the week ends.{anyBot ? ' Some rivals are practice rivals until more players join.' : ''}</p>
+        </div>
+      </Sheet>
       <NameSheet open={rename} onClose={() => setRename(false)} />
       {last && (
         <div className="rw-scrim">
           <div className="rw-card">
             <div className="rw-rays" />
             <div className="rw-title">Last week: #{last.rank} in {LABEL[last.tier]}</div>
-            <img className="lg-result-art" src={art(TIER_ART[TIERS[TIERS.indexOf(last.tier) + last.moved]])} alt="" />
+            <img className="lg-result-art" src={CREST[TIERS[TIERS.indexOf(last.tier) + last.moved]]} alt="" />
             <p className="rw-note">{last.moved > 0 ? `Promoted to ${LABEL[TIERS[TIERS.indexOf(last.tier) + 1]]}!` : last.moved < 0 ? `Moved down to ${LABEL[TIERS[TIERS.indexOf(last.tier) - 1]]}. You'll climb back!` : `You stay in ${LABEL[last.tier]}.`}</p>
             {Object.keys(last.reward).length > 0 && <RewardChips reward={last.reward} size={22} />}
             <Btn name="btn_gold" className="lg" onClick={collect}>{Object.keys(last.reward).length ? 'Collect' : 'OK'}</Btn>
