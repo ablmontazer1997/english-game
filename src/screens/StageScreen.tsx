@@ -12,7 +12,8 @@ import { gameFor } from '../games/registry'
 import { GamePlay } from '../games/GamePlay'
 import { useTutorials, useFocusPref, fetchSamples } from '../games/coach'
 import { SRS_GAMES, srsOf } from '../services/serverPlay'
-import { FocusToggle } from './ServerStage'
+import { FocusToggle, ServerStage } from './ServerStage'
+import { mockFx } from '../services/api'
 import { HintCtx, HINT_COST, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import '../components/gametitle.css'
@@ -38,7 +39,14 @@ function SceneAudio({ id }: { id: string }) {
   return null
 }
 
-export function StageScreen({ stage, onExit, onNeedHearts, previewPhase }: { stage: Stage; onExit: () => void; onNeedHearts: () => void; previewPhase?: Phase }) {
+export function StageScreen(p: { stage: Stage; onExit: () => void; onNeedHearts: () => void; previewPhase?: Phase }) {
+  // ?mock=1 screenshot rig only (inert on live): window.__esFx['ES2 stage'] = a server Stage opens the real server flow
+  // (lobby, rescue, result) on the injected fixtures, so the ES2 stage screens can be checked without an account
+  const fx = mockFx<Stage>('ES2 stage')
+  return fx ? <ServerStage stage={fx} onExit={p.onExit} onNeedHearts={p.onNeedHearts} /> : <LocalStage {...p} />
+}
+
+function LocalStage({ stage, onExit, onNeedHearts, previewPhase }: { stage: Stage; onExit: () => void; onNeedHearts: () => void; previewPhase?: Phase }) {
   const { currencies, service, submitResult, spend, drinkElixir, inventory, noteHint } = useGame()
   const hintFn = useRef<HintFn | null>(null)
   const [canHint, setCanHint] = useState(false)

@@ -3,11 +3,11 @@ import book from '../data/spellbook.json'
 import pTop from '../assets/spellbook/p_top.webp'
 import pMid from '../assets/spellbook/p_mid.webp'
 import pBot from '../assets/spellbook/p_bot.webp'
-import seal from '../assets/spellbook/seal.webp'
+import waxSeal from '../assets/es2/k/p12/wax_seal.webp'
 import quill from '../assets/spellbook/quill.webp'
 import lavender from '../assets/spellbook/lavender.webp'
 import divider from '../assets/spellbook/divider.webp'
-import { Panel, Btn } from './PageArt'
+import '../components/es2kit.css'
 import './spellletter.css'
 
 const ICONS = import.meta.glob('../assets/spellbook/icons/*.webp', { eager: true, import: 'default' }) as Record<string, string>
@@ -31,8 +31,10 @@ function Ink({ text }: { text: string }) {
 
 /** Spellbook page as an old letter that grows by whole paper strips with its content. A topic too long for the
  *  screen becomes two letters (admin 3669): title + intro + 2 examples, then the rest + the common mistake. */
-export function SpellLetter({ topicId, level, children, onStart, startLabel = 'Start' }:
-  { topicId: string; level: string; children?: ReactNode; onStart?: () => void; startLabel?: string }) {
+export function SpellLetter({ topicId, level, children, onStart, startLabel = 'Start', meta, foot }:
+  { topicId: string; level: string; children?: ReactNode; onStart?: () => void; startLabel?: string
+    /** ES2 concept 12: the game chips under the letter, and the Focus switch beside Start */
+    meta?: ReactNode; foot?: ReactNode }) {
   const pg = PAGES[topicId]
   const m = pg.t.match(/^(.*?)\s*\((.+)\)\s*$/)
   const main = m ? m[1] : pg.t
@@ -61,7 +63,7 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
       if (host) setMode((md) => {
         if (md !== 'measure') return md
         const cs = getComputedStyle(host)
-        const room = host.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 18 - 14 - 62
+        const room = host.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 18 - 14 - 62 - (meta ? 62 : 0)
         return cap * 2 + strips * strip <= room ? 'one' : 'two'
       })
       // last guard (admin 3697): a one-letter page must never scroll; if it still overflows, split it
@@ -91,12 +93,12 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
           {Array.from({ length: fit.strips }, (_, i) => <img key={i} src={pMid} alt="" draggable={false} />)}
           <img src={pBot} alt="" draggable={false} />
         </div>
-        <img className="sl-seal" src={seal} alt="" draggable={false} />
+        <img className="sl-seal" src={waxSeal} alt="" draggable={false} />
         <img className="sl-quill" src={quill} alt="" draggable={false} />
         <img className="sl-lav" src={lavender} alt="" draggable={false} />
         {two && <span className="sl-pg">{page + 1} / 2</span>}
         <div className="sl-body" ref={body} style={{ top: fit.top }}>
-          <Panel name="ribbon_gold" className="sl-tag" inner="lobby-tag-in">Spellbook · {level}</Panel>
+          <span className="k-ribbon sl-tag2">Spellbook · {level}</span>
           <h2 className={`sl-title${head ? '' : ' sm'}`}>{main}</h2>
           {head && sub && <p className="sl-subt">{sub}</p>}
           {head && <p className="sl-sum"><Ink text={pg.s} /></p>}
@@ -109,18 +111,21 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
           ))}
           {tail && (
             <div className={`sl-row sl-mis${(pg.mw + pg.mr).length > 30 ? ' col' : ''}`}>
+              <b className="sl-mis-t">Common mistake</b>
               <s>{pg.mw}</s><i aria-hidden>➜</i><span><Ink text={pg.mr} /></span>
             </div>
           )}
           {tail && children}
         </div>
       </div>
+      {(!two || page === 1) && meta}
+      {two && page === 1 && foot}
       {two && page === 0 ? (
-        <Btn className="lg sl-start" onClick={() => setPage(1)}>Next</Btn>
+        <button className="k-btn k-green sl-start sl-go" onClick={() => setPage(1)}>Next</button>
       ) : (
         <div className="sl-btns">
-          {two && <Btn name="btn_gold" className="sl-back" onClick={() => setPage(0)}>Back</Btn>}
-          <Btn className="lg sl-start" onClick={onStart}>{startLabel}</Btn>
+          {two ? <button className="k-btn k-cream sl-back" onClick={() => setPage(0)}>Back</button> : foot}
+          <button className="k-btn k-green sl-start sl-go" onClick={onStart}>{startLabel}</button>
         </div>
       )}
     </>

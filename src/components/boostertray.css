@@ -56,3 +56,6 @@
 /* Phase C: "?" replays the game's tutorial */
 .bt-ic.bt-q { font-size: 26px; font-weight: 800; color: #7d4ff0; font-family: var(--sans); }
 .bt.flat .bt-help { order: 0; }
+
+/* hidden until the first placement after layout (coordinator 10-12) */
+.bt.bt-wait { visibility: hidden; }

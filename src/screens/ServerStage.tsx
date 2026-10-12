@@ -5,12 +5,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { HeartIcon } from '../components/Icon'
-import { Panel, Art, Btn, Card, Chip } from '../components/PageArt'
+import { Btn, Card } from '../components/PageArt'
 import { skySrc } from '../components/SkyIcon'
 import stageBg from '../assets/stage_bg.webp'
 import icEnergy from '../assets/sky/ic_energy.png'
-import icCoin from '../assets/sky/ic_coin.png'
 import icHeart from '../assets/sky/ic_heart.png'
 import type { Stage, ServerQuestion } from '../types/game'
 import { gameFor } from '../games/registry'
@@ -20,7 +18,7 @@ import { HintCtx, type HintFn } from '../games/boosters'
 import { BoosterTray } from '../components/BoosterTray'
 import { ItemThumb } from '../components/ItemThumb'
 import { SpellLetter, hasLetter } from '../components/SpellLetter'
-import { api, errorText, ApiError, type CompleteOut, type StartOut, type Topic, type HintsState } from '../services/api'
+import { api, mockFx, errorText, ApiError, type CompleteOut, type StartOut, type Topic, type HintsState } from '../services/api'
 import { toCurrencies } from '../services/httpService'
 import { wearItem } from '../services/look'
 import { useCountdown } from '../components/Rewards'
@@ -31,6 +29,27 @@ import './stage.css'
 import './serverstage.css'
 import '../components/progression.css'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
+import { GAME_ICON } from '../games/gameIcons'
+import { ResultHero } from './ResultHero'
+import './stage2.css'
+import heartEmptyArt from '../assets/es2/k/p14/heart_empty_art.webp'
+import elixirArt from '../assets/es2/k/p14/elixir_art.webp'
+import hourglass from '../assets/es2/k/p14/icon_hourglass.webp'
+import flaskIc from '../assets/es2/k/kit/booster_btn_flask.webp'
+import waxSeal from '../assets/es2/k/p12/wax_seal.webp'
+import starGold from '../assets/es2/k/p13/star_gold.webp'
+import starEmpty from '../assets/es2/k/p13/star_empty.webp'
+import icLightning from '../assets/es2/k/p13/icon_lightning.webp'
+import icLeague from '../assets/es2/k/p13/icon_league_crest.webp'
+import icFlame from '../assets/es2/k/p13/icon_flame.webp'
+import icCoinK from '../assets/es2/k/kit/icon_coin.webp'
+import icGemsK from '../assets/es2/k/kit/icon_gems.webp'
+import icHeartK from '../assets/es2/k/kit/icon_heart.webp'
+import cfV from '../assets/es2/k/p13/confetti_violet.webp'
+import cfG from '../assets/es2/k/p13/confetti_gold.webp'
+import cfP from '../assets/es2/k/p13/confetti_pink.webp'
+import cfB from '../assets/es2/k/p13/confetti_blue.webp'
+const CONFETTI = [cfV, cfG, cfP, cfB, cfG, cfV, cfB, cfP, cfG, cfV]
 
 type Phase = 'loading' | 'error' | 'gate' | 'intro' | 'play' | 'between' | 'sending' | 'rescue' | 'result'
 
@@ -114,13 +133,17 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   useEffect(() => {
     let live = true
     setPhase('loading'); setOut(null); setRi(0); setModal(null); hints.current = 0; setExtra([]); setExtraN(0); setContErr('')
-    if (stage.heartsApply && (currencies?.hearts ?? 0) <= 0) { setPhase('gate'); return }
+    // ?mock=1 screenshot rig only (inert on live): window.__esFx['ES2 phase'] opens the gate / rescue / result card directly
+    const jump = mockFx<string>('ES2 phase')
+    if (jump === 'gate' || (stage.heartsApply && (currencies?.hearts ?? 0) <= 0)) { setPhase('gate'); return }
     api.start(stage.id).then((s) => {
       if (!live) return
       if (!s.questions.length) { setErr('This stage has no questions yet. Try another one.'); setPhase('error'); return }
       setSession(s)
       sheet.current = new AnswerSheet(planRounds(s.questions, boss).answerMap)
       setHintState(s.hints ?? null); setContLeft(s.continue?.left ?? 0); setContGems(s.continue?.cost_gems ?? 10)
+      if (jump === 'rescue') { setPhase('rescue'); return }
+      if (jump === 'result') { api.complete(s.session_id, [], 0, false, false).then((r) => { if (live) { setOut(r); setPhase('result') } }); return }
       setPhase('intro')
     }).catch((e) => {
       if (!live) return
@@ -196,14 +219,16 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   if (phase === 'gate') return (
     <div className="stage-host full">
       <div className="sky" />
-      <div className="gate-card pop">
-        <div className="gate-heart"><HeartIcon size={44} /></div>
-        <h2>Out of Hearts</h2>
+      <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
+      {/* ES2 concept 14: the painted card with the empty heart over a gold ribbon; green Get Hearts, cream Back to Map */}
+      <div className="rescue-wrap"><div className="rescue rs2 pop">
+        <img className="rs2-art rs2-heart" src={heartEmptyArt} alt="" draggable={false} />
+        <div className="rs2-ribbon"><h2>Out of Hearts</h2></div>
         <p>Trials, bosses and treasure vaults need a heart. Review in the Overnight Cauldron (10 right answers brew a heart), wait for one to recharge, or get more.</p>
         <NextHeart at={currencies?.heartsRefillAt ?? 0} />
-        <button className="btn btn-gold big" onClick={onNeedHearts}>Get Hearts</button>
-        <button className="btn btn-ghost big" onClick={onExit}>Back to Map</button>
-      </div>
+        <button className="k-btn k-green" onClick={onNeedHearts}>Get Hearts</button>
+        <button className="k-btn k-cream" onClick={onExit}>Back to Map</button>
+      </div></div>
     </div>
   )
 
@@ -215,8 +240,8 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         {phase === 'error' ? <>
           <h2 className="lobby-title ss-title">The spell fizzled</h2>
           <Card className="ss-card ss-card-c"><p className="ss-card-p">{err}</p></Card>
-          <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={() => { setErr(''); setAttempt((n) => n + 1) }}>Try again</Panel>
-          <button className="cb cb-white ss-sec" onClick={onExit}>Back to the map</button>
+          <button className="k-btn k-green lobby-go" onClick={() => { setErr(''); setAttempt((n) => n + 1) }}>Try again</button>
+          <button className="k-btn k-cream ss-sec" onClick={onExit}>Back to the map</button>
         </> : (
           <Card className="ss-card ss-card-c">
             <div className="ss-spinner" aria-hidden />
@@ -235,8 +260,9 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="sl-lobby pop">
           {guided && <Coach className="gd-top">This is a page of your Spellbook. Read the rule and the examples, then tap Start.</Coach>}
-          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={begin} />
-          <FocusToggle on={focusPref} set={setFocusPref} />
+          <SpellLetter topicId={stage.topicId!} level={stage.cefr ?? ''} onStart={begin}
+            meta={<GameChips games={games} hearts={stage.heartsApply ? session.hearts : null} />}
+            foot={<FocusToggle on={focusPref} set={setFocusPref} compact />} />
         </div>
       </div>
     )
@@ -246,11 +272,12 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
         <div className="lobby pop ss-lobby">
           {guided && <Coach className="gd-top">Your first stage! Read the card, then tap Start.</Coach>}
-          <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">
-            {KIND_LABEL[stage.serverKind ?? ''] ?? 'Stage'} · {stage.cefr}
-          </Panel>
+          {/* ES2 concept 12: the same painted spellbook page as the lesson letter, wax seal, gold ribbon, game chips with each game's art */}
+          <div className="ss-page">
+          <img className="ss-seal" src={waxSeal} alt="" draggable={false} />
+          <span className="k-ribbon lobby-tag2">{KIND_LABEL[stage.serverKind ?? ''] ?? 'Stage'} · {stage.cefr}</span>
           <h2 className="lobby-title ss-title">{stage.title.replace(/^(Spellbook|Practice|Echoes|Trial): /, '')}</h2>
-          <Card className="ss-card">
+          <div className="ss-card">
           {topic ? (
             <div className="ss-book">
               <p className="ss-sum"><Rich text={topic.summary ?? ''} /></p>
@@ -265,15 +292,13 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
           ) : (
             <p className="ss-card-p ss-c">{session.questions.length} runes to cast{session.review_ratio > 0 ? ', some from earlier spells' : ''}</p>
           )}
-          <div className="ss-games">
-            {games.map((g) => <Chip key={g}>{MG_LABEL[g] ?? g}</Chip>)}
-            {stage.heartsApply && <Chip className="ss-heart"><img src={icHeart} alt="" />{session.hearts}</Chip>}
           </div>
-          </Card>
-          <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={begin}>
-            {boss ? 'Fight' : 'Start'}
-          </Panel>
-          <FocusToggle on={focusPref} set={setFocusPref} />
+          </div>
+          <GameChips games={games} hearts={stage.heartsApply ? session.hearts : null} />
+          <div className="ss-foot">
+            <FocusToggle on={focusPref} set={setFocusPref} compact />
+            <button className="k-btn k-green lobby-go" onClick={begin}>{boss ? 'Fight' : 'Start'}</button>
+          </div>
         </div>
       </div>
     )
@@ -285,17 +310,18 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
     return (
       <div className="stage-host full">
         <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
-        <div className="rescue-wrap"><div className="rescue pop">
-          <div className="rescue-ic">🧪</div>
-          <h2>The {what} holds</h2>
+        {/* ES2 concept 14: the elixir over a gold ribbon on the painted card; green Continue, cream Keep / Give up */}
+        <div className="rescue-wrap"><div className="rescue rs2 pop">
+          <img className="rs2-art" src={elixirArt} alt="" draggable={false} />
+          <div className="rs2-ribbon"><h2>The {what} holds</h2></div>
           <p>{contLeft > 0 ? 'Half the runes must land to win. Try 3 more questions?' : `Drink an elixir to keep your heart. You have ${potion}.`}</p>
           {contLeft > 0 && (potion > 0
-            ? <button className="cb cb-violet rs-btn" onClick={() => doContinue('elixir')}>Continue: +3 questions<span className="rs-cost">🧪 1</span></button>
-            : <button className={`cb cb-violet rs-btn${gems < contGems ? ' rs-short' : ''}`} disabled={gems < contGems} onClick={() => doContinue('gems')}>Continue: +3 questions<span className="rs-cost"><img src={skySrc('ic_gem')} alt="" />{contGems}</span></button>)}
+            ? <button className="k-btn k-green rs-btn" onClick={() => doContinue('elixir')}>Continue: +3 questions<span className="rs-cost"><img src={flaskIc} alt="" />1</span></button>
+            : <button className={`k-btn k-green rs-btn${gems < contGems ? ' rs-short' : ''}`} disabled={gems < contGems} onClick={() => doContinue('gems')}>Continue: +3 questions<span className="rs-cost"><img src={skySrc('ic_gem')} alt="" />{contGems}</span></button>)}
           {contLeft > 0 && potion === 0 && gems < contGems && <small className="rs-note">You need {contGems} gems or an elixir.</small>}
-          {potion > 0 && <button className="cb cb-white" onClick={() => send(true)}>Keep my heart<span className="rs-cost">🧪 1</span></button>}
+          {potion > 0 && <button className="k-btn k-cream rs-btn" onClick={() => send(true)}>Keep my heart<span className="rs-cost"><img src={flaskIc} alt="" />1</span></button>}
           {contErr && <small className="rs-note">{contErr}</small>}
-          <button className="cb cb-white" onClick={() => send(false)}>Give up (−1 ❤️)</button>
+          <button className="k-btn k-cream" onClick={() => send(false)}>Give up (−1 heart)</button>
         </div></div>
       </div>
     )
@@ -304,38 +330,46 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
   if (phase === 'result' && out) return (
     <div className="stage-host full">
       <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
-      <div className="result pop">
-        <div className="result-stars">
+      {/* ES2 concept 13: painted stars, the arched ribbon, the player's 3D hero on the rune pedestal, two-part reward cards,
+          the Hearthfire chip, the stage drop card, green Continue (+ cream Play again) */}
+      <div className="result rs3 pop">
+        {out.stars > 0 && <span className="rs3-confetti" aria-hidden>{CONFETTI.map((c, i) => <img key={i} src={c} alt="" style={{ ['--i' as string]: i }} />)}</span>}
+        <div className="result-stars rs3-stars">
           {[0, 1, 2].map((i) => (
             <span key={i} className={`rstar s${i} ${i < out.stars ? 'on' : ''}`} style={{ animationDelay: `${i * 150}ms` }}>
-              <Art name="qi_star" />
+              <img src={i < out.stars ? starGold : starEmpty} alt="" draggable={false} />
             </span>
           ))}
         </div>
-        <h2 className="result-title">{out.stars === 3 ? 'Perfect!' : out.stars >= 1 ? 'Nice!' : 'Try again'}</h2>
-        <Card className="ss-card ss-card-c">
-        <p className="ss-card-p ss-strong">{out.correct} of {out.total} runes cast{out.first_clear ? ' · first clear' : ''}</p>
-        <div className="result-rewards ss-rw">
-          <span className="rwd"><img src={icEnergy} alt="" /><b>{out.rewards.xp}</b><small>{out.rewards.boosted || out.rewards.double_xp ? 'XP ×2' : 'XP'}</small></span>
-          <span className="rwd"><img src={icCoin} alt="" /><b>{out.rewards.coins}</b></span>
-          {!!out.rewards.gems && <span className="rwd"><img src={skySrc('ic_gem')} alt="" /><b>{out.rewards.gems}</b></span>}
+        <div className="rs3-ribbon"><h2 className="result-title">{out.stars === 3 ? 'Perfect!' : out.stars >= 1 ? 'Nice!' : 'Try again'}</h2></div>
+        <ResultHero win={out.stars > 0} />
+        <p className="rs3-sum">{out.correct} of {out.total} runes cast{out.first_clear ? ' · first clear' : ''}</p>
+        <div className="rs3-cards">
+          <span className="rs3-card k9"><img src={icLightning} alt="" /><b>XP +{out.rewards.xp}{out.rewards.boosted || out.rewards.double_xp ? ' ×2' : ''}</b></span>
+          <span className="rs3-card k9"><img src={icCoinK} alt="" /><b>+{out.rewards.coins}</b></span>
+          {!!out.rewards.gems && <span className="rs3-card k9"><img src={icGemsK} alt="" /><b>+{out.rewards.gems}</b></span>}
+          {out.league_points > 0 && <span className="rs3-card k9"><img src={icLeague} alt="" /><b>+{out.league_points} League</b></span>}
         </div>
-        <p className="ss-extra">
-          {out.league_points > 0 && <span>+{out.league_points} league points</span>}
-          {out.streak.today_done && <span>🔥 Hearthfire {out.streak.current} day{out.streak.current === 1 ? '' : 's'}</span>}
-          {out.hearts_lost > 0 && <span>−{out.hearts_lost} ❤️</span>}
-          {out.elixir_used && <span>🧪 elixir used, heart kept</span>}
-          {out.rewards.double_xp && <span>Double XP Wednesday</span>}
-          {!!out.rewards.boss_rush?.gems && <span>Boss Rush +{out.rewards.boss_rush.gems} gems{out.rewards.boss_rush.left ? ` (${out.rewards.boss_rush.left} more today)` : ''}</span>}
-          {out.rewards.boss_rush && !out.rewards.boss_rush.gems && <span>Boss Rush: today's 2 rewards are taken</span>}
-          {out.focus && <span>Focus mode: up to 2 stars, no league points</span>}
-        </p>
-        </Card>
-        {out.rewards.items?.length ? <Art name="chest_open" className="result-chest" /> : null}
-        <Panel name="btn_gold" className="result-continue" inner="lobby-start-in" onClick={() => { refreshReview(); onExit() }}>
-          Continue
-        </Panel>
-        {out.stars < 3 && <button className="cb cb-white ss-sec" onClick={() => setAttempt((n) => n + 1)}>Play again</button>}
+        {out.streak.today_done && <p className="rs3-chip k9 k-chip-c"><img src={icFlame} alt="" />Hearthfire: {out.streak.current} day{out.streak.current === 1 ? '' : 's'}</p>}
+        {(out.hearts_lost > 0 || out.elixir_used || out.rewards.double_xp || out.rewards.boss_rush || out.focus) && (
+          <p className="ss-extra rs3-extra">
+            {out.hearts_lost > 0 && <span>−{out.hearts_lost} heart{out.hearts_lost === 1 ? '' : 's'}</span>}
+            {out.elixir_used && <span>Elixir used, heart kept</span>}
+            {out.rewards.double_xp && <span>Double XP Wednesday</span>}
+            {!!out.rewards.boss_rush?.gems && <span>Boss Rush +{out.rewards.boss_rush.gems} gems{out.rewards.boss_rush.left ? ` (${out.rewards.boss_rush.left} more today)` : ''}</span>}
+            {out.rewards.boss_rush && !out.rewards.boss_rush.gems && <span>Boss Rush: today's 2 rewards are taken</span>}
+            {out.focus && <span>Focus mode: up to 2 stars, no league points</span>}
+          </p>
+        )}
+        {out.rewards.items?.length ? (
+          <div className="rs3-drop k9 k-panel">
+            <span className="rs3-droptab">Stage drop</span>
+            <ItemThumb id={out.rewards.items[0].item_id} fallback="chest_epic" />
+            <b>New item: {out.rewards.items[0].name}{out.rewards.items.length > 1 ? ` +${out.rewards.items.length - 1}` : ''}</b>
+          </div>
+        ) : null}
+        <button className="k-btn k-green result-continue rs3-go" onClick={() => { refreshReview(); onExit() }}>Continue</button>
+        {out.stars < 3 && <button className="k-btn k-cream ss-sec rs3-again" onClick={() => setAttempt((n) => n + 1)}>Play again</button>}
       </div>
       {modal && <RewardModal kind={modal} out={out} stage={stage} onClose={() => setModal(modal === 'drop' && out.level_completed ? 'done' : modal === 'drop' && out.level_up ? 'level' : null)} />}
     </div>
@@ -378,12 +412,27 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
 function FocusIc() { return <svg viewBox="0 0 24 24" aria-hidden><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.5" /></svg> }
 
 /** Phase C: the lobby switch for Focus mode (untimed, calm screen; at most 2 stars, no league points) */
-export function FocusToggle({ on, set }: { on: boolean; set: (v: boolean) => void }) {
+export function FocusToggle({ on, set, compact }: { on: boolean; set: (v: boolean) => void; compact?: boolean }) {
+  const why = 'No timers, calm screen. Up to 2 stars, no league points.'
+  // ES2 concept 12: compact = the painted switch with its label beside the Start button (the rule shows once it is on)
   return (
-    <button className={`fx-toggle${on ? ' on' : ''}`} role="switch" aria-checked={on} onClick={() => set(!on)}>
-      <span className="fx-t"><b>Focus mode</b><small>No timers, calm screen. Up to 2 stars, no league points.</small></span>
-      <span className="fx-sw" aria-hidden />
+    <button className={`fx-toggle${on ? ' on' : ''}${compact ? ' fx-compact' : ''}`} role="switch" aria-checked={on} aria-label={`Focus mode. ${why}`} onClick={() => set(!on)}>
+      {compact && <span className="fx-sw" aria-hidden />}
+      <span className="fx-t"><b>Focus mode</b>{(!compact || on) && <small>{compact ? 'Up to 2 stars, no league points' : why}</small>}</span>
+      {!compact && <span className="fx-sw" aria-hidden />}
     </button>
+  )
+}
+
+/** ES2 concept 12: the stage's games as painted chips with each game's own art, and the heart it costs */
+function GameChips({ games, hearts }: { games: string[]; hearts: number | null }) {
+  return (
+    <div className="ss-chips">
+      {games.map((g) => (
+        <span key={g} className="ss-gchip">{GAME_ICON[g] && <img src={GAME_ICON[g]} alt="" draggable={false} />}<b>{MG_LABEL[g] ?? g}</b></span>
+      ))}
+      {hearts != null && <span className="ss-gchip ss-hchip" aria-label={`${hearts} hearts`}><img src={icHeartK} alt="" draggable={false} /><b>{hearts}</b></span>}
+    </div>
   )
 }
 
@@ -428,5 +477,5 @@ function RewardModal({ kind, out, stage, onClose }: { kind: 'drop' | 'level' | '
 function NextHeart({ at }: { at: number }) {
   const t = useCountdown(at)
   if (!at || t.ms <= 0) return null
-  return <p className="gate-next">Next heart in {t.label}</p>
+  return <p className="gate-next k9 k-chip-c"><img src={hourglass} alt="" />Next heart in {t.label}</p>
 }

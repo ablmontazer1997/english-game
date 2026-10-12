@@ -76,6 +76,8 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
         const ys: [number, number][] = []
         for (const e of host.querySelectorAll<HTMLElement>(OBSTACLES)) {
           if (bt.contains(e)) continue
+          // the game-name intro ribbon is a passing overlay (1.9 s), not a layout obstacle: it used to push the tray flat at first paint
+          if (e.closest('.gt-intro')) continue
           const r = e.getBoundingClientRect()
           if (!r.width || !r.height || r.right < x0 || r.left > H.right) continue
           const cs = getComputedStyle(e)
@@ -102,9 +104,14 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
       t = fit(gaps(flat.w), flat.h)
       if (t != null) { bt.classList.add('flat'); bt.style.top = `${Math.round(t)}px` }
     }
-    place()
+    // coordinator 10-12: the tray stays hidden until the game has laid out (two frames + 350 ms), so it never shows in a
+    // wrong spot (e.g. lying flat over the boss) on the first paint; then it is placed again once a second as before
+    const bt0 = ref.current; bt0?.classList.add('bt-wait')
+    let r1 = 0, r2 = 0
+    r1 = requestAnimationFrame(() => { r2 = requestAnimationFrame(place) })
+    const t0 = window.setTimeout(() => { place(); bt0?.classList.remove('bt-wait') }, 350)
     const id = window.setInterval(place, 1000)
     window.addEventListener('resize', place)
-    return () => { window.clearInterval(id); window.removeEventListener('resize', place) }
+    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); window.clearTimeout(t0); window.clearInterval(id); window.removeEventListener('resize', place) }
   }, [ref])
 }

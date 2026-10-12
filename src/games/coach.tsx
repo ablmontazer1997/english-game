@@ -12,6 +12,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
+import ghostHand from '../assets/es2/k/p15/ghost_hand.webp'
 import { API_BASE } from '../services/api'
 import type { ServerQuestion } from '../types/game'
 import './coach.css'
@@ -80,8 +81,9 @@ function WrongCard({ info, onDone }: { info: WrongInfo; onDone: () => void }) {
         <div className="wfb-head">
           <span className="wfb-x" aria-hidden><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" /></svg></span>
           <b>Not quite</b>
-          {info.yours && <s className="wfb-yours">{info.yours}</s>}
         </div>
+        {/* ES2 concept 15: the player's answer struck through on its own plate under the header */}
+        {info.yours && <s className="wfb-yours">{info.yours}</s>}
         <div className={`wfb-ans${info.answer.length > 60 ? ' long' : ''}`}>
           <small>{info.label ?? 'The right answer'}</small>
           <b>{info.answer}</b>
@@ -93,7 +95,7 @@ function WrongCard({ info, onDone }: { info: WrongInfo; onDone: () => void }) {
         {info.why && (open
           ? <p className="wfb-why">{info.why}</p>
           : <button className="wfb-whybtn" onClick={() => setOpen(true)}>Why?</button>)}
-        <button ref={go} className="cb cb-green wfb-go" onClick={onDone}>Got it</button>
+        <button ref={go} className="k-btn k-green wfb-go" onClick={onDone}>Got it</button>
       </div>
     </div>
   )
@@ -340,16 +342,17 @@ export function Spotlight({ game, step, getRoot, getHost, onNext, onSkip, canDem
           <p>{step === 'look' ? t.look : t.demo}</p>
         </div>
         <div className="tut-btns">
-          <button className="cb cb-white tut-skip" onClick={onSkip}>Skip</button>
+          <button className="k-btn k-cream tut-skip" onClick={onSkip}>Skip</button>
           {step === 'look'
-            ? <button className="cb cb-violet tut-next" onClick={onNext}>{canDemo ? 'Show me' : "Let's play"}</button>
-            : <button className="cb cb-green tut-next" disabled={!demoDone} onClick={onNext}>Your turn</button>}
+            ? <button className="k-btn k-green tut-next" onClick={onNext}>{canDemo ? 'Show me' : "Let's play"}</button>
+            : <button className="k-btn k-green tut-next" disabled={!demoDone} onClick={onNext}>Your turn</button>}
         </div>
       </div>
       {hand.on && (
         <div className="gh-hand" style={{ transform: `translate(${hand.x}px, ${hand.y}px)` }} aria-hidden>
           <span key={hand.tap} className={hand.tap ? 'gh-ripple' : ''} />
-          <svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-.5a1.5 1.5 0 0 1 3 0V11m0-.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-4.6-2.2L4.2 15.5a1.5 1.5 0 0 1 2.3-1.9L9 16" /></svg>
+          {/* ES2 concept 15: the painted glove hand (its fingertip is the hotspot) */}
+          <img className="gh-img" src={ghostHand} alt="" draggable={false} />
         </div>
       )}
     </div>
@@ -391,7 +394,7 @@ export function TutReady({ game, onGo }: { game: string; onGo: () => void }) {
     <div className="tut-scrim">
       <div className="tut-coach tut-ready tut-in">
         <div className="tut-line"><img src={oracleIdle} alt="" draggable={false} /><p>Well done! Now the real round.{TIMED.has(game) ? ' The clock starts after 3, 2, 1.' : ''}</p></div>
-        <div className="tut-btns"><button className="cb cb-green tut-next" onClick={onGo}>Start</button></div>
+        <div className="tut-btns"><button className="k-btn k-green tut-next" onClick={onGo}>Start</button></div>
       </div>
     </div>
   )

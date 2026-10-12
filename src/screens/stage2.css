@@ -1,0 +1,127 @@
+/* ===== ES2 batch 2 (admin 5202): stage lobby (concept 12), result (13), rescue + Out of Hearts (14).
+   Painted pieces from assets/es2/k (@2x webp); the live stage background stays. ===== */
+
+/* ---------- shared: the gold ribbon label (kit ribbon_gold, its own aspect, never stretched) ---------- */
+.k-ribbon { display: grid; place-items: center; aspect-ratio: 379 / 104; width: min(70%, 230px); padding: 0 16% 7%; box-sizing: border-box;
+  background: url(../assets/es2/k/kit/ribbon_gold.webp) center / 100% 100% no-repeat; font-family: var(--sans); font-weight: 900;
+  font-size: clamp(13px, 4vw, 16px); letter-spacing: .06em; text-transform: uppercase; color: #6a3d0c; white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 246, 200, .8); filter: drop-shadow(0 3px 5px rgba(120, 70, 0, .25)); }
+
+/* ---------- lobby: the painted spellbook page (lesson letter + every other stage) ---------- */
+.sl .sl-paper { visibility: hidden; }
+.sl::before { content: ''; position: absolute; inset: 0; z-index: 0; border: 0 solid transparent;
+  border-image: url(../assets/es2/k/p12/spellbook_page.webp) 136 66 304 70 fill / 68px 33px 152px 35px stretch; }
+.sl .sl-quill, .sl .sl-lav, .sl .sl-div { display: none; }
+.sl .sl-seal { top: -30px; width: 70px; filter: drop-shadow(0 4px 6px rgba(90, 10, 20, .3)); }
+.sl .sl-body { padding: 0 12%; gap: 7px; }
+.sl .sl-tag2 { width: min(66%, 220px); }
+.sl .sl-title { color: #2a1f5c; }
+.sl .sl-subt { margin: -2px 0 0; padding: 3px 26px 5px; min-height: 26px; box-sizing: border-box; color: #fff; font-size: 13.5px; font-weight: 900;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/title_plate.webp) 30 62 16 62 fill / 13px 26px 7px 26px stretch; }
+.sl .sl-sum { color: #3d2f5a; }
+.sl .sl-row { min-height: 54px; padding: 6px 12px 6px 4px; gap: 12px; border-radius: 0; background: none; box-shadow: none; color: #2a1f5c;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/example_row.webp) 21 20 24 135 fill / 11px 10px 12px 68px stretch; }
+.sl .sl-row img { width: 46px; height: 46px; margin-left: 4px; }
+.sl .sl-row em, .sl .sl-sum em { color: #7b2fe0; }
+.sl .sl-mis { position: relative; margin-top: 12px; padding: 22px 14px 10px; border-image: url(../assets/es2/k/p12/mistake_plate.webp) 39 105 27 103 fill / 20px 52px 14px 52px stretch; }
+.sl .sl-mis-t { position: absolute; top: 0; left: 0; right: 0; height: 21px; display: grid; place-items: center; font-size: 12.5px; font-weight: 900; color: #fff;
+  text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
+.sl .sl-mis s { color: #b0303e; }
+.sl .sl-mis.col .sl-mis-t { position: absolute; }
+
+/* the game chips under the page (each game's own art), then the Focus switch beside the green Start */
+.ss-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: min(100%, 390px); flex: none; }
+.ss-gchip { display: flex; align-items: center; gap: 6px; min-height: 46px; max-width: 46%; padding: 4px 12px 6px 6px; box-sizing: border-box;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/game_chip.webp) 32 32 31 32 fill / 14px 14px 14px 14px stretch;
+  filter: drop-shadow(0 4px 6px rgba(40, 20, 80, .25)); }
+.ss-gchip img { width: 34px; height: 34px; object-fit: contain; flex: none; }
+.ss-gchip b { font-family: var(--sans); font-size: 13.5px; line-height: 1.1; font-weight: 900; color: #2a1f5c; }
+.ss-gchip.ss-hchip b { font-size: 20px; }
+.sl-btns { align-items: center; }
+.sl-btns .sl-go { flex: 1; max-width: 250px; min-height: 60px; font-size: 26px; }
+.sl-lobby > .sl-go { flex: none; align-self: center; width: min(64%, 250px); min-height: 60px; font-size: 26px; }
+.sl-btns .sl-back { min-height: 52px; min-width: 104px; }
+.fx-toggle.fx-compact { width: auto; flex: 0 1 auto; gap: 8px; padding: 6px 4px; border: 0; border-radius: 0; background: none; box-shadow: none; color: #fff; }
+.fx-toggle.fx-compact:active { transform: none; box-shadow: none; }
+.fx-compact .fx-t b { font-size: 14px; font-weight: 900; text-shadow: 0 1px 3px rgba(30, 6, 70, .7); white-space: nowrap; }
+.fx-compact .fx-t small { color: #fff; font-size: 11.5px; text-shadow: 0 1px 3px rgba(30, 6, 70, .7); }
+.fx-toggle .fx-sw { width: 54px; height: 29px; border-radius: 0; background: url(../assets/es2/k/p12/toggle_off.webp) center / contain no-repeat; box-shadow: none; }
+.fx-toggle .fx-sw::after { display: none; }
+.fx-toggle.on .fx-sw { background: url(../assets/es2/k/p12/toggle_on.webp) center / contain no-repeat; }
+
+/* the other stages: the same page, built from the parchment 9-slice */
+.ss-lobby { gap: 12px; }
+.ss-lobby .ss-page { position: relative; width: min(100%, 390px); box-sizing: border-box; display: grid; justify-items: center; gap: 8px;
+  padding: 50px 10% 70px; margin-top: 22px; border: 0 solid transparent;
+  border-image: url(../assets/es2/k/p12/spellbook_page.webp) 136 66 304 70 fill / 68px 33px 152px 35px stretch; filter: drop-shadow(0 10px 18px rgba(90, 60, 120, .22)); }
+.ss-lobby .ss-seal { position: absolute; top: -30px; left: 50%; width: 70px; transform: translateX(-50%); }
+.ss-lobby .lobby-tag2 { width: min(66%, 220px); }
+.ss-lobby .lobby-title { color: #2a1f5c; text-shadow: none; }
+.ss-lobby .ss-card { width: 100%; background: none; box-shadow: none; padding: 0; }
+.ss-foot { display: flex; align-items: center; justify-content: center; gap: 10px; width: min(100%, 390px); }
+.ss-foot .lobby-go, .lobby .lobby-go { flex: 1; max-width: 250px; min-height: 60px; font-size: 26px; }
+.lobby .k-btn.ss-sec { min-height: 50px; padding: 4px 22px 8px; }
+
+/* ---------- rescue + Out of Hearts: the art over a gold ribbon on the cream panel ---------- */
+.rescue.rs2 { width: min(88vw, 340px); padding: 112px 18px 18px; margin-top: 80px; gap: 10px; border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
+  border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 14px 26px rgba(20, 10, 60, .35)); color: #2a1f5c; }
+.rs2-art { position: absolute; left: 50%; top: -92px; width: 140px; transform: translateX(-50%); filter: drop-shadow(0 8px 14px rgba(60, 20, 120, .35)); animation: rs2-float 3s ease-in-out infinite; }
+.rs2-art.rs2-heart { top: -64px; width: 124px; }
+@keyframes rs2-float { 50% { translate: 0 -5px; } }
+.rs2-ribbon { position: absolute; left: 50%; top: 24px; width: 96%; aspect-ratio: 379 / 104; transform: translateX(-50%); display: grid; place-items: center; padding-bottom: 7%;
+  background: url(../assets/es2/k/kit/ribbon_gold.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 6px rgba(120, 70, 0, .3)); }
+.rs2-ribbon h2 { margin: 0; font-size: clamp(20px, 6.4vw, 25px); font-weight: 900; color: #fff; white-space: nowrap;
+  text-shadow: 0 2px 0 #9a5a0c, 0 0 2px #9a5a0c, 0 3px 6px rgba(120, 70, 0, .4); }
+.rescue.rs2 p { font-size: 16px; font-weight: 800; color: #2a1f5c; line-height: 1.3; }
+.rescue.rs2 .k-btn { width: 100%; min-height: 54px; font-size: 19px; }
+.rescue.rs2 .rs-btn { gap: 10px; }
+.rescue.rs2 .rs-cost { background: none; padding: 0; gap: 2px; color: inherit; font-size: 17px; }
+.rescue.rs2 .rs-cost img { width: 30px; height: 30px; }
+.rescue.rs2 .k-green .rs-cost { color: #fff; }
+.rescue.rs2 .gate-next { justify-self: center; display: flex; align-items: center; gap: 6px; margin: 0; padding: 4px 16px 6px 10px; min-height: 40px; box-sizing: border-box;
+  font-size: 15px; font-weight: 900; color: #2a1f5c; }
+.rescue.rs2 .gate-next img { width: 18px; height: 30px; object-fit: contain; }
+
+/* ---------- result ---------- */
+.result.rs3 { gap: 6px; padding-top: calc(10px + var(--safe-top, 0px)); }
+.rs3-stars { height: 100px; margin-bottom: -18px; z-index: 2; }
+.rs3-stars .rstar img { width: 74px; }
+.rs3-stars .rstar.s1 { margin: 0 -2px 26px; }
+.rs3-stars .rstar.s1 img { width: 96px; }
+.rs3-stars .rstar:not(.on) { filter: none; }
+.rs3-ribbon { position: relative; z-index: 2; width: min(86%, 330px); aspect-ratio: 353 / 109; display: grid; place-items: center; padding-bottom: 4%;
+  background: url(../assets/es2/k/p13/ribbon_arched.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 6px 8px rgba(120, 70, 0, .3)); }
+.rs3-ribbon .result-title { margin: 0; font-family: var(--sans); font-size: clamp(28px, 9vw, 38px); font-weight: 900; color: #5a2fc0; text-transform: uppercase;
+  text-shadow: 0 2px 0 #fff4c4; letter-spacing: .02em; }
+.rh { position: relative; margin: -6px auto 0; flex: none; }
+.rh-ped { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); filter: drop-shadow(0 8px 10px rgba(60, 30, 0, .3)); }
+.rh-2d, .rh-3d { position: absolute; left: 50%; transform: translateX(-50%); }
+.rh-2d { width: auto; z-index: 2; transition: opacity .35s; }
+.rh-2d.off { opacity: 0; }
+.rh-3d { z-index: 3; border: 0; background: transparent; color-scheme: normal; pointer-events: none; opacity: 0; transition: opacity .35s; }
+.rh-3d.on { opacity: 1; }
+.rs3-sum { margin: 2px 0 0; font-family: var(--sans); font-size: 16px; font-weight: 900; color: #fff; text-shadow: 0 1px 0 rgba(40, 10, 90, .7), 0 2px 8px rgba(40, 10, 90, .5); }
+.rs3-cards { display: flex; justify-content: center; gap: 8px; width: min(100%, 380px); }
+.rs3-card { flex: 1 1 0; max-width: 118px; min-height: 92px; display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: center; padding: 6px 4px 6px;
+  box-sizing: border-box; border-image: url(../assets/es2/k/kit/card_twopart.webp) 48 36 59 30 fill / 24px 18px 30px 15px stretch; }
+.rs3-card img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(20, 6, 50, .4)); }
+.rs3-card b { font-family: var(--sans); font-size: 14px; font-weight: 900; color: #2a1f5c; white-space: nowrap; padding-bottom: 2px; }
+.rs3-chip { display: flex; align-items: center; gap: 6px; margin: 0; padding: 3px 16px 5px 10px; min-height: 36px; box-sizing: border-box; font-family: var(--sans); font-size: 15px; font-weight: 900; color: #2a1f5c; }
+.rs3-chip img { width: 18px; height: 22px; object-fit: contain; }
+.rs3-extra { margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(40, 10, 90, .8); }
+.rs3-drop { position: relative; display: flex; align-items: center; gap: 10px; width: min(92%, 340px); box-sizing: border-box; padding: 18px 14px 10px; margin-top: 10px; }
+.rs3-droptab { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); min-width: 150px; height: 26px; display: grid; place-items: center; padding: 0 22px 2px;
+  font-size: 13px; font-weight: 900; color: #fff; white-space: nowrap; border: 0 solid transparent;
+  border-image: url(../assets/es2/k/p13/stage_drop_tab.webp) 22 37 14 37 fill / 11px 18px 7px 18px stretch; }
+.rs3-drop img, .rs3-drop .item-thumb { width: 64px; height: 64px; object-fit: contain; flex: none; }
+.rs3-drop b { font-size: 15px; font-weight: 900; color: #2a1f5c; }
+.result .rs3-go { width: min(66%, 260px); min-height: 60px; font-size: 26px; margin-top: 6px; }
+.result .rs3-again { min-height: 46px; font-size: 16px; padding: 3px 22px 7px; }
+.rs3-confetti { position: absolute; inset: 0 0 auto 0; height: 46%; pointer-events: none; z-index: 1; }
+.rs3-confetti img { position: absolute; width: 20px; top: -20px; left: calc(6% + var(--i) * 9.3%); animation: rs3-fall calc(2.6s + var(--i) * .17s) linear calc(var(--i) * -.37s) infinite; }
+@keyframes rs3-fall { to { transform: translateY(380px) rotate(540deg); opacity: .1; } }
+@media (max-height: 760px) {
+  .rs3-stars { height: 80px; } .rs3-stars .rstar img { width: 58px; } .rs3-stars .rstar.s1 img { width: 76px; }
+  .rs3-card { min-height: 80px; } .rs3-card img { width: 36px; height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .rs3-confetti, .rs2-art { animation: none; display: none; } .rs2-art { display: block; } }

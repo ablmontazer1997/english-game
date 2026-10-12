@@ -70,3 +70,6 @@
 .swv .swv-go .gs-go.k-btn { min-height: 60px; font-size: 26px; border-radius: 0; box-shadow: none; background: none; }
 /* the loom crest now sits behind the task plate, so the plate is pushed a little lower than before */
 .swv .gs-scene { top: calc(120px + var(--safe-top, 0px) - var(--swW) * .4797); }
+
+/* coordinator 10-12: a placed piece leaves an empty gap in the pool (no faded ghost of it beside the loom card) */
+.swv .swv-pool .swv-tile.used { visibility: hidden; }

@@ -65,15 +65,15 @@
 /* the round counter (GameProgress): the painted pip-bar plate, gold/violet painted pips */
 /* (3 classes: wins over gametitle.css / bubblepop.css whatever the bundle order) */
 .gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { border: 0 solid transparent; border-image: var(--k-pipbar) 47 72 43 72 fill / 24px 30px 22px 30px stretch;
-  background: none; box-shadow: none; border-radius: 0; padding: 7px 26px 8px; gap: 2px; min-width: 150px; }
-.gt-slim .gt-pp-t, .bubblepop .gt-slim .gt-pp-t { font-size: 15px; line-height: 17px; color: #fff; text-shadow: 0 1.5px 0 #3a0f80, 0 0 3px #3a0f80, 0 0 1px #3a0f80; }
+  background: none; box-shadow: none; border-radius: 0; padding: 15px 26px 9px; gap: 3px; min-width: 150px; }
+.gt-slim .gt-pp-t, .bubblepop .gt-slim .gt-pp-t { font-size: 15px; line-height: 17px; color: #fff; text-shadow: 0 1.5px 0 rgba(30, 6, 70, .7); }  /* the label sits under the plate's glossy band (coordinator 10-12), not on it */
 .gt-pips { gap: 4px; }
 .gt-pips i, .bubblepop .gt-pips i { width: 14px; height: 14px; border-radius: 0; box-shadow: none; background: var(--k-pip-off) center / contain no-repeat; }
 .gt-pips i.done { background-image: var(--k-pip-on); }
 .gt-pips i.on { background-image: var(--k-pip-on); filter: drop-shadow(0 0 4px rgba(255, 214, 90, .95)); transform: scale(1.15); }
 .bubblepop /* (3 classes: wins over gametitle.css / bubblepop.css whatever the bundle order) */
 .gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { border: 0 solid transparent; box-shadow: none; }
-@media (max-width: 374px) { .gt-pips i, .bubblepop .gt-pips i { width: 11px; height: 11px; } .gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { padding: 4px 22px 7px; } }
+@media (max-width: 374px) { .gt-pips i, .bubblepop .gt-pips i { width: 11px; height: 11px; } .gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { padding: 14px 22px 8px; } }
 
 /* ---------- the task plate (the violet painted plate with gold rim and sparkle ends; text centred, how-to line under it) ---------- */
 .gtask.gtask-b { border: 0 solid transparent; border-image: var(--k-plate) 68 87 66 93 fill / 34px 44px 33px 46px stretch;
@@ -96,8 +96,8 @@
 .stage-host .bt-hint { background-image: url(../assets/es2/k/kit/booster_btn_bulb.webp); }
 .stage-host .bt-elixir { background-image: url(../assets/es2/k/kit/booster_btn_flask.webp); }
 .stage-host .bt-hint .bt-ic, .stage-host .bt-elixir .bt-ic { visibility: hidden; }
-.stage-host .bt-help { background: radial-gradient(circle at 40% 35%, #8f5cf0, #4c1aa6 75%); box-shadow: inset 0 0 0 2.5px #f3c652; }
-.stage-host .bt-help .bt-q { color: #fff; font-size: 22px; }
+.stage-host .bt-help { background: url(../assets/es2/k/p15/btn_help.webp) center / contain no-repeat; box-shadow: none; }
+.stage-host .bt-help .bt-q { visibility: hidden; }
 .stage-host .bt-count { top: -4px; right: -6px; min-width: 22px; height: 22px; border: 0; padding: 0 4px; font-size: 12px;
   background: url(../assets/es2/k/kit/badge_round_violet.webp) center / 100% 100% no-repeat; }
 .stage-host .bt-cost { bottom: -8px; font-size: 10px; padding: 0 5px 0 3px; }
