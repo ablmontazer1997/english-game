@@ -47,3 +47,26 @@
 .swv-pool .swv-tile.rope { transition: opacity .2s, transform .15s; }
 /* Phase C: after a wrong weave the loom shows the right sentence */
 .swv-reveal .swv-tile.in { filter: hue-rotate(-150deg) saturate(1.1) drop-shadow(0 0 10px rgba(120, 220, 80, .9)); }
+
+/* ===== ES2 concept 10 (admin 5202): task plate (with the scroll) under the HUD; one cream card holds the source spell and the
+   painted loom rail with its slots; painted woven tiles below; green Weave. The live loom plate stays. ===== */
+.swv-taskp { position: absolute; z-index: 4; top: calc(66px + var(--safe-top, 0px)); left: 4%; right: 4%; }
+.swv .swv-task { margin: 0; }
+.gtask-b.swv-task .gtask-ic, .gtask-b.bb-task .gtask-ic { display: block; width: 46px; height: 30px; margin: 0 -4px 0 -14px; border-radius: 0; background: url(../assets/es2/k/kit/scroll_icon.webp) center / contain no-repeat; }
+.gtask-b.swv-task .gtask-ic svg, .gtask-b.bb-task .gtask-ic svg { display: none; }
+.swv .swv-dock { gap: 8px; }
+.swv .swv-source.k9 { margin: 0 4%; padding: 14px 12px 12px; gap: 10px; background: none; box-shadow: none; border-radius: 0; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+.swv .swv-source p { color: #2a1f5c; }
+.swv .swv-line { position: relative; left: auto; top: auto; width: 100%; min-height: 58px; padding: 8px 14px 9px; box-sizing: border-box; gap: 6px 6px;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p10/loom_rail.webp) 35 52 33 53 fill / 18px 26px 17px 26px stretch; }
+.swv .swv-slot { width: auto; min-width: 64px; flex: 0 1 22%; min-height: 40px; opacity: 1; filter: none;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p10/woven_slot.webp) 17 19 16 19 fill / 8px 10px 8px 10px stretch; }
+.swv .swv-tile { border: 0 solid transparent; border-image: url(../assets/es2/k/p10/woven_tile.webp) 29 30 36 26 fill / 14px 15px 18px 13px stretch; background: none; color: #2a1f5c; }
+.swv .swv-tile.in { min-height: 40px; padding: 0 12px 3px; color: #2a1f5c; text-shadow: none; filter: drop-shadow(0 0 6px rgba(255, 214, 90, .9)); }
+.swv .swv-tile.rope { min-height: 48px; padding: 0 16px 4px; filter: drop-shadow(0 4px 6px rgba(40, 20, 80, .3)); }
+.swv-ok .swv-tile.in { filter: drop-shadow(0 0 10px rgba(255, 220, 110, 1)); }
+.swv-reveal .swv-tile.in { filter: drop-shadow(0 0 8px rgba(110, 220, 70, 1)); }
+.swv .swv-go { margin: 6px 12% 0; display: grid; }
+.swv .swv-go .gs-go.k-btn { min-height: 60px; font-size: 26px; border-radius: 0; box-shadow: none; background: none; }
+/* the loom crest now sits behind the task plate, so the plate is pushed a little lower than before */
+.swv .gs-scene { top: calc(120px + var(--safe-top, 0px) - var(--swW) * .4797); }

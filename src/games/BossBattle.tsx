@@ -628,22 +628,21 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
       <div className="gs-title"><GameTitle title="Boss Battle" /></div>
 
       <div className="gs-ui bb2-hud" ref={hudEl} data-focus-keep="">
-        <div className="gs-panel bb2-hp">
-          <b>You</b>
+        {/* ES2 concept 11: the painted HP plates (name tab on top; the boss plate has its portrait and a painted bar) */}
+        <div className="bb2-hp bb2-you">
+          <b className="bb2-tab">You</b>
           <div className="bb2-row">
             <div className="bb2-hearts" aria-label={`${lives} of ${LIVES} hearts`}>
               {Array.from({ length: LIVES }).map((_, i) => <i key={i} className={i < lives ? 'on' : ''} />)}
             </div>
           </div>
         </div>
-        <div className="gs-panel bb2-hp">
-          <b>{boss.name}</b>
-          <div className="bb2-row">
-            <i className="bb2-heart" />
-            <div className="bb2-track">
-              <div className="bb2-fill" style={{ width: `${hpPct}%` }} />
-              <span>{Math.round((hpPct / 100) * HP)} / {HP}</span>
-            </div>
+        <div className="bb2-hp bb2-bossp">
+          <b className="bb2-tab">{boss.name}</b>
+          <span className="bb2-face" aria-hidden><img src={boss.frames.normal} alt="" draggable={false} /></span>
+          <div className="bb2-track">
+            <div className="bb2-fill" style={{ width: `${hpPct}%` }} />
+            <span>{Math.round((hpPct / 100) * HP)} / {HP}</span>
           </div>
         </div>
       </div>
@@ -653,17 +652,17 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
       {round && (
         <div className="gs-ui bb2-bottom" ref={bottomEl}>
           <div className="gs-panel bb2-q" data-coach="q">
-            <Task className="gtask-row" icon="tap" text="Pick the right answer" sub="Each right answer hits the boss" first={idx === 0} />
+            <Task className="gtask-row bb-task" icon="tap" text="Pick the right answer" sub="Each right answer hits the boss" first={idx === 0} />
             <span className="bb2-gem" aria-hidden />
-            <p>{round.item.ask ? <>{round.item.ask} <b>{round.item.front}</b></> : <>{bubbleMode(payloadOf(srv, round.item.id)) === 'syn' ? 'Choose the synonym of:' : 'Choose the meaning of:'} <b>{round.item.front}</b></>}</p>
-            <span className="gt-count">Question {idx + 1} / {total}</span>
+            <p><small>{round.item.ask ? round.item.ask : bubbleMode(payloadOf(srv, round.item.id)) === 'syn' ? 'Choose the synonym of:' : 'Choose the meaning of:'}</small> <b>{round.item.front}</b></p>
+            <span className="bb2-count k9 k-chip-v">Question {idx + 1} / {total}</span>
           </div>
           <div className="bb2-opts" data-coach="a" data-coach-parts=".bb2-opt">
             {round.opts.map((t, i) => {
               const ok = t === round.item.back
               const st = picked?.i === i ? (picked.ok ? ' ok' : ' bad') : picked && !picked.ok && ok ? ' right' : ''
               return (
-                <button key={t + i} className={`gs-pill bb2-opt${st}${gone.has(i) ? ' gone' : ''}`}
+                <button key={t + i} className={`gs-pill bb2-opt k9 k-tile${st}${gone.has(i) ? ' gone' : ''}`}
                   disabled={!!picked || gone.has(i)} onClick={() => pick(i, ok)} data-demo={ctl.practice && ok ? 0 : undefined}>{t}</button>
               )
             })}

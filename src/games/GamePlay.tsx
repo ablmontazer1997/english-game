@@ -4,6 +4,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import type { MiniGameProps } from './types'
+import '../components/es2kit.css'
 import type { MiniGameId, ServerQuestion } from '../types/game'
 import { SRS_GAMES, srsOf } from '../services/serverPlay'
 import { HintCtx } from './boosters'

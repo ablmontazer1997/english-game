@@ -2,6 +2,7 @@
 // knows at a glance what to do (admin msg 4333). TEST builds pick the look with ?ask=a (header inside the panel)
 // or ?ask=b (violet tab on the panel edge); without it the games keep their old prompt until the admin chooses.
 import './task.css'
+import '../components/es2kit.css'
 
 export type TaskIcon = 'tap' | 'build' | 'find' | 'fix' | 'listen' | 'speak' | 'type' | 'order' | 'match'
 const Q = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('ask') : null
@@ -29,7 +30,7 @@ export function Task({ icon, text, sub, first, className = '' }: { icon: TaskIco
   return (
     <div className={`gtask gtask-${ASK ?? 'a'}${first ? ' first' : ''} ${className}`} role="note">
       <span className="gtask-ic"><TaskIc icon={icon} /></span>
-      <span className="gtask-t"><b>{text}</b>{sub && first && <small>{sub}</small>}</span>
+      <span className="gtask-t"><b>{text}</b>{sub && <small>{sub}</small>}</span>
     </div>
   )
 }

@@ -10,8 +10,6 @@ import { SPELLS } from './banks/weave'
 import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/weave/sw_bg.webp'
-import tileRope from '../assets/games/weave/sw_tile_rope.webp'
-import tileViolet from '../assets/games/weave/sw_tile_violet.webp'
 import './scene.css'
 import './spellweaver.css'
 import { useStageCtl, explain } from './coach'
@@ -86,32 +84,34 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
         <img className="gs-plate" src={bgPlate} alt="" draggable={false} />
         <img className="swv-mirror" src={bgPlate} alt="" draggable={false} />
         <span className="gs-at swv-glow" aria-hidden />
-        <div className="gs-at swv-line" aria-label="Your spell" data-focus-keep="">
-          {s.answer.map((_, i) => {
-            const id = woven[i]
-            return id === undefined
-              ? <span key={i} data-slot={i} className="swv-slot" style={{ backgroundImage: `url(${tileViolet})` }} />
-              : <button key={i} data-slot={i} className="swv-tile in" style={{ backgroundImage: `url(${tileViolet})` }} onClick={() => drop(id)}>{text(id)}</button>
-          })}
-        </div>
       </div>
       <div className="gs-title"><GameTitle title="Spell Weaver" count={`Spell ${round + 1} / ${spells.length}`} /></div>
+      {/* ES2 concept 10: the task plate rides under the HUD */}
+      {ASK && <div className="swv-taskp"><Task icon="build" text={cap(s.cmd)} sub="Tap the pieces in the right order" first={round === 0} className="swv-task" /></div>}
 
       {/* admin 4793: the loom rides up under the HUD; task card, chips and Weave sit together at the bottom */}
       <div className="gs-ui swv-dock">
-        <div className={`gs-panel swv-source${ASK ? ' has-task' : ''}`} data-coach="q">
-          {ASK && <Task icon="build" text={cap(s.cmd)} sub="Tap the words in the right order" first={round === 0} />}
+        {/* ES2 concept 10: the source spell and the loom rail with its slots share one cream card */}
+        <div className={`gs-panel swv-source k9 k-panel${ASK ? ' has-task' : ''}`} data-coach="q">
           <p>{s.source}</p>
           {!ASK && <span className="swv-cmd">{s.cmd}</span>}
+          <div className="swv-line" aria-label="Your spell" data-focus-keep="">
+            {s.answer.map((_, i) => {
+              const id = woven[i]
+              return id === undefined
+                ? <span key={i} data-slot={i} className="swv-slot" />
+                : <button key={i} data-slot={i} className="swv-tile in" onClick={() => drop(id)}>{text(id)}</button>
+            })}
+          </div>
         </div>
         <div className="swv-pool" data-coach="a" data-coach-parts=".swv-tile">
           {tiles.map((x) => (
-            <button key={x.id} className={`swv-tile rope${woven.includes(x.id) || pend === x.id ? ' used' : ''}`} style={{ backgroundImage: `url(${tileRope})` }}
+            <button key={x.id} className={`swv-tile rope${woven.includes(x.id) || pend === x.id ? ' used' : ''}`}
               disabled={woven.includes(x.id) || pend !== null || state !== 'play'} onClick={(e) => add(x.id, e.currentTarget)}
               data-demo={ctl.practice && rightIds.includes(x.id) ? rightIds.indexOf(x.id) : undefined}>{x.t}</button>
           ))}
         </div>
-        <div className="swv-go" data-focus-keep=""><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
+        <div className="swv-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
       </div>
     </div>
   )

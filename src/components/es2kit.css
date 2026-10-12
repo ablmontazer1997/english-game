@@ -1,0 +1,115 @@
+/* ===== ES redesign part 2 (admin 5202): the shared game kit, ONCE, from the approved kit sheet (assets/es2/k/kit, @2x webp).
+   9-slice pieces use border-image with an explicit border-image-width, so the painted rim can overlap the padding and the
+   box is still sized by its content. Glows are CSS (filter drop-shadow), never painted (admin 5206). Scoped to games and the
+   stage (.stage-host / .game-host / .k-*), so the menu tabs keep their own skins. ===== */
+:root {
+  --k-plate: url(../assets/es2/k/kit/task_plate.webp);
+  --k-green: url(../assets/es2/k/kit/btn_green.webp);
+  --k-green-p: url(../assets/es2/k/kit/btn_green_pressed.webp);
+  --k-gold: url(../assets/es2/k/kit/btn_gold.webp);
+  --k-gold-p: url(../assets/es2/k/kit/btn_gold_pressed.webp);
+  --k-cream: url(../assets/es2/k/kit/btn_cream.webp);
+  --k-cream-p: url(../assets/es2/k/kit/btn_cream_pressed.webp);
+  --k-panel: url(../assets/es2/k/kit/panel_cream.webp);
+  --k-tile: url(../assets/es2/k/kit/tile_answer.webp);
+  --k-tile-sel: url(../assets/es2/k/kit/tile_answer_selected.webp);
+  --k-pipbar: url(../assets/es2/k/kit/pipbar_plate.webp);
+  --k-pip-on: url(../assets/es2/k/kit/pip_gold.webp);
+  --k-pip-off: url(../assets/es2/k/kit/pip_violet.webp);
+  --k-hud: url(../assets/es2/k/kit/hud_pill.webp);
+  --k-chip-v: url(../assets/es2/k/kit/chip_violet.webp);
+  --k-chip-c: url(../assets/es2/k/kit/chip_cream.webp);
+  --k-chip-g: url(../assets/es2/k/kit/chip_gold.webp);
+  --k-capsule: url(../assets/es2/k/kit/booster_capsule.webp);
+  --k-glow-v: drop-shadow(0 0 6px rgba(190, 120, 255, .95)) drop-shadow(0 0 14px rgba(160, 90, 255, .6));
+  --k-glow-g: drop-shadow(0 0 6px rgba(255, 214, 90, .95)) drop-shadow(0 0 14px rgba(255, 190, 60, .55));
+  --k-lift: drop-shadow(0 6px 10px rgba(20, 6, 50, .35));
+}
+
+/* ---------- 9-slice skins (two classes on purpose: a game's own `border:` shorthand resets border-image, so the skin must win on specificity; class = skin; sizes in CSS px = image px / 2) ---------- */
+.k9 { border: 0 solid transparent; border-image-repeat: stretch; background: none; box-shadow: none; }
+.k9.k-plate { border-image-source: var(--k-plate); border-image-slice: 68 87 66 93 fill; border-image-width: 34px 44px 33px 46px; }
+.k9.k-panel { border-image-source: var(--k-panel); border-image-slice: 38 30 37 41 fill; border-image-width: 19px 15px 18px 20px; }
+.k9.k-tile { border-image-source: var(--k-tile); border-image-slice: 30 28 29 30 fill; border-image-width: 15px 14px 14px 15px; }
+.k9.k-tile.sel, .k9.k-tile-sel { border-image-source: var(--k-tile-sel); border-image-slice: 60 50 60 50 fill; border-image-width: 30px 25px 30px 25px; filter: var(--k-glow-v); }
+.k9.k-chip-v { border-image-source: var(--k-chip-v); border-image-slice: 32 31 28 30 fill; border-image-width: 16px 15px 14px 15px; }
+.k9.k-chip-c { border-image-source: var(--k-chip-c); border-image-slice: 33 32 33 34 fill; border-image-width: 16px 16px 16px 17px; }
+.k9.k-chip-g { border-image-source: var(--k-chip-g); border-image-slice: 30 31 28 32 fill; border-image-width: 15px 15px 14px 16px; }
+.k9.k-hud { border-image-source: var(--k-hud); border-image-slice: 42 45 40 49 fill; border-image-width: 21px 22px 20px 24px; }
+
+/* buttons: green = primary, gold = claim only, cream = secondary (admin rule); pressed = the painted pressed piece */
+.k-btn { border: 0 solid transparent; border-image-repeat: stretch; background: none; box-shadow: none; border-radius: 0;
+  min-height: 54px; padding: 4px 22px 8px; font: inherit; font-family: var(--sans); font-weight: 900; font-size: 21px; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: filter .15s; }
+.k-btn.k-green { border-image-source: var(--k-green); border-image-slice: 43 45 44 48 fill; border-image-width: 22px 22px 22px 24px;
+  text-shadow: 0 2px 0 #23731a, 0 0 2px #23731a; }
+.k-btn.k-gold { border-image-source: var(--k-gold); border-image-slice: 43 39 44 43 fill; border-image-width: 22px 20px 22px 22px;
+  text-shadow: 0 2px 0 #9a5a0c, 0 0 2px #9a5a0c; }
+.k-btn.k-cream { border-image-source: var(--k-cream); border-image-slice: 43 38 42 42 fill; border-image-width: 22px 19px 21px 21px;
+  color: #5a2fc0; text-shadow: none; font-size: 18px; }
+.k-btn.k-green:active:not(:disabled) { border-image-source: var(--k-green-p); border-image-slice: 35 38 31 35 fill; border-image-width: 18px 19px 16px 18px; padding-top: 10px; }
+.k-btn.k-gold:active:not(:disabled) { border-image-source: var(--k-gold-p); border-image-slice: 35 38 32 39 fill; border-image-width: 18px 19px 16px 20px; padding-top: 10px; }
+.k-btn.k-cream:active:not(:disabled) { border-image-source: var(--k-cream-p); border-image-slice: 30 47 34 46 fill; border-image-width: 15px 24px 17px 23px; padding-top: 10px; }
+.k-btn:disabled { filter: saturate(.35) brightness(1.05); opacity: .8; cursor: default; }
+
+/* ---------- HUD (every stage screen): hearts pill, close, round pips ---------- */
+.stage-host .play-hearts { border: 0 solid transparent; border-image: var(--k-hud) 42 45 40 49 fill / 21px 22px 20px 24px stretch;
+  min-height: 40px; padding: 2px 16px 4px 8px; gap: 6px; font-family: var(--sans); font-size: 18px; font-weight: 900; text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
+.stage-host .play-hearts img { width: 28px; height: 28px; content: url(../assets/es2/k/kit/icon_heart.webp); object-fit: contain; filter: none; }
+.stage-host .stage-close { width: 44px; height: 44px; background-image: url(../assets/es2/k/kit/btn_close.webp); filter: drop-shadow(0 3px 5px rgba(20, 6, 50, .3)); }
+.stage-host .ss-pips { background: rgba(40, 12, 90, .55); box-shadow: inset 0 0 0 1.5px #f3c652; }
+.stage-host .ss-pips i { background: #8f73da; }
+.stage-host .ss-pips i.done { background: #ffd45a; }
+.stage-host .ss-pips i.on { background: #fff3c0; box-shadow: 0 0 6px 2px rgba(255, 214, 90, .9); }
+
+/* the round counter (GameProgress): the painted pip-bar plate, gold/violet painted pips */
+/* (3 classes: wins over gametitle.css / bubblepop.css whatever the bundle order) */
+.gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { border: 0 solid transparent; border-image: var(--k-pipbar) 47 72 43 72 fill / 24px 30px 22px 30px stretch;
+  background: none; box-shadow: none; border-radius: 0; padding: 7px 26px 8px; gap: 2px; min-width: 150px; }
+.gt-slim .gt-pp-t, .bubblepop .gt-slim .gt-pp-t { font-size: 15px; line-height: 17px; color: #fff; text-shadow: 0 1.5px 0 #3a0f80, 0 0 3px #3a0f80, 0 0 1px #3a0f80; }
+.gt-pips { gap: 4px; }
+.gt-pips i, .bubblepop .gt-pips i { width: 14px; height: 14px; border-radius: 0; box-shadow: none; background: var(--k-pip-off) center / contain no-repeat; }
+.gt-pips i.done { background-image: var(--k-pip-on); }
+.gt-pips i.on { background-image: var(--k-pip-on); filter: drop-shadow(0 0 4px rgba(255, 214, 90, .95)); transform: scale(1.15); }
+.bubblepop /* (3 classes: wins over gametitle.css / bubblepop.css whatever the bundle order) */
+.gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { border: 0 solid transparent; box-shadow: none; }
+@media (max-width: 374px) { .gt-pips i, .bubblepop .gt-pips i { width: 11px; height: 11px; } .gt-slim .gt-count.gt-pp, .bubblepop .gt-slim .gt-count.gt-pp { padding: 4px 22px 7px; } }
+
+/* ---------- the task plate (the violet painted plate with gold rim and sparkle ends; text centred, how-to line under it) ---------- */
+.gtask.gtask-b { border: 0 solid transparent; border-image: var(--k-plate) 68 87 66 93 fill / 34px 44px 33px 46px stretch;
+  background: none; border-radius: 0; box-shadow: none; justify-content: center; text-align: center;
+  min-height: 62px; padding: 9px 40px 12px; filter: var(--k-lift); }
+.gtask-b .gtask-ic { display: none; }
+.gtask-b .gtask-t { align-items: center; }
+.gtask.gtask-b .gtask-t b { font-size: clamp(17px, 5.2vw, 20px); color: #fff; white-space: normal; text-shadow: 0 1.5px 0 rgba(30, 6, 70, .55); }
+.gtask-b .gtask-t small { color: #f1e6ff; font-size: 13px; }
+.gtask-b.first { animation: k-plate-in 1.4s ease-in-out .3s 2; }
+@keyframes k-plate-in { 50% { filter: var(--k-lift) brightness(1.18); } }
+
+/* ---------- booster capsule (every game in a stage): the painted capsule + painted bulb / flask buttons ---------- */
+.stage-host .bt:not(.flat) { width: 64px; padding: 24px 0 26px; gap: 14px; justify-items: center;
+  border: 0 solid transparent; border-image: var(--k-capsule) 79 60 64 60 fill / 40px 30px 32px 30px stretch; filter: drop-shadow(0 6px 10px rgba(20, 6, 50, .4)); }
+.stage-host .bt.flat { padding: 6px 12px; gap: 10px; border-radius: 34px; background: linear-gradient(180deg, #7438e0, #4c1aa6);
+  box-shadow: 0 0 0 2.5px #f3c652, 0 0 0 4px #8a5a10, 0 6px 12px rgba(20, 6, 50, .4); }
+.stage-host .bt-btn { width: 48px; height: 48px; border: 0; border-radius: 50%; box-shadow: none; background: center / contain no-repeat; }
+.stage-host .bt-btn:active { transform: scale(.92); box-shadow: none; }
+.stage-host .bt-hint { background-image: url(../assets/es2/k/kit/booster_btn_bulb.webp); }
+.stage-host .bt-elixir { background-image: url(../assets/es2/k/kit/booster_btn_flask.webp); }
+.stage-host .bt-hint .bt-ic, .stage-host .bt-elixir .bt-ic { visibility: hidden; }
+.stage-host .bt-help { background: radial-gradient(circle at 40% 35%, #8f5cf0, #4c1aa6 75%); box-shadow: inset 0 0 0 2.5px #f3c652; }
+.stage-host .bt-help .bt-q { color: #fff; font-size: 22px; }
+.stage-host .bt-count { top: -4px; right: -6px; min-width: 22px; height: 22px; border: 0; padding: 0 4px; font-size: 12px;
+  background: url(../assets/es2/k/kit/badge_round_violet.webp) center / 100% 100% no-repeat; }
+.stage-host .bt-cost { bottom: -8px; font-size: 10px; padding: 0 5px 0 3px; }
+.stage-host .bt-btn.off { filter: grayscale(.85) brightness(.85); opacity: .75; }
+.stage-host .bt-tip { right: 72px; }
+
+/* ---------- shared candy buttons and panels inside a stage take the painted kit ---------- */
+.stage-host .cb-green, .stage-host .cb-white, .stage-host .cb-violet { border: 0 solid transparent; border-image-repeat: stretch; background: none; box-shadow: none; border-radius: 0; }
+.stage-host .cb-green { border-image-source: var(--k-green); border-image-slice: 43 45 44 48 fill; border-image-width: 22px 22px 22px 24px; text-shadow: 0 2px 0 #23731a, 0 0 2px #23731a; }
+.stage-host .cb-white, .stage-host .cb-violet { border-image-source: var(--k-cream); border-image-slice: 43 38 42 42 fill; border-image-width: 22px 19px 21px 21px; color: #5a2fc0; text-shadow: none; min-height: 48px; }
+.stage-host .cb-green:active { border-image-source: var(--k-green-p); border-image-slice: 35 38 31 35 fill; border-image-width: 18px 19px 16px 18px; transform: none; padding-top: 6px; box-shadow: none; }
+.stage-host .cb-white:active, .stage-host .cb-violet:active { border-image-source: var(--k-cream-p); border-image-slice: 30 47 34 46 fill; border-image-width: 15px 24px 17px 23px; transform: none; padding-top: 6px; box-shadow: none; }
+.stage-host .lp { border: 0 solid transparent; border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; background: none; box-shadow: none; border-radius: 0; filter: var(--k-lift); }
+
+@media (prefers-reduced-motion: reduce) { .gtask-b.first { animation: none; } }

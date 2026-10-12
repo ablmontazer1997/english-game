@@ -100,12 +100,12 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
       <div className="gs-title"><GameTitle title="Curse Breaker" count={`Curse ${round + 1} / ${lines.length}`} /></div>
 
       <div className="gs-ui cbk-low">
-      <div className="gs-panel cbk-card" data-coach="q">
+      <div className="gs-panel cbk-card k9 k-panel" data-coach="q">
         {ASK && (state === 'find' || state === 'fix') && <Task className="cbk-task" icon={state === 'find' ? 'find' : 'fix'}
           text={state === 'find' ? 'Tap the wrong word' : 'Pick the right word'} sub={state === 'find' ? 'One word in this sentence is wrong' : undefined} first={round === 0} />}
         {tokens.map((t, i) => {
           const isBad = i === c.bad
-          const cls = ['gs-chip cbk-w',
+          const cls = ['gs-chip cbk-w k9 k-tile',
             misses.includes(i) ? 'miss' : '',
             isBad && (found || shown) ? 'cursed' : '',
             isBad && state === 'ok' ? 'fixed' : ''].join(' ')
@@ -114,13 +114,20 @@ export function CurseBreaker({ onFinish, level, srv, onAnswer }: MiniGameProps) 
           </button>
         })}
       </div>
-      <div className={`cbk-fixes${state === 'fix' ? ' on' : ''}`} data-coach="a" data-coach-parts=".cbk-fix">
-        {fixes.map((f) => (
-          <button key={f} className={`gs-gold cbk-fix${picked === f ? (f === c.fix ? ' right' : ' wrong') : ''}`} disabled={state !== 'fix' || !!picked} onClick={(e) => choose(f, e.currentTarget)} data-demo={ctl.practice && f === c.fix ? 1 : undefined}>
-            {f || '(remove it)'}
-          </button>
-        ))}
-      </div>
+      {/* ES2 concept 09: the tray stays LOCKED (no options shown, they would give the wrong word away) until the wrong word is found */}
+      {state === 'find' ? (
+        <div className="cbk-fixes cbk-locked" data-coach="a" aria-label="Tap the wrong word first">
+          <span className="cbk-lock" aria-hidden /><b>Tap the wrong word first</b>
+        </div>
+      ) : (
+        <div className="cbk-fixes on" data-coach="a" data-coach-parts=".cbk-fix">
+          {fixes.map((f) => (
+            <button key={f} className={`cbk-fix${picked === f ? (f === c.fix ? ' right' : ' wrong') : ''}`} disabled={state !== 'fix' || !!picked} onClick={(e) => choose(f, e.currentTarget)} data-demo={ctl.practice && f === c.fix ? 1 : undefined}>
+              {f || '(remove it)'}
+            </button>
+          ))}
+        </div>
+      )}
       {tip && !(ASK && (state === 'find' || state === 'fix')) && <p className="cbk-tip">{tip}</p>}
       </div>
     </div>

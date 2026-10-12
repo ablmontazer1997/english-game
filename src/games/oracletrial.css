@@ -140,3 +140,45 @@
 @media (prefers-reduced-motion: reduce) {
   .ot-plate, .ot-oracle-float, .ot-orb, .ot-orb-swirl, .ot-glow { animation: none !important; }
 }
+
+/* ===== ES2 concept 08 (admin 5202): kit pip bar in the HUD row, painted level ladder, task plate on the question card,
+   painted answer tiles, cream Skip + green Check. Live plate, oracle and orb stay. ===== */
+.ot { padding-top: calc(8px + var(--safe-top, 0px)); }
+.ot-head { gap: 6px; }
+.ot .ot-count { margin: 0; padding: 0; background: none; box-shadow: none; min-height: 44px; display: grid; place-items: center; }
+.ot-gauge { width: min(300px, 80%); height: 46px; margin-top: 2px; padding: 0 14px; display: flex; justify-content: space-between; align-items: flex-start;
+  background: url(../assets/es2/k/p08/level_ladder_bar.webp) center 6px / 100% 30px no-repeat; border-radius: 0; box-shadow: none; }
+.ot-node { position: relative; top: auto; width: 32px; display: grid; justify-items: center; gap: 1px; }
+.ot-node::before { display: none; }
+.ot-node i { width: 26px; height: 27px; background: url(../assets/es2/k/p08/level_gem_locked.webp) center / contain no-repeat; transition: transform .3s; }
+.ot-node.on i { background-image: url(../assets/es2/k/p08/level_gem_done.webp); }
+.ot-node.cur i { width: 30px; height: 34px; margin-top: -4px; background-image: url(../assets/es2/k/p08/level_gem_current.webp); filter: var(--k-glow-v); animation: ot-gem 2.4s ease-in-out infinite; }
+@keyframes ot-gem { 50% { transform: scale(1.08); } }
+.ot-node b { position: static; width: auto; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(30, 6, 70, .8), 0 0 3px rgba(30, 6, 70, .6); }
+.ot-node.cur b { color: #ffe08a; }
+
+.ot-stage { top: 22%; height: 36%; }
+.ot-ui { gap: 9px; }
+.ot .ot-q { position: relative; padding: 0 14px 14px; border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
+  border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+.ot .ot-q .gtask { margin: -14px -12px 6px; }
+.ot .ot-skill { min-height: 24px; padding: 2px 14px 4px; margin: 0 0 4px; font-size: 11px; color: #fff; letter-spacing: .08em; }
+.ot .ot-q p { font-size: clamp(17px, 5vw, 20px); font-weight: 800; line-height: 1.4; color: #2a1f5c; }
+.ot-blank { display: inline-block; min-width: 74px; padding: 0 12px; margin: 0 3px; vertical-align: -2px; line-height: 26px; font-size: .9em; color: #6b2fd0;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p08/blank_slot_glow.webp) 32 34 32 34 fill / 13px 14px 13px 14px stretch;
+  filter: drop-shadow(0 0 5px rgba(230, 90, 255, .7)); }
+.ot-blank.filled { animation: ot-fill .32s cubic-bezier(.3, 1.5, .5, 1); }
+@keyframes ot-fill { from { transform: scale(.6); opacity: 0; } }
+.ot-opts { gap: 8px 10px; }
+.ot-opts.long { grid-template-columns: 1fr; }
+.ot .ot-opt { min-height: 48px; padding: 4px 12px 6px; border-radius: 0; font-size: 17px; font-weight: 800; color: #2a1f5c; background: none; box-shadow: none; transition: transform .12s, filter .2s; }
+.ot .ot-opt:active { transform: translateY(2px); box-shadow: none; }
+.ot .ot-opt.sel { color: #5a1fc0; }
+.ot .ot-opt.k9.right { filter: drop-shadow(0 0 6px rgba(110, 220, 70, .95)) drop-shadow(0 0 12px rgba(110, 220, 70, .55)); color: #1f6a12; }
+.ot .ot-opt.k9.wrong { filter: drop-shadow(0 0 6px rgba(240, 80, 70, .95)); color: #a3261a; background: none; box-shadow: none; }
+.ot-actions { grid-template-columns: 1fr 1.6fr; gap: 10px; }
+.ot .ot-skip, .ot .ot-check { min-height: 56px; border-radius: 0; box-shadow: none; }
+.ot .ot-skip { background: none; color: #5a2fc0; text-shadow: none; font-size: 19px; }
+.ot .ot-check { background: none; font-size: 24px; }
+.ot .ot-skip:active, .ot .ot-check:active { transform: none; box-shadow: none; }
+@media (max-height: 700px) { .ot-stage { top: 20%; height: 30%; } .ot .ot-opt { min-height: 44px; } }

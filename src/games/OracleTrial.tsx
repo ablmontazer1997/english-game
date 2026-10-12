@@ -8,7 +8,7 @@ import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
 import oracleHappy from '../assets/games/oracle/oracle_happy.webp'
 import oracleSurprised from '../assets/games/oracle/oracle_surprised.webp'
 import ribbon from '../assets/pages/ribbon_gold.png'
-import { TitleIntro } from '../components/GameTitle'
+import { TitleIntro, GameProgress } from '../components/GameTitle'
 import { ORACLE_BANK, LEVELS, type OracleQ } from './oracleBank'
 import './oracletrial.css'
 import { useStageCtl, explain } from './coach'
@@ -44,6 +44,12 @@ function estimate(log: { level: number; ok: boolean }[]): number {
     else if (at.length === 1 && at[0].ok && l > best) best = l
   }
   return best
+}
+
+// ES2: the sentence split around its gap (2+ underscores) so the gap shows as the painted slot; null marks the gap
+function blankParts(p: string): (string | null)[] {
+  const m = p.match(/_{2,}/)
+  return m ? [p.slice(0, m.index), null, p.slice(m.index! + m[0].length)] : [p]
 }
 
 /** the intro's placement test (10-11): the adaptive run below on a bigger bank (server items + the local ones);
@@ -185,15 +191,12 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
       {placement?.onExit && <button className="stage-close ot-exit" onClick={placement.onExit} aria-label="Leave the test">✕</button>}
       <div className="ot-head">
         <TitleIntro title={srvQs ? 'Oracle' : 'Oracle Trial'} src={ribbon} className="ot-ribbon" />
-        <div className="ot-count">{done != null ? 'Complete' : `Question ${n + 1} / ${TOTAL}`}</div>
+        <div className="ot-count gt gt-slim">{done != null ? <GameProgress count="Complete" /> : <GameProgress count={`Question ${n + 1} / ${TOTAL}`} />}</div>
+        {/* ES2 concept 08: the painted level ladder (gold rail, a gem per level: passed / current / locked) */}
         <div className="ot-gauge" aria-label={`Level ${LEVELS[shownLevel]}`}>
-          <div className="ot-rail">
-            <div className="ot-track"><i style={{ width: `${(shownLevel / (LEVELS.length - 1)) * 100}%` }} /></div>
-            {LEVELS.map((l, i) => (
-              <span key={l} className={`ot-node${i <= shownLevel ? ' on' : ''}${i === shownLevel ? ' cur' : ''}`}
-                style={{ left: `${(i / (LEVELS.length - 1)) * 100}%` }}><b>{l}</b></span>
-            ))}
-          </div>
+          {LEVELS.map((l, i) => (
+            <span key={l} className={`ot-node${i < shownLevel ? ' on' : i === shownLevel ? ' cur' : ''}`}><i /><b>{l}</b></span>
+          ))}
         </div>
       </div>
 
@@ -220,12 +223,14 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
         <div className="ot-ui">
           <div className="ot-q" data-coach="q">
             <Task className="gtask-row" icon="tap" text="Choose the right answer" sub="Then tap Check" first={n === 0} />
-            <span className="ot-skill">{q.skill}</span>
-            <p>{q.prompt}</p>
+            <span className="ot-skill k9 k-chip-v">{q.skill}</span>
+            <p>{blankParts(q.prompt).map((t, i) => t === null
+              ? <span key={i} className={`ot-blank${pick ? ' filled' : ''}`}>{pick ?? '\u00a0'}</span>
+              : <span key={i}>{t}</span>)}</p>
           </div>
-          <div className="ot-opts" data-coach="a" data-coach-parts=".ot-opt">
+          <div className={`ot-opts${options.some((o) => o.length > 16) ? ' long' : ''}`} data-coach="a" data-coach-parts=".ot-opt">
             {options.map((o) => {
-              const cls = 'ot-opt'
+              const cls = 'ot-opt k9 k-tile'
                 + (pick === o ? ' sel' : '')
                 + (verdict && o === q.answer ? ' right' : '')
                 + (verdict === 'bad' && pick === o ? ' wrong' : '')
@@ -233,8 +238,8 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
             })}
           </div>
           <div className="ot-actions" data-focus-keep="">
-            <button className="ot-skip" onClick={skip} disabled={!!verdict}>Skip</button>
-            <button className="ot-check" onClick={check} disabled={!pick || !!verdict} data-demo={ctl.practice ? 1 : undefined}>Check</button>
+            <button className="ot-skip k-btn k-cream" onClick={skip} disabled={!!verdict}>Skip</button>
+            <button className="ot-check k-btn k-green" onClick={check} disabled={!pick || !!verdict} data-demo={ctl.practice ? 1 : undefined}>Check</button>
           </div>
         </div>
       )}
@@ -242,11 +247,11 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
       {done != null && (
         <div className="ot-ui ot-result">
           <div className="ot-q">
-            <span className="ot-skill">The Oracle has spoken</span>
+            <span className="ot-skill k9 k-chip-v">The Oracle has spoken</span>
             <p className="ot-level">{LEVELS[done]}</p>
             <p className="ot-level-sub">{placement ? 'The Oracle will tell you more.' : `Your adventure begins at level ${LEVELS[done]}.`}</p>
           </div>
-          <div className="ot-actions" data-focus-keep=""><button className="ot-check" onClick={finish}>{placement ? 'Continue' : 'Begin'}</button></div>
+          <div className="ot-actions" data-focus-keep=""><button className="ot-check k-btn k-green" onClick={finish}>{placement ? 'Continue' : 'Begin'}</button></div>
         </div>
       )}
     </div>

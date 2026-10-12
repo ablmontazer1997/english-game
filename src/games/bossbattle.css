@@ -121,3 +121,38 @@
 /* the world's gate behind the fight (admin 4477): on the back of the arena, soft and dimmed */
 .bb2-gate { position: absolute; z-index: 1; width: auto; pointer-events: none; filter: blur(1.8px) brightness(.88) saturate(.9); opacity: 1; }   /* behind the platform (admin 4622): blur close to the background haze */
 .bb2-scene > .bb2-front { z-index: 1; pointer-events: none; }   /* the platform part of the plate, drawn over the gate base */
+
+/* ===== ES2 concept 11 (admin 5202): painted HP plates (You: 3 hearts; boss: portrait + painted bar), the task plate with the
+   scroll on the cream question card, the word big on its own line, the round as a violet chip, painted answer tiles.
+   The live arena, the boss sprites and the 3D hero stay. ===== */
+.bb2-hud { grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: 2.5cqw; align-items: start; left: 3%; right: 3%; }
+.bb2-hp { position: relative; padding: 0; border-radius: 0; background: none; box-shadow: none; }
+.bb2-hp .bb2-tab { position: absolute; display: grid; place-items: center; font-size: clamp(13px, 3.9cqw, 16px); font-weight: 900; line-height: 1; color: #fff;
+  text-shadow: 0 1.5px 0 #2e0a6e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bb2-you { min-height: 70px; border: 0 solid transparent; border-image: url(../assets/es2/k/p11/hp_plate_you.webp) 46 58 30 61 fill / 23px 29px 15px 30px stretch;
+  filter: drop-shadow(0 6px 10px rgba(20, 6, 50, .3)); }
+.bb2-you .bb2-tab { left: 20%; right: 20%; top: 3px; height: 27px; }
+.bb2-you .bb2-row { position: absolute; left: 0; right: 0; top: 34px; margin: 0; }
+.bb2-hearts { gap: 4px; }
+.bb2-hearts i { width: 28px; height: 27px; background: url(../assets/es2/k/kit/icon_heart.webp) center / contain no-repeat; }
+.bb2-bossp { aspect-ratio: 396 / 138; background: url(../assets/es2/k/p11/hp_plate_boss.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 6px 10px rgba(20, 6, 50, .3)); }
+.bb2-bossp .bb2-tab { left: 13%; right: 13%; top: 3%; height: 29%; }
+.bb2-face { position: absolute; left: 5%; top: 37.5%; width: 17.5%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
+.bb2-face img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; transform: scale(2); transform-origin: 50% 22%; }
+.bb2-bossp .bb2-track { position: absolute; left: 28.5%; right: 5.5%; top: 47%; height: 34%; border-radius: 999px; background: none; box-shadow: none; overflow: hidden; }
+.bb2-bossp .bb2-fill { inset: 9% auto 9% 2%; border-radius: 999px; background: url(../assets/es2/k/p11/hp_bar_fill.webp) left center / 100% 100% no-repeat; box-shadow: none; max-width: 96%; }
+.bb2-bossp .bb2-track span { line-height: normal; height: 100%; display: grid; place-items: center; font-size: clamp(10.5px, 3.2cqw, 13px); }
+
+.bb2-q.gs-panel { padding: 0 14px 22px; gap: 4px; background: none; box-shadow: none; border-radius: 0;
+  border: 0 solid transparent; border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+.bb2-q .gtask { margin: -16px -12px 6px; }
+.bb2-gem { top: -46px; z-index: 3; }
+.bb2-q p { display: grid; justify-items: center; gap: 0; color: #2a1f5c; }
+.bb2-q p small { font-size: clamp(15px, 4.6cqw, 18px); font-weight: 800; color: #2a1f5c; }
+.bb2-q p b { font-size: clamp(30px, 10cqw, 42px); line-height: 1.05; color: #6d2fe6; overflow-wrap: anywhere; }
+.bb2-q .bb2-count { position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%); min-height: 28px; padding: 3px 16px 5px; font-size: 13px; font-weight: 900; color: #fff;
+  white-space: nowrap; text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
+.bb2-bottom { gap: 22px; }
+.bb2-opt.k9 { min-height: 54px; border-radius: 0; box-shadow: none; background: none; color: #2a1f5c; }
+.bb2-opt.k9.ok, .bb2-opt.k9.right { background: none; box-shadow: none; color: #1f6a12; text-shadow: none; filter: drop-shadow(0 0 6px rgba(110, 220, 70, .95)) drop-shadow(0 0 12px rgba(110, 220, 70, .55)); }
+.bb2-opt.k9.bad { background: none; box-shadow: none; color: #a3261a; text-shadow: none; filter: drop-shadow(0 0 6px rgba(240, 80, 70, .95)); }

@@ -60,7 +60,7 @@ const OBSTACLES = '.gs-panel,.lp,.gtask,button:not(.bt-btn),.ws-scroll,.gg-table
   + 'input,textarea,.ro-slots,.gs-pill,.gs-chip,.gt-ribbon,.gt-count,.bp-ring,.play-top,.swv-slot'
   // audit 10-11 P0: the bubble field (bubbles are drawn on a canvas, so the field itself is the obstacle; it leaves a
   // free strip at the bottom for the tray), the Match Blitz combo header and the Guild Letters letter
-  + ',.bp-field,.mb-combo,.gl-letter'
+  + ',.bp-field,.mb-combo,.gl-letter,.bb2-hp,.cbk-locked'
 function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const place = () => {
