@@ -3,8 +3,8 @@ import { Task } from './Task'
 import type { CSSProperties } from 'react'
 import type { MiniGameProps, SrsItem } from './types'
 import sceneBg from '../assets/pages/bg_profile.webp'
-import cardBack from '../assets/games/mc_back.png'
-import cardFront from '../assets/games/mc_front.png'
+import cardBack from '../assets/es2/k/p25/card_back.webp'
+import cardFront from '../assets/es2/k/p25/card_front.webp'
 import { useHint } from './boosters'
 import { useStageCtl, explain, payloadOf } from './coach'
 import './memorycrystals.css'
@@ -160,23 +160,23 @@ export function MemoryCrystals({ items, onFinish, onAnswer, srv }: MiniGameProps
   return (
     <div className="mc-root" style={{ backgroundImage: `url(${sceneBg})` }}>
       <div className="mc-topbar">
-        <div className="mc-stat">
+        <div className="mc-stat k9 k-chip-c">
           <span className="mc-stat-num">{matched.size}</span>
           <span className="mc-stat-lbl">Pairs</span>
           <span className="mc-stat-sep">/</span>
           <span className="mc-stat-num">{pairCount}</span>
         </div>
-        <div className="mc-stat mc-stat-combo" data-hot={combo >= 2}>
+        <div className="mc-stat mc-stat-combo k9 k-chip-c" data-hot={combo >= 2}>
           <span className="mc-stat-lbl">Combo</span>
           <span className="mc-stat-num">{combo}</span>
         </div>
-        <div className="mc-stat">
+        <div className="mc-stat k9 k-chip-c">
           <span className="mc-stat-lbl">Tries</span>
           <span className="mc-stat-num">{attempts}</span>
         </div>
       </div>
 
-      <div className="gs-panel mc-taskp" data-coach="q"><Task icon="match" text="Find the matching pairs" sub="Flip two crystals at a time" first={attempts === 0} /></div>
+      <div className="gs-panel mc-taskp" data-coach="q"><Task className="k-ic" icon="match" text="Find the matching pairs" sub="Flip two crystals at a time" first={attempts === 0} /></div>
 
       <div
         className="mc-grid"

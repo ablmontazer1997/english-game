@@ -59,3 +59,5 @@
 
 /* hidden until the first placement after layout (coordinator 10-12) */
 .bt.bt-wait { visibility: hidden; }
+/* coordinator 10-12: a smaller upright capsule when the full one does not fit a gap (scale set by the placement) */
+.bt.sm { transform: scale(var(--bt-s, 1)); transform-origin: 100% 0; }

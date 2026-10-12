@@ -60,14 +60,15 @@ const OBSTACLES = '.gs-panel,.lp,.gtask,button:not(.bt-btn),.ws-scroll,.gg-table
   + 'input,textarea,.ro-slots,.gs-pill,.gs-chip,.gt-ribbon,.gt-count,.bp-ring,.play-top,.swv-slot'
   // audit 10-11 P0: the bubble field (bubbles are drawn on a canvas, so the field itself is the obstacle; it leaves a
   // free strip at the bottom for the tray), the Match Blitz combo header and the Guild Letters letter
-  + ',.bp-field,.mb-combo,.gl-letter,.bb2-hp,.cbk-locked,.pm-mix'
+  + ',.bp-field,.mb-combo,.gl-letter,.bb2-hp,.cbk-locked,.pm-slot,.pm-tag,.pm-word'
 function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const place = () => {
       const bt = ref.current, host = bt?.offsetParent as HTMLElement | null
       if (!bt || !host) return
       const H = host.getBoundingClientRect()
-      bt.classList.remove('flat'); const vert = { w: bt.offsetWidth, h: bt.offsetHeight + 12 }
+      bt.classList.remove('flat', 'sm'); bt.style.removeProperty('--bt-s')
+      const vert = { w: bt.offsetWidth, h: bt.offsetHeight + 12 }
       bt.classList.add('flat'); const flat = { w: bt.offsetWidth + 6, h: bt.offsetHeight + 12 }
       bt.classList.remove('flat')
       // the stage X sits outside the host: the tray (and its top gem) starts below it (coordinator 10-12, Guild Letters)
@@ -84,8 +85,8 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
           if (!r.width || !r.height || r.right < x0 || r.left > H.right) continue
           const cs = getComputedStyle(e)
           if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) continue
-          // the painted Whisper scroll's rollers hang a little below its box: keep a wider gap there (coordinator 10-12)
-          const pad = e.matches('.ws-scroll') ? 16 : 6
+          // the painted Whisper scroll's rollers and the Guild letter's parchment reach past their boxes: keep a wider gap (coordinator 10-12)
+          const pad = e.matches('.ws-scroll,.gl-letter') ? 16 : 6
           ys.push([r.top - H.top - pad, r.bottom - H.top + pad])
         }
         ys.sort((a, b) => a[0] - b[0])
@@ -103,8 +104,15 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
         }
         return best
       }
-      let t = fit(gaps(vert.w), vert.h)
-      if (t != null) { bt.style.top = `${Math.round(t)}px` ; return }
+      // coordinator 10-12: the upright capsule on the right edge is preferred in every game; when the full size does not
+      // fit a gap, a slightly smaller upright capsule is tried before the tray lies flat
+      for (const k of [1, .86, .76, .68]) {
+        const t = fit(gaps(vert.w * k), (vert.h - 12) * k + 12)
+        if (t == null) continue
+        if (k < 1) { bt.classList.add('sm'); bt.style.setProperty('--bt-s', String(k)) }
+        bt.style.top = `${Math.round(t)}px`; return
+      }
+      let t: number | null
       t = fit(gaps(flat.w), flat.h)
       if (t != null) { bt.classList.add('flat'); bt.style.top = `${Math.round(t)}px` }
     }

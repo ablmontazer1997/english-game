@@ -171,8 +171,8 @@ export function GapGate({ items, onFinish, onAnswer, srv }: MiniGameProps) {
         <span className="gg-portal-glow" aria-hidden />
       </div>
 
-      <div className="gg-tablet" data-coach="q">
-        <Task className="gtask-row" icon="tap" text="Pick the missing word" sub="Its meaning is below" first={idx === 0} />
+      <div className="gg-tablet k9 k-panel" data-coach="q">
+        <Task className="gtask-row k-scroll" icon="tap" text="Pick the missing word" sub="Its meaning is below" first={idx === 0} />
         <p className="gg-clue">
           Spell for <span className="gg-mean">{clue}</span>
         </p>
@@ -205,7 +205,7 @@ export function GapGate({ items, onFinish, onAnswer, srv }: MiniGameProps) {
           return (
             <button
               key={o.key}
-              className={`gg-opt ${state} ${showRight}${gone.has(o.key) ? ' gone' : ''}`}
+              className={`gg-opt k9 k-tile ${state} ${showRight}${gone.has(o.key) ? ' gone' : ''}`}
               disabled={locked || gone.has(o.key)}
               onClick={() => pick(o)}
               data-demo={ctl.practice && o.correct ? 0 : undefined}

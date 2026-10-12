@@ -363,7 +363,7 @@ export function MatchBlitz({ items, onFinish, onAnswer, srv }: MiniGameProps) {
 
   function cardCls(side: Side, pid: number): string {
     const key = `${side}${pid}`
-    let c = `mb-card mb-card-${side}`
+    let c = `mb-card mb-card-${side} k9 k-tile`
     if (matchedPids.has(pid)) c += ' matched'
     if (selKey === key) c += ' sel'
     if (hotKey === key) c += ' hot'
@@ -430,7 +430,7 @@ export function MatchBlitz({ items, onFinish, onAnswer, srv }: MiniGameProps) {
           <div className="mb-tt">{timeText}</div>
         </div>
 
-        <div className="gs-panel mb-taskp" data-coach="q"><Task className="" icon="match" text="Match the pairs" sub="Drag each word to its meaning" first={true} /></div>
+        <div className="gs-panel mb-taskp" data-coach="q"><Task className="k-ic" icon="match" text="Match the pairs" sub="Drag each word to its meaning" first={true} /></div>
 
         <div className="mb-board" ref={boardRef} data-coach="a" data-coach-parts=".mb-row">
           <svg className="mb-lines" ref={linesRef} />

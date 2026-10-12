@@ -197,3 +197,28 @@
 /* stages with the booster tray (audit 10-11 P0): the board leaves the right edge free, so the tray stands beside the
    cards instead of on them or on the combo header */
 .stage-host .matchblitz .mb-board { margin-right: calc(70px + var(--safe-right, 0px)); }
+
+/* ===== ES2 concept 24 (admin 5202): the gold COMBO badge, the painted timer bar, the task plate with its icon disc, the
+   cards as kit answer tiles (selected = the violet selected tile; matched = the painted fixed tile). The live scene, the
+   drag-to-connect logic and its lines stay; no pip bar is added (the concept's MATCH 1/4 is not in the live game). ===== */
+.matchblitz .mb-combo { height: 54px; margin-top: 4px; }
+.matchblitz .mb-burst, .matchblitz .mb-rays { display: none; }
+.matchblitz .mb-combo-txt { align-items: center; justify-content: center; width: 200px; height: 48px; padding: 0 0 4px; gap: 6px;
+  background: url(../assets/es2/k/p24/combo_badge.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 6px rgba(120, 70, 0, .3)); }
+.matchblitz .mb-c1, .matchblitz .mb-c2 { font-family: var(--sans); font-weight: 900; font-size: 22px; letter-spacing: .04em; color: #fff; text-shadow: 0 2px 0 #a0600a, 0 0 2px #a0600a; }
+.matchblitz .mb-c2 { color: #fff6c8; }
+.matchblitz .mb-tbar { height: 34px; margin: 6px 22px 0; border-radius: 0; background: none; box-shadow: none; overflow: visible;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p24/timer_bar_frame.webp) 22 22 22 22 fill / 11px 11px 11px 11px stretch; }
+.matchblitz .mb-fill { left: 7px; top: 7px; bottom: 7px; max-width: calc(100% - 14px); border-radius: 0; box-shadow: none;
+  background: none; border: 0 solid transparent; border-image: url(../assets/es2/k/p24/timer_bar_fill.webp) 14 14 14 14 fill / 7px 7px 7px 7px stretch; }
+.matchblitz .mb-tt { font-family: var(--sans); font-size: 16px; font-weight: 900; text-shadow: 0 1px 0 #3c1590, 0 0 3px #3c1590; }
+.matchblitz .mb-taskp { margin: 10px 12px 0; padding: 0; background: none; box-shadow: none; border: 0; }
+.matchblitz .mb-taskp .gtask { margin: 0; }
+.matchblitz .mb-card.k9 { border-radius: 0; background: none; box-shadow: none; color: #2a1f5c; filter: drop-shadow(0 6px 8px rgba(20, 6, 50, .25)); }
+.matchblitz .mb-card.k9.sel, .matchblitz .mb-card.k9.hot { border-image-source: var(--k-tile-sel); border-image-slice: 60 50 60 50 fill; border-image-width: 30px 25px 30px 25px; filter: var(--k-glow-v); }
+.matchblitz .mb-card.k9.matched { color: #fff; text-shadow: 0 1px 0 rgba(20, 80, 10, .55); filter: drop-shadow(0 0 8px rgba(110, 220, 70, .9));
+  border-image-source: url(../assets/es2/k/p09/word_tile_fixed.webp); border-image-slice: 29 28 29 29 fill; border-image-width: 14px 14px 14px 14px; }
+.matchblitz .mb-card.k9.wrong { border-image-source: url(../assets/es2/k/p09/word_tile_wrong.webp); border-image-slice: 31 33 37 33 fill; border-image-width: 14px 15px 16px 15px; color: #fff; }
+/* the game's own border shorthand resets border-image: the kit tile is restated here with the game's specificity */
+.matchblitz .mb-card.k9:not(.sel):not(.hot):not(.matched):not(.wrong) { border: 0 solid transparent; border-image: var(--k-tile) 30 28 29 30 fill / 15px 14px 14px 15px stretch; }
+.matchblitz .mb-card.k9.sel, .matchblitz .mb-card.k9.hot, .matchblitz .mb-card.k9.matched, .matchblitz .mb-card.k9.wrong { border-width: 0; border-style: solid; border-color: transparent; }
