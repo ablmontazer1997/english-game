@@ -116,7 +116,7 @@ export function SeasonPassScreen({ onClose }: { onClose: () => void }) {
 }
 
 /** the Season Pass card on the Quests page: tier, progress, rewards waiting */
-export function SeasonEntry({ onOpen }: { onOpen: () => void }) {
+export function SeasonEntry({ onOpen, trophy }: { onOpen: () => void; trophy?: string }) {
   const { currencies } = useGame()
   const [s, setS] = useState<SeasonOut | null>(null)
   useEffect(() => { api.season().then(setS).catch(() => {}) }, [currencies?.coins, currencies?.gems])
@@ -126,7 +126,7 @@ export function SeasonEntry({ onOpen }: { onOpen: () => void }) {
   const ready = s.tiers.filter((t) => t.free_claimable).length
   return (
     <Card className={`reveal ssn-entry${ready ? ' q-ready' : ''}`} onClick={onOpen}>
-      <img src={art('trophy_big')} alt="" draggable={false} />
+      <img src={trophy ?? art('trophy_big')} alt="" draggable={false} />
       <span className="ssn-entry-main">
         <b className="ui-t">Season Pass: {s.name}</b>
         <span className="q-prog"><span className="bar"><i style={{ width: `${done ? 100 : Math.min(100, (into / s.tier_xp) * 100)}%` }} /></span><b>Tier {s.tier}/{s.tiers_total}</b></span>

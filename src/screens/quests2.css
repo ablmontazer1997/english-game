@@ -1,0 +1,104 @@
+/* ES redesign 10-11, concept 02 Quests (admin 4935). Prefix qs2- / evr2- / evc2-. Art: assets/es2/quests (a5 sheet). */
+.qs2 .pg-scroll { gap: 12px; grid-auto-rows: max-content; padding-top: calc(var(--hud-h) + var(--safe-top) + 6px); }
+.qs2 .ui-btn.sm { --h: 44px; min-width: 64px; font-size: 16px; }
+
+/* the cream card with the gold rim (a5 panel), shared by the events card, the quest cards and the Season strip */
+.qs2 .qs2-row, .qs2 .evc2, .qs2 .ssn-entry {
+  border: 14px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 44 fill / 14px stretch;
+  filter: drop-shadow(0 4px 0 rgba(70, 30, 110, .28)) drop-shadow(0 8px 14px rgba(20, 8, 40, .25)); }
+
+/* ---- header: our hero beside the parchment banner ---- */
+.qs2-head { position: relative; display: grid; grid-template-columns: 24% minmax(0, 1fr); align-items: end; gap: 0; height: 112px; }
+.qs2-hero { align-self: end; width: 118%; max-width: 128px; height: auto; margin-left: -6%; margin-bottom: -10px; z-index: 2;
+  filter: drop-shadow(0 6px 8px rgba(20, 8, 40, .4)); }
+.qs2-banner { position: relative; align-self: center; margin-left: -5%; }
+.qs2-banner > img { width: 100%; height: auto; display: block; filter: drop-shadow(0 5px 8px rgba(20, 8, 40, .35)); }
+/* the blank parchment lies between the wax seal (left) and the right roll: 25%..88% wide, 22%..72% high */
+.qs2-banner-in { position: absolute; left: 25%; right: 9%; top: 20%; bottom: 30%; display: flex; align-items: center;
+  justify-content: center; gap: 6px; min-width: 0; }
+.qs2-title { margin: 0; flex: none; font-family: Fredoka, var(--sans); font-size: clamp(22px, 6.8vw, 29px); line-height: 1; font-weight: 800; color: #3a1d8a;
+  text-shadow: 0 1.5px 0 rgba(255, 255, 255, .8); }
+.qs2-timer { flex: none; --h: 28px; font-size: 12px; padding-inline: 9px; }
+
+/* ---- weekly events ---- */
+.qs2 .evc2 { display: grid; gap: 8px; padding: 0; }
+.evc2-h { margin: 0 0 0 2px; font-size: 16px; line-height: 20px; font-weight: 900; color: #2a1d5a; }
+.evr2 { display: grid; grid-template-columns: 76px minmax(0, 1fr) 54px; align-items: center; gap: 10px; padding: 7px 8px 7px 7px;
+  border-radius: 16px; background: linear-gradient(180deg, #fffdf8, #f6eedc); border: 2.5px solid #c9a6ff;
+  box-shadow: inset 0 0 0 1.5px #fff, 0 3px 0 rgba(90, 50, 160, .25); }
+.evr2.is-on { border-color: #e9b949; background: linear-gradient(180deg, #fff9e6, #fbedc4); }
+.evr2-art { position: relative; width: 76px; height: 76px; border-radius: 12px; overflow: hidden; border: 2.5px solid #e7b64a;
+  box-shadow: 0 2px 0 #9a6a1e; }
+.evr2-burst { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.evr2-pic { position: absolute; left: 6%; right: 6%; bottom: 2%; width: 88%; height: 92%; object-fit: contain; object-position: 50% 100%;
+  filter: drop-shadow(0 3px 3px rgba(40, 10, 80, .45)); }
+.evr2-pic.evr2-xp { left: 0; right: 0; width: 100%; bottom: 8%; height: 84%; object-position: 50% 50%; }
+.evr2-main { display: grid; gap: 3px; min-width: 0; }
+.evr2-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.evr2-top b { font-size: 16px; line-height: 20px; font-weight: 900; color: #2a1d5a; }
+.evr2-day { font-style: normal; padding: 2px 8px; border-radius: 99px; font-size: 11.5px; line-height: 15px; font-weight: 900; color: #fff;
+  background: linear-gradient(180deg, #8a52f0, #5f27c9); box-shadow: 0 1.5px 0 #3d1490; white-space: nowrap; }
+.evr2-day.is-on { background: linear-gradient(180deg, #ef4b5a, #c62f3d); box-shadow: 0 1.5px 0 #8e1d28; }
+.evr2-blurb { font-size: 12px; line-height: 1.3; font-weight: 700; color: #4a3f66; text-wrap: pretty; }
+.evr2-time { display: flex; align-items: center; gap: 5px; font-size: 11.5px; line-height: 15px; font-weight: 900; color: #5a3fa0; }
+.evr2-time.is-on { color: #8a3a00; }
+.evr2-stick { position: relative; display: grid; justify-items: center; align-self: center; }
+.evr2-gems { width: 54px; height: auto; filter: drop-shadow(0 3px 3px rgba(40, 10, 80, .35)); }
+.evr2-plus { margin-top: -10px; padding: 1px 7px; border-radius: 99px; font-size: 11.5px; line-height: 16px; font-weight: 900; color: #fff;
+  white-space: nowrap; background: linear-gradient(180deg, #8a52f0, #5f27c9); border: 1.5px solid #fff; box-shadow: 0 1.5px 0 #3d1490; }
+.evr2-xp { width: 54px; height: auto; filter: drop-shadow(0 3px 3px rgba(40, 10, 80, .35)); }
+
+/* ---- Season Pass strip (SeasonEntry) ---- */
+.qs2 .ssn-entry { grid-template-columns: 52px minmax(0, 1fr) auto; gap: 10px; padding: 0; }
+.qs2 .ssn-entry > img { width: 52px; height: 52px; }
+.qs2 .ssn-entry-main .ui-t { white-space: normal; font-size: 14px; line-height: 19px; color: #2a1d5a; }
+.qs2 .ssn-entry .q-prog .bar { height: 10px; border-radius: 99px; background: #e6dff3; box-shadow: inset 0 1.5px 2px rgba(40, 20, 80, .25); overflow: hidden; }
+.qs2 .ssn-entry .q-prog .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(180deg, #ffd96a, #f0a51e);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .55); }
+.qs2 .ssn-entry > .ui-btn { --h: 44px; min-width: 68px; padding-inline: 12px; font-size: 16px; }
+
+/* ---- Daily / Weekly ---- */
+.qs2-seg { position: relative; justify-self: center; width: min(78%, 300px); height: 48px; display: grid; grid-template-columns: 1fr 1fr;
+  border-radius: 99px; padding: 4px; background: linear-gradient(180deg, #fffdf8, #f3ead6); border: 2.5px solid #e7b64a;
+  box-shadow: 0 0 0 1px #9a6a1e, 0 4px 0 rgba(70, 30, 110, .28), 0 8px 14px rgba(20, 8, 40, .25); }
+.qs2-seg-pill { position: absolute; left: 4px; top: 4px; bottom: 4px; width: calc(50% - 4px); border-radius: 99px;
+  background: linear-gradient(180deg, #9b63ff, #6a2be0); border: 2px solid #ffd45a; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35);
+  transition: transform 220ms cubic-bezier(.3, 1.3, .5, 1); }
+.qs2-seg button { position: relative; z-index: 1; border: 0; background: none; font: inherit; font-family: Fredoka, var(--sans);
+  font-size: 17px; font-weight: 800; color: #4a3a7a; cursor: pointer; min-height: 40px; }
+.qs2-seg button.on { color: #fff; text-shadow: 0 1px 2px rgba(40, 10, 100, .5); }
+
+
+/* ---- quest cards ---- */
+.qs2-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center;
+  column-gap: 10px; row-gap: 2px; padding: 0; }
+.qs2-row .qs2-tile { grid-row: 1 / 3; }
+.qs2-row .qs2-t { grid-column: 2 / 4; }
+.qs2-tile { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(40, 10, 80, .3)); }
+.qs2-t { font-size: 15px; line-height: 19px; font-weight: 900; color: #2a1d5a; }
+.qs2-prog { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.qs2-prog > b { font-size: 12.5px; line-height: 16px; font-weight: 900; color: #5a4a80; white-space: nowrap; }
+.qs2-bar { height: 12px; border-radius: 99px; background: #e6dff3; box-shadow: inset 0 1.5px 2px rgba(40, 20, 80, .3); overflow: hidden; }
+.qs2-bar i { display: block; height: 100%; min-width: 0; border-radius: 99px; background: linear-gradient(180deg, #b07cff, #6b2fe0);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .4); transition: width 700ms cubic-bezier(.2, .9, .3, 1); }
+.qs2-trail { display: flex; align-items: center; gap: 8px; }
+.qs2-trail .rw-chip { font-size: 15px; color: #3a2a1a; }
+.qs2-row.is-done { filter: saturate(.6) drop-shadow(0 4px 0 rgba(70, 30, 110, .2)); opacity: .86; }
+.qs2-row.is-ready { filter: drop-shadow(0 4px 0 rgba(70, 30, 110, .28)) drop-shadow(0 0 10px rgba(255, 210, 90, .95)); }
+
+/* ---- the chest track on its stone ledge ---- */
+.qs2-track { position: relative; height: calc(min(100vw - 2 * var(--gutter, 16px), 448px) * 272 / 780 + 40px); margin-top: 2px; }
+.qs2-ledge { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; filter: drop-shadow(0 6px 8px rgba(20, 8, 40, .35)); }
+.qs2-path { position: absolute; left: 5%; right: 36%; bottom: calc(min(100vw - 2 * var(--gutter, 16px), 448px) * 272 / 780 * .6);
+  display: flex; align-items: center; justify-content: space-between; }
+.qs2-line { position: absolute; left: 20px; right: 20px; top: 50%; height: 12px; margin-top: -6px; border-radius: 99px; overflow: hidden;
+  background: linear-gradient(180deg, #4a2a92, #6c45c0); border: 2px solid #e7b64a; box-shadow: 0 0 0 1px #8a5a16, 0 2px 3px rgba(40, 10, 80, .4); }
+.qs2-line i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(180deg, #ffe08a, #f0a51e); }
+.qs2-cp { position: relative; width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 3px rgba(40, 10, 80, .35)); }
+.qs2-cp.gift:not(.on) { filter: grayscale(.7) brightness(.95) drop-shadow(0 3px 3px rgba(40, 10, 80, .35)); }
+.qs2-track.is-long .qs2-cp { width: 36px; height: 36px; }
+.qs2-chest { position: absolute; right: 2%; bottom: calc(min(100vw - 2 * var(--gutter, 16px), 448px) * 272 / 780 * .38);
+  width: 33%; display: grid; justify-items: center; gap: 2px; }
+.qs2-chest img { width: 100%; height: auto; filter: drop-shadow(0 6px 6px rgba(40, 10, 80, .4)); }
+.qs2-track.is-ready .qs2-chest img { filter: drop-shadow(0 6px 6px rgba(40, 10, 80, .4)) drop-shadow(0 0 12px rgba(255, 210, 90, .95)); }
+.qs2-chest .ui-btn { position: absolute; bottom: -22px; }

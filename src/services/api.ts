@@ -197,7 +197,15 @@ async function raw<T>(method: string, path: string, body: unknown, token: string
 }
 
 /** an authorised call; a 401 renews the guest token once and repeats the call */
+/** mock previews only (?mock=1): the screenshot rig can inject live JSON as window.__esFx = { 'GET /v1/season': {...} } */
+export function mockFx<T>(key: string): T | undefined {
+  if (typeof window === 'undefined' || !new URLSearchParams(location.search).has('mock')) return undefined
+  return (window as unknown as { __esFx?: Record<string, T> }).__esFx?.[key]
+}
+
 async function call<T>(method: string, path: string, body?: unknown, opts: { retry?: boolean } = {}): Promise<T> {
+  const fx = mockFx<T>(`${method} ${path}`)
+  if (fx !== undefined) return structuredClone(fx)
   const tries = (opts.retry ?? method === 'GET') ? 3 : 1
   let token = ls.get(LS_TOKEN) || await guestLogin()
   try {

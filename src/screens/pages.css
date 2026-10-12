@@ -16,11 +16,11 @@
   position: absolute; inset: 0; z-index: 1;
   /* Phase E: content fades out under the floating HUD instead of showing through between its pills */
   /* admin 4933: and nothing shows in the gap below the floating nav (a mask, never a white overlay) */
-  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px), #000 calc(100% - 30px), transparent calc(100% - 4px));
-  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px), #000 calc(100% - 30px), transparent calc(100% - 4px));
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px), #000 calc(100% - var(--nav-h) - var(--safe-bottom) - 40px), transparent calc(100% - var(--nav-h) - var(--safe-bottom) - 8px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) - 14px), #000 calc(var(--safe-top) + var(--hud-h) + 4px), #000 calc(100% - var(--nav-h) - var(--safe-bottom) - 40px), transparent calc(100% - var(--nav-h) - var(--safe-bottom) - 8px));
   overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
   padding: calc(var(--hud-h) + var(--safe-top) + 8px) var(--gutter)
-           calc(var(--nav-h) + var(--safe-bottom) + 24px);
+           calc(var(--nav-h) + var(--safe-bottom) + 44px);
   display: grid; grid-template-columns: 100%; gap: var(--gap); align-content: start;
 }
 

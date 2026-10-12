@@ -28,6 +28,7 @@ import { NameSheet } from './components/NameSheet'
 import { Onboarding, firstStageOf, useIntroNeeded } from './screens/Onboarding'
 import { MapTour } from './screens/MapTour'
 import { SeasonPassScreen } from './screens/SeasonPassScreen'
+import { mockFx } from './services/api'
 import { ReminderSheet } from './components/ReminderSheet'
 import { isOn as remindersOn, pushSupported, shouldOffer, turnOff as remindersOff, turnOn as remindersTurnOn } from './services/push'
 import { setMusic as playMusic } from './services/audio'
@@ -150,8 +151,8 @@ export function App() {
 
           {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
           {tab === 'quests' && <QuestsScreen onGo={(to) => { if (to === 'cauldron' && mode === 'http') setCauldron(true); else setTab('map') }}
-            onSeason={mode === 'http' ? () => setSeasonOpen(true) : undefined} />}
-          {tab === 'shop' && <ShopScreen onSeason={mode === 'http' ? () => setSeasonOpen(true) : undefined} />}
+            onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}
+          {tab === 'shop' && <ShopScreen onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}
           {tab === 'league' && <LeagueScreen />}
           {tab === 'profile' && <ProfileScreen onBuy={setShop} onCustomize={() => setCustomizing(true)} onAchievements={() => setAchOpen(true)} />}
 

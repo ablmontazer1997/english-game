@@ -2,13 +2,17 @@
 // weekday): Boss Rush on Saturday + Sunday (bosses pay gems again), Double XP on Wednesday. The app only shows what
 // the server says, with a live countdown; every reward is computed by the server when a stage is graded.
 import { useEffect, useState } from 'react'
-import { api, type EventOut } from '../services/api'
+import { api, mockFx, type EventOut } from '../services/api'
 import { useGame } from '../services/ServiceProvider'
-import { Card, Chip } from '../components/PageArt'
 import { useCountdown } from '../components/Rewards'
 import bossIcon from '../assets/padicons/pk_boss.webp'
 import xpIcon from '../assets/sky/ic_energy.png'
 import './events.css'
+import bossArt from '../assets/games/boss/boss_normal.webp'
+import burst from '../assets/es2/quests/burst.webp'
+import twoX from '../assets/es2/quests/twox.webp'
+import gemPile from '../assets/es2/quests/gems.webp'
+import xpPot from '../assets/es2/quests/xp.webp'
 
 const ICON: Record<string, string> = { boss: bossIcon, xp: xpIcon }
 
@@ -18,7 +22,7 @@ export function useEvents(): EventOut[] | null {
   const [ev, setEv] = useState<EventOut[] | null>(null)
   const [n, setN] = useState(0)
   useEffect(() => {
-    if (mode !== 'http') { setEv([]); return }
+    if (mode !== 'http' && !mockFx('GET /v1/events')) { setEv([]); return }
     let alive = true
     api.events().then((r) => { if (alive) setEv(r.events) }).catch(() => { if (alive) setEv([]) })
     return () => { alive = false }
@@ -56,16 +60,25 @@ export function MapEventPill({ onOpen }: { onOpen?: () => void }) {
   )
 }
 
+// ES redesign 10-11 (concept 02): an illustrated event card. Boss Rush shows OUR lilac grammar boss (not a dragon),
+// Double XP the gold "2x" spell book; the sticker on the right says what the event pays.
+const ART: Record<string, string> = { boss: bossArt, xp: twoX }
 function EventRow({ e }: { e: EventOut }) {
   const left = useCountdown(e.active ? e.ends_at : e.starts_at)
+  const gems = /(\d+) gems/.exec(e.blurb)?.[1]
   return (
-    <div className={`evr${e.active ? ' is-on' : ''}`}>
-      <span className="evr-ic"><img src={ICON[e.icon] ?? bossIcon} alt="" draggable={false} /></span>
-      <span className="evr-main">
-        <span className="evr-top"><b>{e.title}</b><small>{when(e)}</small></span>
-        <span className="evr-blurb">{e.blurb}</span>
+    <div className={`evr2${e.active ? ' is-on' : ''}`}>
+      <span className="evr2-art"><img className="evr2-burst" src={burst} alt="" draggable={false} />
+        <img className={`evr2-pic evr2-${e.icon}`} src={ART[e.icon] ?? bossArt} alt="" draggable={false} /></span>
+      <span className="evr2-main">
+        <span className="evr2-top"><b>{e.title}</b><i className={`evr2-day${e.active ? ' is-on' : ''}`}>{when(e)}</i></span>
+        <span className="evr2-blurb">{e.blurb}</span>
+        <span className={`evr2-time${e.active ? ' is-on' : ''}`}>{e.active ? <><i className="evp-live">Live</i>{left.label} left</> : <>Starts in {left.label}</>}</span>
       </span>
-      <Chip className={`evr-chip${e.active ? ' is-on' : ''}`}>{e.active ? `${left.label} left` : `in ${left.label}`}</Chip>
+      <span className="evr2-stick">
+        {e.icon === 'xp' ? <img className="evr2-xp" src={xpPot} alt="" draggable={false} />
+          : <><img className="evr2-gems" src={gemPile} alt="" draggable={false} />{gems && <b className="evr2-plus">+{gems} gems</b>}</>}
+      </span>
     </div>
   )
 }
@@ -75,9 +88,9 @@ export function EventsCard() {
   const ev = useEvents()
   if (!ev?.length) return null
   return (
-    <Card className="reveal evc">
-      <div className="evc-h"><b className="ui-t">Weekly events</b></div>
+    <div className="evc2 esk-enter" style={{ ['--i' as string]: 1 }}>
+      <h2 className="evc2-h">Weekly events</h2>
       {ev.map((e) => <EventRow key={e.id} e={e} />)}
-    </Card>
+    </div>
   )
 }
