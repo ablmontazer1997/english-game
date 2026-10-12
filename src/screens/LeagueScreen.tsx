@@ -4,8 +4,6 @@ import { NameSheet } from '../components/NameSheet'
 import './serverstage.css'
 import { Btn, Chip } from '../components/PageArt'
 import { Sheet } from '../components/Sheet'
-import defBoy from '../assets/character/portrait_default_m.webp'
-import defGirl from '../assets/character/portrait_default_f.webp'
 import bgLeague from '../assets/es2/league/bg_league2.webp'
 import crBronze from '../assets/es2/league/crest_bronze.webp'
 import crSilver from '../assets/es2/league/crest_silver.webp'
@@ -21,6 +19,9 @@ import plGold from '../assets/es2/league/plinth_gold.webp'
 import plSilver from '../assets/es2/league/plinth_silver.webp'
 import plBronze from '../assets/es2/league/plinth_bronze.webp'
 import './league2.css'
+// 12 preset looks rendered from our 3D wardrobe (?portrait=1) for rivals, picked by player id (admin 4986)
+const LOOKS = Object.values(import.meta.glob('../assets/es2/league/looks/*.webp', { eager: true, import: 'default' })) as string[]
+const lookOf = (id: string) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return LOOKS[h % LOOKS.length] }
 import { RewardChips, useCountdown } from '../components/Rewards'
 import { usePortrait } from '../components/Portrait'
 import { leagueReward, TIERS } from '../services/progress'
@@ -59,7 +60,7 @@ export function LeagueScreen() {
   const top = entries.slice(0, 3), rest = entries.slice(3)
   const anyBot = entries.some((e) => e.bot)
   const me = entries.find((e) => e.isMe)
-  const face = (e: { name: string; isMe: boolean }) => e.isMe ? portrait : (e.name.charCodeAt(0) + e.name.length) % 2 ? defGirl : defBoy
+  const face = (e: { playerId: string; isMe: boolean }) => e.isMe ? portrait : lookOf(e.playerId)
   const ring = (e: { name: string; isMe: boolean }) => e.isMe ? '#8b4dff' : `hsl(${(e.name.charCodeAt(0) * 47 + e.name.length * 13) % 360} 70% 58%)`
   const Podium = ({ e, place }: { e: typeof entries[number]; place: 1 | 2 | 3 }) => (
     <div className={`lg2-pod p${place}${e.isMe ? ' is-me' : ''}`}>
