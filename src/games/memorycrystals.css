@@ -187,3 +187,8 @@
 .mc-stat.k9 { border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 14px 14px 14px 15px stretch; }
 /* coordinator 10-12: the cards sit low (near the thumbs), so the scene band above them takes the upright booster capsule */
 .mc-grid { align-content: end; padding-bottom: 6px; }
+/* coordinator 10-12: the word sits in the middle of the card face (the painted base lip takes the bottom ~9%) and
+   short words never wrap alone ("a / protector") */
+.mc-front { padding: 4% 6% 10%; }
+.mc-label { margin: 0; text-wrap: balance; }
+.mc-label { max-width: 94%; }

@@ -118,3 +118,5 @@
 .pm .pm-shelf:has(> .pm-bottle:nth-child(6)) .pm-bottle { width: 30cqw; height: 48%; }
 /* shot fixes: the task title on one line */
 .pm .pm-goal .gtask-t b { white-space: nowrap; font-size: clamp(15px, 4.6cqw, 19px); }
+/* coordinator 10-12: the slots stay clear of the right edge on narrow phones so the upright tray fits beside them */
+.pm .pm-slot, .pm .pm-tag { width: clamp(58px, 16.4cqw, 84px); height: clamp(48px, 13.6cqw, 70px); }

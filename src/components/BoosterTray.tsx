@@ -105,8 +105,9 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
         return best
       }
       // coordinator 10-12: the upright capsule on the right edge is preferred in every game; when the full size does not
-      // fit a gap, a slightly smaller upright capsule is tried before the tray lies flat
-      for (const k of [1, .86, .76, .68]) {
+      // fit a gap, a slightly smaller upright capsule is tried before the tray lies flat, but never below 44px tap targets
+      const btn = bt.querySelector<HTMLElement>('.bt-btn')?.offsetWidth || 48
+      for (const k of [1, .96, .92].filter((x) => btn * x >= 44)) {
         const t = fit(gaps(vert.w * k), (vert.h - 12) * k + 12)
         if (t == null) continue
         if (k < 1) { bt.classList.add('sm'); bt.style.setProperty('--bt-s', String(k)) }
