@@ -66,13 +66,16 @@ const ART: Record<string, string> = { boss: bossArt, xp: twoX }
 function EventRow({ e }: { e: EventOut }) {
   const left = useCountdown(e.active ? e.ends_at : e.starts_at)
   const gems = /(\d+) gems/.exec(e.blurb)?.[1]
+  const [more, setMore] = useState(false)
+  // compact like the concept: the one-line summary, the full rules on tap
   return (
-    <div className={`evr2${e.active ? ' is-on' : ''}`}>
+    <div className={`evr2${e.active ? ' is-on' : ''}${more ? ' is-more' : ''}`} role="button" tabIndex={0} aria-expanded={more}
+      onClick={() => setMore(!more)} onKeyDown={(k) => { if (k.key === 'Enter' || k.key === ' ') setMore(!more) }}>
       <span className="evr2-art"><img className="evr2-burst" src={burst} alt="" draggable={false} />
         <img className={`evr2-pic evr2-${e.icon}`} src={ART[e.icon] ?? bossArt} alt="" draggable={false} /></span>
       <span className="evr2-main">
         <span className="evr2-top"><b>{e.title}</b><i className={`evr2-day${e.active ? ' is-on' : ''}`}>{when(e)}</i></span>
-        <span className="evr2-blurb">{e.blurb}</span>
+        <span className="evr2-blurb">{more ? e.blurb : e.short}</span>
         <span className={`evr2-time${e.active ? ' is-on' : ''}`}>{e.active ? <><i className="evp-live">Live</i>{left.label} left</> : <>Starts in {left.label}</>}</span>
       </span>
       <span className="evr2-stick">
