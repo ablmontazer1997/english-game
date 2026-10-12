@@ -1,0 +1,14 @@
+/* ES redesign 10-12 (admin 4966): owned chests on the painted 3-slot shelf (wood / silver / epic slots, fixed order);
+   the ribbon tab carries the live title; each Open button sits right under its slot, 44 px tall. */
+.chs2 { display: grid; gap: 6px; }
+.chs2-shelf { position: relative; filter: drop-shadow(0 5px 8px rgba(20, 8, 40, .3)); }
+.chs2-bg { display: block; width: 100%; height: auto; }
+.chs2-h { position: absolute; left: 4.5%; width: 34%; top: 1%; height: 21%; display: grid; place-items: center; font-size: 13px; line-height: 1; font-weight: 900;
+  color: #fff; text-shadow: 0 1px 0 #3a1490, 0 0 2px #3a1490; white-space: nowrap; }
+.chs2-slot { position: absolute; top: 31%; width: 21%; height: 50%; transform: translateX(-50%); display: grid; place-items: center; }
+.chs2-art { width: 86%; height: 86%; object-fit: contain; filter: drop-shadow(0 3px 2px rgba(20, 8, 40, .35)); }
+.chs2-n { position: absolute; right: -8%; top: -10%; min-width: 26px; height: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 99px;
+  font-size: 12px; font-weight: 900; color: #fff; background: linear-gradient(180deg, #8a52f0, #5f27c9); border: 2px solid #fff; box-shadow: 0 1.5px 0 #3d1490; }
+.chs2-btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 7.7% 0 10.2%; }
+.chs2-btns > * { justify-self: center; }
+.chs2 .ui-btn.chs2-btn { --h: 44px; width: 92%; min-width: 0; font-size: 15px; }

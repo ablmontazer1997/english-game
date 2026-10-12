@@ -6,8 +6,8 @@
    Prefix shp- (unique). Art: src/assets/es2/shop/* from the concept's GPT asset sheet, re-matted (no glow fringes). */
 
 .shp .pg-scroll { gap: 12px; grid-auto-rows: max-content;
-  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) + 2px), #000 calc(var(--safe-top) + var(--hud-h) + 22px), #000 calc(100% - 30px), transparent calc(100% - 4px));
-  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) + 2px), #000 calc(var(--safe-top) + var(--hud-h) + 22px), #000 calc(100% - 30px), transparent calc(100% - 4px));
+  -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) + 2px), #000 calc(var(--safe-top) + var(--hud-h) + 22px), #000 calc(100% - var(--nav-h) - var(--safe-bottom) - 40px), transparent calc(100% - var(--nav-h) - var(--safe-bottom) - 8px));
+  mask-image: linear-gradient(to bottom, transparent calc(var(--safe-top) + var(--hud-h) + 2px), #000 calc(var(--safe-top) + var(--hud-h) + 22px), #000 calc(100% - var(--nav-h) - var(--safe-bottom) - 40px), transparent calc(100% - var(--nav-h) - var(--safe-bottom) - 8px));
   padding-top: calc(var(--hud-h) + var(--safe-top) + 14px); }
 .shp .ui-btn.sm { --h: 44px; min-width: 76px; font-size: 14px; }
 
@@ -66,13 +66,17 @@
 .shp-merch { position: relative; display: grid; }
 .shp-awn { position: relative; z-index: 2; }
 .shp-awn img { display: block; width: 100%; height: auto; }
-.shp-awn h2 { position: absolute; left: 20%; right: 20%; top: 25%; bottom: 35%; margin: 0; display: grid; place-items: center; font-size: clamp(13px, 3.9vw, 16px); }
-.shp-post { position: absolute; top: 44px; width: 24px; height: auto; z-index: 1; pointer-events: none; }
-.shp-post.l { left: 0; transform: scaleX(-1); }
-.shp-post.r { right: 0; }
-.shp-board { position: relative; margin: -10px 26px 0; padding: 20px 8px 12px; display: grid; gap: 12px; border-radius: 0 0 16px 16px;
-  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0) 0 34px, rgba(0, 0, 0, .08) 34px 36px), linear-gradient(180deg, #8a5530, #6a3b1e 60%, #5a3019);
-  box-shadow: inset 0 0 0 3px #3e2410, inset 0 4px 10px rgba(0, 0, 0, .35), 0 6px 0 rgba(40, 14, 6, .45), 0 12px 22px rgba(20, 8, 40, .3); }
+.shp-awn h2 { position: absolute; left: 29%; right: 29%; top: 30%; bottom: 16%; margin: 0; display: grid; place-items: center; font-size: clamp(13px, 3.9vw, 16px); }
+/* admin 4966: painted lantern posts (arm points inward) stand behind the board's sides, lanterns hanging beside the awning */
+.shp-post { position: absolute; top: 40px; width: 40px; height: auto; z-index: 3; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(20, 8, 40, .35)); }
+.shp-post.l { left: -2px; }
+.shp-post.r { right: -2px; }
+/* admin 4966: the painted plank board (9-slice from the merchant sheet, gold corner brackets, small feet) instead of the CSS planks */
+.shp-board { position: relative; z-index: 1; margin: -14px 14px 0; display: grid; gap: 12px;
+  border: solid transparent; border-width: 46px 17px 68px; border-image: url(../assets/es2/shop/board9.webp) 186 69 272 69 fill / 46px 17px 68px stretch;
+  padding: 0 4px; margin-bottom: 0; filter: drop-shadow(0 6px 10px rgba(20, 8, 40, .35)); }
+.shp-board > :first-child { margin-top: -26px; }
+.shp-board > :last-child { margin-bottom: -40px; }
 .shp-left.ui-chip { justify-self: center; }
 .shp-more { justify-self: center; height: 44px; padding: 0 18px; border-radius: 99px; background: #fff6e2; box-shadow: 0 0 0 2px #e7b64a, 0 3px 0 #9a6a1e;
   font-size: 14px; font-weight: 800; color: #3a1f70; }
@@ -82,7 +86,7 @@
 .shp-grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .shp-rc { position: relative; display: grid; grid-template-rows: auto 1fr; border-radius: 16px; border: 3px solid #e7b64a; overflow: hidden;
   background: linear-gradient(180deg, #fff8e8, #f3e2bf); box-shadow: 0 4px 0 rgba(70, 30, 110, .28), 0 10px 18px rgba(20, 8, 40, .26); }
-.shp-rc-top { position: relative; height: 104px; border: 10px solid transparent; border-image: url(../assets/es2/shop/top_common.webp) 30 fill / 10px stretch; }
+.shp-rc-top { position: relative; height: 98px; border: 10px solid transparent; border-image: url(../assets/es2/shop/top_common.webp) 30 fill / 10px stretch; }
 .shp-rc.r-rare .shp-rc-top { border-image-source: url(../assets/es2/shop/top_rare.webp); }
 .shp-rc.r-epic .shp-rc-top { border-image-source: url(../assets/es2/shop/top_epic.webp); }
 .shp-grid3 .shp-rc-top { height: 100px; }
@@ -103,9 +107,9 @@
 .shp-stage.s-haircolor .shp-rc-art { height: 58px; }
 .shp-stage.s-chest .shp-rc-art { height: 56px; bottom: 18px; }
 .shp-grid3 .shp-stage { --pw: 74%; }
-.shp-rc-b { display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: 6px; padding: 8px 8px 10px; }
+.shp-rc-b { display: grid; grid-template-rows: 1fr auto; justify-items: center; gap: 4px; padding: 6px 8px 8px; }
 .shp-rc-n { max-width: 100%; align-self: center; font-size: 14px; line-height: 17px; font-weight: 900; color: #2b1f55; text-align: center;
-  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 34px; display: grid; place-items: center; }
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 17px; display: grid; place-items: center; }
 .shp-rc-b .ui-btn.shp-cbtn { --h: 44px; width: 100%; min-width: 0; font-size: 15px; }
 .shp-grid3 .shp-rc-b .ui-btn.shp-cbtn { font-size: 14px; padding: 0 6px 2px; }
 .shp-rc-b .sh-odds { display: grid; gap: 1px; text-align: center; font-size: 11px; color: #4a3a68; font-weight: 700; }
@@ -128,7 +132,7 @@
 @media (max-width: 370px) {
   .shp-feat-t { font-size: 22px; line-height: 26px; }
   .shp-feat-in { grid-template-columns: minmax(0, 1fr) 36%; }
-  .shp-board { margin-inline: 22px; padding-inline: 6px; }
+  .shp-board { margin-inline: 10px; padding-inline: 2px; }
   .shp-grid { column-gap: 8px; }
   .shp-rc-b .ui-btn.shp-cbtn { font-size: 14px; }
 }

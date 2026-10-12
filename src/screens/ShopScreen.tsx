@@ -25,8 +25,9 @@ import ribFeatured from '../assets/es2/shop/rib_featured.webp'
 import ribRed from '../assets/es2/shop/rib_red.webp'
 import { RibbonH } from '../components/RibbonH'
 import dyePink from '../assets/es2/shop/dye_pink.webp'
-import awning from '../assets/es2/shop/awning.webp'
-import lanternPost from '../assets/es2/shop/lantern_post.webp'
+import awning from '../assets/es2/shop/awning2.webp'
+import postL from '../assets/es2/shop/post2_l.webp'
+import postR from '../assets/es2/shop/post2_r.webp'
 import pedestal from '../assets/es2/shop/pedestal.webp'
 
 const ICON_ART: Record<OfferIcon, string> = {
@@ -346,8 +347,8 @@ function MerchantSection({ m, onDone, preview, onMore }: { m: Merchant; onDone: 
   }
   return <section className="shp-merch esk-enter" style={{ ['--i' as string]: 1 }}>
     <div className="shp-awn"><img src={awning} alt="" draggable={false} /><h2 className="esk-title">Wandering Merchant</h2></div>
-    <img className="shp-post l" src={lanternPost} alt="" draggable={false} />
-    <img className="shp-post r" src={lanternPost} alt="" draggable={false} />
+    <img className="shp-post l" src={postL} alt="" draggable={false} />
+    <img className="shp-post r" src={postR} alt="" draggable={false} />
     <div className="shp-board">
       <Chip className="shp-left">New wares in {left.label}</Chip>
       <div className="shp-grid">

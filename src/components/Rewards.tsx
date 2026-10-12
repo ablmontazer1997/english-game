@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react'
 import { sfx } from '../services/audio'
 import { useGame } from '../services/ServiceProvider'
-import { art, Card, Btn } from './PageArt'
+import { art, Btn } from './PageArt'
 import { skySrc } from './SkyIcon'
 import { CHEST_LABEL } from '../services/progress'
 import type { Reward, ChestKind } from '../types/game'
 import './progression.css'
 import './eskit.css'
+import './chests2.css'
+import shelf from '../assets/es2/shop/shelf3.webp'
 
+/** the painted 3-slot shelf (admin 4966): slot centres at 23.9 / 51.4 / 78.6 % of its width */
+const KINDS: ChestKind[] = ['wood', 'silver', 'epic']
+const SLOT_X = ['23.9%', '51.4%', '78.6%']
 const CHEST_ART = { wood: 'chest_wood', silver: 'chest_silver', epic: 'chest_epic' } as const
 
 /** small inline chips: 🪙 120  💎 5  🧪 1  [chest] */
@@ -87,15 +92,23 @@ export function ChestStrip() {
     if (r) showReward(`${CHEST_LABEL[k]} opened!`, r)
   }
   return (
-    <div className="ch-strip reveal">
-      {owned.map((k) => (
-        <Card key={k} name="card_square" className="sh-card">
-          <img className={`sh-card-art${opening === k ? ' ch-shake' : ''}`} src={art(CHEST_ART[k])} alt="" draggable={false} />
-          <span className="sh-card-n">×{inventory.chests[k]}</span>
-          <Btn name="btn_gold" className="sm" onClick={() => open(k)} disabled={!!opening}>Open</Btn>
-        </Card>
-      ))}
-    </div>
+    <section className="chs2 esk-enter" aria-label="Your chests">
+      <div className="chs2-shelf">
+        <img className="chs2-bg" src={shelf} alt="" draggable={false} />
+        <b className="chs2-h">Your chests</b>
+        {KINDS.map((k, i) => inventory.chests[k] > 0 && (
+          <span key={k} className="chs2-slot" style={{ left: SLOT_X[i] }}>
+            <img className={`chs2-art${opening === k ? ' ch-shake' : ''}`} src={art(CHEST_ART[k])} alt={CHEST_LABEL[k]} draggable={false} />
+            <b className="chs2-n">×{inventory.chests[k]}</b>
+          </span>
+        ))}
+      </div>
+      <div className="chs2-btns">
+        {KINDS.map((k) => inventory.chests[k] > 0
+          ? <Btn key={k} name="btn_gold" className="sm chs2-btn" onClick={() => open(k)} disabled={!!opening}>Open</Btn>
+          : <span key={k} />)}
+      </div>
+    </section>
   )
 }
 
