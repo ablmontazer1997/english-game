@@ -11,6 +11,7 @@ import { fromSrv, levelOf, makeScore, pick } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/guild/gl_bg.webp'
 import owl from '../assets/games/guild/gl_owl.webp'
+import owlIcon from '../assets/es2/k/p21/icon_owl.webp'
 import './scene.css'
 import './guildletters.css'
 
@@ -120,8 +121,8 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
         )}
         {!checks ? (
           <>
-            <div className="gs-panel gl-write" data-coach="a" data-coach-tut=".gl-paper">
-              <Task className="gtask-row" icon="type" text="Write a reply" sub="Answer the letter above" first={round === 0} />
+            <div className="gs-panel gl-write k9 k-panel" data-coach="a" data-coach-tut=".gl-paper">
+              <Task className="gtask-row k-scroll" icon="type" text="Write a reply" sub="Answer the letter above" first={round === 0} />
               <p className="gl-task">{l.task}</p>
               {tip > 0 && <p className="gl-tips">Try: {l.keys.slice(0, tip).map((g) => g.join(' / ')).join('  ·  ')}</p>}
               <label className="gl-paper">
@@ -129,19 +130,19 @@ export function GuildLetters({ onFinish, level, srv, onAnswer }: MiniGameProps) 
                   onFocus={() => setTimeout(() => paperRef.current?.scrollIntoView({ block: 'nearest' }), 300)}
                   placeholder="Write your reply here…" spellCheck={false} aria-label="Your reply" />
               </label>
-              <span className={`gl-count${count >= l.minWords ? ' ok' : ''}`}>{count} / {l.minWords} words</span>
+              <span className={`gl-count k9 k-chip-c${count >= l.minWords ? ' ok' : ''}`}>{count} / {l.minWords} words</span>
             </div>
-            <div className="gl-go" data-focus-keep=""><button className="gs-go violet" data-demo={ctl.practice ? 1 : undefined} disabled={!count || sending} onClick={send}>Send with the owl</button></div>
+            <div className="gl-go" data-focus-keep=""><button className="gs-go k-btn k-green gl-send" data-demo={ctl.practice ? 1 : undefined} disabled={!count || sending} onClick={send}><img src={owlIcon} alt="" draggable={false} />Send with the owl</button></div>
           </>
         ) : (
           <>
-            <div className="gs-panel gl-write gl-review">
+            <div className="gs-panel gl-write gl-review k9 k-panel">
               <div className="gl-stars">{[0, 1, 2].map((i) => <span key={i} className={i < stars ? 'on' : ''}>★</span>)}</div>
               <ul>{checks.map((c) => <li key={c.label} className={c.ok ? 'ok' : 'no'}>{c.ok ? '✓' : '✗'} {c.label}</li>)}</ul>
               {/* Phase C: when the reply missed something, the model reply opens by itself */}
               <details open={!(checks[0].ok && checks[1].ok)}><summary>See a model reply</summary><p>{l.sample}</p></details>
             </div>
-            <div className="gl-go" data-focus-keep=""><button className="gs-go" onClick={next}>{round + 1 >= letters.length ? 'Finish' : 'Next letter'}</button></div>
+            <div className="gl-go" data-focus-keep=""><button className="gs-go k-btn k-green" onClick={next}>{round + 1 >= letters.length ? 'Finish' : 'Next letter'}</button></div>
           </>
         )}
       </div>

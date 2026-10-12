@@ -12,7 +12,6 @@ import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/bard/bt_bg.webp'
 import bardIdle from '../assets/games/bard/bt_bard_idle.webp'
 import bardHappy from '../assets/games/bard/bt_bard_happy.webp'
-import card from '../assets/games/bard/bt_card.webp'
 import './scene.css'
 import './bardstale.css'
 
@@ -87,23 +86,23 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Bard's Tale" count={`Tale ${round + 1} / ${tales.length}`} /></div>
 
-      <div className="gs-ui gs-panel bdt-panel" data-coach="a">
-        <Task className="gtask-row" icon="order" text="Put the story in order" sub="Tap the lines from first to last" first={round === 0} />
-        <p className="bdt-title">“{t.title}”</p>
+      <div className="gs-ui gs-panel bdt-panel k9 k-panel" data-coach="a">
+        <Task className="gtask-row k-scroll" icon="order" text="Put the story in order" sub="Tap the lines from first to last" first={round === 0} />
+        <p className="bdt-title k-ribbon">“{t.title}”</p>
         {cards.map((c) => {
           const n = order.indexOf(c.id)
           return (
             <button key={c.id} className={`bdt-row${n >= 0 ? ' placed' : ''}`} style={{ '--k': n } as React.CSSProperties} onClick={(e) => tap(c.id, e.currentTarget)}
               data-demo={ctl.practice ? c.id : undefined}>
               <span className="bdt-num">{n >= 0 ? n + 1 : ''}</span>
-              <span className="bdt-card" style={{ backgroundImage: `url(${card})` }}>
+              <span className="bdt-card">
                 <span className="bdt-text">{c.text}</span><i className="bdt-grip" />
               </span>
             </button>
           )
         })}
       </div>
-      <div className="gs-ui bdt-go" data-focus-keep=""><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={tell} disabled={order.length !== t.lines.length || state !== 'play'}>Tell the tale</button></div>
+      <div className="gs-ui bdt-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={tell} disabled={order.length !== t.lines.length || state !== 'play'}>Tell the tale</button></div>
     </div>
   )
 }

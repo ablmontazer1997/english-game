@@ -78,3 +78,6 @@
 .tt .tt2-mission > .tt-mstrip { padding: 15px 12px 12px 14px; }
 .tt .tt-choice { height: auto; padding: 7px 16px 10px; line-height: 1.2; }
 .tt .tt2-mission .gtask-t b { font-size: clamp(15px, 4.6vw, 19px); white-space: nowrap; }
+/* coordinator 10-12: balanced wrapping (no lone last word) and the how-to line kept on short phones */
+.tt .tt-mstrip p { text-wrap: balance; }
+.tt .tt2-mission .gtask .gtask-t small { display: block; }

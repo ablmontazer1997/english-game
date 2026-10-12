@@ -94,3 +94,27 @@
 .pm-tag { border-color: color-mix(in srgb, var(--liq, #b27cff) 45%, #fff); box-shadow: 0 0 0 2px #fff, 0 0 18px color-mix(in srgb, var(--liq, #b27cff) 80%, transparent), 0 4px 0 #cbb8f0; }
 /* Phase C: after a wrong brew the right word shows in green */
 .pm-word.pm-right { text-shadow: 0 0 16px #8fe56a, 0 3px 0 #2f7d1c; }
+
+/* ===== ES2 concept 22 (admin 5202): the task plate on the cream goal panel with the clue, painted ingredient slots for the
+   mix, the five painted bottles on the counter with bigger labels (two rows when the shelf is full), green Brew. The live
+   plate and cauldron stay; the bottle colours keep their liquid colours. ===== */
+.pm .pm-goal.k9 { top: 13.5%; left: 7%; right: 7%; padding: 8px 12px 12px; gap: 2px; border-radius: 0; background: none; box-shadow: none; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .3)); }
+.pm .pm-goal .gtask { margin: -2px -4px 4px; }
+.pm .pm-goal p { color: #2a1f5c; font-size: clamp(16px, 4.8cqw, 21px); }
+.pm .pm-mix { top: 30.5%; gap: 8px; flex-wrap: nowrap; }
+.pm .pm-plus { display: none; }
+.pm .pm-slot, .pm .pm-tag { display: grid; place-items: center; width: clamp(64px, 19cqw, 84px); height: clamp(52px, 15.5cqw, 70px); padding: 0 6px 2px; border-radius: 0; background: none; box-shadow: none;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p22/ingredient_slot.webp) 34 34 34 34 fill / 17px 17px 17px 17px stretch; }
+.pm .pm-slot { opacity: .92; filter: drop-shadow(0 4px 6px rgba(20, 6, 50, .25)); animation: pm2-slot 2s ease-in-out infinite; }
+@keyframes pm2-slot { 50% { filter: drop-shadow(0 0 8px rgba(190, 140, 255, .9)); } }
+.pm .pm-tag { font-size: clamp(14px, 4.4cqw, 19px); color: #2a1f5c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; filter: drop-shadow(0 0 7px var(--liq)); }
+.pm .pm-part { display: contents; }
+.pm .pm-shelf { top: 60%; height: 19%; }
+.pm .pm-bottle span { bottom: 22%; padding: 3px 9px 4px; border-radius: 12px; border-color: #e8c472; font-size: clamp(14px, 4.3cqw, 18px); line-height: 1.1; }
+.pm .pm-bottle.used { opacity: 1; visibility: hidden; }
+.pm .pm-go .gs-go.k-btn { min-height: 60px; font-size: 26px; border-radius: 0; background: none; box-shadow: none; }
+/* six or more bottles: two rows on the counter so the labels stay readable */
+.pm .pm-shelf:has(> .pm-bottle:nth-child(6)) { top: 55%; height: 25%; flex-wrap: wrap; justify-content: center; align-content: flex-end; row-gap: 2px; }
+.pm .pm-shelf:has(> .pm-bottle:nth-child(6)) .pm-bottle { width: 30cqw; height: 48%; }
+/* shot fixes: the task title on one line */
+.pm .pm-goal .gtask-t b { white-space: nowrap; font-size: clamp(15px, 4.6cqw, 19px); }

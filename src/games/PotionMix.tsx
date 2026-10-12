@@ -8,11 +8,11 @@ import { POTIONS } from './banks/potion'
 import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/potion/pm_bg.webp'
-import b1 from '../assets/games/potion/pm_bottle1.webp'
-import b2 from '../assets/games/potion/pm_bottle2.webp'
-import b3 from '../assets/games/potion/pm_bottle3.webp'
-import b4 from '../assets/games/potion/pm_bottle4.webp'
-import b5 from '../assets/games/potion/pm_bottle5.webp'
+import b1 from '../assets/es2/k/p22/bottle_violet.webp'
+import b2 from '../assets/es2/k/p22/bottle_blue.webp'
+import b3 from '../assets/es2/k/p22/bottle_pink.webp'
+import b4 from '../assets/es2/k/p22/bottle_gold.webp'
+import b5 from '../assets/es2/k/p22/bottle_cyan.webp'
 import './scene.css'
 import './potionmix.css'
 
@@ -154,14 +154,18 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       </div>
       <div className="gs-title"><GameTitle title="Potion Mix" count={`Potion ${round + 1} / ${recipes.length}`} /></div>
 
-      <div className="gs-ui gs-panel pm-goal" data-coach="q"><Task className="gtask-row" icon="build" text="Brew a word that means:" sub="Pour the right bottles in" first={round === 0} /><p>{r.clue}</p></div>
+      <div className="gs-ui gs-panel pm-goal k9 k-panel" data-coach="q"><Task className="gtask-row" icon="build" text="Brew a word that means:" sub="Pour the right bottles in" first={round === 0} /><p>{r.clue}</p></div>
 
       <div className="gs-ui pm-mix" data-focus-keep="">
         {state === 'ok' || state === 'reveal'
           ? <span className={`pm-word${state === 'reveal' ? ' pm-right' : ''}`}>{r.answer}</span>
-          : poured.map((id, i) => (
-            <span key={id} className="pm-part">{i > 0 && <i className="pm-plus">+</i>}<button className="pm-tag" style={{ '--liq': colorOf(id) } as React.CSSProperties} onClick={() => unpour(id)}>{text(id)}</button></span>
-          ))}
+          : <>
+            {poured.map((id, i) => (
+              <span key={id} className="pm-part">{i > 0 && <i className="pm-plus">+</i>}<button className="pm-tag" style={{ '--liq': colorOf(id) } as React.CSSProperties} onClick={() => unpour(id)}>{text(id)}</button></span>
+            ))}
+            {/* ES2 concept 22: painted empty slots wait for the next bottles (always 3, a 4th once 3 are in: no count hint) */}
+            {Array.from({ length: Math.max(0, Math.min(4, Math.max(3, poured.length + 1)) - poured.length) }, (_, i) => <span key={'e' + i} className="pm-slot" aria-hidden />)}
+          </>}
       </div>
 
       <div className="gs-ui pm-shelf" data-coach="a" data-coach-parts=".pm-bottle" style={{ '--n': shelf.length } as React.CSSProperties}>
@@ -174,7 +178,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           </button>
         ))}
       </div>
-      <div className="gs-ui pm-go" data-focus-keep=""><button className="gs-go" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
+      <div className="gs-ui pm-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
       {fly && <PourFx key={fly.key} f={fly} />}
     </div>
   )

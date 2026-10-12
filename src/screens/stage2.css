@@ -2,10 +2,7 @@
    Painted pieces from assets/es2/k (@2x webp); the live stage background stays. ===== */
 
 /* ---------- shared: the gold ribbon label (kit ribbon_gold, its own aspect, never stretched) ---------- */
-.k-ribbon { display: grid; place-items: center; aspect-ratio: 379 / 104; width: min(70%, 230px); padding: 0 16% 7%; box-sizing: border-box;
-  background: url(../assets/es2/k/kit/ribbon_gold.webp) center / 100% 100% no-repeat; font-family: var(--sans); font-weight: 900;
-  font-size: clamp(13px, 4vw, 16px); letter-spacing: .06em; text-transform: uppercase; color: #6a3d0c; white-space: nowrap;
-  text-shadow: 0 1px 0 rgba(255, 246, 200, .8); filter: drop-shadow(0 3px 5px rgba(120, 70, 0, .25)); }
+/* .k-ribbon moved to components/es2kit.css (batch 4: games use it too) */
 
 /* ---------- lobby: the painted spellbook page (lesson letter + every other stage) ---------- */
 .sl .sl-paper { visibility: hidden; }

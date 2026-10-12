@@ -60,7 +60,7 @@ const OBSTACLES = '.gs-panel,.lp,.gtask,button:not(.bt-btn),.ws-scroll,.gg-table
   + 'input,textarea,.ro-slots,.gs-pill,.gs-chip,.gt-ribbon,.gt-count,.bp-ring,.play-top,.swv-slot'
   // audit 10-11 P0: the bubble field (bubbles are drawn on a canvas, so the field itself is the obstacle; it leaves a
   // free strip at the bottom for the tray), the Match Blitz combo header and the Guild Letters letter
-  + ',.bp-field,.mb-combo,.gl-letter,.bb2-hp,.cbk-locked'
+  + ',.bp-field,.mb-combo,.gl-letter,.bb2-hp,.cbk-locked,.pm-mix'
 function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const place = () => {
@@ -70,7 +70,9 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
       bt.classList.remove('flat'); const vert = { w: bt.offsetWidth, h: bt.offsetHeight + 12 }
       bt.classList.add('flat'); const flat = { w: bt.offsetWidth + 6, h: bt.offsetHeight + 12 }
       bt.classList.remove('flat')
-      const top0 = 8, bot = H.height - 8, pref = H.height * 0.38
+      // the stage X sits outside the host: the tray (and its top gem) starts below it (coordinator 10-12, Guild Letters)
+      const xr = document.querySelector('.stage-close')?.getBoundingClientRect()
+      const top0 = Math.max(8, xr && xr.width ? xr.bottom - H.top + 16 : 8), bot = H.height - 8, pref = H.height * 0.38
       const gaps = (w: number) => {
         const x0 = H.right - 8 - w - 4
         const ys: [number, number][] = []
@@ -82,7 +84,9 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
           if (!r.width || !r.height || r.right < x0 || r.left > H.right) continue
           const cs = getComputedStyle(e)
           if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) continue
-          ys.push([r.top - H.top - 6, r.bottom - H.top + 6])
+          // the painted Whisper scroll's rollers hang a little below its box: keep a wider gap there (coordinator 10-12)
+          const pad = e.matches('.ws-scroll') ? 16 : 6
+          ys.push([r.top - H.top - pad, r.bottom - H.top + pad])
         }
         ys.sort((a, b) => a[0] - b[0])
         const out: [number, number][] = []; let y = top0

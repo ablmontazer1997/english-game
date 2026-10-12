@@ -36,3 +36,26 @@
 .rt-slot.full { animation: rt-carve .35s ease-out; }
 @keyframes rt-carve { 0% { box-shadow: 0 0 0 2px #fff6d6, 0 0 22px rgba(255, 210, 80, 1), 0 4px 0 #c99a38 } }
 .rt-reveal .rt-slot { animation: rt-yay .5s ease-out both; }
+
+/* ===== ES2 concept 23 (admin 5202): task plate with the scroll on the cream clue panel, the painted speaker, painted letter
+   slots (green / red painted tiles for right / wrong), the painted keyboard keys (pressed state on tap) and the painted
+   backspace key. The live plate stays; the live game checks by itself when the word is full, so there is no Check. ===== */
+.rt .rt-clue.k9 { flex-wrap: wrap; row-gap: 4px; padding: 8px 12px 12px 16px; border-radius: 0; background: none; box-shadow: none; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .3)); }
+.rt .rt-clue .gtask { flex: 1 0 100%; margin: -2px -8px 2px -12px; }
+.rt .rt-clue p { color: #2a1f5c; }
+.rt .rt-say { width: 58px; height: 58px; padding: 0; border: 0; border-radius: 50%; box-shadow: none; background: url(../assets/es2/k/p17/btn_speaker.webp) center / contain no-repeat;
+  filter: drop-shadow(0 4px 6px rgba(60, 20, 140, .35)); }
+.rt .rt-say svg { display: none; }
+.rt .rt-slot { border-radius: 0; box-shadow: none; background: url(../assets/es2/k/p23/letter_slot.webp) center / 100% 100% no-repeat; border: 0; color: #2a1f5c;
+  filter: drop-shadow(0 3px 4px rgba(80, 50, 0, .22)); }
+.rt .rt-slot.full { background-image: url(../assets/es2/k/p23/letter_slot.webp); filter: drop-shadow(0 0 6px rgba(255, 200, 70, .9)); }
+.rt .rt-slot.bad { color: #fff; background: url(../assets/es2/k/p09/word_tile_wrong.webp) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(120, 10, 10, .5); }
+.rt.rt-ok .rt-slot { color: #fff; background: url(../assets/es2/k/p09/word_tile_fixed.webp) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(20, 80, 10, .5); }
+.rt.rt-reveal .rt-slot { color: #fff; background: url(../assets/es2/k/p16/gap_slot_glow.webp) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(40, 10, 90, .6); }
+.rt .rt-key { border: 0; border-radius: 0; box-shadow: none; background: url(../assets/es2/k/p23/key.webp) center / 100% 100% no-repeat; color: #2a1f5c;
+  filter: drop-shadow(0 3px 3px rgba(60, 40, 20, .25)); }
+.rt .rt-key:active { transform: translateY(2px); box-shadow: none; background-image: url(../assets/es2/k/p23/key_pressed.webp); }
+.rt .rt-back { aspect-ratio: 82 / 57; height: auto; align-self: center; color: transparent; background-image: url(../assets/es2/k/p23/key_backspace.webp); }
+.rt .rt-back:active { background-image: url(../assets/es2/k/p23/key_backspace.webp); filter: brightness(.94); }
+/* shot fixes: the painted keys keep a side margin */
+.rt .rt-kb { --kw: min(calc((92cqw - 9 * var(--kgap)) / 10), 46px); left: 3%; right: 3%; }
