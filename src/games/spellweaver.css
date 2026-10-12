@@ -73,3 +73,7 @@
 
 /* coordinator 10-12: a placed piece leaves an empty gap in the pool (no faded ghost of it beside the loom card) */
 .swv .swv-pool .swv-tile.used { visibility: hidden; }
+/* Gemini audit 10-12 (same rule as Whisper): woven words leave the pool and the rest reflow centred; the pool keeps
+   one row's height so Weave does not move */
+.swv .swv-pool { justify-content: center; min-height: 46px; }
+.swv .swv-pool .swv-tile.used { display: none; }

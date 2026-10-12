@@ -109,3 +109,5 @@
 .gl .gl-go { padding: 0 5%; }
 .gl .gl-go .gs-go.k-btn { white-space: nowrap; font-size: clamp(19px, 5.6cqw, 24px); }
 .gl .gl-paper { border: 2px solid #cbb9f3; border-image: none; border-radius: 14px; box-shadow: inset 0 2px 4px rgba(90, 60, 170, .1), 0 0 0 2px #fff; }
+/* Gemini audit 10-12: the word-count chip keeps a gap above the panel rim */
+.gl .gl-write.k9 { padding-bottom: 14px; }

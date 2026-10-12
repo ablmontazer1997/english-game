@@ -125,3 +125,5 @@
   background: url(../assets/es2/k/kit/ribbon_gold.webp) center / 100% 100% no-repeat; font-family: var(--sans); font-weight: 900;
   font-size: clamp(13px, 4vw, 16px); letter-spacing: .06em; text-transform: uppercase; color: #6a3d0c; white-space: nowrap;
   text-shadow: 0 1px 0 rgba(255, 246, 200, .8); filter: drop-shadow(0 3px 5px rgba(120, 70, 0, .25)); }
+/* Gemini audit 10-12: prompts, clues and card text avoid a lone last word (progressive: browsers without text-wrap ignore it) */
+.stage-host :is(p, h2, h3), .stage-host .gtask-t small { text-wrap: pretty; }
