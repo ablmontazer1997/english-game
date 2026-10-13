@@ -3,6 +3,7 @@ import { use3dFallback } from '../components/use3dFallback'
 import hero2d from '../assets/games/boss2/hero.webp'
 import { art } from '../components/PageArt'
 import { hero3dPage } from './MapHero'
+import pedestalArt from '../assets/es2/k/wd/pedestal.webp'
 import './profilehero.css'
 
 /*
@@ -17,8 +18,9 @@ import './profilehero.css'
  *   variant 'card' : a framed night-sky hero card, stats in a column beside it
  */
 const SRC = hero3dPage('&el=6&fps=40')
-/** podium.png: where its top face centre is, as a fraction of its height */
-const PODIUM_TOP = 0.33
+/** the ES2 perspective pedestal (GPT art, admin 5334): its top-ellipse centre as a fraction of its height, and its aspect */
+const PODIUM_TOP = 0.31
+const PODIUM_AR = 1024 / 365
 const GESTURES = ['clap', 'fold_arms', 'cast_a_spell'] as const
 
 type Frame = { gnd: number; top: number }
@@ -70,11 +72,11 @@ function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: Re
   const fb = use3dFallback(h3.ready)
   const fh = Math.round(heroH / Math.max(0.2, frame.gnd - frame.top))
   const fw = Math.round(fh * 0.8)
-  const podiumH = podiumW / 1.315
+  const podiumH = podiumW / PODIUM_AR
   const feetY = podiumH * (1 - PODIUM_TOP) // feet above the bottom of the podium box
   return (
     <>
-      <img className="ph-podium" src={art('podium')} alt="" draggable={false} style={{ width: podiumW }} />
+      <img className="ph-podium" src={pedestalArt} alt="" draggable={false} style={{ width: podiumW }} />
       <img className={`ph-2d${h3.ready || !fb ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
         style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
       <iframe key={h3.v} ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
@@ -91,11 +93,10 @@ function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: Re
   )
 }
 
-/** the stage backdrop: light rays, a soft glow and a slowly turning rune ring on the floor */
+/** the stage backdrop: a soft glow and a slowly turning rune ring on the floor (admin 5325: no light rays from the top) */
 function Spotlight({ ringY, ringW }: { ringY: number; ringW: number }) {
   return (
     <span className="ph-light" aria-hidden>
-      <span className="ph-rays" />
       <span className="ph-glow" />
       <span className="ph-ring" style={{ bottom: ringY, width: ringW, height: ringW * 0.34 }} />
       {Array.from({ length: 9 }, (_, i) => <i key={i} className="ph-spark" style={{ ['--i' as string]: i }} />)}
