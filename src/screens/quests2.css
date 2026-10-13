@@ -9,7 +9,7 @@
 
 /* ---- header: our hero beside the parchment banner ---- */
 .qs2-head { position: relative; z-index: 4; display: grid; grid-template-columns: 27% minmax(0, 1fr); align-items: center; gap: 0; height: 118px; margin-bottom: -4px; }
-.qs2-hero { position: absolute; left: -6px; bottom: -40px; height: 156px; width: auto; z-index: 3; pointer-events: none;
+.qs2-hero { position: absolute; left: 0; bottom: 2px; height: 112px;   /* 10-13 protrusion audit: inside the banner row, no longer over the events card */ width: auto; z-index: 3; pointer-events: none;
   filter: drop-shadow(0 6px 8px rgba(20, 8, 40, .4)); }
 .qs2-banner { position: relative; grid-column: 2; align-self: center; margin-left: -9%; margin-right: -2%; }
 .qs2-banner > img { width: 100%; height: auto; display: block; filter: drop-shadow(0 5px 8px rgba(20, 8, 40, .35)); }

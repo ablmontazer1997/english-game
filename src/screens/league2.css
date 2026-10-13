@@ -111,3 +111,6 @@
   .lg2-pod-t b { font-size: 12.5px; line-height: 15px; }
   .lg2-pod-t small { font-size: 11px; line-height: 13px; }
 }
+/* 10-13 admin 5402 + protrusion audit: the #1 crown stays inside the podium frame (room above the faces, below the gold rim) */
+.lg2-podium { padding-top: 30px; }
+@media (max-width: 380px) { .lg2-podium { padding-top: 24px; } }
