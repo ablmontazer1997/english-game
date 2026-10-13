@@ -104,3 +104,6 @@
 .qs2-chest img { width: 100%; height: auto; filter: drop-shadow(0 6px 6px rgba(40, 10, 80, .4)); }
 .qs2-track.is-ready .qs2-chest img { filter: drop-shadow(0 6px 6px rgba(40, 10, 80, .4)) drop-shadow(0 0 12px rgba(255, 210, 90, .95)); }
 .qs2-chest .ui-btn { position: absolute; bottom: -22px; }
+/* 10-13 live audit (admin 5454): the "+N gems" chip sits below the gem pile, never under it; the Season title wraps evenly (no lone word) */
+.evr2-plus { position: relative; z-index: 1; margin-top: 2px; transform: translateX(-8px); }   /* kept inside the event card rim */
+.qs2 .ssn-entry-main .ui-t { text-wrap: balance; }
