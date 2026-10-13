@@ -1,0 +1,83 @@
+/* ES redesign 10-12, concept 06 Season Pass (admin 4935). Prefix ssn2-. Art: assets/es2/season (a8 sheet), autumn arena (a9). */
+.ssn2 .pg-scroll { gap: 8px; grid-auto-rows: max-content; }
+
+/* ---- header: back, our hero, autumn leaves, the season logo plate and the days-left pill ---- */
+.ssn2-head { position: relative; height: 168px; display: grid; grid-template-columns: 40% minmax(0, 1fr); align-items: center; }
+.ssn2-back { position: absolute; left: 0; top: 0; z-index: 4; }
+.ssn2-hero { position: absolute; left: 34px; bottom: -6px; height: 150px; width: auto; z-index: 2; filter: drop-shadow(0 6px 8px rgba(40, 10, 20, .45)); }
+.ssn2-leaves { position: absolute; left: 10px; bottom: -14px; width: 112px; z-index: 3; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(60, 20, 0, .35)); }
+.ssn2-title { grid-column: 2; display: grid; justify-items: center; gap: 2px; z-index: 2; }
+.ssn2-logo { width: min(100%, 220px); height: auto; filter: drop-shadow(0 6px 8px rgba(40, 10, 20, .45)); }
+.ssn2-name { margin: 0; font-family: Fredoka, var(--sans); font-size: 30px; font-weight: 800; color: #fff; text-align: center;
+  text-shadow: 0 2px 0 #7a2a10, 0 0 3px #7a2a10, 0 4px 8px rgba(40, 10, 20, .5); }
+.ssn2-pill { position: relative; width: min(92%, 190px); display: grid; }
+.ssn2-pill img { width: 100%; height: auto; display: block; }
+.ssn2-pill b { position: absolute; left: 27%; right: 8%; top: 0; bottom: 6%; display: grid; place-items: center; font-size: 14px; font-weight: 900; color: #fff;
+  text-shadow: 0 1px 2px rgba(20, 6, 50, .6); white-space: nowrap; }
+
+/* ---- tier progress ---- */
+.ssn2-prog { justify-self: center; display: grid; grid-template-columns: auto minmax(90px, 160px) auto; align-items: center; gap: 8px; padding: 5px 12px;
+  border-radius: 99px; background: rgba(46, 18, 96, .78); box-shadow: 0 0 0 1.5px #e7b64a; }
+.ssn2-prog b { font-size: 13px; font-weight: 900; color: #ffe08a; white-space: nowrap; }
+.ssn2-prog > span { height: 9px; border-radius: 99px; background: #5c3fa8; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35); }
+.ssn2-prog > span i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(180deg, #ffe08a, #f0a51e); }
+.ssn2-prog small { font-size: 12px; font-weight: 800; color: #fff; white-space: nowrap; }
+
+/* ---- column headers ---- */
+.ssn2-cols, .ssn2-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); column-gap: 4px; align-items: center; }
+.ssn2-hdr { position: relative; display: grid; }
+.ssn2-hdr img { width: 100%; height: 38px; object-fit: fill; filter: drop-shadow(0 3px 4px rgba(40, 10, 60, .35)); }
+.ssn2-hdr b { position: absolute; inset: 0 8% 0 24%; display: grid; place-items: center; font-family: Fredoka, var(--sans); font-size: 15px; font-weight: 800; letter-spacing: .04em; }
+.ssn2-hdr.free b { color: #4a2a9a; }
+.ssn2-hdr.prem b { color: #6a3a00; inset: 0 22% 0 22%; }
+
+/* ---- the track: the centre path (gold up to the current tier), rows on top ---- */
+.ssn2-track { position: relative; display: grid; gap: 8px; padding-bottom: 6px; }
+.ssn2-path { position: absolute; left: 50%; top: 20px; bottom: 30px; width: 8px; margin-left: -4px; border-radius: 99px;
+  background: #c9b6f2; box-shadow: 0 0 0 2px #7b55c9, 0 2px 6px rgba(40, 10, 60, .35); }
+.ssn2-path i { position: absolute; left: -2px; right: -2px; top: -2px; height: var(--fill, 0%); border-radius: 99px; background: linear-gradient(90deg, #f0a51e, #ffe9a8 50%, #f0a51e);
+  box-shadow: 0 0 0 2px #b87a14, 0 0 12px rgba(255, 200, 90, .9); }
+.ssn2-row { position: relative; z-index: 1; }
+.ssn2-cell { position: relative; min-height: 64px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px; padding: 0 4px 0 2px;
+  border: 14px solid transparent; border-image: url(../assets/es2/season/cell_free.webp) 40 fill / 14px stretch;
+  filter: drop-shadow(0 3px 4px rgba(40, 10, 60, .3)); }
+.ssn2-cell.prem { border-image-source: url(../assets/es2/season/cell_prem.webp); }
+.ssn2-cell.free.is-ready { border-image-source: url(../assets/es2/season/cell_cur.webp); filter: drop-shadow(0 0 10px rgba(255, 210, 90, .9)) drop-shadow(0 3px 4px rgba(40, 10, 60, .3)); }
+.ssn2-cell.free.is-done { filter: saturate(.85) drop-shadow(0 3px 4px rgba(40, 10, 60, .3)); }
+.ssn2-row:not(.is-reached) .ssn2-cell.free { filter: saturate(.8) brightness(.97) drop-shadow(0 3px 4px rgba(40, 10, 60, .3)); }
+.ssn2 .ssn-prize { display: grid; justify-items: center; gap: 0; min-width: 0; }
+.ssn2 .ssn-pic { width: 46px; height: 34px; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(40, 20, 0, .3)); }
+.ssn2 .ssn-prize small { max-width: 100%; font-size: 11.5px; line-height: 14px; font-weight: 900; color: #3a2a6a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ssn2-cell.prem .ssn-prize small { color: #6a3a00; }
+.ssn2 .ssn-dyepic { position: relative; display: grid; place-items: center; }
+.ssn2 .ssn-dye { position: absolute; right: -2px; bottom: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.ssn2-badge { width: 26px; height: 26px; object-fit: contain; }
+.ssn2 .ui-btn.ssn2-claim { --h: 44px; min-width: 0; padding: 0 10px 2px; font-size: 14px; }
+
+/* the numbered node on the path; the current tier gets the winged gold node */
+.ssn2-node { position: relative; justify-self: center; width: 34px; height: 34px; display: grid; place-items: center; }
+.ssn2-node img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(40, 10, 60, .4)); }
+.ssn2-node b { position: relative; font-size: 15px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(20, 6, 50, .7); }
+.ssn2-row.is-cur .ssn2-node { width: 44px; height: 35px; margin: 0; }   /* the wings stay inside the 52px gap between the reward cards (Gemini audit 10-13) */
+.ssn2-row.is-cur .ssn2-node b { font-size: 17px; margin-top: -2px; }
+.ssn2-row:not(.is-reached) .ssn2-node img { filter: grayscale(.4) brightness(.92) drop-shadow(0 2px 3px rgba(40, 10, 60, .4)); }
+
+.ssn2-note { margin: 4px 0 0; padding: 8px 12px; border-radius: 14px; background: rgba(46, 18, 96, .72); color: #fff; font-size: 12.5px; line-height: 1.4; font-weight: 700; text-align: center; }
+
+/* ---- jump to the current tier; the premium banner (real money off: "Coming soon") ---- */
+.ssn2-jump { position: absolute; right: var(--gutter); bottom: calc(var(--safe-bottom) + 92px); z-index: 8; height: 44px; padding: 0 16px; border-radius: 99px; border: 2.5px solid #fff;
+  font-size: 14px; font-weight: 900; color: #fff; background: linear-gradient(180deg, #9a62ff, #6a2be0); box-shadow: 0 3px 0 #3d1490, 0 6px 12px rgba(20, 6, 50, .4); cursor: pointer; }
+.ssn2-foot { position: absolute; left: 0; right: 0; bottom: calc(var(--safe-bottom) + 14px); z-index: 7; display: grid; place-items: center; pointer-events: none; }
+.ssn2-unlock { position: relative; width: min(84%, 320px); min-height: 58px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 4px 22px 9px;
+  border: 0 solid transparent; border-image: var(--k-cream) 43 38 42 42 fill / 22px 19px 21px 21px stretch; filter: drop-shadow(0 5px 8px rgba(40, 10, 60, .4)); }   /* cream plate: not a buy button (gold = claim only, admin 10-13) */
+.ssn2-unlock img { width: 26px; height: 26px; flex: 0 0 auto; }
+.ssn2-unlock > span { display: grid; justify-items: start; }
+.ssn2-unlock b { font-family: Fredoka, var(--sans); font-size: 18px; line-height: 20px; font-weight: 800; color: #4a2590; }
+.ssn2-unlock em { font-style: normal; font-size: 12px; line-height: 14px; font-weight: 900; color: #7a64a8; }
+@media (max-width: 370px) {
+  .ssn2-hdr b { font-size: 13.5px; letter-spacing: .02em; }
+  .ssn2-hdr.prem b { inset: 0 21% 0 25%; }
+  .ssn2 .ssn-pic { width: 40px; height: 30px; }
+  .ssn2-cell { padding: 0 2px; }
+  .ssn2 .ui-btn.ssn2-claim { padding: 0 8px 2px; font-size: 13px; }
+}
