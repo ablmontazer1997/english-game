@@ -6,7 +6,7 @@ import { dayEnd, weekEnd } from '../services/progress'
 import type { Quest } from '../types/game'
 import { SeasonEntry } from './SeasonPassScreen'
 import { EventsCard } from './Events'
-import bgQuests from '../assets/es2/shop/bg_shop2.webp'
+import bgQuests from '../assets/es2/quests/bg_quests_dusk.webp'   // admin 5419/5425/5427: its own clay dusk (scroll library)
 import heroArt from '../assets/games/boss2/hero_cheer.webp'
 import scrollArt from '../assets/es2/quests/scroll.webp'
 import trophyArt from '../assets/es2/quests/trophy.webp'

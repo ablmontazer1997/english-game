@@ -17,7 +17,7 @@ import '../components/eskit.css'
 import './shop2.css'
 import { ItemArt } from '../components/ItemArt'
 import { SWATCH } from './SeasonPassScreen'
-import bgShop2 from '../assets/es2/shop/bg_shop2.webp'
+import bgShop2 from '../assets/es2/shop/bg_shop_dusk.webp'   // admin 5419/5425: clay, dusk
 import signArt from '../assets/es2/shop/sign.webp'
 import tabOn from '../assets/es2/shop/tab_on.webp'
 import tabOff from '../assets/es2/shop/tab_off.webp'

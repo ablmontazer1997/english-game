@@ -3,7 +3,7 @@ import { api, errorText, type SeasonOut, type SeasonTier, type TrackReward } fro
 import { toCurrencies } from '../services/httpService'
 import { useGame } from '../services/ServiceProvider'
 import { Card, Btn, art } from '../components/PageArt'
-import bgSeason from '../assets/es2/shop/bg_shop2.webp'   // admin 5402/5406: reuse the live tab bg (Shop/Quests), daytime; the dusk bg is dropped
+import bgSeason from '../assets/es2/shop/bg_shop_dusk.webp'
 import heroArt from '../assets/games/boss2/hero_cheer.webp'
 import logoArt from '../assets/es2/season/logo.webp'
 import pillArt from '../assets/es2/season/pill.webp'

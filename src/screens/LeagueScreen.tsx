@@ -4,7 +4,7 @@ import { NameSheet } from '../components/NameSheet'
 import './serverstage.css'
 import { Btn, Chip } from '../components/PageArt'
 import { Sheet } from '../components/Sheet'
-import bgLeague from '../assets/es2/league/bg_league2.webp'
+import bgLeague from '../assets/es2/league/bg_league_dusk.webp'   // admin 5421/5425: clay, dusk
 import crBronze from '../assets/es2/league/crest_bronze.webp'
 import crSilver from '../assets/es2/league/crest_silver.webp'
 import crGold from '../assets/es2/league/crest_gold.webp'

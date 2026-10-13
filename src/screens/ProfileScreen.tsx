@@ -7,7 +7,7 @@ import hero2d from '../assets/games/boss2/hero.webp'
 import { usePortrait } from '../components/Portrait'
 import { TIER_NAME } from './AchievementsScreen'
 import { api, type SeasonOut } from '../services/api'
-import bgProfile from '../assets/es2/shop/bg_shop2.webp'
+import bgProfile from '../assets/es2/shop/bg_shop_dusk.webp'   // admin 5427: Profile uses the Shop dusk
 import flameArt from '../assets/es2/profile/flame.webp'
 import starArt from '../assets/es2/profile/star.webp'
 import gemsArt from '../assets/es2/profile/gems.webp'
