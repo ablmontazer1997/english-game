@@ -2,10 +2,24 @@ import { useEffect, useRef, useState } from 'react'
 import { use3dFallback } from '../components/use3dFallback'
 import { ItemsSheet } from './ItemsSheet'
 import { useGame } from '../services/ServiceProvider'
-import { Card, Btn, Slot, Art, art, PAGE_BG } from '../components/PageArt'
+import { Card, Btn, Slot, Art, art } from '../components/PageArt'
 import hero2d from '../assets/games/boss2/hero.webp'
 import { usePortrait } from '../components/Portrait'
-import { medal, TIER_NAME } from './AchievementsScreen'
+import { TIER_NAME } from './AchievementsScreen'
+import { api, type SeasonOut } from '../services/api'
+import bgProfile from '../assets/es2/shop/bg_shop2.webp'
+import flameArt from '../assets/es2/profile/flame.webp'
+import starArt from '../assets/es2/profile/star.webp'
+import gemsArt from '../assets/es2/profile/gems.webp'
+import chestArt from '../assets/es2/profile/chest.webp'
+import scrollArt from '../assets/es2/quests/trophy.webp'
+import mHat from '../assets/es2/profile/m_hat.webp'
+import mBook from '../assets/es2/profile/m_book.webp'
+import mFlame from '../assets/es2/profile/m_flame.webp'
+import mCrown from '../assets/es2/profile/m_crown.webp'
+import mStar from '../assets/es2/profile/m_star.webp'
+import mLock from '../assets/es2/profile/m_lock.webp'
+import type { AchievementCat } from '../types/game'
 import type { CurrencyId } from '../types/game'
 import './pages.css'
 import { ProfileHeroStage, ProfileHeroCard } from './ProfileHero'
@@ -14,7 +28,25 @@ import { ProfileHeroStage, ProfileHeroCard } from './ProfileHero'
 const PF = new URLSearchParams(typeof location !== 'undefined' ? location.search : '').get('pf') ?? 'b'
 import '../components/progression.css'
 
-export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void; onAchievements: () => void }) {
+// b1 medal per achievement family (concept 04: coloured medals for earned, the silver padlock for the rest)
+const MEDAL_ES2: Record<AchievementCat, string> = { journey: mHat, explorer: mHat, stars: mStar, gems: mStar, treasure: mStar, scholar: mBook, quests: mBook,
+  streak: mFlame, elixir: mFlame, boss: mCrown, wealth: mCrown, league: mCrown }
+
+/** the Season Pass mini card (concept 04): tier progress, opens the pass */
+function SeasonMini({ onOpen }: { onOpen: () => void }) {
+  const [s, setS] = useState<SeasonOut | null>(null)
+  useEffect(() => { api.season().then(setS).catch(() => {}) }, [])
+  if (!s) return null
+  return (
+    <button className="pf2-card pf2-season esk-enter" onClick={onOpen} aria-label={`Season Pass: tier ${s.tier} of ${s.tiers_total}`}>
+      <img src={scrollArt} alt="" draggable={false} />
+      <span className="pf2-season-m"><b className="pf2-t">Season Pass</b>
+        <span className="pf2-season-bar"><span><i style={{ width: `${Math.min(100, (s.tier / s.tiers_total) * 100)}%` }} /></span><b>{s.tier}/{s.tiers_total}</b></span></span>
+    </button>
+  )
+}
+
+export function ProfileScreen({ onCustomize, onAchievements, onSeason }: { onBuy: (c: CurrencyId) => void; onCustomize: () => void; onAchievements: () => void; onSeason?: () => void }) {
   const { profile, worlds, currencies, achievements, inventory, mode, streak } = useGame()
   const [items, setItems] = useState(false)
   const portrait = usePortrait()
@@ -48,13 +80,13 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
 
   return (
     <div className="screen pg">
-      <img className="pg-bg" src={PAGE_BG.profile} alt="" draggable={false} />
+      <img className="pg-bg" src={bgProfile} alt="" draggable={false} />
       <div className="pg-scroll">
         {PF === 'b' ? (
           <ProfileHeroCard name={profile.name} level={profile.level} onEdit={onCustomize} stats={[
-            { icon: art('qi_flame'), value: streak?.current ?? profile.streak, label: mode === 'http' ? 'Hearthfire' : 'Streak' },
-            { icon: art('qi_star'), value: stars, label: 'Stars' },
-            { icon: art('gem_s'), value: currencies?.gems ?? 0, label: 'Gems' },
+            { icon: flameArt, value: streak?.current ?? profile.streak, label: mode === 'http' ? 'Hearthfire' : 'Streak' },
+            { icon: starArt, value: stars, label: 'Stars' },
+            { icon: gemsArt, value: currencies?.gems ?? 0, label: 'Gems' },
           ]} />
         ) : PF === 'a' ? (
           <ProfileHeroStage name={profile.name} level={profile.level} onEdit={onCustomize}>{statsRow}</ProfileHeroStage>
@@ -78,24 +110,24 @@ export function ProfileScreen({ onCustomize, onAchievements }: { onBuy: (c: Curr
         
 
         {mode === 'http' && (
-          <Card className="ui-row pf-name" onClick={() => setItems(true)}>
-            <Slot src={art('chest_epic')} />
-            <span className="pf-name-t"><span className="ui-t">My Items</span></span>
-            <span className="ui-trail"><span className="pf-ach-more">Wear ›</span></span>
-          </Card>
+          <button className="pf2-card pf2-items esk-enter" onClick={() => setItems(true)}>
+            <img src={chestArt} alt="" draggable={false} />
+            <b className="pf2-t">My Items</b>
+            <span className="pf2-more">Wear ›</span>
+          </button>
         )}
         <ItemsSheet open={items} onClose={() => setItems(false)} />
 
-        <Card name="panel_wide" className="pf-ach" onClick={onAchievements}>
-          <span className="pf-ach-t"><b>Achievements</b><small>{claimed.length}/{achievements.length}</small>{ready > 0 && <em className="pf-ach-new">{ready} to claim</em>}</span>
-          <div className="pf-ach-row">
-            {shelf.map((a) => (
-              <span key={a.id} className={`ac-medal sm t${a.tier}`} title={`${a.title} · ${TIER_NAME[a.tier]}`}><img src={medal(a.cat)} alt="" draggable={false} /></span>
-            ))}
-            {Array.from({ length: Math.max(0, 5 - shelf.length) }, (_, i) => <img key={i} src={art(i % 2 ? 'badge_lock2' : 'badge_lock1')} alt="" draggable={false} />)}
-          </div>
-          <span className="pf-ach-more">View all ›</span>
-        </Card>
+        <button className="pf2-card pf2-ach esk-enter" onClick={onAchievements}>
+          <span className="pf2-ach-h"><b className="pf2-t">Achievements</b><small>{claimed.length}/{achievements.length}</small>{ready > 0 && <em className="pf2-claim">{ready} to claim</em>}</span>
+          <span className="pf2-medals">
+            {shelf.map((a) => <img key={a.id} src={MEDAL_ES2[a.cat] ?? mStar} alt={`${a.title} · ${TIER_NAME[a.tier]}`} draggable={false} />)}
+            {Array.from({ length: Math.max(0, 5 - shelf.length) }, (_, i) => <img key={i} className="lock" src={mLock} alt="" draggable={false} />)}
+          </span>
+          <span className="pf2-more">View all ›</span>
+        </button>
+
+        {onSeason && <SeasonMini onOpen={onSeason} />}
       </div>
     </div>
   )

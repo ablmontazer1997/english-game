@@ -5,6 +5,10 @@ import { art } from '../components/PageArt'
 import { hero3dPage } from './MapHero'
 import pedestalArt from '../assets/es2/k/wd/pedestal.webp'
 import './profilehero.css'
+import './profile2.css'
+import '../components/es2kit.css'
+import spotArt from '../assets/es2/profile/stage.webp'   // the cleaned violet stage (no rays), cut to the arch shape
+import tileArt from '../assets/es2/profile/tile.webp'
 
 /*
  * The profile's hero showcase: the player's own 3D character (the same small
@@ -67,16 +71,17 @@ function useShowcase3d() {
 }
 
 /** heroH: the model's height (feet to hat tip) in px; podiumW: the podium's width in px */
-function Hero3d({ heroH, podiumW, h3 }: { heroH: number; podiumW: number; h3: ReturnType<typeof useShowcase3d> }) {
+type Ped = { src: string; aspect: number; top: number }
+function Hero3d({ heroH, podiumW, h3, ped }: { heroH: number; podiumW: number; h3: ReturnType<typeof useShowcase3d>; ped?: Ped }) {
   const { frame } = h3
   const fb = use3dFallback(h3.ready)
   const fh = Math.round(heroH / Math.max(0.2, frame.gnd - frame.top))
   const fw = Math.round(fh * 0.8)
-  const podiumH = podiumW / PODIUM_AR
-  const feetY = podiumH * (1 - PODIUM_TOP) // feet above the bottom of the podium box
+  const podiumH = podiumW / (ped?.aspect ?? PODIUM_AR)
+  const feetY = podiumH * (1 - (ped?.top ?? PODIUM_TOP)) // feet above the bottom of the podium box
   return (
     <>
-      <img className="ph-podium" src={pedestalArt} alt="" draggable={false} style={{ width: podiumW }} />
+      <img className="ph-podium" src={ped?.src ?? pedestalArt} alt="" draggable={false} style={{ width: podiumW }} />
       <img className={`ph-2d${h3.ready || !fb ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
         style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
       <iframe key={h3.v} ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
@@ -140,14 +145,17 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
     ro.observe(el); setW(el.clientWidth || 240)
     return () => ro.disconnect()
   }, [])
-  const heroH = Math.round(Math.min(250, w * 1.0))
+  const heroH = Math.round(Math.min(230, w * 0.9))   // the hat stays inside the arch opening
   const podiumW = Math.round(w * 0.66)
+  // ES redesign concept 04 (admin 4935, finished 10-13 admin 5402): the b1 gold arch over the cleaned violet stage (no rays),
+  // the live perspective pedestal, the name plate with the level disc, the stat tiles and the cream "Edit look" beside it
   return (
-    <section className="ph ph-card reveal">
-      <div className={`ph-frame${h3.ready ? '' : ' is-loading'}`} ref={box} style={{ height: Math.round(Math.max(340, Math.min(420, w * 1.68))) }}>
-        <span className="ph-sky" aria-hidden />
+    <section className="ph ph-card ph-es2 reveal">
+      <div className={`ph-frame${h3.ready ? '' : ' is-loading'}`} ref={box} style={{ height: Math.round(Math.max(330, Math.min(390, w * 1.52))) }}>
+        <img className="ph-spotbg" src={spotArt} alt="" draggable={false} />
         <Spotlight ringY={Math.round(podiumW * 0.36)} ringW={Math.round(w * 0.92)} />
         <Hero3d heroH={heroH} podiumW={podiumW} h3={h3} />
+        <span className="ph-arch" aria-hidden />
         <div className="ph-foot">
           <span className="ph-lvl"><small>LV</small>{level}</span>
           <b className="ph-foot-t">{name}</b>
@@ -155,12 +163,13 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
       </div>
       <div className="ph-side">
         {stats.map((s) => (
-          <div key={s.label} className="sk sk-stat ui-card ph-sstat">
+          <div key={s.label} className="ph-sstat" style={{ backgroundImage: `url(${tileArt})` }}>
             <img src={s.icon} alt="" draggable={false} />
             <span><b>{s.value}</b><small>{s.label}</small></span>
           </div>
         ))}
-        <button className="sk sk-edit ui-btn ph-edit2" onClick={onEdit}>Edit look</button>
+        {/* secondary action: kit cream (gold is for claiming only); under the tiles so the name plate never truncates */}
+        <button className="k-btn k-cream ph-edit2" onClick={onEdit}>Edit look</button>
       </div>
     </section>
   )

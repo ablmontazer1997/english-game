@@ -154,7 +154,8 @@ export function App() {
             onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}
           {tab === 'shop' && <ShopScreen onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}
           {tab === 'league' && <LeagueScreen />}
-          {tab === 'profile' && <ProfileScreen onBuy={setShop} onCustomize={() => setCustomizing(true)} onAchievements={() => setAchOpen(true)} />}
+          {tab === 'profile' && <ProfileScreen onBuy={setShop} onCustomize={() => setCustomizing(true)} onAchievements={() => setAchOpen(true)}
+            onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}
 
           <BottomNav tab={tab} onChange={setTab} badge={{ quests: questBadge, profile: achBadge }} />
           {tour && tab === 'map' && !guideLevel && <MapTour onDone={endTour} />}
