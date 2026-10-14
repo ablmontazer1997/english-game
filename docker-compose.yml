@@ -18,7 +18,7 @@ services:
       RUNECAST_DB_POOL_SIZE: "3"
       RUNECAST_DB_MAX_OVERFLOW: "2"
     volumes:
-      - /home/rade/projects/keyumars/runecast_qdb/db:/qdb:ro
+      - /home/rade/projects/keyumars/runecast/qdb/db:/qdb:ro
     ports:
       - "172.20.0.1:8110:8000"   # same pattern as bingual-backend-api (8001); Caddy reaches it on the bridge IP
     networks: [bingualdb]

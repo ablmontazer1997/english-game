@@ -1,4 +1,4 @@
-"""Idempotent import of the question pipeline output (runecast_qdb/db/<game>/<level>.jsonl, mounted read-only at
+"""Idempotent import of the question pipeline output (runecast/qdb/db/<game>/<level>.jsonl, mounted read-only at
 /qdb). Safe to re-run while the pipeline keeps writing: a half-written last line is skipped and picked up next time.
 
     python -m scripts.import_questions [--dir /qdb] [--dry-run]
