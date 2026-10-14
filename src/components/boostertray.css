@@ -19,6 +19,7 @@
   display: flex; align-items: center; gap: 2px; padding: 1px 6px 1px 3px; border-radius: 99px;
   background: linear-gradient(180deg, #ffd66b, #f2a51a); border: 2px solid #fff;
   font-size: 10.5px; font-weight: 900; color: #6a4a00; white-space: nowrap;
+  width: max-content;   /* admin 5541: shrink-to-fit gave the chip only half the button width, so the price ran out of it */
 }
 .bt-cost img { width: 13px; height: 13px; }
 .bt-count {

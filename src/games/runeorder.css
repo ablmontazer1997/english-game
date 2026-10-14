@@ -46,3 +46,18 @@
 .ro-cast { width: 100%; }
 /* Phase C: after a wrong cast the runes move into the right order */
 .ro-reveal .ro-placed { border-color: #8fd46a; background: linear-gradient(180deg, #f0ffe4, #c8f5a8) !important; box-shadow: 0 0 0 2px #fff, 0 4px 0 #4caa2c, 0 0 12px rgba(120, 220, 80, .7); }
+
+/* admin 5541: the chips wrap inside the painted panel (its rim is thicker than the old padding) and the panel grows with
+   the rows; long sentences (8+ words or many letters) take compact chips and a one-line task plate, so 10 words still fit
+   a 360 phone with a clear gap for the booster tray above the panel */
+.stage-host .ro-slots.lp { padding: 12px 22px 24px 24px; gap: 9px 6px; }
+.ro-placed { max-width: 100%; }
+.ro-long .ro-ui { gap: 10px; }
+.stage-host .ro-long .ro-slots.lp { padding-bottom: 20px; gap: 7px 5px; }
+.ro-long .ro-slot { width: 46px; height: 30px; }
+.ro-long .ro-placed { height: 34px; padding: 0 10px; font-size: 15px; }
+.ro-long .ro-pool { gap: 7px 6px; min-height: 84px; }
+.ro-long .ro-pool .ro-tile { height: 38px; min-width: 52px; padding: 0 12px; font-size: 16px; }
+/* admin 5541: with a long sentence the door steps to the left and a little smaller, so the flat booster tray has its own
+   spot at the right, between the round pill and the panel, without covering the door */
+.ro-long .ro-gate { left: 28%; width: min(36vw, 150px); }

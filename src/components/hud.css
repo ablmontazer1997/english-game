@@ -40,7 +40,7 @@
 
 .pill {
   position: relative; flex: 1 1 auto; min-width: 0; height: 30px;
-  display: flex; align-items: center; gap: 4px; padding: 0 32px 0 2px;
+  display: flex; align-items: center; gap: 4px; padding: 0 32px 0 7px;   /* admin 5541: the icon sits inside the pill (was 2px) */
   filter: drop-shadow(0 3px 7px rgba(20, 60, 110, .20));
 }
 .pill-bg { display: none; }
@@ -62,7 +62,7 @@
 @media (max-width: 375px) {
   .hud { gap: 6px; }
   .hud-pills { gap: 3px; }
-  .pill { gap: 3px; padding-right: 30px; }
+  .pill { gap: 3px; padding-right: 30px; padding-left: 6px; }
   .pill-val { font-size: 10.5px; }
 }
 

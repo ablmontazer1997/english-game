@@ -111,7 +111,9 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
               data-demo={ctl.practice && rightIds.includes(x.id) ? rightIds.indexOf(x.id) : undefined}>{x.t}</button>
           ))}
         </div>
-        <div className="swv-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button></div>
+        <div className="swv-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={weave} disabled={woven.length !== s.answer.length || state !== 'play'}>Weave</button>
+          {/* admin 5541: the booster tray's fixed spot here too (the loom fills the width) */}
+          <span className="tray-dock" aria-hidden /></div>
       </div>
     </div>
   )

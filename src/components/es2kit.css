@@ -54,8 +54,8 @@
 
 /* ---------- HUD (every stage screen): hearts pill, close, round pips ---------- */
 .stage-host .play-hearts { border: 0 solid transparent; border-image: var(--k-hud) 42 45 40 49 fill / 21px 22px 20px 24px stretch;
-  min-height: 40px; padding: 2px 16px 4px 8px; gap: 6px; font-family: var(--sans); font-size: 18px; font-weight: 900; text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
-.stage-host .play-hearts img { width: 28px; height: 28px; content: url(../assets/es2/k/kit/icon_heart.webp); object-fit: contain; filter: none; }
+  min-height: 40px; padding: 2px 16px 4px 13px; gap: 5px; font-family: var(--sans); font-size: 18px; font-weight: 900; text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
+.stage-host .play-hearts img { width: 23px; height: 23px; flex: none;   /* admin 5541: the heart sits inside the painted rim */ content: url(../assets/es2/k/kit/icon_heart.webp); object-fit: contain; filter: none; }
 .stage-host .stage-close { width: 44px; height: 44px; background-image: url(../assets/es2/k/kit/btn_close.webp); filter: drop-shadow(0 3px 5px rgba(20, 6, 50, .3)); }
 .stage-host .ss-pips { background: rgba(40, 12, 90, .55); box-shadow: inset 0 0 0 1.5px #f3c652; }
 .stage-host .ss-pips i { background: #8f73da; }
@@ -89,6 +89,7 @@
 /* ---------- booster capsule (every game in a stage): the painted capsule + painted bulb / flask buttons ---------- */
 .stage-host .bt:not(.flat) { width: 64px; padding: 24px 0 26px; gap: 14px; justify-items: center;
   border: 0 solid transparent; border-image: var(--k-capsule) 79 60 64 60 fill / 40px 30px 32px 30px stretch; filter: drop-shadow(0 6px 10px rgba(20, 6, 50, .4)); }
+.stage-host .bt.flat.dock { padding: 5px 8px; gap: 6px; }   /* admin 5541: the compact flat tray in a game's dock */
 .stage-host .bt.flat { padding: 6px 12px; gap: 10px; border-radius: 34px; background: linear-gradient(180deg, #7438e0, #4c1aa6);
   box-shadow: 0 0 0 2.5px #f3c652, 0 0 0 4px #8a5a10, 0 6px 12px rgba(20, 6, 50, .4); }
 .stage-host .bt-btn { width: 48px; height: 48px; border: 0; border-radius: 50%; box-shadow: none; background: center / contain no-repeat; }
@@ -100,7 +101,7 @@
 .stage-host .bt-help .bt-q { visibility: hidden; }
 .stage-host .bt-count { top: -4px; right: -6px; min-width: 22px; height: 22px; border: 0; padding: 0 4px; font-size: 12px;
   background: url(../assets/es2/k/kit/badge_round_violet.webp) center / 100% 100% no-repeat; }
-.stage-host .bt-cost { bottom: -8px; font-size: 10px; padding: 0 5px 0 3px; }
+.stage-host .bt-cost { bottom: -5px; font-size: 10px; line-height: 13px; padding: 0 5px 0 2px; }   /* admin 5541: whole price chip inside the rail */
 .stage-host .bt-btn.off { filter: grayscale(.85) brightness(.85); opacity: .75; }
 .stage-host .bt-tip { right: 72px; }
 

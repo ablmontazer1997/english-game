@@ -61,32 +61,51 @@ const OBSTACLES = '.gs-panel,.lp,.gtask,button:not(.bt-btn),.ws-scroll,.gg-table
   // audit 10-11 P0: the bubble field (bubbles are drawn on a canvas, so the field itself is the obstacle; it leaves a
   // free strip at the bottom for the tray), the Match Blitz combo header and the Guild Letters letter
   + ',.bp-field,.mb-combo,.gl-letter,.bb2-hp,.cbk-locked,.pm-slot,.pm-tag,.pm-word'
+  // admin 5541: the whole Rune Order word pool (its used chips are invisible but come back on a tap) and the round pill
+  + ',.ro-pool'
+// admin 5541: the central game art (cauldron, door, orb, mirror, keeper, portal, boss, hero) is never covered either; these
+// (the 3D hero canvas is not: its box is much wider than the hero and reaches the right column) are checked even while transparent (the cauldron surface only shows once a bottle is in) and keep a wider gap
+const ART = '.pm-surface,.ro-gate,.ot-orb,.swv-mirror,.tt-keeper,.gg-portal-img,.bb2-sprite'
 function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const place = () => {
       const bt = ref.current, host = bt?.offsetParent as HTMLElement | null
       if (!bt || !host) return
       const H = host.getBoundingClientRect()
-      bt.classList.remove('flat', 'sm'); bt.style.removeProperty('--bt-s')
+      bt.classList.remove('flat', 'sm', 'dock'); bt.style.removeProperty('--bt-s'); bt.style.removeProperty('right')
+      // admin 5541: a game can give the tray a fixed designed spot (.tray-dock, e.g. beside Potion Mix's Brew): it lies flat
+      // there at 0.92 (44px buttons), right-aligned and centred on the dock, and the dock takes the tray's width
+      const dock = host.querySelector<HTMLElement>('.tray-dock')
+      if (dock) {
+        const k = .92
+        bt.classList.add('flat', 'dock', 'sm'); bt.style.setProperty('--bt-s', String(k))
+        const w = Math.ceil(bt.offsetWidth * k), h = bt.offsetHeight * k
+        if (dock.style.width !== `${w}px`) dock.style.width = `${w}px`
+        const d = dock.getBoundingClientRect()
+        bt.style.right = `${Math.round(H.right - d.right)}px`
+        bt.style.top = `${Math.round(d.top - H.top + (d.height - h) / 2)}px`
+        return
+      }
       const vert = { w: bt.offsetWidth, h: bt.offsetHeight + 12 }
       bt.classList.add('flat'); const flat = { w: bt.offsetWidth + 6, h: bt.offsetHeight + 12 }
       bt.classList.remove('flat')
       // the stage X sits outside the host: the tray (and its top gem) starts below it (coordinator 10-12, Guild Letters)
       const xr = document.querySelector('.stage-close')?.getBoundingClientRect()
       const top0 = Math.max(8, xr && xr.width ? xr.bottom - H.top + 16 : 8), bot = H.height - 8, pref = H.height * 0.38
-      const gaps = (w: number) => {
+      const gaps = (w: number, withArt: boolean) => {
         const x0 = H.right - 8 - w - 4
         const ys: [number, number][] = []
-        for (const e of host.querySelectorAll<HTMLElement>(OBSTACLES)) {
+        for (const e of host.querySelectorAll<HTMLElement>(withArt ? OBSTACLES + ',' + ART : OBSTACLES)) {
+          const art = e.matches(ART)
           if (bt.contains(e)) continue
           // the game-name intro ribbon is a passing overlay (1.9 s), not a layout obstacle: it used to push the tray flat at first paint
           if (e.closest('.gt-intro')) continue
           const r = e.getBoundingClientRect()
           if (!r.width || !r.height || r.right < x0 || r.left > H.right) continue
           const cs = getComputedStyle(e)
-          if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity === 0) continue
+          if (cs.display === 'none' || (!art && (cs.visibility === 'hidden' || +cs.opacity === 0))) continue
           // the painted Whisper scroll's rollers and the Guild letter's parchment reach past their boxes: keep a wider gap (coordinator 10-12)
-          const pad = e.matches('.ws-scroll,.gl-letter') ? 16 : 6
+          const pad = art && e.matches('.pm-surface') ? 34 : e.matches('.ws-scroll,.gl-letter') || art ? 16 : 12   // admin 5541: a clear gap, never tight on a panel rim (was 6)
           ys.push([r.top - H.top - pad, r.bottom - H.top + pad])
         }
         ys.sort((a, b) => a[0] - b[0])
@@ -107,15 +126,23 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
       // coordinator 10-12: the upright capsule on the right edge is preferred in every game; when the full size does not
       // fit a gap, a slightly smaller upright capsule is tried before the tray lies flat, but never below 44px tap targets
       const btn = bt.querySelector<HTMLElement>('.bt-btn')?.offsetWidth || 48
+      // admin 5541: first clear of the game art too; only if no spot is free anywhere, clear of the panels and labels alone
+      for (const withArt of [true, false]) {
       for (const k of [1, .96, .92].filter((x) => btn * x >= 44)) {
-        const t = fit(gaps(vert.w * k), (vert.h - 12) * k + 12)
+        const t = fit(gaps(vert.w * k, withArt), (vert.h - 12) * k + 12)
         if (t == null) continue
         if (k < 1) { bt.classList.add('sm'); bt.style.setProperty('--bt-s', String(k)) }
         bt.style.top = `${Math.round(t)}px`; return
       }
-      let t: number | null
-      t = fit(gaps(flat.w), flat.h)
-      if (t != null) { bt.classList.add('flat'); bt.style.top = `${Math.round(t)}px` }
+      // admin 5541: lying flat, again full size first, then slightly smaller (never below 44px tap targets)
+      for (const k of [1, .96, .92].filter((x) => btn * x >= 44)) {
+        const t = fit(gaps(flat.w * k, withArt), (flat.h - 12) * k + 12)
+        if (t == null) continue
+        bt.classList.add('flat')
+        if (k < 1) { bt.classList.add('sm'); bt.style.setProperty('--bt-s', String(k)) }
+        bt.style.top = `${Math.round(t)}px`; return
+      }
+      }
     }
     // coordinator 10-12: the tray stays hidden until the game has laid out (two frames + 350 ms), so it never shows in a
     // wrong spot (e.g. lying flat over the boss) on the first paint; then it is placed again once a second as before

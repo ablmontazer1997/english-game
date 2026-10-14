@@ -89,9 +89,11 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
   // ghost hand order: the first tile of each word in sentence order (repeated words: any copy works)
   const demoAt = (id: number) => id
   const tileStyle = { backgroundImage: `url(${tileImg})` }
+  // admin 5541: long sentences take the compact chips (see runeorder.css)
+  const long = words.length >= 8 || words.join('').length > 38
 
   return (
-    <div className={`ro ro-${state}`}>
+    <div className={`ro ro-${state}${long ? ' ro-long' : ''}`}>
       <img className="ro-plate" src={bgPlate} alt="" draggable={false} />
       <GameTitle title="Rune Order" count={`Spell ${round + 1} / ${sents.length}`} />
 
@@ -103,7 +105,7 @@ export function RuneOrder({ onFinish, srv, onAnswer }: MiniGameProps) {
 
       <div className="ro-ui">
         <div className="ro-slots lp" aria-label="Your sentence" data-coach="q">
-          <Task className="gtask-row" icon="order" text="Put the words in order" sub="Tap them to build the sentence" first={round === 0} />
+          <Task className="gtask-row" icon="order" text="Put the words in order" sub={long ? undefined : 'Tap them to build the sentence'} first={round === 0} />
           {words.map((_, i) => {
             const id = placed[i]
             return id === undefined
