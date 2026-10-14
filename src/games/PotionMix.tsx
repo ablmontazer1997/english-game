@@ -178,9 +178,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
           </button>
         ))}
       </div>
-      <div className="gs-ui pm-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button>
-        {/* admin 5541: the booster tray's fixed spot in this game (the cauldron fills the width, so the tray lies flat beside Brew) */}
-        <span className="tray-dock" aria-hidden /></div>
+      <div className="gs-ui pm-go" data-focus-keep=""><button className="gs-go k-btn k-green" data-demo={ctl.practice ? 99 : undefined} onClick={brew} disabled={!poured.length || state !== 'play' || !!fly}>Brew</button></div>
       {fly && <PourFx key={fly.key} f={fly} />}
     </div>
   )

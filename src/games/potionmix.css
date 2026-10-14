@@ -120,7 +120,3 @@
 .pm .pm-goal .gtask-t b { white-space: nowrap; font-size: clamp(15px, 4.6cqw, 19px); }
 /* coordinator 10-12: the slots stay clear of the right edge on narrow phones so the upright tray fits beside them */
 .pm .pm-slot, .pm .pm-tag { width: clamp(58px, 16.4cqw, 84px); height: clamp(48px, 13.6cqw, 70px); }
-/* admin 5541 (b1): the bottom row holds Brew (still the largest, only green button) and the booster tray's dock at the right */
-.pm .pm-go { left: 4%; right: 4%; display: flex; align-items: center; gap: 10px; }
-.pm .pm-go .gs-go.k-btn { flex: 1 1 auto; min-width: 0; }
-.pm .pm-go .tray-dock { flex: none; width: 158px; height: 60px; }

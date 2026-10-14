@@ -77,7 +77,3 @@
    one row's height so Weave does not move */
 .swv .swv-pool { justify-content: center; min-height: 46px; }
 .swv .swv-pool .swv-tile.used { display: none; }
-/* admin 5541: Weave (still the largest, only green button) and the booster tray's dock share the bottom row */
-.swv .swv-go { margin: 6px 14px 0; display: flex; align-items: center; gap: 10px; }
-.swv .swv-go .gs-go.k-btn { flex: 1 1 auto; min-width: 0; }
-.swv .swv-go .tray-dock { flex: none; width: 158px; height: 60px; }

@@ -89,7 +89,6 @@
 /* ---------- booster capsule (every game in a stage): the painted capsule + painted bulb / flask buttons ---------- */
 .stage-host .bt:not(.flat) { width: 64px; padding: 24px 0 26px; gap: 14px; justify-items: center;
   border: 0 solid transparent; border-image: var(--k-capsule) 79 60 64 60 fill / 40px 30px 32px 30px stretch; filter: drop-shadow(0 6px 10px rgba(20, 6, 50, .4)); }
-.stage-host .bt.flat.dock { padding: 5px 8px; gap: 6px; }   /* admin 5541: the compact flat tray in a game's dock */
 .stage-host .bt.flat { padding: 6px 12px; gap: 10px; border-radius: 34px; background: linear-gradient(180deg, #7438e0, #4c1aa6);
   box-shadow: 0 0 0 2.5px #f3c652, 0 0 0 4px #8a5a10, 0 6px 12px rgba(20, 6, 50, .4); }
 .stage-host .bt-btn { width: 48px; height: 48px; border: 0; border-radius: 50%; box-shadow: none; background: center / contain no-repeat; }
@@ -101,7 +100,7 @@
 .stage-host .bt-help .bt-q { visibility: hidden; }
 .stage-host .bt-count { top: -4px; right: -6px; min-width: 22px; height: 22px; border: 0; padding: 0 4px; font-size: 12px;
   background: url(../assets/es2/k/kit/badge_round_violet.webp) center / 100% 100% no-repeat; }
-.stage-host .bt-cost { bottom: -5px; font-size: 10px; line-height: 13px; padding: 0 5px 0 2px; }   /* admin 5541: whole price chip inside the rail */
+.stage-host .bt-cost { bottom: 1px; font-size: 10px; line-height: 13px; padding: 0 5px 0 2px; }   /* admin 5541: the whole price chip inside its button */
 .stage-host .bt-btn.off { filter: grayscale(.85) brightness(.85); opacity: .75; }
 .stage-host .bt-tip { right: 72px; }
 
