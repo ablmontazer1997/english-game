@@ -301,7 +301,7 @@ if(new URLSearchParams(location.search).get('fps')){(()=>{const d=document.creat
 const ctl=new THREE.OrbitControls(cam,r.domElement);ctl.enableDamping=true;ctl.enablePan=false;
 const onStageResize=()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();r.setSize(W(),H());window.dispatchEvent(new Event('rc-stage'));};
 addEventListener('resize',onStageResize);if(window.ResizeObserver)new ResizeObserver(onStageResize).observe(CEL);
-function SkirtSpring(root){
+function SkirtSpring(root){const DMP=+(new URLSearchParams(location.search).get('dmp')??0.7);
   // coat skirt springs (v2, 10-01 "the pants must never come through the cloak"):
   //  - each chain's hem point (tail) is measured from the worn coat itself (the skeleton's tip bones point at the centre line,
   //    so the old solver collided a point between the legs and never the real hem);
@@ -319,6 +319,10 @@ function SkirtSpring(root){
   const N=chains.length,pel=by.Pelvis;
   const LEGS=[['L_Thigh','L_Calf',0.058],['L_Calf','L_Foot',0.046],['R_Thigh','R_Calf',0.058],['R_Calf','R_Foot',0.046]].filter(l=>by[l[0]]&&by[l[1]]);
   const BARE=1.12,MARGIN=0.008,NS=12,NT=3;   // bare-leg radius factor (no trousers) / cloth clearance / directions / stations
+  /* HANDS1014: forearm + hand capsules (radius / hand length fitted to the body mesh in fit(); ?hc=0 turns them off) */
+  const HQ=new URLSearchParams(location.search);const HC=HQ.get('hc')!=='0';const HRP=+(HQ.get('hrp')??0.75),HM=+(HQ.get('hm')??0.002),HMAX=+(HQ.get('hmax')??0.015);const qh0=new V(),qh1=new V();
+  const ARMS=HC?[['L_Forearm','L_Hand'],['L_Hand',null],['R_Forearm','R_Hand'],['R_Hand',null]].filter(l=>by[l[0]]&&(!l[1]||by[l[1]])):[];
+  const acaps=ARMS.map(()=>({a:new V(),b:new V(),r:0.03,len:0.06,ok:false}));window.RCHANDS=Object.assign(window.RCHANDS||{},{acaps});
   const caps=LEGS.map(l=>({a:new V(),b:new V(),q:new Q(),u:new V(),e1:new V(),e2:new V(),r:new Float32Array(NS*NT).fill(l[2]*BARE),r0:l[2]}));
   const P=(o,t)=>o.getWorldPosition(t||new V());
   const W0=0.8;
@@ -396,10 +400,18 @@ function SkirtSpring(root){
       for(let pass=0;pass<NS;pass++)for(let st=0;st<NT;st++)for(let se=0;se<NS;se++){const k=st*NS+se;if(r[k]>=0)continue;
         const nb=[st*NS+(se+1)%NS,st*NS+(se+NS-1)%NS].map(x=>r[x]).filter(x=>x>=0);if(nb.length)r[k]=Math.max(...nb);}
       for(let k=0;k<r.length;k++){if(r[k]<0){const st=Math.floor(k/NS);const o=[0,1,2].filter(x=>x!==st).map(x=>Math.max(...r.slice(x*NS,x*NS+NS))).filter(x=>x>0);r[k]=o.length?Math.max(...o):def;}cp.r[k]=r[k]+MARGIN;}});
+    {let bodyM=null;root.traverse(o=>{if(o.isSkinnedMesh&&/^tripo_/.test(o.name)&&visible(o))bodyM=o;});
+      if(bodyM&&ARMS.length){armPts();const nm=bodyM.skeleton.bones.map(x=>x.name);const R=ARMS.map(()=>[]),T=ARMS.map(()=>[]);
+        skinned(bodyM,(i,s,ix,w)=>{if(i%2)return;let bi=0;for(let k=1;k<4;k++)if(w[k]>w[bi])bi=k;const bn=nm[ix[bi]]||'';const m=bn.match(/^([LR])_(Forearm|Hand|Finger|Thumb|Index|Mid|Ring|Pinky)/);if(!m)return;
+          const want=m[2]==='Forearm'?m[1]+'_Forearm':m[1]+'_Hand';const j=ARMS.findIndex(l=>l[0]===want);if(j<0)return;const cp=acaps[j];
+          const dd=d.subVectors(cp.b,cp.a);const L=dd.length();if(L<1e-6)return;dd.divideScalar(L);const al=e.subVectors(s,cp.a).dot(dd);T[j].push(al);e.addScaledVector(dd,-al);R[j].push(e.length());});
+        const pc=(A,q)=>{if(!A.length)return -1;A.sort((x,y)=>x-y);return A[Math.min(A.length-1,Math.floor(A.length*q))];};
+        acaps.forEach((cp,j)=>{const r=pc(R[j],HRP);if(r>0)cp.r=r;if(!ARMS[j][1]){const t=pc(T[j],0.95);if(t>0)cp.len=t;}cp.ok=r>0;});armPts();}}
     fitN++;window.RCSKIRT={n:per.map(L=>L.length/3),ns:samples.length,tails:chains.map(ch=>ch.tail.toArray().map(x=>+x.toFixed(4))),caps:caps.map(cp=>Array.from(cp.r).map(x=>+x.toFixed(3))),fitN};
   }
   // ---- collision: leg proxies (bone frame, radius by station and direction), outer-side rule ----
-  function capFrames(){let n=0;for(const l of LEGS){const cp=caps[n++];P(by[l[0]],cp.a);P(by[l[1]],cp.b);by[l[0]].getWorldQuaternion(cp.q);
+  function armPts(){ARMS.forEach((l,i)=>{const cp=acaps[i];P(by[l[0]],cp.a);if(l[1])P(by[l[1]],cp.b);else{const fa=by[l[0].replace('Hand','Forearm')];const f=P(fa,new V());cp.b.subVectors(cp.a,f).normalize().multiplyScalar(cp.len).add(cp.a);}});}
+  function capFrames(){armPts();let n=0;for(const l of LEGS){const cp=caps[n++];P(by[l[0]],cp.a);P(by[l[1]],cp.b);by[l[0]].getWorldQuaternion(cp.q);
     // the bone frame: axis u (thigh->knee) and two fixed perpendiculars, all stored in the bone's local orientation
     if(!cp.ok){const iq=cp.q.clone().invert();cp.u.subVectors(cp.b,cp.a).applyQuaternion(iq).normalize();cp.e1.set(0,0,1);if(Math.abs(cp.u.z)>0.9)cp.e1.set(1,0,0);
       cp.e1.addScaledVector(cp.u,-cp.e1.dot(cp.u)).normalize();cp.e2.crossVectors(cp.u,cp.e1);cp.ok=true;}}}
@@ -424,6 +436,22 @@ function SkirtSpring(root){
       b.addScaledVector(dn,-b.dot(dn));if(b.lengthSq()<1e-10)b.copy(n);b.normalize();
       if(dist<1e-6||n.dot(b)<-0.2*dist){n.copy(b);r=radius(cp,tc,polar(cp,pr.copy(ax).add(b))[4]);}else n.divideScalar(dist);
       q.copy(ax).addScaledVector(n,r);}
+    qh0.copy(q);for(const cp of acaps){if(!cp.ok||!window.RCNEW||(window.RCHANDS&&window.RCHANDS.off))continue;d.subVectors(cp.b,cp.a);const L2=d.lengthSq();if(L2<1e-10)continue;const t=e.subVectors(q,cp.a).dot(d)/L2;if(t<-0.15||t>1.15)continue;
+      const tc=Math.max(0,Math.min(1,t));const ax=e.copy(cp.a).addScaledVector(d,tc);const n=a.subVectors(q,ax);const dist=n.length();const r=cp.r+HM;if(dist>=r)continue;
+      // inner side: the cloth belongs between the hand and the body (toward the pelvis' vertical axis), so the hand stays outside
+      b.subVectors(pelX,ax);b.y=0;const dn=wd.copy(d).divideScalar(Math.sqrt(L2));b.addScaledVector(dn,-b.dot(dn));if(b.lengthSq()<1e-10)b.copy(n);b.normalize();
+      if(dist<1e-6||n.dot(b)<-0.2*dist)n.copy(b);else n.divideScalar(dist);q.copy(ax).addScaledVector(n,r);}
+    /* HANDS1014d: a hand only nudges the cloth (capped push) */ qh1.subVectors(q,qh0);if(qh1.length()>HMAX)q.copy(qh0).addScaledVector(qh1.normalize(),HMAX);
+    /* HANDS1014b: legs again after the hands, so a hand never pushes the cloth into the trousers */
+    if(window.RCNEW)for(const cp of caps){d.subVectors(cp.b,cp.a);const L2=d.lengthSq();let t=e.subVectors(q,cp.a).dot(d)/L2;if(t<-0.25||t>1.1)continue;const tc=Math.max(0,Math.min(1,t));
+      // the proxy is a radial profile around the bone, extended a quarter of its length past the joint above it (hip, knee cap)
+      const ax=e.copy(cp.a).addScaledVector(d,t);const n=a.subVectors(q,ax);const dist=n.length();if(dist>0.2)continue;
+      let r=radius(cp,tc,polar(cp,q)[4]);if(dist>=r)continue;
+      // outer side: away from the body's vertical axis through the pelvis, at the rest point of this piece of cloth
+      b.subVectors(ref,pelX);b.y=0;const dn=wd.copy(d).divideScalar(Math.sqrt(L2));
+      b.addScaledVector(dn,-b.dot(dn));if(b.lengthSq()<1e-10)b.copy(n);b.normalize();
+      if(dist<1e-6||n.dot(b)<-0.2*dist){n.copy(b);r=radius(cp,tc,polar(cp,pr.copy(ax).add(b))[4]);}else n.divideScalar(dist);
+      q.copy(ax).addScaledVector(n,r);}
     out.subVectors(q,m);return out.lengthSq()>0;}
   const sm=new V(),sq=new V(),cor=new V(),tmp=new V();
   // collision samples (coat vertices): the spring part of a vertex follows its chains' middle joints and lower segments,
@@ -437,11 +465,11 @@ function SkirtSpring(root){
       tmp.copy(sm).addScaledVector(sp.rest,1-sp.W);
       if(!pushOut(tmp,sp.rest,cor))continue;cor.divideScalar(sp.W);
       for(const en of sp.ent){const ch=chains[en.k],b1=1-en.f,b2=en.f,n2=b1*b1+b2*b2;ch.x[1].addScaledVector(cor,b1/n2);ch.x[2].addScaledVector(cor,b2/n2);}}}
-  const MAXA=[0,0.9,1.25];  // max swing from the rest direction (rad): upper segment ~52 deg, lower ~72 deg
+  const SKQ=new URLSearchParams(location.search);const MAXA=SKQ.get('sk')!=null?[0,+SKQ.get('sk')*Math.PI/180,+SKQ.get('sk')*Math.PI/180]:[0,25*Math.PI/180,25*Math.PI/180];/*NEWGATE1015*/const MAXA_O=[0,0.9,1.25];  // max swing from the rest direction (rad): upper segment ~52 deg, lower ~72 deg
   function lengths(){for(const ch of chains){
-      a.subVectors(ch.x[1],ch.o);clampDir(a,b.subVectors(ch.t[1],ch.o),MAXA[1]);ch.x[1].copy(ch.o).addScaledVector(a.normalize(),ch.L[1]);
+      a.subVectors(ch.x[1],ch.o);clampDir(a,b.subVectors(ch.t[1],ch.o),(window.RCNEW?MAXA:MAXA_O)[1]);ch.x[1].copy(ch.o).addScaledVector(a.normalize(),ch.L[1]);
       // the hem hangs from the middle joint as positioned by the upper segment
-      a.subVectors(ch.x[2],ch.x[1]);clampDir(a,b.subVectors(ch.t[2],ch.t[1]),MAXA[2]);ch.x[2].copy(ch.x[1]).addScaledVector(a.normalize(),ch.L[2]);}}
+      a.subVectors(ch.x[2],ch.x[1]);clampDir(a,b.subVectors(ch.t[2],ch.t[1]),(window.RCNEW?MAXA:MAXA_O)[2]);ch.x[2].copy(ch.x[1]).addScaledVector(a.normalize(),ch.L[2]);}}
   const qa=new Q();
   function clampDir(v,rest,maxA){const lv=v.length(),lr=rest.length();if(lv<1e-9||lr<1e-9){v.copy(rest);return;}
     const cosA=v.dot(rest)/(lv*lr);if(cosA>=Math.cos(maxA))return;const ang=Math.acos(Math.max(-1,Math.min(1,cosA)));
@@ -456,7 +484,7 @@ function SkirtSpring(root){
   function carry(M){for(const ch of chains)for(let s=1;s<3;s++){ch.x[s].applyMatrix4(M);ch.px[s].applyMatrix4(M);}}
   function step(){
     restBones();root.updateMatrixWorld(true);targets();capPts();P(pel,pelX);
-    for(const ch of chains){for(let s=1;s<3;s++){const x=ch.x[s],px=ch.px[s];const vel=a.copy(x).sub(px).multiplyScalar(0.82);px.copy(x);
+    for(const ch of chains){for(let s=1;s<3;s++){const x=ch.x[s],px=ch.px[s];const vel=a.copy(x).sub(px).multiplyScalar(window.RCNEW?DMP:0.82);px.copy(x);
         x.add(vel).addScaledVector(b.copy(ch.t[s]).sub(x),0.12);x.y-=0.00004;}}
     solve(3);
     for(const ch of chains){aim(ch.b[0],ch.b[1].position,ch.x[1]);aim(ch.b[1],ch.tail,ch.x[2]);}
@@ -759,7 +787,7 @@ function Eyes(by,cam){const P0=new URLSearchParams(location.search);const NUM0=(
 // look = AgX + Punchy + the approved grade (sat 1.3, contrast 1.12). ?lit=live shows the old realtime lighting.
 const BKQ=new URLSearchParams(location.search);const BK=BKQ.get('lit')!=='live';
 const BKP={exp:{value:+(BKQ.get('bkexp')||1.8)},sat:{value:+(BKQ.get('bksat')||1.2)},con:{value:+(BKQ.get('bkcon')||1.12)}};
-const VLMAN=BK?fetch('light/manifest.json?v=19').then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);
+const VLMAN=BK?fetch('light/manifest.json?v=k10151211').then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);
 const BK_GLSL=(`
 vec3 bkSig(vec3 x){vec3 x2=x*x;vec3 x4=x2*x2;return 15.5*x4*x2-40.14*x4*x+31.96*x4-6.868*x2*x+0.4298*x2+0.1191*x-0.00232;}
 vec3 bkLook(vec3 c){
@@ -834,7 +862,7 @@ function bkSfx(e){const nc=BKS.coat?'':'.nc';if(e.key!=='base_m__tripo')return [
 // bake on the warped geometry at the default strength (light_f08/, bake_vl_face.py); the two are blended by the strength.
 const F08MAN=BK?fetch('light_f08/manifest.json?v=1').then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);let F08={};F08MAN.then(m=>{F08=m||{};BKREG.forEach(bakeFill);});
 const faceT=()=>{const f=window.GW&&GW.getFace?GW.getFace():0;return Math.min(1,Math.max(0,f/0.8));};
-const bkLoad=(e,dir,x,slot)=>{const k=slot+x;if(!e.pend[k])e.pend[k]=fetch(dir+'/'+e.key+x+'.bin?v='+(dir==='light'?14:2)).then(r=>r.arrayBuffer()).then(b=>{const v=new Uint8Array(b);
+/*COATLV*/window.RCLV={'coat_frost__coat':10151027,'coat_royal__coat':10151027,'coat_sun__coat':10151027,'coat_sea__coat':10151211,'coat_star__coat':10151027,'coat_shadow__coat':10151027,'coat_midnight__coat':10151027,'coat_forest__coat':10151028,'coat_fire__coat':10151027};const bkLoad=(e,dir,x,slot)=>{const k=slot+x;if(!e.pend[k])e.pend[k]=fetch(dir+'/'+e.key+x+'.bin?v='+(dir==='light'?((window.RCLV||{})[e.key+x]||14):2)).then(r=>r.arrayBuffer()).then(b=>{const v=new Uint8Array(b);
       if(e.gain!==1){const q=Math.sqrt(e.gain);for(let j=0;j<v.length;j++)v[j]=Math.min(255,Math.round(v[j]*q));}e.data[k]=v;bakeFill(e);});};
 function bakeFill(e){const x=bkSfx(e).find(s=>BKMAN&&BKMAN[e.key+s+'.bin']);if(x==null)return;let v=e.data[x];
   if(!v){bkLoad(e,'light',x,'');return;}
@@ -878,7 +906,7 @@ const ICON={
   check:SVG('<path d="M5 12.5l4.5 4.5L19 7.5" stroke-width="3"/>'),
   star:SVG('<path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/>')};
 function buildEditor(E){
-  const $=id=>document.getElementById(id),TH=n=>'thumbs/'+n+'.png?v=5',el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+  const $=id=>document.getElementById(id),TH=n=>'thumbs/'+n+'.png?v=6',el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
   document.querySelector('.ttl i').innerHTML=ICON.star;
   $('btnRand').innerHTML=ICON.wand+'<span>Surprise</span>';$('btnReset').innerHTML=ICON.reset+'<span>Reset</span>';
   const ITEM_LABEL={shirt:'Shirt',top_tabard:'Knight',top_elf:'Elf tunic',top_doublet:'Doublet',top_blouse:'Blouse',coat:'Wizard coat',pants:'Pants',shoes:'Boots',shoes_alch:'Alchemist boots',shoes_crystal:'Crystal boots',shoes_curl:'Curled-toe slippers',shoes_fire:'Fire boots',shoes_forest:'Forest boots',shoes_frost:'Frost boots',shoes_royal:'Royal boots',shoes_star:'Star boots',shoes_wing:'Winged boots'};
@@ -1143,6 +1171,7 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
       s.fragmentShader=f;};
       const ck=p.customProgramCacheKey?p.customProgramCacheKey.bind(p):()=>'';p.customProgramCacheKey=()=>ck()+'|r2'+part+(p.userData.irrTex?'|irr':'')+(p.userData.occTex?'|occ':'')+(part==='hair'&&NUM('hk',0)>0?'|kk':'');};
     // skin: wrapped diffuse with a warm tint where the plain Lambert term falls off (cheap subsurface); uR2Sss=0 on everything else
+    /* COATDB1014 */ if(!/COAT_DB/.test(THREE.ShaderChunk.project_vertex))THREE.ShaderChunk.project_vertex+='\n#ifdef COAT_DB\n{ vec4 pB = projectionMatrix * vec4( mvPosition.xy, mvPosition.z + COAT_DB, 1.0 ); gl_Position.z = pB.z / pB.w * gl_Position.w; }\n#endif\n';
     THREE.ShaderChunk.lights_physical_pars_fragment=THREE.ShaderChunk.lights_physical_pars_fragment.replace('reflectedLight.directSpecular += irradiance *','reflectedLight.directSpecular += r2Is *').replace('sheenSpecularDirect += irradiance *','sheenSpecularDirect += r2Is *').replace('vec3 irradiance = dotNL * directLight.color;',
       'vec3 irradiance = dotNL * directLight.color;\n\tvec3 r2Is = irradiance;   /* specular + sheen keep the plain N.L: the wrapped (negative N.L) irradiance fed the GGX at grazing angles = a bright line along the chin/neck silhouette */\n\t#ifdef R2SKIN\n\tfloat dW = saturate( ( dot( geometryNormal, directLight.direction ) + uR2Wrap ) / ( 1.0 + uR2Wrap ) );\n\tirradiance = directLight.color * mix( dotNL, dW, uR2WrapN );\n\tirradiance += directLight.color * uR2SssC * max( dW - dotNL, 0.0 );\n\t#endif\n\t#ifdef R2DBG\n\tif(r2dn==0) r2dbg.r=dot(irradiance,vec3(0.3333))/2.6; else r2dbg.g+=dot(irradiance,vec3(0.3333))/2.6; r2dn++;\n\t#endif');
     THREE.ShaderChunk.lights_fragment_begin=THREE.ShaderChunk.lights_fragment_begin.replace('getDirectionalLightInfo( directionalLight, directLight );',
@@ -1330,13 +1359,14 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   const IV={pants_tuck:"b2",shoes_alch:'b1',shoes_crystal:'b1',shoes_curl:'b1',shoes_fire:'b1',shoes_forest:'b1',shoes_frost:'b1',shoes_royal:'b1',shoes_star:'b1',shoes_wing:'b2'};const IURL=id=>'items/'+id+'.glb?v='+(IV[id]||7);
   const OUTFIT=[['Top',[['—',null],['Shirt','shirt'],['Knight','top_tabard'],['Elf','top_elf'],['Doublet','top_doublet'],['Blouse','top_blouse']]],['Outer',[['—',null],['Coat','coat']]],['Legs',[['—',null],['Pants','pants']]],['Feet',[['—',null],['Boots','shoes'],['Alchemist boots','shoes_alch'],['Crystal boots','shoes_crystal'],['Curled-toe slippers','shoes_curl'],['Fire boots','shoes_fire'],['Forest boots','shoes_forest'],['Frost boots','shoes_frost'],['Royal boots','shoes_royal'],['Star boots','shoes_star'],['Winged boots','shoes_wing']]]];
   // ---- coats3d (09-29): 9 Hunyuan3D wizard cloaks in the Coat tab; fitted outside the live coat envelope, weights (incl. skirt spring chains) from the live coat ----
-  OUTFIT.find(o=>o[0]==='Outer')[1].push(['Fire cloak','coat_fire'],['Forest cloak','coat_forest'],['Frost cloak','coat_frost'],['Midnight cloak','coat_midnight'],['Royal ermine cloak','coat_royal'],['Sea cloak','coat_sea'],['Sun cloak','coat_sun']);Object.assign(IV,{coat_fire:'c2',coat_forest:'c2',coat_frost:'c2',coat_midnight:'c2',coat_royal:'c2',coat_sea:'c2',coat_shadow:'c2',coat_star:'c2',coat_sun:'c2'});
+  OUTFIT.find(o=>o[0]==='Outer')[1].push(['Fire cloak','coat_fire'],['Forest cloak','coat_forest'],['Frost cloak','coat_frost'],['Midnight cloak','coat_midnight'],['Royal ermine cloak','coat_royal'],['Sea cloak','coat_sea'],['Sun cloak','coat_sun'],['Star cloak','coat_star'],['Shadow cloak','coat_shadow']);Object.assign(IV,{coat_fire:'c2',coat_forest:'c2',coat_frost:'c2',coat_midnight:'c2',coat_royal:'c2',coat_sea:'c2',coat_shadow:'c2',coat_star:'c2',coat_sun:'c2'});
   // ---- /coats3d ----
   // ---- pants3d (09-29): 9 Hunyuan3D wizard pants in the Legs tab; knee cuffs sit above every boot collar, so no tucked variant ----
   OUTFIT.find(o=>o[0]==='Legs')[1].push(['Alchemist pants','pants_alch'],['Fire pants','pants_fire'],['Forest pants','pants_forest'],['Frost pants','pants_frost'],['Royal velvet pants','pants_royal'],['Rune pants','pants_rune'],['Shadow pants','pants_shadow'],['Starry night pants','pants_star'],['Sun pants','pants_sun']);Object.assign(IV,{pants_alch:'p2',pants_fire:'p2',pants_forest:'p2',pants_frost:'p2',pants_royal:'p2',pants_rune:'p2',pants_shadow:'p2',pants_star:'p2',pants_sun:'p2'});
   // ---- /pants3d ----
   // ---- waist (09-30): belly/waist warp baked into base_m + all torso/leg items, shirt+tops refit, live pants hips slimmed ----
   Object.assign(IV,{coat_fire:'w1',coat_forest:'w1',coat_frost:'w1',coat:'w1',coat_midnight:'w1',coat_royal:'w1',coat_sea:'w1',coat_sun:'w1',hair_braid:'w1',hair_girllong:'w1',hair_long:'w1',hair_twin:'w1',pants_alch:'w1',pants_fire:'w1',pants_forest:'w1',pants_frost:'w1',pants:'w1',pants_royal:'w1',pants_rune:'w1',pants_shadow:'w1',pants_star:'w1',pants_sun:'w1',pants_tuck:'w1',shirt:'w1',top_blouse:'w1',top_doublet:'w1',top_elf:'w1',top_tabard:'w1'});
+  /*COATINST*/Object.assign(IV,{coat_frost:'k10151027',coat_royal:'k10151027',coat_sun:'k10151027',coat_sea:'k10151211',coat_star:'k10151027',coat_shadow:'k10151027',coat_midnight:'k10151027',coat_forest:'k10151028',coat_fire:'k10151027'});
   // ---- /waist ----
   // ---- tops3d (09-30): 9 Hunyuan3D wizard tops (closed shells, design pixels projected) replace the old TRELLIS shirt + tops;
   //      the default (option 1) is the plain cream Apprentice tunic, the closest design to the old holey shirt ----
@@ -1349,7 +1379,7 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   const worn={};let wear=async()=>{};const outfitReady=[];
   if(MODULAR&&bodyObj&&by.body_under){const ga=bodyObj.geometry,ia=ga.index.array,ib=by.body_under.geometry.index.array;
     const full=new Uint32Array(ia.length+ib.length);full.set(ia);full.set(ib,ia.length);const NT=full.length/3;by.body_under.visible=false;
-    const covers={};const getCover=id=>covers[id]||(covers[id]=fetch('items/cover_'+id+'.json?v=r'+(IV[id]||2)).then(r=>r.json()).then(j=>{const b=atob(j.bits),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}).catch(()=>null));
+    const covers={};const getCover=id=>covers[id]||(covers[id]=fetch('items/cover_'+id+'.json?v=r'+(IV[id]||2)).then(r=>r.json()).then(j=>{const b=atob(j.bits),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);u.under=j.under||null;return u;}).catch(()=>null));
     const loaded=new Set();let refSeq=0;
     // tall boots (TUCK) wear the pants tucked in: the Legs slot then shows the pants_tuck variant of the same pants
     const FILE=(slot,id)=>id&&slot==='Legs'&&TUCKV[id]&&TUCK.has(worn.Feet)?TUCKV[id]:id;
@@ -1358,7 +1388,7 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
     const refresh=async()=>{const seq=++refSeq;window.bakeCoat&&bakeCoat(!!worn.Outer);const ids=shownFiles(); /* only garments already on screen hide skin */const cs=(await Promise.all(ids.map(getCover))).filter(Boolean);
       if(seq!==refSeq)return;   // a newer change is already on its way
       const keep=[];for(let t=0;t<NT;t++){let hid=false;for(const u of cs)if(u[t>>3]&(1<<(t&7))){hid=true;break;}if(!hid)keep.push(full[t*3],full[t*3+1],full[t*3+2]);}
-      ga.setIndex(new THREE.BufferAttribute(new Uint32Array(keep),1));
+      ga.setIndex(new THREE.BufferAttribute(new Uint32Array(keep),1));   /*UNDER1014: a coat cover can also hide covered faces of the under garments (cover.under[itemFile] = bitset over the item triangles) */       {const dec=x=>{if(x.u)return x.u;const bb=atob(x.bits),u=new Uint8Array(bb.length);for(let i=0;i<bb.length;i++)u[i]=bb.charCodeAt(i);return x.u=u;};         for(const f of ids)if(itemCache[IURL(f)])itemCache[IURL(f)].then(o=>{if(seq!==refSeq)return;const us=cs.map(c=>c.under&&c.under[f]).filter(Boolean).map(dec);const ms=[];for(const k in o)if(o[k]&&o[k].traverse)o[k].traverse(x=>{if(x.isMesh)ms.push(x)});for(const m of ms){if(!m.geometry.index)continue;const gg=m.geometry;if(!gg.userData.idx0)gg.userData.idx0=gg.index.array.slice();const I0=gg.userData.idx0;if(!us.length){if(gg.index.count!==I0.length)gg.setIndex(new THREE.BufferAttribute(I0,1));continue;}const kk=[];for(let t=0;t<I0.length/3;t++){let h=false;for(const u of us)if(u[t>>3]&(1<<(t&7))){h=true;break;}if(!h)kk.push(I0[t*3],I0[t*3+1],I0[t*3+2]);}gg.setIndex(new THREE.BufferAttribute(new Uint32Array(kk),1));}});}
       for(const f of GARMENT_FILES())if(itemCache[IURL(f)])itemCache[IURL(f)].then(o=>{if(seq!==refSeq)return;for(const k in o)o[k].visible=ids.includes(f);});};
     let saved={};try{saved=JSON.parse(localStorage.getItem('outfit')||'{}')||{};}catch(e){}
     wear=async(slot,i)=>{const row=OUTFIT.find(o=>o[0]===slot);if(!row)return;const opts=row[1];if(!opts[i])i=0;const id=opts[i][1],prev=worn[slot];
@@ -1397,8 +1427,14 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   const SPREAD=+(new URLSearchParams(location.search).get('sp')??0.5),qa=new THREE.Quaternion(),qp=new THREE.Quaternion(),qw=new THREE.Quaternion();
   // the mixer only writes a bone when its animated value changes (a frozen pose, a clip without an arm track), so the offset
   // is applied on top of the stored animated rotation, which is put back before the next mixer update
-  const unspread=()=>{for(const n of ['L_Upperarm','R_Upperarm']){const b=bones[n];if(b&&b.userData.q0)b.quaternion.copy(b.userData.q0);}};
-  const spread=()=>{for(const [n,s] of [['L_Upperarm',SPREAD],['R_Upperarm',-SPREAD]]){const b=bones[n];if(!b)continue;b.userData.q0=(b.userData.q0||new THREE.Quaternion()).copy(b.quaternion);b.parent.updateMatrixWorld(true);
+  const unspread=()=>{for(const n of ['L_Upperarm','R_Upperarm','L_Forearm']){const b=bones[n];if(b&&b.userData.q0)b.quaternion.copy(b.userData.q0);}};
+  /* NEWGATE1015: the 10-14/15 renderer changes (COATDB, hand colliders, skirt cap 25 deg + damping 0.7, cast arm offsets) apply ONLY to the rebuilt coat slots; every other outer item keeps the pre-patch behaviour */const RCNEWC=new Set(['coat_frost','coat_royal','coat_sun','coat_sea','coat_midnight','coat_star','coat_shadow','coat_forest','coat_fire']);window.RCNEWC=RCNEWC;
+  const COAT_SPREAD={coat_frost:7,coat_royal:7,coat_sun:7,coat_star:7,coat_shadow:7,coat_sea:7,coat_midnight:7,coat_forest:7,coat_fire:7};const CSP=new URLSearchParams(location.search).get('csp');
+  const spreadNow=()=>SPREAD+((worn.Outer?(CSP!=null?+CSP:(COAT_SPREAD[worn.Outer]||0)):0)*Math.PI/180);
+  const CLQ=new URLSearchParams(location.search);const CLA=CLQ.get('cla'),CLF=CLQ.get('clf');const CLW=CLQ.get('clw')==='old'?[2.0,2.4,2.0]:[0.0,0.3,0.3];const CLIP_ARM={cast_a_spell:{L:[CLA!=null?+CLA:20,CLW[0],CLW[1],3.9,4.3],LF:[CLF!=null?+CLF:10,CLW[0],CLW[1],3.9,4.3],R:[CLQ.get('cra')!=null?+CLQ.get('cra'):10,CLW[0],CLW[1],3.9,4.3],off:[CLW[2],4.3]}};
+  const clipExtra=side=>{if(!window.RCNEW)return 0;const c=CLIP_ARM[curName];if(!c||!c[side]||!cur||!worn.Outer)return 0;const [deg,a0,a1,b0,b1]=c[side];const t=cur.time;const sm=(e0,e1,x)=>{const k=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return k*k*(3-2*k)};return deg*Math.PI/180*sm(a0,a1,t)*(1-sm(b0,b1,t));};
+  const spread=()=>{window.RCNEW=!!(worn.Outer&&RCNEWC.has(worn.Outer));const SP2=spreadNow();{const c=CLIP_ARM[curName];window.RCHANDS=window.RCHANDS||{};window.RCHANDS.off=!!(c&&c.off&&cur&&worn.Outer&&cur.time>=c.off[0]&&cur.time<=c.off[1]);}
+    for(const [n,s] of [['L_Upperarm',SP2+clipExtra('L')],['R_Upperarm',-SP2-clipExtra('R')],['L_Forearm',clipExtra('LF')]]){if(!s&&n==='L_Forearm'){const b=bones[n];if(b)b.userData.q0=null;continue;}const b=bones[n];if(!b)continue;b.userData.q0=(b.userData.q0||new THREE.Quaternion()).copy(b.quaternion);b.parent.updateMatrixWorld(true);
     b.getWorldQuaternion(qw);b.parent.getWorldQuaternion(qp);qa.setFromAxisAngle(new THREE.Vector3(1,0,0),s);b.quaternion.copy(qp.invert().multiply(qa.multiply(qw)));}};
   const spring=SkirtSpring(root);
   // ?portrait=1 (hidden iframe in the game): frame the head, snap a 256px avatar twice (after the outfit settles) and hand it to the parent
@@ -1407,7 +1443,10 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   if(PORTRAIT){window.PORTRAIT_STILL=1;ctl.enabled=false;cam.fov=+(PQ.get('pfov')||30);cam.aspect=1;cam.updateProjectionMatrix();
     const fl=new THREE.DirectionalLight(0xfff4ea,+(PQ.get('pfill')||(window.R2?0:0.45)));   /* R2: the camera rig already has the Cycles fill */fl.position.set(3,0.6,0.6);sc.add(fl);if(+PQ.get('prim')){for(const z of [-1.4,1.4]){const rl=new THREE.DirectionalLight(0xeadfff,+PQ.get('prim'));rl.position.set(-2.4,1.8,z);sc.add(rl);}}}
   const PB=new THREE.Box3(),PE2=new THREE.Vector3(),PE3=new THREE.Vector3(),FH=+(PQ.get('pfh')||4.7),EYEP=+(PQ.get('peye')||0.46),PSIDE=+(PQ.get('pside')||0.14),PLIFT=+(PQ.get('plift')||0.02);
-  const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),0.05);if(EDITOR)focusStep(dt);unspread();mix.update(dt);if(eyes){root.updateMatrixWorld(true);eyes.update(dt,curName);}spread();if(spring){root.updateMatrixWorld(true);spring.update(dt);}
+  const CDB=+(new URLSearchParams(location.search).get('cdb')??0.008);
+const coatDB=()=>{const on=!!(CDB&&window.RCNEW);if(!on&&!window.__cdbAny)return;root.traverse(o=>{if(!o.isMesh||!/^(coat|cloak)/i.test(o.name))return;const ms=Array.isArray(o.material)?o.material:[o.material];
+  for(const m of ms){if(!m)continue;const has=!!(m.defines&&m.defines.COAT_DB!==undefined);if(on){if(has&&m.defines.COAT_DB===CDB.toFixed(5))continue;m.defines=Object.assign({},m.defines,{COAT_DB:CDB.toFixed(5)});m.needsUpdate=true;window.__cdbAny=1;}else if(has){const d=Object.assign({},m.defines);delete d.COAT_DB;m.defines=d;m.needsUpdate=true;}}});if(!on)window.__cdbAny=0;};
+const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),0.05);if(EDITOR)focusStep(dt);unspread();mix.update(dt);if(eyes){root.updateMatrixWorld(true);eyes.update(dt,curName);}spread();if(spring){root.updateMatrixWorld(true);spring.update(dt);}coatDB();
     if(PORTRAIT&&eyes&&PEXPR&&!window.__pex){eyes.setMode(PEXPR);window.__pex=1;}if(PORTRAIT&&PQ.get('pt')!==null&&window.__edok&&!window.__pp){pose(PQ.get('a')||'idle',+PQ.get('pt'));window.__pp=1;}const __ph=PORTRAIT&&bones.Head&&PHEAD;if(PORTRAIT)for(const [b,ax,d] of PARM)if(bones[b])bones[b].rotateOnAxis(ax,d);if(__ph){bones.Head.rotateOnAxis(PHAX==='x'?new THREE.Vector3(1,0,0):PHAX==='y'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1),PHEAD);root.updateMatrixWorld(true);}
     if(PORTRAIT&&bones.Head){bones.Head.getWorldPosition(PV);
       // the eyes (mesh_2 / mesh_3) and the head bone (jaw level) give the face, whatever hat or hair is worn

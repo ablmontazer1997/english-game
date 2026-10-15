@@ -1,6 +1,6 @@
 # static3d: 3D wardrobe and hero pages
 
-Static, self-contained three.js pages (three r128 from jsDelivr) plus the final 3D models they load.
+Static, self-contained three.js pages (three r164 from jsDelivr) plus the final 3D models they load.
 They are not part of the Vite build; they are served as plain static folders and the app embeds them in iframes.
 
 - `runecast-wardrobe/`, served at https://bingual.app/runecast-wardrobe/
