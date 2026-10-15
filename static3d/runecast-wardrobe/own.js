@@ -10,7 +10,7 @@
   const LSS = (k, v) => { try { localStorage.setItem(k, v) } catch (e) { /* private mode */ } };
   const Q = new URLSearchParams(location.search);
   const EDITOR = !Q.get('embed') && !Q.get('battle') && !Q.get('portrait');
-  const SLOTS = ['hair', 'haircolor', 'eyes', 'hat', 'top', 'coat', 'pants', 'shoes'];
+  const SLOTS = ['hair', 'haircolor', 'eyes', 'hat', 'top', 'coat', 'pants', 'shoes', 'wand'];   // wand: admin 5762
   const SN = { top: 'Top', coat: 'Outer', pants: 'Legs', shoes: 'Feet' };          // catalogue slot -> OUTFIT row
   const GARM = ['top', 'coat', 'pants', 'shoes'];
   const HC = ['natural', 'black', 'darkbrown', 'chestnut', 'auburn', 'ginger', 'blonde', 'platinum', 'pink', 'lilac', 'blue', 'mint'];
@@ -64,6 +64,7 @@
     if (slot === 'hair') return hairId(L.hair);
     if (slot === 'haircolor') return 'haircolor_' + (HC[L.hairColor] || 'natural');
     if (slot === 'eyes') return 'eyes_' + ((IRIS_COLORS[L.iris] || IRIS_COLORS[0])[1]);
+    if (slot === 'wand') return E.wandId ? E.wandId() : 'wand_starter';
     if (slot === 'hat') return L.hat ? ((E.HATS[L.hatPick] || [])[1] || 'hat') : null;
     if (VAR[slot]) return VAR[slot].id;
     const i = L.outfit[SN[slot]];
@@ -80,6 +81,7 @@
     if (slot === 'hair') E.setHair(hairIdx(id || 'hair_short'));
     else if (slot === 'haircolor') E.pickHairColor(Math.max(0, HC.indexOf(String(id || '').replace('haircolor_', ''))));
     else if (slot === 'eyes') E.pickIris(Math.max(0, IRIS_COLORS.findIndex((c) => 'eyes_' + c[1] === id)));
+    else if (slot === 'wand') { if (E.setWand) E.setWand(id || 'wand_starter') }
     else if (slot === 'hat') { if (!id) E.setHat(false); else E.pickHat(Math.max(0, E.HATS.findIndex((h) => (h[1] || 'hat') === id))) }
     else {
       const opts = outfitOpts(slot), it = S.items[id];

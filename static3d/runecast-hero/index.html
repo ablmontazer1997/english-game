@@ -1212,6 +1212,84 @@ function buildEditor(E){
         if(m0.customProgramCacheKey)m.customProgramCacheKey=()=>'fist|'+m0.customProgramCacheKey();
         const fm=new THREE.Mesh(g,m);fm.name='fist_L';fm.frustumCulled=false;fm.castShadow=body.castShadow;bH.add(fm);window.RCFIST=fm;}).catch(e=>console.warn('fist',e));
       if(gripOn){const s3=new THREE.Vector3();bH.matrixWorld.decompose(_a,_qr,s3);wand.position.y=-(5.8e-4*s3.x+R0*.75)+.02;}
+// ---- admin 5719/5725: selectable wands (wardrobe slot "wand"). A Hunyuan GLB (fix/wands, unit length, +Y, origin at the pommel)
+      //  replaces the procedural wand INSIDE the same `wand` group, so grip, aim, RCFX3 placement, cast, trail and glow are unchanged.
+      //  g = grip centre (fraction of the length) put where the fist holds the old wand, t = tip ornament centre (glow + bolt origin).
+      //  choice: ?wand=<id>, else localStorage 'wand', else the starter; live switch: postMessage {type:'rc-wand',id}.
+      const WANDS={wand_starter:{g:.17,t:.985,c:0xffb83d,p:[0.05,0.05,0.047,0.05,0.05,0.043,0.049,0.042,0.035,0.034,0.032,0.032,0.031,0.029,0.028,0.026,0.025,0.023,0.021,0.019]},wand_classic:{c:0x8a4dff,p:[.04,.04,.03,.03,.03,.03,.03,.03,.03,.03,.03,.03,.03,.03,.03,.03,.03,.05,.06,.06]},wand_frost:{g:.15,t:.87,c:0x8fd8ff,p:[0.033,0.035,0.036,0.037,0.035,0.035,0.036,0.036,0.036,0.035,0.035,0.033,0.036,0.035,0.03,0.052,0.072,0.073,0.053,0.028]},wand_fire:{g:.16,t:.89,c:0xff7a1a,p:[0.046,0.045,0.04,0.04,0.04,0.043,0.041,0.037,0.034,0.032,0.031,0.031,0.03,0.032,0.032,0.035,0.073,0.087,0.085,0.055]},
+        wand_royal:{g:.15,t:.93,c:0xff4060,p:[0.041,0.039,0.036,0.045,0.045,0.041,0.062,0.063,0.038,0.038,0.036,0.038,0.033,0.035,0.035,0.035,0.032,0.057,0.092,0.092]},wand_sea:{g:.16,t:.9,c:0x7fe8e0,p:[0.04,0.049,0.043,0.034,0.033,0.041,0.049,0.041,0.043,0.035,0.036,0.043,0.034,0.036,0.033,0.033,0.09,0.116,0.127,0.108]},wand_stars:{g:.15,t:.9,c:0xffd84a,p:[0.055,0.054,0.037,0.037,0.036,0.038,0.027,0.026,0.026,0.026,0.025,0.027,0.029,0.032,0.039,0.071,0.123,0.133,0.132,0.117]},wand_forest:{g:.17,t:.89,c:0x7dff9a,p:[0.053,0.054,0.04,0.037,0.045,0.044,0.046,0.043,0.068,0.072,0.046,0.048,0.09,0.096,0.05,0.056,0.109,0.13,0.13,0.06]},
+        wand_sun:{g:.16,t:.88,c:0xffb020,p:[0.052,0.051,0.033,0.037,0.037,0.036,0.031,0.021,0.021,0.022,0.026,0.022,0.021,0.027,0.033,0.102,0.101,0.139,0.095,0.027]},wand_shadow:{g:.16,t:.88,c:0x9b5cff,p:[0.033,0.037,0.037,0.037,0.036,0.035,0.035,0.039,0.03,0.026,0.028,0.026,0.028,0.028,0.028,0.042,0.105,0.098,0.055,0.03]}};
+      window.RC_WANDS=WANDS;
+      const WLEN=1.22*L,PROC=wand.children.filter(o=>o.isMesh),gripY=-wand.position.y,tipY0=tip.position.y;
+      const WSPAN={lo:-gripY-.04*L,hi:1.27*L-gripY,p:null,len:1.31*L};   // wand extent along its axis, measured from the grip (classic)
+      const WLD=new THREE.GLTFLoader();if(window.MeshoptDecoder)WLD.setMeshoptDecoder(MeshoptDecoder);const wcache={};let wglb=null,wcur=null;
+      const tintGlow=c=>{halo.material.color.setHex(c);glow.material.color.setHex(c);core.material.color.setHex(c).lerp(new THREE.Color(0xffffff),.65);};
+      const setWand=id=>{if(!WANDS[id])id='wand_starter';if(id===wcur)return;window.RCWRESET&&RCWRESET();wcur=id;window.RCWAND=id;const W=WANDS[id];
+        if(wglb){wand.remove(wglb);wglb=null;}
+        if(id==='wand_classic'){WSPAN.lo=-gripY-.04*L;WSPAN.hi=1.27*L-gripY;WSPAN.p=W.p;WSPAN.len=1.31*L;PROC.forEach(o=>o.visible=true);tip.position.y=tipY0;tintGlow(W.c);return;}
+        WSPAN.lo=-W.g*WLEN;WSPAN.hi=(1-W.g)*WLEN;WSPAN.p=W.p;WSPAN.len=WLEN;PROC.forEach(o=>o.visible=false);tip.position.y=gripY+(W.t-W.g)*WLEN;tintGlow(W.c);
+        const put=sc0=>{if(wcur!==id)return;const o=sc0.clone();o.scale.setScalar(WLEN);o.position.y=gripY-W.g*WLEN;
+          o.traverse(m=>{if(m.isMesh){m.castShadow=false;m.frustumCulled=false;}});wglb=o;wand.add(o);window.RCWANDOK=id;};
+        if(wcache[id])put(wcache[id]);else WLD.load('wands/'+id+'.glb?v=1',g=>{wcache[id]=g.scene;put(g.scene);},undefined,e=>{console.warn('wand',id,e);if(wcur===id){wcur=null;setWand('wand_classic');}});};
+      {const q=new URLSearchParams(location.search).get('wand');let id=q;if(!id)try{id=localStorage.getItem('wand')}catch(e){}setWand(id||'wand_starter');}
+      addEventListener('message',e=>{const d=e.data||{};if(d.type==='rc-wand')setWand(d.id);});
+      addEventListener('storage',e=>{if(e.key==='wand')setWand(e.newValue);});
+
+      // ---- admin 5762: the wand must never cut into the hat (brim) / head, nor lie across the face, at any point of the cast.
+      //  Obstacles: (1) every surface on the head (head, hair, hat = skin vertices driven mostly by the Head bone), voxelised in the
+      //  head's own frame (cell 0.6% of the hero height, one-cell margin, refreshed every 1.5 s so hat / hair changes are seen);
+      //  (2) the face (eyes, nose, mouth) in screen space: a disc around the front of the head skin, active when the wand is
+      //  in front of it. The wand is tested as a stack of discs along its measured radius profile (fix/wands/post/*.prof.json).
+      //  Fix: the wrist and the wand angle are left exactly as approved; only on a real contact the arm OPENS (the guard/draw
+      //  hand target moves outward and a little up: RCWOPEN, read by the arm IK in RCFX). It rises quickly while a contact
+      //  is found, holds through the cast and relaxes only after the release, so a wand that never touches looks exactly as before.
+      const HV={set:null,c:1,o:v(),fa:v(),fr:0};const KEY=(x,y,z)=>x+y*2048+z*4194304;
+      const buildHV=()=>{if(!bHd)return;root.updateMatrixWorld(true);const pts=[],skin=[],p=v(),bp=v(),bq=v(),bm=new THREE.Matrix4();
+        let sig='';root.traverse(o=>{if(!o.isSkinnedMesh||!o.visible)return;const sk=o.skeleton,hi=sk.bones.indexOf(bHd);if(hi<0)return;sk.update();
+          const g=o.geometry,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight,P=g.attributes.position;if(!SI||!SW)return;sig+=o.name+P.count+'|';const isBody=/^tripo/.test(o.name);
+          const gi=[SI.getX,SI.getY,SI.getZ,SI.getW],gw=[SW.getX,SW.getY,SW.getZ,SW.getW];
+          for(let i=0;i<P.count;i++){let w=0,t=0;for(let k=0;k<4;k++){const ww=gw[k].call(SW,i);t+=ww;if(gi[k].call(SI,i)===hi)w+=ww;}if(!t||w/t<.5)continue;
+            bp.fromBufferAttribute(P,i).applyMatrix4(o.bindMatrix);p.set(0,0,0);
+            for(let k=0;k<4;k++){const ww=gw[k].call(SW,i)/t;if(!ww)continue;const j=gi[k].call(SI,i);bm.multiplyMatrices(sk.bones[j].matrixWorld,sk.boneInverses[j]);p.addScaledVector(bq.copy(bp).applyMatrix4(bm),ww);}
+            p.applyMatrix4(o.bindMatrixInverse).applyMatrix4(o.matrixWorld);const l=bHd.worldToLocal(p.clone());pts.push(l);if(isBody)skin.push(l);}});
+        if(pts.length<50)return;HV.sig=sig;
+        const e=bHd.matrixWorld.elements,hs=Math.hypot(e[0],e[1],e[2])||1,c=.006*H/hs;
+        const o=v(1e9,1e9,1e9);for(const a of pts)o.min(a);o.subScalar(3*c);const set=new Set();
+        for(const a of pts)set.add(KEY(Math.floor((a.x-o.x)/c),Math.floor((a.y-o.y)/c),Math.floor((a.z-o.z)/c)));
+        HV.set=set;HV.c=c;HV.o.copy(o);
+        // face anchor: the front cap of the head skin (towards the camera), radius = the cap's spread
+        if(skin.length>50){const ctr=v();skin.forEach(a=>ctr.add(a));ctr.multiplyScalar(1/skin.length);
+          const up=v().copy(UP).applyQuaternion(bHd.getWorldQuaternion(q()).invert()).normalize();
+          let h0=1e9,h1=-1e9;for(const a of skin){const h=a.dot(up);h0=Math.min(h0,h);h1=Math.max(h1,h);}
+          let dc;try{dc=H0Q?FW.clone().applyQuaternion(H0Q.clone().invert()).normalize():null;}catch(e){dc=null;}   // the head's own forward (rest = facing the camera)
+          if(!dc)dc=bHd.worldToLocal(cam.position.clone()).sub(ctr).normalize();let mx=-1e9;for(const a of skin)mx=Math.max(mx,_t.copy(a).sub(ctr).dot(dc));
+          // the face = the camera-facing cap of the head skin, from the chin up to the brows (lower 60% of the head height)
+          const cap=skin.filter(a=>_t.copy(a).sub(ctr).dot(dc)>.6*mx&&a.dot(up)<h0+.6*(h1-h0));if(cap.length>10){const fa=v();cap.forEach(a=>fa.add(a));fa.multiplyScalar(1/cap.length);
+            const ds=cap.map(a=>{_t.copy(a).sub(fa);return _t.addScaledVector(dc,-_t.dot(dc)).length();}).sort((x,y)=>x-y);HV.fa.copy(fa);HV.fr=ds[Math.floor(ds.length*.6)]*hs;}}
+        window.RCHV={n:pts.length,cells:set.size,faceR:+(HV.fr/H).toFixed(3)};};
+      const _hp=v(),_d=v(),_e1=v(),_e2=v(),_t=v(),_f=v(),_fs=v(),_ws=v(),_cr=v();let hvT=0,open=0,openT=0,lastT=0,wasCast=false,relaxT=0;
+      const inV=w=>{_hp.copy(w);bHd.worldToLocal(_hp);const x=Math.floor((_hp.x-HV.o.x)/HV.c),y=Math.floor((_hp.y-HV.o.y)/HV.c),z=Math.floor((_hp.z-HV.o.z)/HV.c);
+        if(x<1||y<1||z<1)return false;for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++)if(HV.set.has(KEY(x+dx,y+dy,z+dz)))return true;return false;};
+      const radAt=s=>{const P=WSPAN.p;if(!P)return 0;const f=(s-WSPAN.lo)/(WSPAN.hi-WSPAN.lo);return P[Math.min(19,Math.max(0,Math.floor(f*20)))]*WSPAN.len;};
+      const contact=()=>{const ws=.003*H,FIST=.05*H;_e1.set(0,1,0).cross(WD);if(_e1.lengthSq()<1e-6)_e1.set(1,0,0);_e1.normalize();_e2.crossVectors(WD,_e1);
+        // face disc in screen space (NDC, aspect-corrected)
+        let fOK=HV.fr>0;if(fOK){bHd.localToWorld(_f.copy(HV.fa));_fs.copy(_f).project(cam);_cr.setFromMatrixColumn(cam.matrixWorld,0);_ws.copy(_f).addScaledVector(_cr,HV.fr).project(cam);}
+        const asp=(typeof innerWidth!=='undefined'&&innerHeight)?innerWidth/innerHeight:1,fR=fOK?Math.abs(_ws.x-_fs.x)*asp:0,fD=fOK?cam.position.distanceTo(bHd.getWorldPosition(_hp)):0;if(fOK)window.RCWFACE=[+_fs.x.toFixed(4),+_fs.y.toFixed(4),+(fR/asp).toFixed(4)];
+        let hv=0,hf=0;
+        for(let s=WSPAN.lo;s<=WSPAN.hi;s+=ws){const inFist=Math.abs(s)<FIST;_t.copy(holder.position).addScaledVector(WD,s);const r=inFist?.035*H:radAt(s);
+          if(!hv&&!inFist){if(inV(_t))hv=1;else if(r>.004*H)for(let a=0;a<8;a++){const an=a*Math.PI/4;_d.copy(_t).addScaledVector(_e1,Math.cos(an)*r).addScaledVector(_e2,Math.sin(an)*r);if(inV(_d)){hv=1;break;}}}
+          if(fOK&&!hf&&cam.position.distanceTo(_t)<fD){_d.copy(_t).project(cam);_ws.copy(_t).addScaledVector(_cr,r).project(cam);
+            const dx=(_d.x-_fs.x)*asp,dy=_d.y-_fs.y,rp=Math.abs(_ws.x-_d.x)*asp;if(Math.hypot(dx,dy)<fR+rp)hf=1;}
+          if(hv&&hf)break;}
+        return hv*1+hf*2;};
+      window.RCWCLEAR=()=>{const now=performance.now();if(now-hvT>1500){hvT=now;try{buildHV();}catch(e){console.warn('hv',e);}if(HV.sig!==HV.sig0){if(HV.sig0!==undefined)openT=0;HV.sig0=HV.sig;}   // hat / hair changed: start over
+        }
+        if(!HV.set||!gripOn)return;const dt=Math.min(.1,(now-(lastT||now))/1000);lastT=now;
+        const c=contact(),D=window.RCD||{};window.RCWHIT=c;window.RCWHITS=(window.RCWHITS||0)|c;if(c)window.RCWNHIT=(window.RCWNHIT||0)+1;
+        const casting=D.t>=0;if(wasCast&&!casting)relaxT=now+700;wasCast=casting;
+        if(c)openT=Math.min(1,openT+.15);else if(now<relaxT)openT=Math.max(0,openT-dt/.6);   // latch; relax only just after a cast
+        open+=(openT-open)*(1-Math.exp(-dt/.06));window.RCWOPEN=open;};
+      window.RCWRESET=()=>{openT=0;};
       const WD=v(),WP=v(),HQ=q(),GRIP=.05*H;let aimW=null,aimK=0;
       const placeWand=()=>{if(gripOn){bH.updateWorldMatrix(true,false);holder.position.copy(GRIPC).applyMatrix4(bH.matrixWorld);WD.copy(GRIPD).transformDirection(bH.matrixWorld);
           holder.quaternion.setFromUnitVectors(UP,WD);holder.updateMatrixWorld(true);return;}
@@ -1295,7 +1373,7 @@ function buildEditor(E){
       const aimHand=()=>{if(!gripOn||!aimW||aimK<=0)return;bH.updateWorldMatrix(true,false);_c.copy(GRIPD).transformDirection(bH.matrixWorld);
         const qa=q().setFromUnitVectors(_c,aimW),ang=2*Math.acos(Math.min(1,Math.abs(qa.w))),lim=AIMLIM;if(ang>lim)qa.slerp(_id.set(0,0,0,1),1-lim/ang);
         if(aimK<1)qa.slerp(_id.set(0,0,0,1),1-aimK);rotW(bH,qa);bH.updateMatrixWorld(true);LASTQ.set(bH,bH.quaternion.clone());};
-      window.RCFX3=()=>{root.updateMatrixWorld(true);aimHand();placeWand();
+      window.RCFX3=()=>{root.updateMatrixWorld(true);aimHand();placeWand();if(window.RCWCLEAR)RCWCLEAR();
         if(cast&&cast.fireNow){cast.fireNow=false;const p=tipW().project(cam);post({type:'rc-mark',name:'cast',crit:cast.crit,tip:[+((p.x+1)/2).toFixed(4),+((1-p.y)/2).toFixed(4)]});}
         stepTrail(trDt,trBoost);trDt=0;};
       window.RCFX=dt0=>{
@@ -1330,7 +1408,7 @@ function buildEditor(E){
           const cs=.6*H*k*(.7+.3*cu);circle.scale.set(cs,cs,1);circle.rotation.z=t*1.4;
           if(t<rel){const u=t/rel;gs*=1+1.6*ease.i(u)*k;gc*=1+1.4*ease.i(u)*k;go=.75+.25*u;boost=.3;if(Math.random()<dt*60*(.25+.5*u))spawn(1,.13*H*k,.45,false);}
           else{const u=cl((t-rel)/.35);gs*=(2.6*k)*(1-u)+u;gc*=1.6*(1-u)+u;go=1;boost=1-u;}
-          AIM.copy(RT).addScaledVector(UP,.12+.9*draw).normalize();
+          AIM.copy(RT).addScaledVector(UP,.12+.9*draw*(1-.7*(window.RCWOPEN||0))).normalize();
           if(!cast.fired&&t>=rel){cast.fired=true;cast.fireNow=true;}
           if(t>=tE){cast=null;circle.visible=false;}
         }
@@ -1357,7 +1435,7 @@ function buildEditor(E){
           spin(bS2,RT,-.012*br*STe);
           // left arm: extended at the boss (drawn in while charging); right fist near the chest
           bU.updateMatrixWorld(true);const SH=bU.getWorldPosition(v());
-          const tgt=SH.clone().addScaledVector(RT,(1.0-.42*draw)*RA).addScaledVector(UP,(.06+.36*draw+.015*br)*RA).addScaledVector(FW,(.12+.1*draw)*RA);
+          const tgt=SH.clone().addScaledVector(RT,(1.0-.084*draw)*RA).addScaledVector(UP,(.06-.05*draw+.015*br)*RA).addScaledVector(FW,(.12+.1*draw)*RA);
           ik2(bU,bF,bH,tgt,v().addScaledVector(UP,-1).addScaledVector(FW,-.3),STe*(1-sobE));
           if(oU){oU.updateMatrixWorld(true);const S2=oU.getWorldPosition(v());const ch=S2.clone().addScaledVector(RT,.35*RA).addScaledVector(UP,-.32*RA).addScaledVector(FW,.45*RA);
             ik2(oU,oF,oH,ch,v().addScaledVector(UP,-1).addScaledVector(RT,-.5).addScaledVector(FW,-.2),STe*(1-sobE));}
@@ -1658,9 +1736,9 @@ function buildEditor(E){
   const spreadNow=()=>SPREAD+((worn.Outer?(CSP!=null?+CSP:(COAT_SPREAD[worn.Outer]||0)):0)*Math.PI/180);
   const CLQ=new URLSearchParams(location.search);const CLA=CLQ.get('cla'),CLF=CLQ.get('clf');const CLW=CLQ.get('clw')==='old'?[2.0,2.4,2.0]:[0.0,0.3,0.3];const CLIP_ARM={cast_a_spell:{L:[CLA!=null?+CLA:20,CLW[0],CLW[1],3.9,4.3],LF:[CLF!=null?+CLF:10,CLW[0],CLW[1],3.9,4.3],R:[CLQ.get('cra')!=null?+CLQ.get('cra'):10,CLW[0],CLW[1],3.9,4.3],off:[CLW[2],4.3]}};
   const clipExtra=side=>{if(!window.RCNEW)return 0;const c=BATTLE?null:CLIP_ARM[curName];if(!c||!c[side]||!cur||!worn.Outer)return 0;const [deg,a0,a1,b0,b1]=c[side];const t=cur.time;const sm=(e0,e1,x)=>{const k=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return k*k*(3-2*k)};return deg*Math.PI/180*sm(a0,a1,t)*(1-sm(b0,b1,t));};
-  const spread=()=>{window.RCNEW=!!(worn.Outer&&RCNEWC.has(worn.Outer));const SP2=spreadNow();{const c=BATTLE?null:CLIP_ARM[curName];window.RCHANDS=window.RCHANDS||{};window.RCHANDS.off=!!(c&&c.off&&cur&&worn.Outer&&cur.time>=c.off[0]&&cur.time<=c.off[1]);}
+  /* ARMAX1015: arm offsets rotate about the body's forward axis (yaw of the shoulder line) instead of the fixed world X axis; with world X the offset turned into an adduction whenever the body faced away (cast turn), pushing hands/cuffs into the coat. Hero battle/map and ?armax=world keep world X. */const ARMAX_W=new URLSearchParams(location.search).get('armax')==='world'||(typeof BATTLE!=='undefined'&&BATTLE),AXv=new THREE.Vector3(),AXa=new THREE.Vector3(),AXb=new THREE.Vector3();const armAxis=()=>{AXv.set(1,0,0);if(ARMAX_W)return AXv;const L=bones.L_Upperarm,R=bones.R_Upperarm;if(!L||!R)return AXv;root.updateMatrixWorld(true);L.getWorldPosition(AXa);R.getWorldPosition(AXb);AXb.sub(AXa);AXb.y=0;if(AXb.lengthSq()<1e-8)return AXv;AXb.normalize();return AXv.set(AXb.z,0,-AXb.x);};const spread=()=>{window.RCNEW=!!(worn.Outer&&RCNEWC.has(worn.Outer));const SP2=spreadNow();const AX=armAxis();{const c=BATTLE?null:CLIP_ARM[curName];window.RCHANDS=window.RCHANDS||{};window.RCHANDS.off=!!(c&&c.off&&cur&&worn.Outer&&cur.time>=c.off[0]&&cur.time<=c.off[1]);}
     for(const [n,s] of [['L_Upperarm',SP2+clipExtra('L')],['R_Upperarm',-SP2-clipExtra('R')],['L_Forearm',clipExtra('LF')]]){if(!s&&n==='L_Forearm'){const b=bones[n];if(b)b.userData.q0=null;continue;}const b=bones[n];if(!b)continue;b.userData.q0=(b.userData.q0||new THREE.Quaternion()).copy(b.quaternion);b.parent.updateMatrixWorld(true);
-    b.getWorldQuaternion(qw);b.parent.getWorldQuaternion(qp);qa.setFromAxisAngle(new THREE.Vector3(1,0,0),s);b.quaternion.copy(qp.invert().multiply(qa.multiply(qw)));}};
+    b.getWorldQuaternion(qw);b.parent.getWorldQuaternion(qp);qa.setFromAxisAngle(AX,s);b.quaternion.copy(qp.invert().multiply(qa.multiply(qw)));}};
   const spring=SkirtSpring(root);
   // ?portrait=1 (hidden iframe in the game): frame the head, snap a 256px avatar twice (after the outfit settles) and hand it to the parent
   const PORTRAIT=!!new URLSearchParams(location.search).get('portrait');let snapT=0,snaps=0;const PV=new THREE.Vector3(),PT=new THREE.Vector3();
