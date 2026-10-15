@@ -1363,7 +1363,7 @@ function buildEditor(E){
         if(d.type==='rc-calm'){sob=null;window.RCSOB=0;}if(d.type==='rc-hitstop')hs=Math.max(hs,(+d.ms||80)/1000);});
       const post=m=>{try{parent.postMessage(m,'*')}catch(e){}};
       const LEGB=['L_Thigh','L_Calf','L_Foot','R_Thigh','R_Calf','R_Foot'].map(n=>boneBy[n]);
-      const TB=[boneBy.Hip,boneBy.L_Clavicle,boneBy.R_Clavicle,bWa,bS1,bS2,bHd,bU,bF,bH,oU,oF,oH,...LEGB].filter(Boolean),PREQ=new Map(),LASTQ=new Map();
+      const TB=[boneBy.Hip,boneBy.L_Clavicle,boneBy.R_Clavicle,bWa,bS1,bS2,(bHd&&bHd.parent&&bHd.parent.isBone)?bHd.parent:null,bHd,bU,bF,bH,oU,oF,oH,...LEGB].filter(Boolean),PREQ=new Map(),LASTQ=new Map();
       const restore=()=>{for(const b of TB){const l=LASTQ.get(b);if(l&&b.quaternion.equals(l))b.quaternion.copy(PREQ.get(b));PREQ.set(b,b.quaternion.clone());}};
       const remember=()=>{for(const b of TB)LASTQ.set(b,b.quaternion.clone());};
       const yq=q();
@@ -1444,7 +1444,7 @@ function buildEditor(E){
             ik2(bU,bF,bH,P.clone().addScaledVector(RT,CRY.lat*RA).addScaledVector(UP,y).addScaledVector(FW,CRY.fw*RA),v().addScaledVector(UP,-1).addScaledVector(RT,.6).addScaledVector(FW,-.3),k);
             if(oU)ik2(oU,oF,oH,P.clone().addScaledVector(RT,-CRY.lat*RA).addScaledVector(UP,y).addScaledVector(FW,CRY.fw*RA),v().addScaledVector(UP,-1).addScaledVector(RT,-.6).addScaledVector(FW,-.3),k);}
           // head: level, turned 3/4 toward the boss (less while crying, so the face shows)
-          if(bHd){const hy=q().setFromAxisAngle(UP,(.4-.35*sobE)*STe+yaw*0),tq=H0Q.clone().premultiply(hy),pw=bHd.parent.getWorldQuaternion(q()).invert();
+          if(bHd){const HR=(+(new URLSearchParams(location.search).get('hr')??20))*Math.PI/180*STe*(1-sobE),CZ=v().setFromMatrixColumn(cam.matrixWorld,2).normalize();if(HR&&bHd.parent&&bHd.parent.isBone)spin(bHd.parent,CZ,HR*.4);const hy=q().setFromAxisAngle(UP,(.4-.35*sobE)*STe+yaw*0),tq=H0Q.clone().premultiply(hy).premultiply(q().setFromAxisAngle(CZ,HR)),pw=bHd.parent.getWorldQuaternion(q()).invert();
             bHd.quaternion.slerp(pw.multiply(tq),STe);bHd.updateMatrixWorld(true);}
         }
         if(lean){spin(bS1,FW,lean*.55);spin(bS2,FW,lean*.45);}
