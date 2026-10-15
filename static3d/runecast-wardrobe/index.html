@@ -1443,7 +1443,7 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   window.RCWSH=WSH;
   window.ED={root,LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,hatProf,tones,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,setExpr,play,pose,focus,previewNoHat,randomize,reset,setWand:id=>WSH.set(id),wandId:()=>WSH.get(),
     ready:Promise.all(outfitReady),clips:g.animations.map(a=>[a.name,a.duration]),frames:FRAMES,tintDominant};
-  if(EDITOR)buildEditor({LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,tones,eyes,order,nice,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,LS,setExpr,play,focus,previewNoHat,randomize,reset,getAnim:()=>curName});
+  if(EDITOR)buildEditor({LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,tones,eyes,order,nice,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,LS,setExpr,play,focus,previewNoHat,randomize,reset,getAnim:()=>curName,setWand:id=>WSH.set(id),wandId:()=>WSH.get()});
   // hold the arms a little away from the body so the hands don't sink into the robe
   const bones={};root.traverse(o=>{if(o.isBone||o.type==='Bone'||/Upperarm$/.test(o.name))bones[o.name]=o;});
   const SPREAD=+(new URLSearchParams(location.search).get('sp')??0.5),qa=new THREE.Quaternion(),qp=new THREE.Quaternion(),qw=new THREE.Quaternion();
