@@ -114,7 +114,7 @@ export interface WardrobeItem {
 }
 export interface Look {
   body: 'boy' | 'girl'; tone: number; blush: number; hair: string; haircolor: string; eyes: string
-  hat: string | null; top: string | null; coat: string | null; pants: string | null; shoes: string | null; tint: Record<string, string>
+  hat: string | null; top: string | null; coat: string | null; pants: string | null; shoes: string | null; wand?: string | null; tint: Record<string, string>
 }
 export interface Merchant {
   ends_at: number; items: WardrobeItem[]

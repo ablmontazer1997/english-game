@@ -2,7 +2,7 @@
 // (/runecast-hero/) still read the look from localStorage by INDEX (girl, hairPick, hairColor, irisColor, skinTone2,
 // hatOn, hatPick, outfit, tint, blush) plus rcVariant / rcTintFx for recolour treasures. This module converts between
 // those keys and the server's look (catalogue ids). The tables mirror the wardrobe page (index.html HAIRS, HATS,
-// HAIR_COLORS, IRIS_COLORS, OUTFIT); keep them in step when the wardrobe gets new items.
+// HAIR_COLORS, IRIS_COLORS, OUTFIT); keep them in step when the wardrobe gets new items. The wand (admin 5762) is stored by id in 'wand'.
 import { api, type Look, type WardrobeItem } from './api'
 
 const HAIRS = ['hair_short', 'hair_girllong', 'hair_pony', 'hair_twin', 'hair_bob', 'hair_twobuns', 'hair_curly', 'hair_spiky',
@@ -39,6 +39,7 @@ export function lsToLook(): Look {
     eyes: 'eyes_' + (IRIS[num('irisColor', 0)] ?? 'violet'),
     hat: ls.get('hatOn') === '0' ? null : (HATS[num('hatPick', 0)] ?? 'hat'),
     top: null, coat: null, pants: null, shoes: null, tint: json<Record<string, string>>('tint', {}),
+    wand: ls.get('wand') || 'wand_starter',   // admin 5762: the wand slot (key 'wand' = item id, read by the wardrobe and hero pages)
   }
   for (const g of GARMENTS) {
     const i = outfit[OUTFIT[g].row]
@@ -71,9 +72,10 @@ export function lookToLs(look: Look, catalogue?: Record<string, WardrobeItem>): 
   ls.set('outfit', JSON.stringify(outfit))
   ls.set('rcVariant', JSON.stringify(vars)); ls.set('rcTintFx', JSON.stringify(fx))
   ls.set('tint', JSON.stringify(look.tint || {}))
+  ls.set('wand', look.wand || 'wand_starter')
   return snapshot() !== before
 }
-const KEYS = ['girl', 'skinTone2', 'blush', 'hairPick', 'hairColor', 'irisColor', 'hatOn', 'hatPick', 'outfit', 'rcVariant', 'tint']
+const KEYS = ['girl', 'skinTone2', 'blush', 'hairPick', 'hairColor', 'irisColor', 'hatOn', 'hatPick', 'outfit', 'rcVariant', 'tint', 'wand']
 const snapshot = () => KEYS.map((k) => ls.get(k)).join('|')
 
 // recolour treasures (catalogue base_mesh + dye), used when the catalogue is not at hand

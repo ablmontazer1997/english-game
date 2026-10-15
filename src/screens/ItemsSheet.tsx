@@ -9,7 +9,7 @@ import { wearItem } from '../services/look'
 import './pages.css'
 import './serverstage.css'
 
-const SLOTS: [string, string][] = [['hat', 'Hats'], ['coat', 'Cloaks'], ['top', 'Tops'], ['pants', 'Trousers'], ['shoes', 'Boots'], ['hair', 'Hair'], ['haircolor', 'Hair colour'], ['eyes', 'Eyes']]
+const SLOTS: [string, string][] = [['hat', 'Hats'], ['coat', 'Cloaks'], ['top', 'Tops'], ['pants', 'Trousers'], ['shoes', 'Boots'], ['wand', 'Wands'], ['hair', 'Hair'], ['haircolor', 'Hair colour'], ['eyes', 'Eyes']]
 const TIER: Record<string, string> = { free: 'Starter', boss: 'Boss treasure', earned: 'Earned', coin: 'Bought', gem: 'Bought', premium: 'Premium' }
 const FALLBACK: Record<string, ArtName> = { hair: 'qi_crystal', haircolor: 'qi_potion', eyes: 'qi_star' }
 
