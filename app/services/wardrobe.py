@@ -203,10 +203,10 @@ def merchant_week(today: date) -> tuple[date, int]:
 
 
 def merchant_pick(today: date, items: list[Item]) -> tuple[list[str], dict]:
-    """4 items a week (one of them an epic cloak 2 weeks in 3), the same for everyone, plus one set"""
+    """4 items a week (one of them a Merchant-only epic: royal cloak, sea cloak, royal wand in turn), the same for everyone, plus one set"""
     wk, n = merchant_week(today)
     rnd = random.Random(f"merchant:{wk.isoformat()}")
-    limited = ["coat_royal", "coat_sea", None][n % 3]
+    limited = ["coat_royal", "coat_sea", "wand_royal"][n % 3]   # admin 5762: the Royal wand fills the third week
     pool = sorted(i.id for i in items if i.tier in ("gem", "coin") and i.id not in C.MERCHANT_ONLY)
     gems = [i for i in pool if any(x.id == i and x.tier == "gem" for x in items)]
     picks = [limited] if limited else []

@@ -31,7 +31,8 @@ async def test_guest_auth_and_starting_state(client, player):
     w = (await client.get("/v1/wallet")).json()
     assert (w["gems"], w["coins"], w["elixir"], w["potion"], w["hearts"]) == (40, 1250, 3, 3, 5)
     inv = (await client.get("/v1/inventory")).json()
-    assert len(inv["items"]) == 15  # Phase B starter set
+    assert len(inv["items"]) == 17  # Phase B starter set + 2 starter wands (admin 5762)
+    assert inv["equipped"]["wand"] == "wand_starter"
     assert inv["equipped"]["hair"] == "hair_short"
     led = (await client.get("/v1/wallet/ledger")).json()
     assert {r["reason"] for r in led} == {"signup"}
@@ -176,7 +177,7 @@ async def _set_wallet(player, **vals):
 async def test_shop_chests_inventory(client, player):
     shop = (await client.get("/v1/shop")).json()
     # Phase B: coin + gem items of the one catalogue (the two merchant-only cloaks are not in the plain list)
-    assert len(shop["items"]) == 28 and all(not g["available"] and g["cta"] == "Coming soon" for g in shop["store"]["products"])
+    assert len(shop["items"]) == 35 and all(not g["available"] and g["cta"] == "Coming soon" for g in shop["store"]["products"])
     assert {i["tier"] for i in shop["items"]} == {"coin", "gem"} and shop["merchant"]["items"]
     assert next(o for o in shop["offers"] if o["id"] == "chest_wood")["odds"][1]["chance"] == 0.35
     r = await client.post("/v1/shop/buy", json={"item_id": "shoes_forest"})

@@ -7,7 +7,7 @@ real-money SKUs (placeholders, not live). Cosmetic only: no item changes play, s
 # tier: free (starter, everyone) | boss (boss drop, never sold) | earned (streak / league, never sold)
 #       | coin | gem | premium (subscription, NOT for sale yet: "Premium, coming soon")
 # Cosmetic only: no item changes play, scoring or the league.
-SLOTS = ["hair", "haircolor", "eyes", "hat", "top", "coat", "pants", "shoes"]
+SLOTS = ["hair", "haircolor", "eyes", "hat", "top", "coat", "pants", "shoes", "wand"]   # wand: admin 5719/5762
 OPTIONAL_SLOTS = {"hat", "top", "coat", "pants", "shoes"}   # "none" is allowed (no hat, no cloak...)
 
 _FREE = [  # the starter set (audit 5.3 D): default outfit, 3 hairs, 4 natural hair colours, 2 eye colours
@@ -18,10 +18,11 @@ _FREE = [  # the starter set (audit 5.3 D): default outfit, 3 hairs, 4 natural h
     ("hat", "Wizard hat", "hat"), ("hat_apprentice", "Apprentice cap", "hat"),
     ("top_apprentice", "Apprentice tunic", "top"), ("coat", "Wizard coat", "coat"), ("pants", "Pants", "pants"),
     ("shoes", "Boots", "shoes"),
+    ("wand_starter", "Starter wand", "wand"), ("wand_classic", "Classic wand", "wand"),   # admin 5725/5762: starter = default
 ]
 DEFAULT_LOOK = {"body": "boy", "tone": 1, "blush": 80, "hair": "hair_short", "haircolor": "haircolor_natural",
                 "eyes": "eyes_violet", "hat": "hat", "top": "top_apprentice", "coat": "coat", "pants": "pants",
-                "shoes": "shoes", "tint": {}}
+                "shoes": "shoes", "wand": "wand_starter", "tint": {}}
 DEFAULT_EQUIP = {s: DEFAULT_LOOK[s] for s in SLOTS}
 
 # coins (audit 5.3 B/D: common items 600-1,500 coins)
@@ -33,6 +34,9 @@ _COIN = [
     ("haircolor_ginger", "Ginger", "haircolor", 600), ("haircolor_platinum", "Platinum", "haircolor", 800),
     ("eyes_blue", "Blue eyes", "eyes", 600), ("eyes_green", "Green eyes", "eyes", 600),
     ("eyes_hazel", "Hazel eyes", "eyes", 600), ("eyes_grey", "Grey eyes", "eyes", 600),
+    # wands (admin 5762: coin 900-1200)
+    ("wand_forest", "Vine wand", "wand", 900), ("wand_frost", "Frost wand", "wand", 1000),
+    ("wand_fire", "Ember wand", "wand", 1100), ("wand_sea", "Coral wand", "wand", 1200),
 ]
 # gems. Phase E (admin 4847, Q12) price rebalance from the measured earn rates (see ECONOMY_E below):
 # a regular player (2 stages a day, 6 days a week) earns ~38 gems a week with the weekly events (~28 without), so
@@ -47,8 +51,11 @@ _GEM = [
     ("eyes_aqua", "Aqua eyes", "eyes", 40, "rare"), ("eyes_amber", "Amber eyes", "eyes", 40, "rare"),
     ("eyes_ruby", "Ruby eyes", "eyes", 40, "rare"), ("eyes_pink", "Pink eyes", "eyes", 40, "rare"),
     ("coat_sea", "Sea cloak", "coat", 130, "epic"), ("coat_royal", "Royal ermine cloak", "coat", 150, "epic"),
+    # wands (admin 5762: gem 50-70; royal = Wandering Merchant only)
+    ("wand_stars", "Starry wand", "wand", 50, "rare"), ("wand_sun", "Sun wand", "wand", 60, "rare"),
+    ("wand_shadow", "Shadow wand", "wand", 70, "rare"), ("wand_royal", "Royal wand", "wand", 90, "epic"),
 ]
-MERCHANT_ONLY = {"coat_sea", "coat_royal"}
+MERCHANT_ONLY = {"coat_sea", "coat_royal", "wand_royal"}
 # earned by habit (audit 5.3 D "Earned: habit"); never for sale
 STREAK_REWARDS = {7: "hat_fire", 30: "hat_dragon"}
 LEAGUE_PROMOTION_REWARD = "hat_frost"
