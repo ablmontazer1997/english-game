@@ -58,14 +58,14 @@ export function RuneType({ onFinish, level, srv, onAnswer }: MiniGameProps) {
 
   function check(s: string) {
     if (w._qid) onAnswer?.(w._qid, s, s === w.word)
-    if (s === w.word) { score.hit(); setState('ok'); speak(w.word); document.querySelectorAll('.rt-slot').forEach((el, i) => setTimeout(() => burst(el, { color: ['#8fe56a', '#ffe27a', '#ffffff'], n: 7, dist: 38, size: 7 }), 60 * i)); setTimeout(next, 1300); return }
+    if (s === w.word) { score.hit(); setState('ok'); document.querySelectorAll('.rt-slot').forEach((el, i) => setTimeout(() => burst(el, { color: ['#8fe56a', '#ffe27a', '#ffffff'], n: 7, dist: 38, size: 7 }), 60 * i)); setTimeout(next, 1300); return }
     const wrong = [...s].map((c, i) => (c !== w.word[i] ? i : -1)).filter((i) => i >= 0)
     setBad(wrong); setState('bad')
     if (tries + 1 >= TRIES) {
       score.miss()
-      // Phase C: the word is spelled out (and spoken), then the shared card
+      // Phase C: the word is spelled out, then the shared card (admin 5838: no automatic speech)
       setTimeout(() => {
-        setTyped(w.word); setBad([]); setState('reveal'); speak(w.word)
+        setTyped(w.word); setBad([]); setState('reveal')
         ctl.wrong({ answer: w.word, meaning: w.clue, yours: s, ...explain(w) }, 1800).then(next)
       }, 800)
     } else {

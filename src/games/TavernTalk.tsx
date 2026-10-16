@@ -106,10 +106,11 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
     return () => clearInterval(t)
   }, [talking])
 
-  const say = (text: string, m: Mood = 'idle') => {
+  // admin 5838: the innkeeper's reaction to a reply and the closing line are shown, not read aloud; only his next line is spoken
+  const say = (text: string, m: Mood = 'idle', aloud = true) => {
     setMood(m)
     setLog((l) => [...l, { who: 'npc', text }])
-    speak(text, setTalking)
+    if (aloud) speak(text, setTalking)
   }
   useEffect(() => { const t = setTimeout(() => speak(sc.script[0].line, setTalking), 600); return () => { clearTimeout(t); try { window.speechSynthesis?.cancel() } catch { /* */ } } }, [si]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { chatEnd.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [log])
@@ -137,10 +138,10 @@ export function TavernTalk({ onFinish, srv, onAnswer }: MiniGameProps) {
     setLog((l) => [...l, { who: 'me', text: c.say }])
     setBusy(true); setNote('')
     setTimeout(() => {
-      if (c.reply) say(c.reply, c.mood ?? 'idle')
+      if (c.reply) say(c.reply, c.mood ?? 'idle', false)
       const go = () => {
         if (c.next === 'end') {
-          say(sc.end, 'happy'); setDone(true)
+          say(sc.end, 'happy', false); setDone(true)
         } else if (c.next !== 'stay') {
           setNode(c.next); say(sc.script[c.next].line, sc.script[c.next].mood ?? (c.ok ? 'happy' : 'idle'))
         }

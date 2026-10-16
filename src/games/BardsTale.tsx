@@ -7,7 +7,7 @@ import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { useStageCtl, explain } from './coach'
 import { TALES } from './banks/bard'
-import { fromSrv, hush, levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, hush, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/bard/bt_bg.webp'
 import bardIdle from '../assets/games/bard/bt_bard_idle.webp'
@@ -61,7 +61,7 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     if (t._qid) onAnswer?.(t._qid, order.map((id) => t.lines[id]), ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
-      score.hit(); speak(t.lines.join(' '), { voice: 'm' })
+      score.hit()
       const bard = document.querySelector('.bdt-bard');[0, 600, 1200, 1800].forEach((d) => setTimeout(() => burst(bard, { glyph: '♪', color: ['#ffd35a', '#c9a3ff', '#8fe56a', '#ff9dcf'], up: true, n: 5, dist: 130, size: 14, ms: 1500 }), d))
       setTimeout(() => { hush(); if (round + 1 >= tales.length) onFinish(score.out(tales.length)); else setRound(round + 1) }, 2600)
     } else {

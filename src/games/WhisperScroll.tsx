@@ -90,9 +90,9 @@ export function WhisperScroll({ onFinish, srv, onAnswer }: MiniGameProps) {
       }, OK_MS)
     } else {
       combo.current.now = 0
-      // Phase C: the right words go into the gaps (green), the scroll whispers it slowly, then the shared card
+      // Phase C: the right words go into the gaps (green), then the shared card (admin 5838: no automatic speech)
       setTimeout(() => {
-        setFill(line.gaps.map((g) => words[g])); setState('reveal'); speak(line.text, 0.7, setTalking)
+        setFill(line.gaps.map((g) => words[g])); setState('reveal')
         ctl.wrong({ answer: line.text, label: 'The scroll said', yours: fill.join(' / '), ...explain(srv?.[round]?.payload) }).then(() => {
           if (round + 1 >= lines.length) onFinish({ correct: right.current, total: lines.length, maxCombo: combo.current.max })
           else setRound(round + 1)

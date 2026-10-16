@@ -90,9 +90,9 @@ export function EchoCave({ onFinish, level, srv, onAnswer }: MiniGameProps) {
       score.hit(); setState('ok'); setTimeout(next, 1400)
     } else if (tries + 1 >= TRIES) {
       if (line._qid) onAnswer?.(line._qid, said[0] ?? '', false)
-      // Phase C: the shared card with the sentence; it is spoken once more, slowly
+      // Phase C: the shared card with the sentence (admin 5838: no automatic speech after the answer)
       score.miss(); setState('bad'); setNote('')
-      setTimeout(() => { speak(line.text, { rate: 0.8, onState: setTalking }); ctl.wrong({ answer: line.text, label: 'Say it like this', yours: said[0] }, 2000).then(next) }, 600)
+      setTimeout(() => { ctl.wrong({ answer: line.text, label: 'Say it like this', yours: said[0] }, 2000).then(next) }, 600)
     } else {
       setTries(tries + 1); setState('bad')
       setNote(said.length ? `I heard: "${said[0]}". Listen and try again.` : 'I could not hear you. Try again.')

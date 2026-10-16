@@ -7,7 +7,7 @@ import { sfx as fxSfx } from '../services/audio'
 import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { SPELLS } from './banks/weave'
-import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/weave/sw_bg.webp'
 import './scene.css'
@@ -63,7 +63,7 @@ export function SpellWeaver({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     if (s._qid) onAnswer?.(s._qid, woven.map(text), ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
-      score.hit(); sfx('spell'); speak(s.answer.join(' '))
+      score.hit(); sfx('spell')
       document.querySelectorAll('.swv .swv-tile.in').forEach((t, i) => setTimeout(() => burst(t, { color: ['#ffe27a', '#ffffff', '#c9a3ff'], n: 9, dist: 45, size: 8 }), 120 * i))
       setTimeout(() => { if (round + 1 >= spells.length) onFinish(score.out(spells.length)); else setRound(round + 1) }, 2000)
     } else {

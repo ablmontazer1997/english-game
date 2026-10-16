@@ -67,7 +67,7 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
       const bt = ref.current, host = bt?.offsetParent as HTMLElement | null
       if (!bt || !host) return
       const H = host.getBoundingClientRect()
-      bt.classList.remove('flat', 'sm'); bt.style.removeProperty('--bt-s')
+      bt.classList.remove('flat', 'sm', 'cmp'); bt.style.removeProperty('--bt-s')
       const vert = { w: bt.offsetWidth, h: bt.offsetHeight + 12 }
       bt.classList.add('flat'); const flat = { w: bt.offsetWidth + 6, h: bt.offsetHeight + 12 }
       bt.classList.remove('flat')
@@ -107,11 +107,22 @@ function useTrayPlacement(ref: React.RefObject<HTMLDivElement | null>) {
       // coordinator 10-12: the upright capsule on the right edge is preferred in every game; when the full size does not
       // fit a gap, a slightly smaller upright capsule is tried before the tray lies flat, but never below 44px tap targets
       const btn = bt.querySelector<HTMLElement>('.bt-btn')?.offsetWidth || 48
-      for (const k of [1, .96, .92].filter((x) => btn * x >= 44)) {
-        const t = fit(gaps(vert.w * k), (vert.h - 12) * k + 12)
-        if (t == null) continue
-        if (k < 1) { bt.classList.add('sm'); bt.style.setProperty('--bt-s', String(k)) }
-        bt.style.top = `${Math.round(t)}px`; return
+      const upright = (v: { w: number; h: number }) => {
+        for (const k of [1, .96, .92].filter((x) => btn * x >= 44)) {
+          const t = fit(gaps(v.w * k), (v.h - 12) * k + 12)
+          if (t == null) continue
+          if (k < 1) { bt.classList.add('sm'); bt.style.setProperty('--bt-s', String(k)) }
+          bt.style.top = `${Math.round(t)}px`; return true
+        }
+        return false
+      }
+      if (upright(vert)) return
+      // admin 5838: in Bard's Tale, before lying flat, try the upright capsule with the buttons closer together (.cmp);
+      // the other games keep their current placement
+      if (host.querySelector('.bdt')) {
+        bt.classList.add('cmp')
+        if (upright({ w: bt.offsetWidth, h: bt.offsetHeight + 12 })) return
+        bt.classList.remove('cmp')
       }
       let t: number | null
       t = fit(gaps(flat.w), flat.h)

@@ -5,7 +5,7 @@ import { GameTitle } from '../components/GameTitle'
 import { useHint } from './boosters'
 import { useStageCtl, explain } from './coach'
 import { POTIONS } from './banks/potion'
-import { fromSrv, levelOf, makeScore, pick, shuffle, speak } from './kit'
+import { fromSrv, levelOf, makeScore, pick, shuffle } from './kit'
 import { sfx } from '../services/audio'
 import bgPlate from '../assets/games/potion/pm_bg.webp'
 import b1 from '../assets/es2/k/p22/bottle_violet.webp'
@@ -129,7 +129,7 @@ export function PotionMix({ onFinish, level, srv, onAnswer }: MiniGameProps) {
     if (r._qid) onAnswer?.(r._qid, ok ? r.answer : poured.map(text).join(''), ok)
     setState(ok ? 'ok' : 'bad')
     if (ok) {
-      score.hit(); sfx('brew'); speak(r.answer)
+      score.hit(); sfx('brew')
       setTimeout(() => { if (round + 1 >= recipes.length) onFinish(score.out(recipes.length)); else setRound(round + 1) }, 1900)
     } else {
       score.miss(); sfx('whoosh', 0.5)
