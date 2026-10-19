@@ -1250,14 +1250,18 @@ function buildEditor(E){
       //  hand target moves outward and a little up: RCWOPEN, read by the arm IK in RCFX). It rises quickly while a contact
       //  is found, holds through the cast and relaxes only after the release, so a wand that never touches looks exactly as before.
       const HV={set:null,c:1,o:v(),fa:v(),fr:0};const KEY=(x,y,z)=>x+y*2048+z*4194304;
-      const buildHV=()=>{if(!bHd)return;root.updateMatrixWorld(true);const pts=[],skin=[],p=v(),bp=v(),bq=v(),bm=new THREE.Matrix4();
+      const HVIDX=new WeakMap();const buildHV=()=>{if(!bHd)return;root.updateMatrixWorld(true);const pts=[],skin=[],p=v(),bp=v(),bq=v(),bm=new THREE.Matrix4(),HINV=(bHd.updateWorldMatrix(true,false),new THREE.Matrix4().copy(bHd.matrixWorld).invert());   // worldToLocal inverted the head matrix per vertex
         let sig='';root.traverse(o=>{if(!o.isSkinnedMesh||!o.visible)return;const sk=o.skeleton,hi=sk.bones.indexOf(bHd);if(hi<0)return;sk.update();
           const g=o.geometry,SI=g.attributes.skinIndex,SW=g.attributes.skinWeight,P=g.attributes.position;if(!SI||!SW)return;sig+=o.name+P.count+'|';const isBody=/^tripo/.test(o.name);
           const gi=[SI.getX,SI.getY,SI.getZ,SI.getW],gw=[SW.getX,SW.getY,SW.getZ,SW.getW];
-          for(let i=0;i<P.count;i++){let w=0,t=0;for(let k=0;k<4;k++){const ww=gw[k].call(SW,i);t+=ww;if(gi[k].call(SI,i)===hi)w+=ww;}if(!t||w/t<.5)continue;
+          /*HVCACHE1019*/let HL=HVIDX.get(g);if(!HL||HL.hi!==hi||HL.SI!==SI||HL.SW!==SW||HL.n!==P.count||HL.vs!==SI.version+'/'+SW.version){const a=[];
+            for(let i=0;i<P.count;i++){let w=0,t=0;for(let k=0;k<4;k++){const ww=gw[k].call(SW,i);t+=ww;if(gi[k].call(SI,i)===hi)w+=ww;}if(!t||w/t<.5)continue;a.push(i);}
+            HL={hi,SI,SW,n:P.count,vs:SI.version+'/'+SW.version,idx:Int32Array.from(a)};HVIDX.set(g,HL);}
+          const BM=[];const bmOf=j=>BM[j]||(BM[j]=new THREE.Matrix4().multiplyMatrices(sk.bones[j].matrixWorld,sk.boneInverses[j]));   // once per bone per pass (was once per vertex x influence)
+          for(let ii=0;ii<HL.idx.length;ii++){const i=HL.idx[ii];let t=0;for(let k=0;k<4;k++)t+=gw[k].call(SW,i);
             bp.fromBufferAttribute(P,i).applyMatrix4(o.bindMatrix);p.set(0,0,0);
-            for(let k=0;k<4;k++){const ww=gw[k].call(SW,i)/t;if(!ww)continue;const j=gi[k].call(SI,i);bm.multiplyMatrices(sk.bones[j].matrixWorld,sk.boneInverses[j]);p.addScaledVector(bq.copy(bp).applyMatrix4(bm),ww);}
-            p.applyMatrix4(o.bindMatrixInverse).applyMatrix4(o.matrixWorld);const l=bHd.worldToLocal(p.clone());pts.push(l);if(isBody)skin.push(l);}});
+            for(let k=0;k<4;k++){const ww=gw[k].call(SW,i)/t;if(!ww)continue;const j=gi[k].call(SI,i);p.addScaledVector(bq.copy(bp).applyMatrix4(bmOf(j)),ww);}
+            p.applyMatrix4(o.bindMatrixInverse).applyMatrix4(o.matrixWorld);const l=p.clone().applyMatrix4(HINV);pts.push(l);if(isBody)skin.push(l);}});
         if(pts.length<50)return;HV.sig=sig;
         const e=bHd.matrixWorld.elements,hs=Math.hypot(e[0],e[1],e[2])||1,c=.006*H/hs;
         const o=v(1e9,1e9,1e9);for(const a of pts)o.min(a);o.subScalar(3*c);const set=new Set();
@@ -1296,9 +1300,9 @@ function buildEditor(E){
         if(c)openT=Math.min(1,openT+.15);else if(now<relaxT)openT=Math.max(0,openT-dt/.6);   // latch; relax only just after a cast
         open+=(openT-open)*(1-Math.exp(-dt/.06));window.RCWOPEN=open;};
       window.RCWRESET=()=>{openT=0;};
-      const WD=v(),WP=v(),HQ=q(),GRIP=.05*H;let aimW=null,aimK=0;
+      const WD=v(),WP=v(),HQ=q(),GRIP=.05*H,MWS=+(new URLSearchParams(location.search).get('mws')??.03);let aimW=null,aimK=0;
       const placeWand=()=>{if(gripOn){bH.updateWorldMatrix(true,false);holder.position.copy(GRIPC).applyMatrix4(bH.matrixWorld);WD.copy(GRIPD).transformDirection(bH.matrixWorld);
-          holder.quaternion.setFromUnitVectors(UP,WD);holder.updateMatrixWorld(true);return;}
+          if(MAPW)holder.position.addScaledVector(WD,-MWS*H);holder.quaternion.setFromUnitVectors(UP,WD);holder.updateMatrixWorld(true);return;}
         bH.getWorldQuaternion(HQ);bH.getWorldPosition(WP);WD.copy(LD).applyQuaternion(HQ).normalize();
         if(aimW&&aimK>0)WD.lerp(aimW,aimK).normalize();
         if(PALM)holder.position.copy(PALM).applyMatrix4(bH.matrixWorld);   // matrixWorld is fresh: getWorldPosition above updated it   // grip = the palm itself, out in front of the cuff
