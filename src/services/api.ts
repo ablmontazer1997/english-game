@@ -9,6 +9,11 @@ import type { Currencies, League, Quest, ServerQuestion, ServerAnswer } from '..
 export const API_BASE: string = (import.meta as any).env?.VITE_API_BASE || '/runecast-api'
 const LS_TOKEN = 'es.api.token'
 const LS_DEVICE = 'es.api.device'
+// admin 6018: username accounts. LS_ACCT = the signed-in username (absent = the device guest); LS_GUEST = the guest's
+// token kept aside while an account is signed in; LS_CHOSEN = this install already passed the sign-in screen
+const LS_ACCT = 'es.api.acct'
+const LS_GUEST = 'es.api.guest_token'
+const LS_CHOSEN = 'es.auth.chosen'
 
 export class ApiError extends Error {
   status: number
@@ -209,6 +214,7 @@ const redeeming: Promise<void> | null = (() => {
       const out = await raw<{ token: string; device_id: string | null }>('POST', '/v1/auth/redeem', { code }, null, 1)
       ls.set(LS_TOKEN, out.token)
       if (out.device_id) ls.set(LS_DEVICE, out.device_id)
+      ls.del(LS_ACCT); ls.del(LS_GUEST); ls.set(LS_CHOSEN, '1')
     } catch (e) {
       if (e instanceof ApiError && !e.offline) try { alert(e.message) } catch { /* no dialogs */ }
     }
@@ -216,6 +222,44 @@ const redeeming: Promise<void> | null = (() => {
     await new Promise<void>(() => { /* the page reloads */ })
   })()
 })()
+
+// ------------------------------------------------------------------ username accounts (admin 6018)
+/** the browser keys that belong to one player (look, portrait, per-day prompts); cleared when the player changes,
+ *  then the new player's look loads from the server (device settings rc.set.* stay) */
+const PLAYER_KEYS = ['girl', 'skinTone2', 'blush', 'hairPick', 'hairColor', 'irisColor', 'hatOn', 'hatPick', 'outfit', 'rcVariant',
+  'rcTintFx', 'tint', 'wand', 'rc.portrait', 'runecast.avatar', 'es.map.seen.v2', 'rc.tut', 'rc.repairSeen', 'es.ach.claimed', 'es.review.day']
+function forgetPlayer() { try { PLAYER_KEYS.forEach((k) => localStorage.removeItem(k)) } catch { /* private mode */ } }
+
+/** the signed-in username, or null for the device guest */
+export const signedInAs = (): string | null => ls.get(LS_ACCT)
+
+/** first launch only: nothing on this install yet (no token, no guest device, no earlier choice, no sign-in link) */
+export function needsAuthChoice(): boolean {
+  if (typeof location === 'undefined') return false
+  const q = new URLSearchParams(location.search)
+  if (['login', 'mock', 'game', 'bosslab', 'screen', 'letter'].some((k) => q.has(k))) return false
+  return !ls.get(LS_TOKEN) && !ls.get(LS_DEVICE) && !ls.get(LS_CHOSEN)
+}
+
+/** POST /v1/auth/login; on success this install plays as that account (the guest token is kept aside) */
+export async function accountLogin(username: string, password: string): Promise<void> {
+  const name = username.trim().toLowerCase()
+  const out = await raw<{ token: string; user: Me }>('POST', '/v1/auth/login', { username: name, password }, null, 1)
+  const cur = ls.get(LS_TOKEN)
+  if (cur && !ls.get(LS_ACCT)) ls.set(LS_GUEST, cur)
+  if (ls.get(LS_ACCT) !== name || !cur) forgetPlayer()
+  ls.set(LS_TOKEN, out.token); ls.set(LS_ACCT, name); ls.set(LS_CHOSEN, '1')
+}
+
+/** back to this install's guest (the same one: its kept token, else the device id resumes it) */
+export function playAsGuest(): void {
+  ls.set(LS_CHOSEN, '1')
+  if (!ls.get(LS_ACCT)) return
+  const g = ls.get(LS_GUEST)
+  ls.del(LS_ACCT); ls.del(LS_GUEST)
+  if (g) ls.set(LS_TOKEN, g); else ls.del(LS_TOKEN)
+  forgetPlayer()
+}
 
 /** an authorised call; a 401 renews the guest token once and repeats the call */
 /** mock previews only (?mock=1): the screenshot rig can inject live JSON as window.__esFx = { 'GET /v1/season': {...} } */
@@ -234,6 +278,7 @@ async function call<T>(method: string, path: string, body?: unknown, opts: { ret
     return await raw<T>(method, path, body, token, tries)
   } catch (e) {
     if (e instanceof ApiError && e.status === 401) {
+      if (ls.get(LS_ACCT)) { ls.del(LS_ACCT); ls.del(LS_GUEST); forgetPlayer() }
       ls.del(LS_TOKEN); token = await guestLogin()
       return raw<T>(method, path, body, token, tries)
     }
@@ -316,6 +361,8 @@ export function errorText(e: unknown): string {
       case 'nothing_to_repair': return 'There is nothing to repair'
       case 'session_expired': return 'This round took too long. Start the stage again.'
       case 'bad_name': return 'Use 2 to 20 letters or numbers'
+      case 'bad_login': return 'Wrong username or password. Check both and try again.'
+      case 'too_many_attempts': return 'Too many tries. Wait 15 minutes, then try again.'
       case 'payments_disabled': return 'Coming soon'
       case 'premium_locked': return 'The premium track is coming soon'
       case 'tier_locked': return 'Earn more season XP to reach this tier'

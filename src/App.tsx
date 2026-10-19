@@ -31,7 +31,8 @@ import { NameSheet } from './components/NameSheet'
 import { Onboarding, firstStageOf, useIntroNeeded } from './screens/Onboarding'
 import { MapTour } from './screens/MapTour'
 import { SeasonPassScreen } from './screens/SeasonPassScreen'
-import { mockFx } from './services/api'
+import { mockFx, signedInAs } from './services/api'
+import { LoginScreen } from './screens/LoginScreen'
 import { ReminderSheet } from './components/ReminderSheet'
 import { isOn as remindersOn, pushSupported, shouldOffer, turnOff as remindersOff, turnOn as remindersTurnOn } from './services/push'
 import { setMusic as playMusic } from './services/audio'
@@ -49,6 +50,8 @@ export function App() {
   const [achOpen, setAchOpen] = useState(false)
   const [cauldron, setCauldron] = useState(false)
   const [hearth, setHearth] = useState(false)
+  // admin 6018: Settings > Account opens the sign-in screen (log in / switch account / back to the guest)
+  const [signIn, setSignIn] = useState(false)
   // first run (10-11): the intro, then the guided first stage of the chosen level, then the map tour
   const intro = useIntroNeeded()
   const [guideLevel, setGuideLevel] = useState<string | null>(null)
@@ -100,12 +103,13 @@ export function App() {
 
   // Android app (admin 5935): the hardware back button asks window.__esBack() first; true = handled here,
   // false = the app may exit. Closes the top sheet/screen, a running stage keeps back (no accidental quit).
-  const backState = { shop, settings, hearth, naming, remind, customizing, achOpen, seasonOpen, cauldron, playing, tab }
+  const backState = { signIn, shop, settings, hearth, naming, remind, customizing, achOpen, seasonOpen, cauldron, playing, tab }
   const backRef = useRef(backState); backRef.current = backState
   useEffect(() => {
     const w = window as unknown as { __esBack?: () => boolean }
     w.__esBack = () => {
       const b = backRef.current
+      if (b.signIn) { setSignIn(false); return true }
       if (b.shop) { setShop(null); return true }
       if (b.settings) { setSettings(false); return true }
       if (b.hearth) { setHearth(false); return true }
@@ -156,7 +160,9 @@ export function App() {
     <div className="app-frame">
       <div className="sky" />
 
-      {!ready ? (
+      {signIn ? (
+        <LoginScreen onDone={() => location.reload()} onCancel={() => setSignIn(false)} />
+      ) : !ready ? (
         error ? <Offline message={error} onRetry={refresh} /> : <Loader />
       ) : customizing ? (
         <WardrobeScreen onClose={() => { setCustomizing(false); setPortraitV((v) => v + 1) }} />
@@ -201,7 +207,7 @@ export function App() {
       {ready && portraitV > 0 && !customizing && !playing && <PortraitCapture version={portraitV} />}
 
       <Sheet open={settings} title="Settings" variant="light" onClose={() => setSettings(false)}>
-        <SettingsBody server={mode === 'http'} onRename={() => { setSettings(false); setNaming(true) }} />
+        <SettingsBody server={mode === 'http'} onRename={() => { setSettings(false); setNaming(true) }} onAccount={() => { setSettings(false); setSignIn(true) }} />
       </Sheet>
       {mode === 'http' && <NameSheet open={naming} onClose={() => setNaming(false)} />}
       {mode === 'http' && <ReminderSheet open={remind} onClose={() => setRemind(false)} />}
@@ -240,7 +246,7 @@ export function Offline({ message, onRetry }: { message: string; onRetry: () => 
   )
 }
 
-function SettingsBody({ server, onRename }: { server: boolean; onRename: () => void }) {
+function SettingsBody({ server, onRename, onAccount }: { server: boolean; onRename: () => void; onAccount: () => void }) {
   const { account, profile, patchMe } = useGame()
   // Phase C (audit §2 Settings): daily goal, Focus mode and the game tutorials live here too
   const [focusOn, setFocusOn] = useFocusPref(account?.flags, server ? (on) => { patchMe({ flags: { focus: on ? 'on' : 'off' } }).catch(() => {}) } : null)
@@ -255,8 +261,15 @@ function SettingsBody({ server, onRename }: { server: boolean; onRename: () => v
   // mock previews only (?mock=1): wipe the local test save. Live players never see it (audit 10-11 P0).
   const reset = () => { try { ['runecast.save.v1', 'es.map.seen.v2', 'es.ach.claimed', 'es.review.day'].forEach((k) => localStorage.removeItem(k)) } catch {} location.reload() }
   const name = account?.display_name ?? profile?.name ?? ''
+  const acct = signedInAs()
   return (
     <div>
+      {server && (
+        <div className="set-name">
+          <span><small>Account</small><b>{acct ? `Signed in as ${acct}` : 'Playing as a guest'}</b></span>
+          <button className="cb cb-white set-name-btn" onClick={onAccount}>{acct ? 'Switch' : 'Log in'}</button>
+        </div>
+      )}
       {server && (
         <div className="set-name">
           <span><small>Your name</small><b>{name === 'Apprentice' ? 'Not chosen yet' : name}</b></span>

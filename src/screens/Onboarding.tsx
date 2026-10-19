@@ -53,7 +53,7 @@ const GOALS = [
 const ART_W = 853, CAP = 210, STRIP = 240, TEXT_TOP = 0.5
 
 /** a parchment that grows by whole paper strips with its content (the Spellbook letter's paper) */
-function Parchment({ children, tag, deco }: { children: ReactNode; tag?: string; deco?: boolean }) {
+export function Parchment({ children, tag, deco }: { children: ReactNode; tag?: string; deco?: boolean }) {
   const box = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
   const [fit, setFit] = useState({ strips: 1, top: 40 })

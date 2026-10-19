@@ -1,0 +1,21 @@
+/* Sign-in screen (LoginScreen.tsx, prefix lg-): the intro's parchment + stage art, the quill fields of the name step */
+.lg-hero { width: auto; height: clamp(92px, 16vh, 150px); flex: none; margin: 0 0 -22px; position: relative; z-index: 3;
+  filter: drop-shadow(0 8px 10px rgba(80, 50, 140, .25)); pointer-events: none; user-select: none; }
+.lg-card { margin-top: 0; }
+/* the apprentice stands where the letter seal sits on the intro */
+.lg-screen .sl-seal { display: none; }
+.lg-sub b { font-weight: 900; color: #6a3ad0; }
+.lg-form { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 2px; }
+.lg-field { box-sizing: border-box; min-width: 0; height: 52px; padding: 0 6px 0 12px; }
+.lg-field input { width: 100%; }
+.lg-field input { font-size: 18px; letter-spacing: .01em; }
+.lg-field input[type='password'] { letter-spacing: .12em; }
+.lg-field input[type='password']::placeholder { letter-spacing: .01em; }
+.lg-ic { flex: none; width: 22px; height: 22px; display: grid; place-items: center; }
+.lg-ic svg, .lg-eye svg { width: 100%; height: 100%; fill: none; stroke: #8a5a2c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lg-eye { flex: none; width: 44px; height: 44px; padding: 10px; margin: 0; border: 0; border-radius: 12px; background: none; cursor: pointer; }
+.lg-eye:active { background: rgba(231, 196, 122, .3); }
+.lg-eye[aria-pressed='true'] svg { stroke: #6a3ad0; }
+.lg-field.bad { border-color: #d0485a; background: #fff1ef; }
+.lg-err { margin: -2px 0 0; min-height: 18px; color: #c3283c; font-weight: 800; font-size: 14px; line-height: 1.25; text-align: center; }
+@media (max-height: 700px) { .lg-hero { height: 84px; margin-bottom: -18px; } .lg-field { height: 48px; } }

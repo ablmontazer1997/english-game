@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './theme/global.css'
 import { GameProvider } from './services/ServiceProvider'
 import { App } from './App'
+import { AuthGate } from './screens/LoginScreen'
 import { initAudio } from './services/audio'
 import { SpellLetter } from './components/SpellLetter'
 import stageBg from './assets/stage_bg.webp'
@@ -36,9 +37,11 @@ createRoot(document.getElementById('root')!).render(
         <div className="sl-lobby"><SpellLetter topicId={letterId} level={new URLSearchParams(location.search).get('lv') ?? 'A1'} /></div>
       </div>
     ) : (
-      <GameProvider>
-        <App />
-      </GameProvider>
+      <AuthGate>
+        <GameProvider>
+          <App />
+        </GameProvider>
+      </AuthGate>
     )}
   </StrictMode>,
 )
