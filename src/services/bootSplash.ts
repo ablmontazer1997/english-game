@@ -37,8 +37,8 @@ export function holdBootSplash() {
   const hide = () => {
     if (gone) return; gone = true
     tellNative()
-    sp.style.transition = 'opacity .2s ease-out'; sp.style.opacity = '0'
-    setTimeout(() => sp.remove(), 260)
+    // one clean cut: a CSS fade froze half-way for seconds on a busy phone (emulator, slow network) and left the map ghosted
+    sp.remove()
   }
   setTimeout(hide, FIRST_MS)
   const poll = () => {
