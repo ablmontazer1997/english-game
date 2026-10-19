@@ -1,6 +1,6 @@
 import icSound from './assets/ui/v2/ic_sound.webp'
 import icMusic from './assets/ui/v2/ic_music.webp'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useGame } from './services/ServiceProvider'
 import { HUD } from './components/HUD'
 import { BottomNav, type Tab } from './components/BottomNav'
@@ -97,6 +97,30 @@ export function App() {
   const [portraitV, setPortraitV] = useState(() => (portraitStale() ? 1 : 0))
   // Phase B: a look loaded from the account or changed by Wear (shop, My Items, a boss treasure) retakes the portrait
   useEffect(() => { const on = () => setPortraitV((v) => v + 1); addEventListener('rc-look', on); return () => removeEventListener('rc-look', on) }, [])
+
+  // Android app (admin 5935): the hardware back button asks window.__esBack() first; true = handled here,
+  // false = the app may exit. Closes the top sheet/screen, a running stage keeps back (no accidental quit).
+  const backState = { shop, settings, hearth, naming, remind, customizing, achOpen, seasonOpen, cauldron, playing, tab }
+  const backRef = useRef(backState); backRef.current = backState
+  useEffect(() => {
+    const w = window as unknown as { __esBack?: () => boolean }
+    w.__esBack = () => {
+      const b = backRef.current
+      if (b.shop) { setShop(null); return true }
+      if (b.settings) { setSettings(false); return true }
+      if (b.hearth) { setHearth(false); return true }
+      if (b.naming) { setNaming(false); return true }
+      if (b.remind) { setRemind(false); return true }
+      if (b.playing) return true
+      if (b.customizing) { setCustomizing(false); setPortraitV((v) => v + 1); return true }
+      if (b.achOpen) { setAchOpen(false); return true }
+      if (b.seasonOpen) { setSeasonOpen(false); return true }
+      if (b.cauldron) { setCauldron(false); return true }
+      if (b.tab !== 'map') { setTab('map'); return true }
+      return false
+    }
+    return () => { delete w.__esBack }
+  }, [])
 
   const questBadge = ready && quests.some((q) => q.progress >= q.target && !q.done)
   const achBadge = ready && achievements.some((a) => a.progress >= a.target && !a.claimed)

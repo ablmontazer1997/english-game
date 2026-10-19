@@ -196,6 +196,27 @@ async function raw<T>(method: string, path: string, body: unknown, token: string
   throw last
 }
 
+// admin 5935: ?login=<single-use code> (the Android app sign-in link) signs this install into that account
+// (token + its device id, so a later renewal resumes it), then reloads without the code
+const redeeming: Promise<void> | null = (() => {
+  if (typeof location === 'undefined') return null
+  const q = new URLSearchParams(location.search); const code = q.get('login')
+  if (!code) return null
+  q.delete('login')
+  const clean = location.pathname + (q.toString() ? '?' + q : '') + location.hash
+  return (async () => {
+    try {
+      const out = await raw<{ token: string; device_id: string | null }>('POST', '/v1/auth/redeem', { code }, null, 1)
+      ls.set(LS_TOKEN, out.token)
+      if (out.device_id) ls.set(LS_DEVICE, out.device_id)
+    } catch (e) {
+      if (e instanceof ApiError && !e.offline) try { alert(e.message) } catch { /* no dialogs */ }
+    }
+    location.replace(clean)
+    await new Promise<void>(() => { /* the page reloads */ })
+  })()
+})()
+
 /** an authorised call; a 401 renews the guest token once and repeats the call */
 /** mock previews only (?mock=1): the screenshot rig can inject live JSON as window.__esFx = { 'GET /v1/season': {...} } */
 export function mockFx<T>(key: string): T | undefined {
@@ -207,6 +228,7 @@ async function call<T>(method: string, path: string, body?: unknown, opts: { ret
   const fx = mockFx<T>(`${method} ${path}`)
   if (fx !== undefined) return structuredClone(fx)
   const tries = (opts.retry ?? method === 'GET') ? 3 : 1
+  if (redeeming) await redeeming
   let token = ls.get(LS_TOKEN) || await guestLogin()
   try {
     return await raw<T>(method, path, body, token, tries)

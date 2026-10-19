@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>English Spell sign-in</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#2a1f4a;color:#f6eedd;font:16px/1.5 system-ui,sans-serif;text-align:center}
+  main{max-width:340px;padding:24px}
+  h1{font-size:22px;margin:0 0 8px}
+  a.btn{display:block;margin:18px 0 10px;padding:14px 18px;border-radius:14px;background:#f2c14e;color:#2a1f4a;font-weight:700;text-decoration:none}
+  a.alt{color:#cdbff5;font-size:14px}
+  p{opacity:.85;font-size:14px}
+</style>
+</head>
+<body>
+<main>
+  <h1>English Spell</h1>
+  <p>Sign in on this phone with your one-time link.</p>
+  <a class="btn" id="open" href="#">Open in the English Spell app</a>
+  <a class="alt" id="web" href="#">or continue in the browser</a>
+  <p id="msg"></p>
+</main>
+<script>
+  var code = new URLSearchParams(location.search).get('code') || '';
+  var ok = /^[A-Za-z0-9_-]{16,128}$/.test(code);
+  var app = 'intent://login?code=' + encodeURIComponent(code) + '#Intent;scheme=englishspell;package=app.englishspell.game;end';
+  if (!/Android/i.test(navigator.userAgent)) app = 'englishspell://login?code=' + encodeURIComponent(code);
+  document.getElementById('open').href = ok ? app : '#';
+  document.getElementById('web').href = ok ? './?login=' + encodeURIComponent(code) : './';
+  if (!ok) document.getElementById('msg').textContent = 'This link has no sign-in code.';
+</script>
+</body>
+</html>

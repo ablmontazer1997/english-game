@@ -1,0 +1,15 @@
+{
+  "appId": "app.englishspell.game",
+  "appName": "English Spell",
+  "webDir": "android-web",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost",
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false,
+    "adjustMarginsForEdgeToEdge": "force"
+  }
+}

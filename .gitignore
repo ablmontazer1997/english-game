@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Android: generated web bundle (tools/build_android.sh)
+android-web/
