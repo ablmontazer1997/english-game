@@ -152,7 +152,7 @@ const PW = 941, PH = 1672
 const BAND = [560, 1082] // plate rows that must stay visible between the HUD and the question panel
 const FIGHT_CX = 490
 // fighters: foot point on the floor + figure height; sprite canvases: figure top/bottom and foot centre as fractions
-const HERO_AT0 = { x: 300, y: 1045, h: 365 }   // default feet; a world's own arena gives its own feet line (Boss.feet)
+const HERO_AT0 = { x: 252, y: 1045, h: 365 }   // admin 5919: hero ~48 plate px (~6% of the screen) further left (was x 300); default feet; a world's own arena gives its own feet line (Boss.feet)
 const BOSS_AT0 = { x: 695, y: 1025, h: 390 }   // admin 4477: boss feet on the hero ground line (was y 1005)
 const HERO_IMG = { w: 420, h: 640, top: 0.023, bot: 0.984, foot: 0.56, hand: [0.93, 0.52], cheerHand: [0.88, 0.43] }
 type BossImg = { w: number; h: number; top: number; bot: number; foot: number; fist: number[]; chest: number[] }
