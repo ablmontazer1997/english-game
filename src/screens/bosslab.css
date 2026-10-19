@@ -1,16 +1,19 @@
-/* Boss Lab (admin 5915): two thin control rows above the real stage; the stage keeps its own full layout below them */
-.bosslab { --bl-h: 84px; }
-.bosslab .bl-bar { position: absolute; left: 0; right: 0; top: 0; height: 42px; z-index: 100; display: flex; align-items: center; gap: 6px;
-  padding: 0 8px; background: #17122e; color: #f3eaff; font: 600 13px/1 var(--sans, system-ui, sans-serif); box-sizing: border-box; }
-.bosslab .bl-bar2 { top: 42px; border-bottom: 1px solid rgba(255,255,255,.12); }
-.bosslab .bl-btn { flex: none; width: 34px; height: 30px; border: 0; border-radius: 8px; background: #3b2f6b; color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+/* Boss Lab (admin 5915/5919): the real stage fills the screen; the lab controls are one small chip at the top centre
+   (between the stage's hearts and its X) that opens a panel. Nothing here changes the game's own layout. */
+.bosslab .bl-stage { position: absolute; inset: 0; overflow: hidden; }
+.bosslab .bl-chip { position: absolute; top: calc(14px + var(--safe-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 2px;
+  padding: 2px; border-radius: 999px; background: rgba(23, 18, 46, .82); box-shadow: 0 2px 8px rgba(0, 0, 0, .3); font: 700 13px/1 var(--sans, system-ui, sans-serif); color: #f3eaff; }
+.bosslab .bl-btn { flex: none; min-width: 30px; height: 30px; border: 0; border-radius: 999px; background: #3b2f6b; color: #fff; font: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 8px; }
 .bosslab .bl-btn:active { background: #5a4aa0; }
-.bosslab .bl-go { background: #a8781c; }
-.bosslab .bl-sel { flex: 1 1 auto; min-width: 0; height: 30px; border: 0; border-radius: 8px; padding: 0 6px; background: #2a2150; color: #fff; font: inherit; }
-.bosslab .bl-lv { flex: 0 0 58px; }
-.bosslab .bl-st { flex: none; padding: 5px 7px; border-radius: 8px; background: #2a2150; font-size: 12px; white-space: nowrap; }
+.bosslab .bl-name { height: 30px; min-width: 64px; border: 0; border-radius: 999px; background: transparent; color: #fff; font: inherit; cursor: pointer; padding: 0 8px; }
+.bosslab .bl-name.bad { color: #ff9aa6; }
+.bosslab .bl-panel { position: absolute; top: calc(52px + var(--safe-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 100; width: min(320px, calc(100% - 24px));
+  display: grid; gap: 8px; padding: 10px; border-radius: 14px; background: rgba(23, 18, 46, .94); box-shadow: 0 8px 22px rgba(0, 0, 0, .4); box-sizing: border-box;
+  font: 600 13px/1 var(--sans, system-ui, sans-serif); color: #f3eaff; }
+.bosslab .bl-row { display: flex; gap: 6px; align-items: center; }
+.bosslab .bl-sel { flex: 1 1 auto; min-width: 0; height: 32px; border: 0; border-radius: 8px; padding: 0 6px; background: #2a2150; color: #fff; font: inherit; }
+.bosslab .bl-lv { flex: 0 0 62px; }
+.bosslab .bl-go { margin-left: auto; font-size: 14px; background: #a8781c; }
+.bosslab .bl-st { flex: none; padding: 7px 8px; border-radius: 8px; background: #2a2150; font-size: 12px; white-space: nowrap; }
 .bosslab .bl-st.ok { color: #9ff0a8; }
 .bosslab .bl-st.bad { color: #fff; background: #b3263a; cursor: pointer; }
-.bosslab .bl-stage { position: absolute; left: 0; right: 0; bottom: 0; top: var(--bl-h); overflow: hidden; }
-/* the stage's own safe-area top is already below the bar */
-.bosslab .bl-stage { --safe-top: 0px; }

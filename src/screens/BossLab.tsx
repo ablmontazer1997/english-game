@@ -83,32 +83,44 @@ export function BossLab() {
     title: BOSSES[w], paint: w, cefr: lv } as Stage
   const restart = () => setRun((n) => n + 1)
 
+  // admin 5919: the stage keeps the FULL screen (a toolbar above it shrank the arena on short phones); the lab controls are a
+  // small chip at the top centre (between the hearts and the X) that opens a panel
+  const [open, setOpen] = useState(false)
   return (
     <div className="app-frame bosslab">
-      <div className="bl-bar" data-focus-keep="">
-        <button className="bl-btn" onClick={() => setW((x) => clampW(x - 1))} aria-label="Previous boss">‹</button>
-        <select className="bl-sel bl-boss" value={w} onChange={(e) => setW(+e.target.value)} aria-label="Boss">
-          {BOSSES.map((n, i) => <option key={n} value={i}>{`W${i + 1} ${n}`}</option>)}
-        </select>
-        <button className="bl-btn" onClick={() => setW((x) => clampW(x + 1))} aria-label="Next boss">›</button>
-        <button className="bl-btn bl-go" onClick={restart} aria-label="Restart battle">↻</button>
-      </div>
-      <div className="bl-bar bl-bar2" data-focus-keep="">
-        <select className="bl-sel" value={wand} onChange={(e) => setWand(e.target.value)} aria-label="Wand">
-          {WANDS.map((id) => <option key={id} value={id}>{id.replace('wand_', 'Wand: ')}</option>)}
-        </select>
-        <select className="bl-sel bl-lv" value={lv} onChange={(e) => setLv(e.target.value)} aria-label="Question level">
-          {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
-        </select>
-        <span className={`bl-st${ready != null ? ' ok' : ''}`} title="3D hero">{ready != null ? `3D ✓ ${ready.toFixed(1)}s` : '3D …'}</span>
-        <span className={`bl-st${errs.length ? ' bad' : ' ok'}`} title={errs.join('\n') || 'no errors'}
-          onClick={() => errs.length && alert(errs.join('\n\n'))}>{errs.length ? `${errs.length} err` : '0 err'}</span>
-      </div>
       <div className="bl-stage" data-boss={w + 1} data-ready={ready != null ? '1' : '0'} data-errs={errs.length}>
         <div className="sky" />
         <StageScreen key={`${w}-${run}-${lv}`} stage={stage} previewPhase="play" onExit={restart}
           onNeedHearts={() => { refillHearts().catch(() => {}).finally(restart) }} />
       </div>
+      <div className="bl-chip" data-focus-keep="">
+        <button className="bl-btn" onClick={() => setW((x) => clampW(x - 1))} aria-label="Previous boss">‹</button>
+        <button className={`bl-name${errs.length ? ' bad' : ''}`} onClick={() => setOpen((o) => !o)} aria-expanded={open} title={BOSSES[w]}>
+          W{w + 1} {open ? '▴' : '▾'}
+        </button>
+        <button className="bl-btn" onClick={() => setW((x) => clampW(x + 1))} aria-label="Next boss">›</button>
+      </div>
+      {open && (
+        <div className="bl-panel" data-focus-keep="">
+          <select className="bl-sel" value={w} onChange={(e) => setW(+e.target.value)} aria-label="Boss">
+            {BOSSES.map((n, i) => <option key={n} value={i}>{`W${i + 1} ${n}`}</option>)}
+          </select>
+          <div className="bl-row">
+            <select className="bl-sel" value={wand} onChange={(e) => setWand(e.target.value)} aria-label="Wand">
+              {WANDS.map((id) => <option key={id} value={id}>{id.replace('wand_', 'Wand: ')}</option>)}
+            </select>
+            <select className="bl-sel bl-lv" value={lv} onChange={(e) => setLv(e.target.value)} aria-label="Question level">
+              {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+          <div className="bl-row">
+            <span className={`bl-st${ready != null ? ' ok' : ''}`} title="3D hero">{ready != null ? `3D ✓ ${ready.toFixed(1)}s` : '3D …'}</span>
+            <span className={`bl-st${errs.length ? ' bad' : ' ok'}`} title={errs.join('\n') || 'no errors'}
+              onClick={() => errs.length && alert(errs.join('\n\n'))}>{errs.length ? `${errs.length} err` : '0 err'}</span>
+            <button className="bl-btn bl-go" onClick={() => { restart(); setOpen(false) }} aria-label="Restart battle">↻ Restart</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
