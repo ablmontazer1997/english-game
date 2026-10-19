@@ -80,6 +80,8 @@ public class MainActivity extends BridgeActivity {
             }
         });
         WebView wv = getBridge().getWebView();
+        // no white flash between the native splash and the first page paint: the WebView starts in the splash colour
+        wv.setBackgroundColor(0xFF2B1166);
         WebSettings ws = wv.getSettings();
         ws.setMediaPlaybackRequiresUserGesture(false);
         // admin 5999: the phone's font size setting must not scale the game's text (it broke ribbons and reward cards)
