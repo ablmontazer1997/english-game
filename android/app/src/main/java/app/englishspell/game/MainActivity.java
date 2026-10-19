@@ -3,7 +3,12 @@ package app.englishspell.game;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
+
+import java.util.Map;
+import java.util.regex.Pattern;
 import android.webkit.WebView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -12,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.BridgeWebViewClient;
 
 /**
  * English Spell (admin 5935/5949): the whole game is bundled in the APK (tools/build_android.sh) and served from
@@ -21,9 +27,31 @@ import com.getcapacitor.BridgeActivity;
  */
 public class MainActivity extends BridgeActivity {
 
+    /** The hero page shares these folders with the wardrobe; the APK keeps one copy (/runecast-wardrobe/...). */
+    static final Pattern SHARED = Pattern.compile("^/runecast-hero/(baked|light|light_f08|fabric|hdri|wands|eyes|mouth)/");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getBridge().setWebViewClient(new BridgeWebViewClient(getBridge()) {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
+                Uri u = req.getUrl();
+                String path = u.getPath();
+                if (path != null && "localhost".equals(u.getHost()) && SHARED.matcher(path).find()) {
+                    final Uri to = u.buildUpon().path(path.replaceFirst("^/runecast-hero/", "/runecast-wardrobe/")).build();
+                    return super.shouldInterceptRequest(view, new WebResourceRequest() {
+                        public Uri getUrl() { return to; }
+                        public boolean isForMainFrame() { return req.isForMainFrame(); }
+                        public boolean isRedirect() { return android.os.Build.VERSION.SDK_INT >= 24 && req.isRedirect(); }
+                        public boolean hasGesture() { return req.hasGesture(); }
+                        public String getMethod() { return req.getMethod(); }
+                        public Map<String, String> getRequestHeaders() { return req.getRequestHeaders(); }
+                    });
+                }
+                return super.shouldInterceptRequest(view, req);
+            }
+        });
         WebView wv = getBridge().getWebView();
         WebSettings ws = wv.getSettings();
         ws.setMediaPlaybackRequiresUserGesture(false);

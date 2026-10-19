@@ -6,6 +6,7 @@
 #   /runecast-wardrobe/   static3d/runecast-wardrobe (own.js API made absolute)
 #   /vendor/              three r164 (build + used examples/jsm), Google Fonts used by the hero page
 #   /index.html           router: a folder URL -> that folder's index.html; /offline.html if the WebView fails
+# Needs: node 22, python3 + Pillow, cwebp, ffmpeg (libopus), JDK 21, Android SDK 35.
 # Signing: /opt/bingual/keys/englishspell/keystore.properties (outside the repo).
 #   android-shell/build_android.sh            web bundle + cap sync + signed release APK
 #   android-shell/build_android.sh web        web bundle + cap sync only
@@ -32,6 +33,19 @@ grep -q "const API = '$API'" $W/runecast-wardrobe/own.js || { echo "own.js API r
 # nothing may still point at a CDN or another host (the API is the only remote)
 LEFT=$(grep -rlE "cdn\.jsdelivr|unpkg\.com|fonts\.googleapis|fonts\.gstatic" $W --include=*.html --include=*.js --include=*.css || true)
 [ -z "$LEFT" ] || { echo "REMOTE REFERENCES LEFT: $LEFT"; exit 1; }
+# ---- lean pack (admin 5949/5966/5973): one copy of the hero/wardrobe shared folders (aliased in MainActivity),
+# no meshes outside the catalogue, the hero on the full wardrobe items (textures shrunk at load), the grip body for
+# battle/profile/result, lossless meshopt + GLB JPEG->WebP q90 (gltf-transform, checked mesh by mesh), app PNG->WebP,
+# irradiance PNG->lossless WebP, SFX above 64 kb/s -> Opus 64k. Never through Blender.
+PK=android-shell/pack
+[ -d $PK/node_modules ] || (cd $PK && npm ci --no-audit --no-fund >/dev/null)
+python3 $PK/lean1.py $W
+python3 $PK/hero_full_items.py $W/runecast-hero/index.html && rm -rf $W/runecast-hero/lite/items
+python3 $PK/hero_grip.py $W/runecast-hero/index.html
+python3 $PK/glb_all.py $W
+python3 $PK/texwebp_all.py $W
+python3 $PK/webp_all.py $W 2>&1 | grep -v "libpng warning"
+python3 $PK/opus_all.py $W
 du -sh $W; du -sh $W/* | sort -rh
 npx cap sync android 2>&1 | grep -E "✔|error|Error" | head -5
 [ "$1" = web ] && exit 0
