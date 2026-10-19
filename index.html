@@ -14,11 +14,11 @@
       html, body { background: #2b1166; }
       .es-splash { position: fixed; inset: 0; z-index: 50; overflow: hidden; background: #2b1166; font-family: Fredoka, system-ui, sans-serif;
         --st: var(--safe-top, env(safe-area-inset-top, 0px)); --sb: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); }
-      .es-sp-art { position: absolute; inset: 0; background: url("/runecast/splash/splash.webp") 15% 40% / cover no-repeat; animation: es-sp-in .6s ease-out both; }
+      .es-sp-art { position: absolute; inset: 0; background: url("/runecast/splash/splash.webp") 15% 40% / cover no-repeat; }
       .es-sp-art::after { content: ""; position: absolute; inset: 0;
         background: linear-gradient(180deg, rgba(20,6,52,.45) 0%, rgba(20,6,52,0) 22%, rgba(20,6,52,0) 72%, rgba(20,6,52,.75) 100%); }
       .es-sp-title { position: absolute; left: 50%; top: calc(var(--st) + max(22px, 4.5vh)); transform: translateX(-50%); width: min(86vw, 380px);
-        display: grid; place-items: center; filter: drop-shadow(0 6px 18px rgba(255, 190, 80, .45)); animation: es-sp-pop .7s .15s cubic-bezier(.3,1.4,.5,1) both; }
+        display: grid; place-items: center; filter: drop-shadow(0 6px 18px rgba(255, 190, 80, .45)); }
       .es-sp-title img { width: 100%; height: auto; display: block; }
       .es-sp-title span { position: absolute; top: 21%; font-weight: 700; font-size: min(10.2vw, 45px); color: #fff; white-space: nowrap; letter-spacing: .005em;
         text-shadow: -3px -3px 0 #8a4b0c, 3px -3px 0 #8a4b0c, -3px 3px 0 #8a4b0c, 3px 3px 0 #8a4b0c, 0 -3px 0 #8a4b0c, 0 3px 0 #8a4b0c, -3px 0 0 #8a4b0c, 3px 0 0 #8a4b0c, 0 5px 0 #8a4b0c, 0 8px 10px rgba(90, 50, 0, .45); }
@@ -36,9 +36,7 @@
         text-shadow: 0 1px 2px rgba(20, 6, 52, .9); transition: opacity .35s; }
       @keyframes es-sp-spin { to { transform: rotate(360deg); } }
       @keyframes es-sp-pulse { 50% { transform: scale(1.18); opacity: .75; } }
-      @keyframes es-sp-in { from { opacity: 0; transform: scale(1.04); } }
-      @keyframes es-sp-pop { from { opacity: 0; transform: translateX(-50%) scale(.82); } }
-      @media (prefers-reduced-motion: reduce) { .es-sp-art, .es-sp-title { animation: none; } .es-sp-ring::before { animation-duration: 3s; } .es-sp-ring::after { animation: none; } }
+      @media (prefers-reduced-motion: reduce) { .es-sp-ring::before { animation-duration: 3s; } .es-sp-ring::after { animation: none; } }
     </style>
   </head>
   <body>
