@@ -37,7 +37,20 @@ export function usePortrait() {
  */
 export function PortraitCapture({ version }: { version: number }) {
   const [on, setOn] = useState(true)
+  // admin 5999 (slow start): the hidden wardrobe used to load at the same time as the visible hero and doubled the
+  // time until the map hero appeared (17 s -> 34 s on a throttled CPU). Wait for a shown hero (rc-shown), or 20 s.
+  const [go, setGo] = useState(false)
   useEffect(() => {
+    setGo(false)
+    let t = 0
+    const start = () => { clearTimeout(t); t = window.setTimeout(() => setGo(true), 1500) }
+    const onMsg = (e: MessageEvent) => { if (e.data?.type === 'rc-shown') start() }
+    addEventListener('message', onMsg)
+    const t0 = setTimeout(() => setGo(true), 20000)
+    return () => { removeEventListener('message', onMsg); clearTimeout(t); clearTimeout(t0) }
+  }, [version])
+  useEffect(() => {
+    if (!go) return
     setOn(true)
     const onMsg = (e: MessageEvent) => {
       if (e.data?.type !== 'rc-portrait' || typeof e.data.data !== 'string') return
@@ -48,8 +61,8 @@ export function PortraitCapture({ version }: { version: number }) {
     addEventListener('message', onMsg)
     const t = setTimeout(() => setOn(false), 90000)                // never keep the 3D view alive for long (slow phones need > 45 s for the first load)
     return () => { removeEventListener('message', onMsg); clearTimeout(t) }
-  }, [version])
-  if (!on) return null
+  }, [version, go])
+  if (!go || !on) return null
   return <iframe key={version} title="portrait" aria-hidden src={`${WARDROBE_BASE}?embed=1&portrait=1&v=${version}`}
     style={{ position: 'fixed', left: 0, bottom: 0, width: 320, height: 320, border: 0, opacity: 0.01, zIndex: -1, pointerEvents: 'none' }} />
 }

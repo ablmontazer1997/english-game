@@ -4,7 +4,8 @@ so they look the same and the APK keeps one body file less. The map (gel) keeps 
 import sys, os
 p = sys.argv[1]; s = open(p, encoding="utf-8").read()
 b = "BATTLE&&!BKQ.has('map')&&BKQ.get('grip')!=='0'?'base_m_grip.glb?v=g7o'"
-assert s.count(b) == 1
+new = "BATTLE&&BKQ.get('grip')!=='0'?'base_m_grip.glb?v=g7o'"   # cbda0f6 (admin 6007): live hero already uses the grip body for every battle=1 page
+assert s.count(b) == 1 or s.count(new) == 1
 s = s.replace(b, "BATTLE&&!window.RCH5&&BKQ.get('grip')!=='0'?'base_m_grip.glb?v=g7o'")
 open(p, "w", encoding="utf-8").write(s)
 os.remove(os.path.join(os.path.dirname(p), "lite/base_m.glb")); print("hero: grip body for battle/profile/result, lite/base_m.glb dropped")
