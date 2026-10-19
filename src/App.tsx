@@ -1,12 +1,15 @@
 import icSound from './assets/ui/v2/ic_sound.webp'
 import icMusic from './assets/ui/v2/ic_music.webp'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useGame } from './services/ServiceProvider'
 import { HUD } from './components/HUD'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { Sheet } from './components/Sheet'
 import { Toggle, Checkbox } from './components/Controls'
 import { useFocusPref } from './games/coach'
+
+// Boss Lab (admin 5915): ?mock=1&bosslab=1, a test bench for all 11 Boss Battles; its own chunk, never loaded otherwise
+const BossLab = lazy(() => import('./screens/BossLab').then((m) => ({ default: m.BossLab })))
 
 const DAILY_GOALS = [{ n: 1, t: 'Casual' }, { n: 2, t: 'Regular' }, { n: 3, t: 'Serious' }]
 import { MapScreen } from './screens/MapScreen'
@@ -103,6 +106,12 @@ export function App() {
     ? new URLSearchParams(location.search).get('screen') : null
   if (ready && previewScreen === 'character') {
     return <div className="app-frame"><div className="sky" /><CharacterScreen onClose={() => { location.search = '' }} /></div>
+  }
+
+  // Boss Lab: mock mode only (the local test save), so the real account is never spent or posted to
+  if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('bosslab')) {
+    if (mode !== 'mock') { const p = new URLSearchParams(location.search); p.set('mock', '1'); location.replace(location.pathname + "?" + p); return null }
+    if (ready) return <Suspense fallback={<Loader />}><BossLab /></Suspense>
   }
 
   // dev preview: ?game=<miniGameId> jumps straight into that mini-game (inert otherwise)
