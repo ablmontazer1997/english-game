@@ -100,18 +100,51 @@
    (360x740 level step: ~117 px). The buttons stay pinned at the bottom of the scroll area instead. */
 .ob-actions { position: sticky; bottom: 0; }
 
-/* admin 6056/6062: the intro on the full-screen letter (ScrollSheet, mockup B); sizes in cqw = 1% of the paper width */
-.ob-b .ob-dots { flex: none; padding: 1.2cqw 2.6cqw; gap: 2cqw; background: rgba(255, 249, 232, .9); box-shadow: 0 .4cqw 1.2cqw rgba(120, 80, 30, .18); }
-.ob-b .ob-in { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2.2cqw; text-align: center; flex: none; }
-.ob-b .ob-in .sl-title { margin: 0; }
-.ob-b .ob-actions { width: 100%; margin-top: auto; padding-top: 2cqw; gap: 2.2cqw; }
-.ob-b .ui-btn.lg.ob-main { --h: max(48px, 15cqw); min-width: 0; width: 86%; font-family: Fredoka, var(--game), sans-serif; font-size: max(18px, 6.6cqw); }
-.ob-b .cb.ob-sec { min-height: max(44px, 12cqw); font-size: max(14px, 4.6cqw); }
-/* the step text scrolls inside the paper when it is long (level step on short phones); the buttons stay below it */
-.ob-b .ssh-body { overflow: hidden; }
-.ob-b .ssh-body > * { flex: none; }
-.ob-b .ssh-body > .ob-in { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding-bottom: 6cqw;
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 6cqw), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 6cqw), transparent); }
-.ob-b .ssh-body > .ob-in::-webkit-scrollbar { display: none; }
-.ob-b .ob-actions { position: static; }
-.ob-b .ob-sign { padding-right: 2cqw; }
+/* admin 6070: the intro on the mock-B letter (ScrollSheet slots; 1cqw = 1% of the picture width). Everything keeps
+   clear of the paper edges: the content box itself is inset; cards get their own inner padding. */
+.ob-b .ssh-body { -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 4cqw), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 4cqw), transparent); padding-bottom: 4cqw; gap: 1.6cqw; }
+.ob-b .ob-dots { flex: none; margin: 0; padding: .8cqw 2.2cqw; gap: 1.6cqw; background: rgba(255, 249, 232, .9); box-shadow: 0 .3cqw 1cqw rgba(120, 80, 30, .18); }
+.ob-b .ob-dots i { width: 2cqw; height: 2cqw; }
+.ob-b .ob-in { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1.8cqw; text-align: center; flex: none; padding: 0 1cqw; box-sizing: border-box; }
+.ob-b .ob-in .sl-title { margin: 0; font-size: 6cqw; line-height: 1.12; color: #3d2312; }
+.ob-b .ob-in .sl-title.sm { font-size: 5.2cqw; }
+.ob-b .ob-in .sl-sum { font-size: 3.5cqw; line-height: 1.32; color: #5a3a20; }
+.ob-b .ob-in .ob-letter { font-size: 3.6cqw; }
+.ob-b .ob-in .sl-div { width: 46%; margin: 0; }
+.ob-b .ob-sign { font-size: 3.7cqw; align-self: flex-end; padding-right: 3cqw; margin: 0; }
+.ob-b .ob-in .ob-small { font-size: 3.2cqw; }
+.ob-b .nm-field { height: 10.9cqw; border-radius: 99px; border: 1.05cqw solid #e3a935; padding: 0 4cqw; box-sizing: border-box; width: 92%; }
+.ob-b .nm-field input { font-size: max(16px, 4.6cqw); }
+.ob-b .nm-err { font-size: 3.2cqw; margin: 0; }
+.ob-b .ob-opts { width: 94%; gap: 1.6cqw; }
+.ob-b .ob-opt { min-height: 10.5cqw; padding: 1cqw 2.6cqw 1cqw 1.6cqw; gap: 2.2cqw; border-radius: 3.4cqw; border-width: .45cqw; box-sizing: border-box; }
+.ob-b .ob-opt-n { width: 7.6cqw; height: 7.6cqw; border-radius: 2.2cqw; font-size: 4cqw; }
+.ob-b .ob-opt-n.ob-lv { font-size: 3.2cqw; }
+.ob-b .ob-opt-tx b { font-size: 3.6cqw; }
+.ob-b .ob-opt-tx small { font-size: 2.9cqw; }
+.ob-b .ob-lvopts .ob-opt:not(.on) { min-height: 9cqw; }
+.ob-b .ob-oracle-btn { width: 94%; box-sizing: border-box; padding: 1cqw 2.4cqw 1cqw 1.2cqw; border-radius: 3.6cqw; border-width: .5cqw; }
+.ob-b .ob-oracle-btn img { width: 9cqw; height: 9cqw; }
+.ob-b .ob-oracle-btn b { font-size: 3.3cqw; }
+.ob-b .ob-oracle-btn small { font-size: 2.7cqw; }
+.ob-b .ob-link { font-size: 3.1cqw; }
+.ob-b .ob-looks { width: 86%; gap: 3cqw; }
+.ob-b .ob-look { padding: 1.6cqw 1cqw; border-radius: 3.4cqw; }
+.ob-b .ob-look img { width: 19cqw; }
+.ob-b .ob-look b { font-size: 3.8cqw; }
+.ob-b .ob-oracle-face { width: 15cqw; height: 15cqw; }
+.ob-b .ob-big { font-size: 9cqw; }
+.ob-b .ssh-sec .ob-row2 { display: flex; gap: 2.4cqw; width: 100%; justify-content: center; }
+.ob-b .ssh-sec .ob-row2 .cb { flex: 1; min-width: 0; font-size: 3.9cqw; padding: 0 2cqw; }
+.ob-b .ssh-sec .nm-err { margin: 0; }
+/* fit the letter, name and vow steps in the content box without scrolling (the level step scrolls) */
+.ob-b[data-step='A letter'] .sl-title { font-size: 4.9cqw; white-space: nowrap; }
+.ob-b[data-step='A letter'] .sl-div { display: none; }
+.ob-b[data-step='A letter'] .ob-letter { font-size: 3.15cqw; line-height: 1.28; }
+.ob-b[data-step='A letter'] .ob-in { gap: 1.4cqw; padding-top: 1cqw; }
+.ob-b .ob-opt { min-height: 8cqw; padding-top: .6cqw; padding-bottom: .6cqw; }
+.ob-b .ob-opt-n { width: 6.6cqw; height: 6.6cqw; font-size: 3.6cqw; }
+.ob-b .ob-in .ob-small { font-size: 2.8cqw; line-height: 1.25; }
+.ob-b .ssh-sec .ob-row2 .cb { font-size: 3.5cqw; }
+.ob-b .ob-in { padding-top: 1.2cqw; }

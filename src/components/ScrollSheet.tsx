@@ -1,37 +1,42 @@
-// admin 6056/6062 (mockup B): the full-screen magic letter. One tall parchment scroll (GPT art, shown at its own
-// aspect and scaled uniformly, never stretched) over the blurred world key art; the gold title ribbon across the top
-// roll with live text; optionally the waving hero leaning on the ribbon. Everything inside is sized in container
-// units (cqw = 1% of the scroll width), so the whole sheet scales as one picture. Extra phone height goes to the
-// background. Used by the sign-in screen and the first-run intro.
+// admin 6056/6062/6070: the full-screen magic letter = the approved mockup B itself. The base picture is mock B with its
+// UI painted out (GPT masked edit, composited back only inside the UI areas): world, waving hero, empty gold ribbon,
+// wide scroll with side rolls, compass, castle and seal. It is shown whole at its own aspect (941 x 1672, scaled
+// uniformly, never stretched); extra phone height shows the splash world blurred behind it.
+// Live parts sit in FIXED slots measured on the mock (1cqw = 1% of the picture width = 9.41 mock px), identical on
+// every screen that uses it (sign-in and every intro step): ribbon title, content box (scrolls inside when long),
+// primary button, "or", secondary button(s). Only the content changes between screens.
 import type { ReactNode } from 'react'
-import scroll from '../assets/login/scroll_b.webp'
-import heroWave from '../assets/login/hero_wave.webp'
+import letter from '../assets/login/letter_b.webp'
 import './scrollsheet.css'
 
 const BASE = import.meta.env.BASE_URL
 
-export function ScrollSheet({ title, hero, top, children, className }: {
-  /** live text on the gold ribbon */
-  title: string
-  /** the waving hero above the ribbon (sign-in and the intro letter) */
-  hero?: boolean
-  /** small things above the scroll content (the intro step dots) */
+export function ScrollSheet({ title = 'English Spell', top, children, primary, secondary, or, className }: {
+  title?: string
+  /** a small line on the paper just under the ribbon (the intro step dots) */
   top?: ReactNode
+  /** the content box (heading, fields, cards, text) */
   children: ReactNode
+  /** the main button slot */
+  primary?: ReactNode
+  /** the second button slot (one button, or a row of two) */
+  secondary?: ReactNode
+  /** the "or" divider between the two slots */
+  or?: boolean
   className?: string
 }) {
   return (
-    <div className={`ssh${hero ? ' has-hero' : ''}${className ? ' ' + className : ''}`}>
+    <div className={`ssh${className ? ' ' + className : ''}`}>
       <div className="ssh-bg" style={{ backgroundImage: `url(${BASE}splash/splash.webp)` }} />
       <div className="ssh-stage">
         <div className="ssh-box">
-          {hero && <img className="ssh-hero" src={heroWave} alt="" draggable={false} />}
-          <img className="ssh-paper" src={scroll} alt="" draggable={false} />
-          <div className="ssh-ribbon"><img src={`${BASE}splash/ribbon.webp`} alt="" draggable={false} /><span>{title}</span></div>
-          <div className="ssh-body">
-            {top}
-            {children}
-          </div>
+          <img className="ssh-art" src={letter} alt="" draggable={false} />
+          <div className="ssh-title"><span>{title}</span></div>
+          {top && <div className="ssh-top">{top}</div>}
+          <div className="ssh-body">{children}</div>
+          {primary && <div className="ssh-pri">{primary}</div>}
+          {or && <div className="ssh-or" aria-hidden><i /><span>or</span><i /></div>}
+          {secondary && <div className="ssh-sec">{secondary}</div>}
         </div>
       </div>
     </div>

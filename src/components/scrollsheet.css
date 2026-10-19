@@ -1,28 +1,37 @@
-/* ScrollSheet (prefix ssh-): see ScrollSheet.tsx. Paper art 763 x 1448 (h = 1.898 w). Hero art 464 x 396.
-   Stack height: hero part above the paper 0.45 w + paper 1.898 w = 2.35 w (no hero: 0.06 w for the ribbon + paper). */
+/* ScrollSheet (prefix ssh-): see ScrollSheet.tsx. Picture 941 x 1672; all slots in cqw (1cqw = 9.41 mock px).
+   Slots measured on mock B: ribbon text y 450-550, content box x 150-790 y 630-1045, primary x 215-725 y 1055-1185,
+   "or" y 1210-1240, secondary x 255-685 y 1265-1375. The paper's printable area is x 100-840. */
 .ssh { position: absolute; inset: 0; z-index: 2; overflow: hidden; background: #2b1166; font-family: Fredoka, var(--game), system-ui, sans-serif;
-  --st: var(--safe-top, env(safe-area-inset-top, 0px)); --sb: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); --stack: 1.96; --lift: .06; }
-.ssh.has-hero { --stack: 2.35; --lift: .45; }
-.ssh-bg { position: absolute; inset: -12px; background-position: 30% 35%; background-size: cover; background-repeat: no-repeat;
-  filter: blur(3px) saturate(1.05); transform: scale(1.04); }
-.ssh-bg::after { content: ''; position: absolute; inset: 0;
-  background: radial-gradient(120% 70% at 50% 55%, rgba(30, 10, 70, .05), rgba(30, 10, 70, .45)); }
-.ssh-stage { position: absolute; left: 0; right: 0; top: var(--st); bottom: var(--sb); display: grid; place-items: center; overflow-y: auto; }
-.ssh-box { position: relative; container-type: inline-size;
-  width: min(calc(100vw - 20px), calc((100dvh - var(--st) - var(--sb) - 16px) / var(--stack)), 440px);
-  aspect-ratio: 763 / 1448; margin-top: calc(var(--lift) * min(calc(100vw - 20px), calc((100dvh - var(--st) - var(--sb) - 16px) / var(--stack)), 440px)); }
-.ssh-paper { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; pointer-events: none;
-  filter: drop-shadow(0 2cqw 4cqw rgba(20, 6, 52, .45)); }
-.ssh-hero { position: absolute; z-index: 1; left: 50%; width: 56cqw; height: auto; bottom: calc(100% - 3cqw); transform: translateX(-46%);
-  pointer-events: none; user-select: none; filter: drop-shadow(0 1cqw 2cqw rgba(20, 6, 52, .35)); }
-.ssh-ribbon { position: absolute; z-index: 2; left: 50%; top: -4cqw; width: 104cqw; transform: translateX(-50%); display: grid; place-items: center;
-  filter: drop-shadow(0 1.5cqw 3cqw rgba(120, 60, 0, .35)); }
-.ssh-ribbon img { width: 100%; height: auto; display: block; pointer-events: none; user-select: none; }
-.ssh-ribbon span { position: absolute; top: 19%; font-weight: 700; font-size: 11.6cqw; line-height: 1.15; color: #fff; white-space: nowrap; letter-spacing: .005em;
-  --o: .75cqw; text-shadow: calc(-1 * var(--o)) calc(-1 * var(--o)) 0 #8a4b0c, var(--o) calc(-1 * var(--o)) 0 #8a4b0c, calc(-1 * var(--o)) var(--o) 0 #8a4b0c,
-    var(--o) var(--o) 0 #8a4b0c, 0 calc(-1 * var(--o)) 0 #8a4b0c, 0 var(--o) 0 #8a4b0c, calc(-1 * var(--o)) 0 0 #8a4b0c, var(--o) 0 0 #8a4b0c,
-    0 1.3cqw 0 #8a4b0c, 0 2cqw 2.5cqw rgba(90, 50, 0, .45); }
-/* the writing area: between the ribbon and the compass/castle doodles, inside the paper's side runes */
-.ssh-body { position: absolute; z-index: 3; left: 11cqw; right: 11cqw; top: 33cqw; bottom: 26cqw; display: flex; flex-direction: column;
-  align-items: center; gap: 2.6cqw; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+  --st: var(--safe-top, env(safe-area-inset-top, 0px)); --sb: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); }
+.ssh-bg { position: absolute; inset: -30px; background-position: 30% 30%; background-size: cover; background-repeat: no-repeat; filter: blur(14px) saturate(1.1); }
+.ssh-bg::after { content: ''; position: absolute; inset: 0; background: rgba(30, 10, 70, .25); }
+.ssh-stage { position: absolute; left: 0; right: 0; top: var(--st); bottom: var(--sb); display: grid; place-items: center; }
+.ssh-box { position: relative; container-type: inline-size; aspect-ratio: 941 / 1672;
+  width: min(100vw, calc((100dvh - var(--st) - var(--sb)) * 941 / 1672), 520px); }
+.ssh-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 3%, #000 97%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 3%, #000 97%, transparent 100%); }
+.ssh-title { position: absolute; left: 20.2cqw; width: 60.6cqw; top: 47.8cqw; height: 10.6cqw; display: grid; place-items: center; pointer-events: none; }
+.ssh-title span { font-weight: 700; font-size: 8cqw; line-height: 1; color: #fff; white-space: nowrap; text-transform: uppercase; letter-spacing: -.01em;
+  --o: .7cqw; text-shadow: calc(-1 * var(--o)) calc(-1 * var(--o)) 0 #6e3a0a, var(--o) calc(-1 * var(--o)) 0 #6e3a0a, calc(-1 * var(--o)) var(--o) 0 #6e3a0a,
+    var(--o) var(--o) 0 #6e3a0a, 0 calc(-1 * var(--o)) 0 #6e3a0a, 0 var(--o) 0 #6e3a0a, calc(-1 * var(--o)) 0 0 #6e3a0a, var(--o) 0 0 #6e3a0a,
+    0 1.1cqw 0 #6e3a0a, 0 1.6cqw 2cqw rgba(90, 50, 0, .4); }
+/* the content box: clear of the paper edges and ornaments; long content scrolls inside with a soft fade */
+.ssh-body { position: absolute; left: 15.9cqw; width: 68.1cqw; top: 66.9cqw; height: 44.1cqw; display: flex; flex-direction: column; align-items: center;
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
 .ssh-body::-webkit-scrollbar { display: none; }
+.ssh-pri { position: absolute; left: 22.8cqw; width: 54.2cqw; top: 112.1cqw; height: 13.8cqw; display: grid; place-items: center; }
+.ssh-or { position: absolute; left: 31.9cqw; width: 36.2cqw; top: 128.6cqw; height: 3.2cqw; display: flex; align-items: center; gap: 3cqw;
+  font-weight: 600; font-size: 3.4cqw; color: #6b4426; }
+.ssh-or i { flex: 1; height: 0; border-top: .3cqw solid rgba(107, 68, 38, .5); }
+.ssh-sec { position: absolute; left: 20cqw; width: 60cqw; top: 134.4cqw; height: 11.7cqw; display: flex; align-items: center; justify-content: center; gap: 2.4cqw; }
+/* kit buttons sized to the slots */
+.ssh .ssh-pri .ui-btn { --h: 13.8cqw; width: 100%; min-width: 0; height: 13.8cqw; font-family: Fredoka, var(--game), sans-serif; font-weight: 700;
+  font-size: 7cqw; padding: 0 0 .6cqw; }
+.ssh .ssh-sec .cb { min-height: 0; height: 11.7cqw; padding: 0 4cqw; min-width: 45.7cqw; font-family: Fredoka, var(--game), sans-serif; font-weight: 700;
+  font-size: 4.9cqw; white-space: nowrap; }
+.ssh .ssh-sec .cb + .cb, .ssh .ssh-sec .cb:has(+ .cb) { min-width: 0; flex: 1; font-size: 4.2cqw; padding: 0 2.4cqw; }
+/* two secondary buttons (Play as guest + Cancel, the intro look step) use the paper's full printable width */
+.ssh-sec:has(.cb + .cb) { left: 12cqw; width: 76cqw; }
+.ssh .ssh-sec .cb { color: #2d1b70; }
+.ssh-top { position: absolute; left: 20cqw; width: 60cqw; top: 63.2cqw; height: 3.6cqw; display: grid; place-items: center; }

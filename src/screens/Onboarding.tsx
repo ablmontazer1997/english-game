@@ -4,7 +4,7 @@
 // player is on is kept in flags.intro_step, so a reload resumes where they left. The guided first stage and the map
 // tour (MapTour.tsx) follow in App.
 
-import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Children, isValidElement, lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useGame } from '../services/ServiceProvider'
 import { api, errorText, unnamed } from '../services/api'
 import { lsToLook } from '../services/look'
@@ -129,18 +129,23 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
 
   const dot = DOTS.indexOf(step === 'oracle' || step === 'spoken' ? 'level' : step)
   // admin 6056/6062: every intro step is written on the full-screen letter (mockup B); the hero waves on the first one
-  const frame = (tag: string, content: ReactNode, actions: ReactNode) => (
-    <div className="stage-host full ob ob-b">
-      <ScrollSheet title={tag} hero={step === 'letter'} top={dot >= 0 ? (
-        <div className="ob-dots" aria-label={`Step ${dot + 1} of ${DOTS.length}`}>
-          {DOTS.map((d, i) => <i key={d} className={i < dot ? 'done' : i === dot ? 'on' : ''} />)}
-        </div>
-      ) : undefined}>
-        <div className="ob-in pop" key={step}>{content}</div>
-        <div className="ob-actions">{actions}</div>
-      </ScrollSheet>
-    </div>
-  )
+  // admin 6070: every intro step uses the same mock-B letter and the same slots as the sign-in screen: the step
+  // content in the content box (scrolls inside when long), the first action in the primary button slot, the rest in
+  // the secondary slot, so the buttons never move between steps. The step name stays in the code as the frame key.
+  const frame = (tag: string, content: ReactNode, actions: ReactNode) => {
+    const acts = Children.toArray(isValidElement<{ children?: ReactNode }>(actions) ? actions.props.children : actions)
+    return (
+      <div className="stage-host full ob ob-b" data-step={tag}>
+        <ScrollSheet primary={acts[0]} secondary={acts.length > 1 ? <>{acts.slice(1)}</> : undefined} top={dot >= 0 ? (
+            <div className="ob-dots" aria-label={`Step ${dot + 1} of ${DOTS.length}`}>
+              {DOTS.map((d, i) => <i key={d} className={i < dot ? 'done' : i === dot ? 'on' : ''} />)}
+            </div>
+          ) : undefined}>
+          <div className="ob-in pop" key={step}>{content}</div>
+        </ScrollSheet>
+      </div>
+    )
+  }
 
   if (step === 'oracle') return (
     <div className="stage-host full ob-oracle">

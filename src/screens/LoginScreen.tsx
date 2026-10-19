@@ -1,14 +1,13 @@
-// Sign-in screen (admin 6018; look = mockup B, admin 6056/6062): the full-screen magic letter (ScrollSheet) with the
-// waving hero, "Welcome back", username + password fields (show/hide), the green Log in, "or", the cream Play as guest.
-// First launch (no token on this install yet) shows it before the game loads; Settings opens it again as "Log in" /
-// "Switch". A successful login keeps the guest token aside (es.api.guest_token) and the device id unchanged, so
-// "Play as guest" always returns to the same guest.
+// Sign-in screen (admin 6018; look = mockup B, admin 6056/6062/6070): the mock-B letter (ScrollSheet) with its fixed
+// slots: "Welcome back" + "Log in to continue your journey", username + password pills (show/hide), the green Log in,
+// "or", the cream Play as guest. First launch (no token on this install yet) shows it before the game loads; Settings
+// opens it again as "Log in" / "Switch". A successful login keeps the guest token aside (es.api.guest_token) and the
+// device id unchanged, so "Play as guest" always returns to the same guest.
 
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { accountLogin, errorText, needsAuthChoice, playAsGuest, signedInAs } from '../services/api'
+import { ApiError, accountLogin, errorText, needsAuthChoice, playAsGuest, signedInAs } from '../services/api'
 import { Btn } from '../components/PageArt'
 import { ScrollSheet } from '../components/ScrollSheet'
-import divider from '../assets/spellbook/divider.webp'
 import '../components/es2kit.css'
 import './stage.css'
 import './login.css'
@@ -20,9 +19,19 @@ const IcLock = () => (
   <svg viewBox="0 0 24 24" aria-hidden><path className="ln" d="M7.6 10.6V7.8a4.4 4.4 0 0 1 8.8 0v2.8" /><rect x="4.2" y="10.2" width="15.6" height="11.4" rx="2.8" /></svg>
 )
 const IcEye = ({ off }: { off?: boolean }) => (
-  <svg viewBox="0 0 24 24" aria-hidden className="ln"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" /><circle cx="12" cy="12" r="3.1" />
+  <svg viewBox="0 0 24 24" aria-hidden><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" /><circle cx="12" cy="12" r="3.1" />
     {off && <path d="M4 4l16 16" />}</svg>
 )
+
+/** one short line under the fields */
+function shortErr(e: unknown): string {
+  if (e instanceof ApiError) {
+    if (e.code === 'bad_login') return 'Wrong username or password'
+    if (e.code === 'too_many_attempts') return 'Too many tries. Wait 15 minutes.'
+    if (e.offline) return 'No connection. Try again.'
+  }
+  return errorText(e)
+}
 
 export function LoginScreen({ firstRun, onDone, onCancel }: {
   /** first launch: no account on this install yet (guest is the second choice, no confirm needed) */
@@ -45,36 +54,36 @@ export function LoginScreen({ firstRun, onDone, onCancel }: {
   const doLogin = async () => {
     setBusy(true); setErr(null)
     try { await accountLogin(user, pw); onDone() } catch (e) {
-      setErr(errorText(e)); setBusy(false); setConfirm(false)
+      setErr(shortErr(e)); setBusy(false); setConfirm(false)
       if (pwRef.current) { pwRef.current.select(); pwRef.current.focus() }
     }
   }
   const submit = (e?: FormEvent) => {
     e?.preventDefault()
-    if (!ready || busy) return
+    if (busy) return
+    if (!ready) { setErr('Enter your username and password'); return }
     // switching away from a guest: say once that its progress stays on this phone
     if (!firstRun && !current) { setConfirm(true); return }
     doLogin()
   }
   const guest = () => { playAsGuest(); onDone() }
-  const sheet = (body: ReactNode) => <div className="stage-host full lg-screen"><ScrollSheet title="English Spell" hero>{body}</ScrollSheet></div>
+  const sheet = (body: ReactNode, primary: ReactNode, secondary: ReactNode, or = false) => (
+    <div className="stage-host full lg-screen"><ScrollSheet primary={primary} secondary={secondary} or={or}>{body}</ScrollSheet></div>
+  )
 
   if (confirm) return sheet(
     <>
       <h1 className="lg-h">Switch account?</h1>
-      <p className="lg-sub">Your guest progress stays on this phone. Tap <b>Play as guest</b> on this screen any time to go back to it.</p>
-      <div className="lg-acts">
-        <Btn className="lg lg-main" onClick={doLogin} disabled={busy}>{busy ? 'Opening…' : `Log in as ${user.trim().toLowerCase()}`}</Btn>
-        <button className="cb cb-white lg-sec" onClick={() => setConfirm(false)} disabled={busy}>Go back</button>
-      </div>
+      <p className="lg-sub lg-note">Your guest progress stays on this phone. Tap <b>Play as guest</b> here any time to go back to it.</p>
     </>,
+    <Btn className="lg" onClick={doLogin} disabled={busy}>{busy ? 'Opening…' : 'Log in'}</Btn>,
+    <button className="cb cb-white" onClick={() => setConfirm(false)} disabled={busy}>Go back</button>,
   )
 
   return sheet(
     <>
       <h1 className="lg-h">{current ? 'Switch account' : 'Welcome back'}</h1>
       <p className="lg-sub">{current ? <>Now playing as <b>{current}</b></> : 'Log in to continue your journey'}</p>
-      <img className="lg-div" src={divider} alt="" draggable={false} />
       <form className="lg-form" onSubmit={submit} noValidate>
         <label className={`lg-field${err ? ' bad' : ''}`}>
           <span className="lg-ic"><IcUser /></span>
@@ -94,15 +103,13 @@ export function LoginScreen({ firstRun, onDone, onCancel }: {
         </label>
         <p className="lg-err" role="alert" aria-live="assertive">{err ?? ''}</p>
       </form>
-      <div className="lg-acts">
-        <Btn className="lg lg-main" onClick={() => submit()} disabled={!ready || busy}>{busy ? 'Opening…' : 'Log in'}</Btn>
-        <div className="lg-or" aria-hidden><i /><span>or</span><i /></div>
-        <div className="lg-row">
-          <button className="cb cb-white lg-sec" onClick={guest} disabled={busy}>Play as guest</button>
-          {onCancel && <button className="cb cb-white lg-sec" onClick={onCancel} disabled={busy}>Cancel</button>}
-        </div>
-      </div>
     </>,
+    <Btn className="lg" onClick={() => submit()} disabled={busy}>{busy ? 'Opening…' : 'Log in'}</Btn>,
+    <>
+      <button className="cb cb-white" onClick={guest} disabled={busy}>Play as guest</button>
+      {onCancel && <button className="cb cb-white" onClick={onCancel} disabled={busy}>Cancel</button>}
+    </>,
+    true,
   )
 }
 
