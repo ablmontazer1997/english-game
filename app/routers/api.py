@@ -1,8 +1,9 @@
 import hashlib
 import uuid
+from datetime import timedelta
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select, update
+from fastapi import APIRouter, Depends, Query, Request
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import catalog as C
@@ -10,10 +11,11 @@ from ..catalog import DEFAULT_EQUIP, STARTING_WALLET
 from ..curriculum import LEVEL_ORD, LEVELS
 from ..db import get_db
 from ..errors import ApiError
-from ..models import GrammarTopic, LoginCode, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
+from ..models import GrammarTopic, LoginAttempt, LoginCode, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
 from ..schemas import (BuyIn, CheckoutIn, CompleteIn, ContinueIn, DyeIn, EquipIn, GuestIn, LedgerRow, LevelOut,
                        LookIn, MeOut, MePatch, ReviewIn, SetIn, StartOut, TokenOut, WalletOut, WardrobeBuyIn,
-                       ConfirmIn, PushSubIn, PushUnsubIn, SeasonClaimIn, RedeemIn, RedeemOut)
+                       ConfirmIn, PushSubIn, PushUnsubIn, SeasonClaimIn, RedeemIn, RedeemOut, LoginIn)
+from ..passwords import verify_password
 from ..security import current_user, make_token
 from ..services import achievements as ach
 from ..services import engage, play, shop
@@ -35,6 +37,32 @@ async def _streak_now(db, user) -> int:
 
 
 # ---------------------------------------------------------------- auth
+async def new_player(db: AsyncSession, *, device_id: str | None, kind: str = "guest", display_name: str | None = None,
+                     tz: str | None = None, level: str | None = None) -> User:
+    """a fresh player: wallet with the starting amounts, the free items worn, an empty streak (guest or account)"""
+    tz = tz if tz and valid_tz(tz) else "Asia/Tehran"
+    user = User(device_id=device_id, kind=kind, display_name=display_name or "Apprentice",
+                timezone=tz, level=level or "A1", player_level=1, xp=0, xp_to_next=800, xp_total=0,
+                league_opt_in=True)
+    db.add(user)
+    await db.flush()
+    w = Wallet(user_id=user.id, gems=0, coins=0, hearts=STARTING_WALLET["hearts"],
+               hearts_max=STARTING_WALLET["hearts_max"], elixir=0)
+    db.add(w)
+    await db.flush()
+    for cur in ("gems", "coins", "elixir"):
+        W.change(db, w, cur, STARTING_WALLET[cur], "signup")
+    free = (await db.execute(select(Item.id).where(Item.tier == "free", Item.active.is_(True)))).scalars().all()
+    for iid in free:
+        db.add(UserItem(user_id=user.id, item_id=iid, source="free"))
+    await db.flush()
+    for slot, iid in DEFAULT_EQUIP.items():
+        if iid in free:
+            db.add(UserEquipment(user_id=user.id, slot=slot, item_id=iid))
+    db.add(Streak(user_id=user.id, current=0, best=0, freezes=0, freezes_used=0))
+    return user
+
+
 @router.post("/auth/guest", response_model=TokenOut, tags=["auth"],
              summary="Create or resume a guest account for a device and get a JWT")
 async def auth_guest(body: GuestIn, db: AsyncSession = Depends(get_db)):
@@ -42,31 +70,54 @@ async def auth_guest(body: GuestIn, db: AsyncSession = Depends(get_db)):
     created = False
     if user is None:
         created = True
-        tz = body.timezone if body.timezone and valid_tz(body.timezone) else "Asia/Tehran"
-        user = User(device_id=body.device_id, kind="guest", display_name=body.display_name or "Apprentice",
-                    timezone=tz, level=body.level or "A1", player_level=1, xp=0, xp_to_next=800, xp_total=0,
-                    league_opt_in=True)
-        db.add(user)
-        await db.flush()
-        w = Wallet(user_id=user.id, gems=0, coins=0, hearts=STARTING_WALLET["hearts"],
-                   hearts_max=STARTING_WALLET["hearts_max"], elixir=0)
-        db.add(w)
-        await db.flush()
-        for cur in ("gems", "coins", "elixir"):
-            W.change(db, w, cur, STARTING_WALLET[cur], "signup")
-        free = (await db.execute(select(Item.id).where(Item.tier == "free", Item.active.is_(True)))).scalars().all()
-        for iid in free:
-            db.add(UserItem(user_id=user.id, item_id=iid, source="free"))
-        await db.flush()
-        for slot, iid in DEFAULT_EQUIP.items():
-            if iid in free:
-                db.add(UserEquipment(user_id=user.id, slot=slot, item_id=iid))
-        db.add(Streak(user_id=user.id, current=0, best=0, freezes=0, freezes_used=0))
+        user = await new_player(db, device_id=body.device_id, display_name=body.display_name, tz=body.timezone,
+                                level=body.level)
     user.last_seen_at = utcnow()
     await db.commit()
     await db.refresh(user)
     tok, exp = make_token(user.id)
     return {"token": tok, "expires_at": exp.isoformat(), "created": created,
+            "user": play.me_out(user, await _streak_now(db, user))}
+
+
+# admin 6018: username + password. Failed tries per username / per IP in a sliding window are capped (429).
+LOGIN_WINDOW = timedelta(minutes=15)
+LOGIN_MAX_PER_USER = 5
+LOGIN_MAX_PER_IP = 20
+
+
+def _client_ip(request: Request) -> str:
+    h = request.headers
+    ip = h.get("cf-connecting-ip") or (h.get("x-forwarded-for") or "").split(",")[0].strip()
+    return (ip or (request.client.host if request.client else ""))[:64]
+
+
+@router.post("/auth/login", response_model=TokenOut, tags=["auth"],
+             summary="Sign in with a username and password and get a JWT on that account")
+async def auth_login(body: LoginIn, request: Request, db: AsyncSession = Depends(get_db)):
+    name = body.username.strip().lower()[:64]
+    ip = _client_ip(request)
+    now = utcnow()
+    since = now - LOGIN_WINDOW
+    await db.execute(delete(LoginAttempt).where(LoginAttempt.at < now - timedelta(days=1)))
+    by_user = (await db.execute(select(func.count()).select_from(LoginAttempt).where(
+        LoginAttempt.username == name, LoginAttempt.ok.is_(False), LoginAttempt.at > since))).scalar_one()
+    by_ip = (await db.execute(select(func.count()).select_from(LoginAttempt).where(
+        LoginAttempt.ip == ip, LoginAttempt.ok.is_(False), LoginAttempt.at > since))).scalar_one() if ip else 0
+    if by_user >= LOGIN_MAX_PER_USER or by_ip >= LOGIN_MAX_PER_IP:
+        await db.commit()
+        raise ApiError(429, "too_many_attempts", "Too many tries. Wait 15 minutes and try again.")
+    user = (await db.execute(select(User).where(User.username == name))).scalar_one_or_none()
+    ok = await verify_password(body.password, user.password_hash if user else None)
+    db.add(LoginAttempt(username=name, ip=ip, ok=ok))
+    if not ok or user is None:
+        await db.commit()
+        raise ApiError(401, "bad_login", "Wrong username or password")
+    user.last_seen_at = now
+    await db.commit()
+    await db.refresh(user)
+    tok, exp = make_token(user.id)
+    return {"token": tok, "expires_at": exp.isoformat(), "created": False,
             "user": play.me_out(user, await _streak_now(db, user))}
 
 

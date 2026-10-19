@@ -151,6 +151,8 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(Text, default="Apprentice")
     email: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # admin 6018: lower-case login name for POST /v1/auth/login (scripts/make_accounts.py); null for guests
+    username: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
     timezone: Mapped[str] = mapped_column(Text, default="Asia/Tehran")
     level: Mapped[str] = mapped_column(ForeignKey("levels.code"), default="A1")
     player_level: Mapped[int] = mapped_column(Integer, default=1)
@@ -417,3 +419,14 @@ class LoginCode(Base):
     expires_at: Mapped[datetime] = mapped_column(TS)
     used_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
+
+
+class LoginAttempt(Base):
+    """Every POST /v1/auth/login try (admin 6018). Failed tries in the last 15 minutes per username and per IP drive
+    the rate limit; rows older than a day are pruned on the way."""
+    __tablename__ = "login_attempts"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(Text)
+    ip: Mapped[str] = mapped_column(Text, default="", server_default="")
+    ok: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    at: Mapped[datetime] = mapped_column(TS, server_default=_now())
