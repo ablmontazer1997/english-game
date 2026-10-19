@@ -96,7 +96,7 @@ html.inapp #pane{padding-bottom:64px} /* the app's floating Done button sits ove
   html.editor #c,html.editor #ld{bottom:0;right:436px}
   #edTop{right:436px}
 }
-</style><script>window.RCH5=(q=>q.has('battle')&&q.has('map')&&q.has('gel'))(new URLSearchParams(location.search));{const Q=new URLSearchParams(location.search);const d=document.documentElement;
+</style><script>window.RCH5=(q=>q.has('battle')&&q.has('map')&&q.has('gel')&&q.get('grip')==='0')(new URLSearchParams(location.search));{const Q=new URLSearchParams(location.search);const d=document.documentElement;
   if(Q.get('embed')||Q.get('battle'))d.classList.add('embed');else d.classList.add('editor');
   try{if(window.parent!==window)d.classList.add('inapp')}catch(e){d.classList.add('inapp')}}</script></head><body>
 <div id="c"></div><div id="ld">Summoning your wizard…</div>
@@ -826,7 +826,7 @@ function buildEditor(E){
   let t0='body';try{t0=new URLSearchParams(location.search).get('tab')||sessionStorage.getItem('rc.edTab')||'body'}catch(e){}
   show(t0);window.EDUI={show,sync};
 }
-(()=>{const L=new THREE.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);return L;})().load(new URLSearchParams(location.search).get('f')||LITE+(BATTLE&&!BKQ.has('map')&&BKQ.get('grip')!=='0'?'base_m_grip.glb?v=g7o':(window.RCH5?'base_m5.glb?v=1':'base_m.glb?v=6r')),g=>{
+(()=>{const L=new THREE.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);return L;})().load(new URLSearchParams(location.search).get('f')||LITE+(BATTLE&&BKQ.get('grip')!=='0'?'base_m_grip.glb?v=g7o':(window.RCH5?'base_m5.glb?v=1':'base_m.glb?v=6r')),g=>{
   document.getElementById('ld').remove();
   const root=g.scene;sc.add(root);const by={};
   root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;by[o.name]=o;if(o.material)o.material.metalness=0;}});
@@ -1104,7 +1104,7 @@ function buildEditor(E){
     //  (posts rc-mark {name:'cast', tip:[x,y]} at the release) -> recoil -> settle.  rc-hurt: flinch, step back, recover.
     //  rc-cry / rc-calm: sobbing body.  rc-hitstop {ms}: freeze the hero for a few frames on impact.
     (()=>{
-      if(new URLSearchParams(location.search).has('map'))return;   // map/profile heroes (battle=1&map=1) stay in their own idle: no wand, no guard
+      /*MAPWAND1019*/const MAPW=new URLSearchParams(location.search).has('map');if(MAPW&&new URLSearchParams(location.search).get('grip')==='0')return;   // ?grip=0: old map/profile hero, no wand
       const bH=boneBy.L_Hand,bF=boneBy.L_Forearm,bU=boneBy.L_Upperarm,oH=boneBy.R_Hand,oF=boneBy.R_Forearm,oU=boneBy.R_Upperarm;
       const bS1=boneBy.Spine01,bS2=boneBy.Spine02,bHd=boneBy.Head,bWa=boneBy.Waist;
       if(!bH||!bF||!bU||!bS1)return;
@@ -1190,6 +1190,12 @@ function buildEditor(E){
       const GRIPC=new THREE.Vector3(-3.458229e-04,5.295371e-04,2.941596e-04),GRIPD=new THREE.Vector3(-0.164934,0.774846,-0.610255).normalize();   // fix/hand5/mkhand.py {roll:-20,dev:20,phi:270,depth:5.5,s:12.57}
       let gripOn=false;root.traverse(o=>{if(o.isMesh&&o.morphTargetDictionary&&o.morphTargetDictionary.grip!==undefined){o.morphTargetInfluences[o.morphTargetDictionary.grip]=1;gripOn=true;}});
       window.RCGRIP=gripOn;
+      if(MAPW&&gripOn&&oH)root.traverse(o=>{if(!o.isSkinnedMesh||!o.morphTargetDictionary||o.morphTargetDictionary.grip===undefined)return;const gi=o.morphTargetDictionary.grip,sk=o.skeleton,g=o.geometry;
+        const RB=new Set();oH.traverse(b=>{const j=sk.bones.indexOf(b);if(j>=0)RB.add(j);});const SI=g.attributes.skinIndex,SW=g.attributes.skinWeight;if(!SI||!SW)return;
+        for(const key of ['position','normal']){const M=g.morphAttributes[key];if(!M||!M[gi])continue;const A=M[gi].clone();let n=0;
+          for(let i=0;i<A.count;i++){let r=0;for(let k=0;k<4;k++){const j=k===0?SI.getX(i):k===1?SI.getY(i):k===2?SI.getZ(i):SI.getW(i),w=k===0?SW.getX(i):k===1?SW.getY(i):k===2?SW.getZ(i):SW.getW(i);if(w>0&&RB.has(j))r=1;}
+            if(r&&(A.getX(i)||A.getY(i)||A.getZ(i))){A.setXYZ(i,0,0,0);n++;}}
+          M[gi]=A;if(key==='position')window.RCGRIPR=(window.RCGRIPR||0)+n;}});
       // admin 4438: the left hand is a proper rounded chibi fist round the handle (fix/grip_1008/fist.py, Blender metaballs), a prop on the
       // left hand bone in the bone's own frame; the original thin left fingers are cut from the battle model (cutL.mjs). Skin = the body
       // material itself, every vertex attribute copied from one left-hand skin vertex, so it lights and tints exactly like the hand.
@@ -1341,7 +1347,7 @@ function buildEditor(E){
       // ---- mocap base: Quaternius Universal Animation Library (CC0), retargeted offline to this rig (bake.html -> cast_bake.json)
       let BK=null;const _q0=q(),_q1=q(),_sq=q(),_sr=v(),AIMS=v().copy(UP);
       const LEGSET=new Set(['Head','Hip','L_Thigh','L_Calf','L_Foot','R_Thigh','R_Calf','R_Foot']);
-      fetch('cast_bake.json?v=2').then(r=>r.json()).then(d=>{
+      if(!MAPW)fetch('cast_bake.json?v=2').then(r=>r.json()).then(d=>{
         // release = the Shoot frame where the casting hand is furthest out
         const c=d.clips.Spell_Simple_Shoot,h=c.hand;let best=0,bi=0;for(let i=0;i<c.n;i++){const dd=Math.hypot(h[i*3]-h[0],h[i*3+1]-h[1],h[i*3+2]-h[2]);if(dd>best){best=dd;bi=i;}}
         d.pk=Math.max(.08,Math.min(c.dur*.6,bi/d.fps));BK=d;}).catch(()=>{});
@@ -1369,7 +1375,7 @@ function buildEditor(E){
       const yq=q();
       // the page spreads the upper arms AFTER our hook, so the wand, its trail and the release mark are placed in a later hook (RCFX3, after spread)
       let trDt=0,trBoost=0;
-      const AIMLIM=+(new URLSearchParams(location.search).get('aimlim')||.35);
+      const AIMLIM=+(new URLSearchParams(location.search).get(MAPW?'mlim':'aimlim')||(MAPW?.9:.35));
       const aimHand=()=>{if(!gripOn||!aimW||aimK<=0)return;bH.updateWorldMatrix(true,false);_c.copy(GRIPD).transformDirection(bH.matrixWorld);
         const qa=q().setFromUnitVectors(_c,aimW),ang=2*Math.acos(Math.min(1,Math.abs(qa.w))),lim=AIMLIM;if(ang>lim)qa.slerp(_id.set(0,0,0,1),1-lim/ang);
         if(aimK<1)qa.slerp(_id.set(0,0,0,1),1-aimK);rotW(bH,qa);bH.updateMatrixWorld(true);LASTQ.set(bH,bH.quaternion.clone());};
@@ -1378,6 +1384,31 @@ function buildEditor(E){
         stepTrail(trDt,trBoost);trDt=0;};
       // admin 5919: fighting stance = the LEFT (boss-side, front) knee bent, the right (back) leg straighter: both feet shift
       //  away from the boss by KNEE*H under the body (the left foot comes in, the right foot goes out). ?knee= to test
+      if(MAPW){
+        // admin 5980/5987: map / profile / result hero holds the wand in a calm idle: the left (wand) arm is posed by IK in the
+        // hero's OWN frame (shoulder line), on top of the playing clip (idle / clap / walk), the wrist turns the wand to its
+        // direction (capped); the right arm keeps the clip. ?mpose=0..2 picks the hold, ?mph / ?mpd override hand / direction.
+        const MQ=new URLSearchParams(location.search);
+        const POSES=[
+          {h:[.30,-.86,.30],d:[.42,-.70,.58],p:[.6,-.3,-.6]},     // 0 low: hand by the hip, tip down and forward, out from the leg
+          {h:[.30,-.58,.52],d:[.30, .90,.30],p:[.4,-.8,-.3]},     // 1 upright: forearm forward, wand held up at the side like a staff
+          {h:[.15,-.55,.55],d:[.70, .70,.20],p:[.7,-.6,-.2]}];    // 2 diagonal (admin pick 6007, the default): hand before the hip, wand angled out and a little up
+        const MP=POSES[+(MQ.get('mpose')??2)]||POSES[2];const pj=k=>{try{const a=JSON.parse(MQ.get(k));if(Array.isArray(a)&&a.length===3)return a;}catch(e){}return null;};
+        const PH=pj('mph')||MP.h,PD=pj('mpd')||MP.d,PP=pj('mpp')||MP.p,MLIM=+(MQ.get('mlim')||.9);
+        const LAT=v(),FWD=v(),_s=v(),_l=v(),_r=v(),mt=v(),md=v(),mp=v();window.RCMP={h:PH,d:PD,p:PP};
+        const axes=()=>{boneBy.L_Upperarm.getWorldPosition(_l);boneBy.R_Upperarm.getWorldPosition(_r);LAT.copy(_l).sub(_r);LAT.y=0;LAT.normalize();FWD.crossVectors(LAT,UP).normalize();};
+        const hv=(a,o)=>o.set(0,0,0).addScaledVector(LAT,a[0]).addScaledVector(UP,a[1]).addScaledVector(FWD,a[2]);
+        window.RCD={t:-1,ST:1,draw:0};
+        window.RCFX=dt0=>{restore();idleT+=dt0;root.updateMatrixWorld(true);axes();
+          bU.updateMatrixWorld(true);bU.getWorldPosition(_s);hv(PH,mt).multiplyScalar(RA).add(_s);
+          if(window.RCSPX&&window.RCSPAX)mt.sub(_s).applyAxisAngle(window.RCSPAX,-window.RCSPX).add(_s);   // the page spreads the upper arm after this hook
+          ik2(bU,bF,bH,mt,hv(PP,mp),1);
+          hv(PD,md).normalize();AIMS.copy(md);aimW=AIMS;aimK=1;
+          const gs=.075*H*(1+.1*Math.sin(idleT*2.2));glow.scale.set(gs,gs,1);glow.material.opacity=.5;core.scale.set(.016*H,.016*H,1);halo.scale.set(gs*.55,gs*.55,1);halo.material.opacity=.3;
+          spk+=dt0;if(spk>.5){spk=0;spawn(1,.04*H,.8,true);}stepPool(dt0);
+          circle.visible=false;trail.visible=false;trDt=0;remember();root.updateMatrixWorld(true);};
+        window.RCB={wand,holder,tip,boneBy,camAxes,orbit:deg=>{const tg=bS1.getWorldPosition(v());const d=cam.position.clone().sub(tg).applyAxisAngle(UP,deg*Math.PI/180);cam.position.copy(tg).add(d);cam.lookAt(tg);return 1;}};
+        return;}
       const KNEE=+(new URLSearchParams(location.search).get('knee')??.08);
       window.RCFX=dt0=>{
         restore();
