@@ -8,6 +8,7 @@ import { initAudio } from './services/audio'
 import { SpellLetter } from './components/SpellLetter'
 import stageBg from './assets/stage_bg.webp'
 import './screens/stage.css'
+import { holdBootSplash } from './services/bootSplash'
 
 initAudio()
 
@@ -29,6 +30,7 @@ if (fontSet) {
 // TEST BUILDS ONLY: ?letter=<topic id>&lv=B2 shows one Spellbook letter on its own (layout checks for all 116 topics)
 const letterId = import.meta.env.BASE_URL.includes('-test') ? new URLSearchParams(location.search).get('letter') : null
 
+holdBootSplash()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {letterId ? (

@@ -4,6 +4,15 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.view.WindowManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -37,6 +46,60 @@ public class MainActivity extends BridgeActivity {
     /** 0.2.1 (admin 5999): the page draws edge to edge (no purple band in the cutout); the cutout size is handed to
      *  the page as --safe-top/left/right/bottom (CSS px), which the app already uses for its safe areas. */
     private String safeCss = "";
+    private int cutTopPx = 0;
+
+    /** admin 6082: the S2 splash (picture + title ribbon) stays on top as a native view, placed exactly like the web
+     *  splash (cover, focus 15% 40%; ribbon min(86vw, 380dp) wide at safe-top + max(22dp, 4.5vh)), until the page calls
+     *  window.ESNative.ready() (first screen painted, images decoded) or 10 s pass; then it fades out in 200 ms. */
+    private FrameLayout boot;
+    private ImageView bootArt, bootTitle;
+    private boolean bootGone = false;
+
+    private void showBoot(WebView wv) {
+        boot = new FrameLayout(this);
+        boot.setClickable(true);
+        bootArt = new ImageView(this);
+        bootArt.setImageResource(R.drawable.es_s2_art);
+        bootArt.setScaleType(ImageView.ScaleType.MATRIX);
+        bootTitle = new ImageView(this);
+        bootTitle.setImageResource(R.drawable.es_s2_title);
+        bootTitle.setScaleType(ImageView.ScaleType.FIT_XY);
+        boot.addView(bootArt, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        boot.addView(bootTitle, new FrameLayout.LayoutParams(1, 1));
+        boot.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> { if (r - l != or - ol || b - t != ob - ot) placeBoot(); });
+        addContentView(boot, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        wv.addJavascriptInterface(new Object() {
+            @JavascriptInterface public void ready() { runOnUiThread(() -> hideBoot()); }
+        }, "ESNative");
+        new Handler(Looper.getMainLooper()).postDelayed(this::hideBoot, 10000);
+    }
+
+    private void placeBoot() {
+        if (boot == null || bootGone) return;
+        int w = boot.getWidth(), h = boot.getHeight();
+        if (w <= 0 || h <= 0) return;
+        Drawable d = bootArt.getDrawable();
+        float dw = d.getIntrinsicWidth(), dh = d.getIntrinsicHeight();
+        float sc = Math.max(w / dw, h / dh);
+        Matrix m = new Matrix();
+        m.setScale(sc, sc);
+        m.postTranslate((w - dw * sc) * 0.15f, (h - dh * sc) * 0.40f);
+        bootArt.setImageMatrix(m);
+        float dp = getResources().getDisplayMetrics().density;
+        float tw = Math.min(0.86f * w, 380f * dp);          // the ribbon element's width (px)
+        float s = tw / 380f;                                // the picture holds the 380-wide element + 30 px glow margin
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(Math.round(440f * s), Math.round(186f * s));
+        lp.leftMargin = Math.round((w - tw) / 2f - 30f * s);
+        lp.topMargin = Math.round(cutTopPx + Math.max(22f * dp, 0.045f * h) - 30f * s);
+        bootTitle.setLayoutParams(lp);
+    }
+
+    private void hideBoot() {
+        if (boot == null || bootGone) return;
+        bootGone = true;
+        final View b = boot;
+        b.animate().alpha(0f).setDuration(200).withEndAction(() -> { ViewGroup p = (ViewGroup) b.getParent(); if (p != null) p.removeView(b); }).start();
+    }
 
     private void pushSafe(WebView wv) {
         if (safeCss.isEmpty()) return;
@@ -89,12 +152,14 @@ public class MainActivity extends BridgeActivity {
         final float dp = getResources().getDisplayMetrics().density;
         ViewCompat.setOnApplyWindowInsetsListener(wv, (v, insets) -> {
             Insets c = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
+            if (c.top != cutTopPx) { cutTopPx = c.top; placeBoot(); }
             safeCss = "s.setProperty('--safe-top','" + Math.round(c.top / dp) + "px');s.setProperty('--safe-bottom','" + Math.round(c.bottom / dp)
                 + "px');s.setProperty('--safe-left','" + Math.round(c.left / dp) + "px');s.setProperty('--safe-right','" + Math.round(c.right / dp) + "px');";
             pushSafe(wv);
             return insets;
         });
         immersive();
+        showBoot(wv);
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

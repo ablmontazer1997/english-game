@@ -13,16 +13,18 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
-        <item name="android:windowBackground">@color/es_bg</item>
+        <item name="android:windowBackground">@drawable/es_s2_window</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <!-- admin 6041: icon E on deep purple, same purple as the web splash that follows -->
-        <item name="android:windowBackground">@drawable/es_splash_bg</item>
-        <item name="windowSplashScreenBackground">@color/es_bg</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/es_splash_icon</item>
+        <!-- admin 6082: no icon screen. Android 12+ shows its system splash for a moment no matter what: no icon (transparent)
+             on the S2 picture's average colour; Android 6-11 and the window behind the app show the S2 picture itself -->
+        <item name="android:windowBackground">@drawable/es_s2_window</item>
+        <item name="windowSplashScreenBackground">@color/es_launch</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
     <color name="es_bg">#2B1166</color>
+    <color name="es_launch">#7E588B</color>
 </resources>

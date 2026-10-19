@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- admin 6082: the S2 splash picture as the window background (9:20 crop of public/splash/splash.webp, same focus as the web: 15% 40%) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/es_launch"/>
+    <item><bitmap android:gravity="fill" android:src="@drawable/es_s2_win"/></item>
+</layer-list>
