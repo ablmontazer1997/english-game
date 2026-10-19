@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- admin 6041: launch window on Android 6-11 = deep purple + icon E (Android 12+ uses the SplashScreen attributes) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/es_bg"/>
+    <item><bitmap android:gravity="center" android:src="@drawable/es_splash_icon"/></item>
+</layer-list>

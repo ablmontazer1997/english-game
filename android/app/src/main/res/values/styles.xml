@@ -18,9 +18,11 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
-        <item name="windowSplashScreenBackground">#7C4FD6</item>
+        <!-- admin 6041: icon E on deep purple, same purple as the web splash that follows -->
+        <item name="android:windowBackground">@drawable/es_splash_bg</item>
+        <item name="windowSplashScreenBackground">@color/es_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/es_splash_icon</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
-    <color name="es_bg">#7C4FD6</color>
+    <color name="es_bg">#2B1166</color>
 </resources>
