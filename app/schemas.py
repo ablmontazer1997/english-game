@@ -39,6 +39,14 @@ class TokenOut(BaseModel):
     user: MeOut
 
 
+class RedeemIn(BaseModel):
+    code: str = Field(min_length=16, max_length=128, description="single-use sign-in code (scripts/mint_login.py)")
+
+
+class RedeemOut(TokenOut):
+    device_id: str | None = Field(None, description="the account device id; the app keeps it so a renewal resumes it")
+
+
 class MePatch(BaseModel):
     display_name: str | None = Field(None, max_length=40)
     timezone: str | None = None

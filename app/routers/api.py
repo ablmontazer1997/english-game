@@ -1,7 +1,8 @@
+import hashlib
 import uuid
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import catalog as C
@@ -9,10 +10,10 @@ from ..catalog import DEFAULT_EQUIP, STARTING_WALLET
 from ..curriculum import LEVEL_ORD, LEVELS
 from ..db import get_db
 from ..errors import ApiError
-from ..models import GrammarTopic, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
+from ..models import GrammarTopic, LoginCode, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
 from ..schemas import (BuyIn, CheckoutIn, CompleteIn, ContinueIn, DyeIn, EquipIn, GuestIn, LedgerRow, LevelOut,
                        LookIn, MeOut, MePatch, ReviewIn, SetIn, StartOut, TokenOut, WalletOut, WardrobeBuyIn,
-                       ConfirmIn, PushSubIn, PushUnsubIn, SeasonClaimIn)
+                       ConfirmIn, PushSubIn, PushUnsubIn, SeasonClaimIn, RedeemIn, RedeemOut)
 from ..security import current_user, make_token
 from ..services import achievements as ach
 from ..services import engage, play, shop
@@ -66,6 +67,26 @@ async def auth_guest(body: GuestIn, db: AsyncSession = Depends(get_db)):
     await db.refresh(user)
     tok, exp = make_token(user.id)
     return {"token": tok, "expires_at": exp.isoformat(), "created": created,
+            "user": play.me_out(user, await _streak_now(db, user))}
+
+
+@router.post("/auth/redeem", response_model=RedeemOut, tags=["auth"],
+             summary="Trade a single-use sign-in code for a JWT on its account (Android app sign-in link)")
+async def auth_redeem(body: RedeemIn, db: AsyncSession = Depends(get_db)):
+    h = hashlib.sha256(body.code.strip().encode()).hexdigest()
+    now = utcnow()
+    uid = (await db.execute(update(LoginCode).where(LoginCode.code_hash == h, LoginCode.used_at.is_(None),
+                                                    LoginCode.expires_at > now)
+                            .values(used_at=now).returning(LoginCode.user_id))).scalar_one_or_none()
+    user = await db.get(User, uid) if uid else None
+    if user is None:
+        await db.rollback()
+        raise ApiError(401, "bad_code", "This sign-in link is invalid, used or expired")
+    user.last_seen_at = now
+    await db.commit()
+    await db.refresh(user)
+    tok, exp = make_token(user.id)
+    return {"token": tok, "expires_at": exp.isoformat(), "created": False, "device_id": user.device_id,
             "user": play.me_out(user, await _streak_now(db, user))}
 
 

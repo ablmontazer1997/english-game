@@ -405,3 +405,15 @@ class PushSubscription(Base):
     fails: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     last_ok_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
+
+
+class LoginCode(Base):
+    """Single-use sign-in codes (admin 5935): `scripts/mint_login.py` makes one for an account; the app trades it
+    once at POST /v1/auth/redeem for a JWT + the account device id. Only the SHA-256 of the code is stored."""
+    __tablename__ = "login_codes"
+    code_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    note: Mapped[str] = mapped_column(Text, default="", server_default="")
+    expires_at: Mapped[datetime] = mapped_column(TS)
+    used_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
