@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
 from ..errors import ApiError
-from ..models import PushSubscription, StageSession, Streak, User
+from ..models import UNNAMED, PushSubscription, StageSession, Streak, User
 from ..timeutil import local_day, tz_of, utcnow
 from . import engage
 
@@ -95,7 +95,7 @@ async def status(db: AsyncSession, user: User) -> dict:
 
 def message(user: User, streak: int) -> dict:
     title, body = random.choice(MESSAGES)
-    name = user.display_name if user.display_name and user.display_name != "Apprentice" else "apprentice"
+    name = user.display_name if user.display_name and user.display_name not in UNNAMED else "friend"
     return {"title": title.format(n=streak, name=name), "body": body.format(n=streak, name=name),
             "url": get_settings().app_url, "tag": "es-daily"}
 

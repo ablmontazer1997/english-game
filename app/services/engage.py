@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..errors import ApiError
-from ..models import DailyQuest, LeagueMembership, Streak, User, UserDayStat
+from ..models import UNNAMED, DailyQuest, LeagueMembership, Streak, User, UserDayStat
 from ..timeutil import local_day, local_midnight_utc, ms, utcnow, week_start
 from .. import catalog as C
 from . import wallet as W
@@ -270,14 +270,14 @@ BOT_NAMES = ["Elowen", "Thorne", "Mirabel", "Caspian", "Isolde", "Rowan", "Serap
              "Odette", "Faelan", "Brielle", "Corwin", "Nimue", "Percival", "Tamsin", "Evander", "Liora", "Gideon"]
 
 
-# players who never picked a name (the old default "Apprentice") get a stable rune-name in the table, so the league is
+# players who never picked a name (the default "Player", earlier "Apprentice") get a stable rune-name in the table, so the league is
 # not a column of identical rows; the player can rename from the League or Settings at any time
 RUNE_NAMES = ["Ash", "Birch", "Cedar", "Ember", "Fern", "Frost", "Hazel", "Iris", "Jade", "Lark", "Moss", "Onyx", "Opal",
               "Quill", "Raven", "Sorrel", "Thistle", "Willow", "Yarrow", "Zephyr", "Amber", "Briar", "Clover", "Dusk"]
 
 
 def shown_name(name: str | None, user_id) -> str:
-    if name and name != "Apprentice":
+    if name and name not in UNNAMED:
         return name
     h = int(str(user_id).replace("-", "")[:8], 16)
     return f"Mage {RUNE_NAMES[h % len(RUNE_NAMES)]}"

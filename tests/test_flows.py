@@ -397,7 +397,7 @@ async def test_achievements_pay_once(client, player):
     # reach "Rising Mage I" (level 5) directly and claim it
     from app.models import User
     async with SessionLocal() as db:
-        await db.execute(update(User).where(User.display_name == "Apprentice").values(player_level=5))
+        await db.execute(update(User).where(User.display_name == "Player").values(player_level=5))
         await db.commit()
     g0 = (await client.get("/v1/wallet")).json()["gems"]
     r = await client.post("/v1/achievements/level.1/claim")
@@ -411,4 +411,4 @@ async def test_league_names_are_not_all_apprentice(client, player):
     await play(client, "A1-W01-S01")
     lg = (await client.get("/v1/league")).json()
     me = next(e for e in lg["entries"] if e["isMe"])
-    assert me["name"].startswith("Mage ") and me["name"] != "Apprentice"
+    assert me["name"].startswith("Mage ") and me["name"] != "Player"

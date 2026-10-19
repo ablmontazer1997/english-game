@@ -41,7 +41,7 @@ async def new_player(db: AsyncSession, *, device_id: str | None, kind: str = "gu
                      tz: str | None = None, level: str | None = None) -> User:
     """a fresh player: wallet with the starting amounts, the free items worn, an empty streak (guest or account)"""
     tz = tz if tz and valid_tz(tz) else "Asia/Tehran"
-    user = User(device_id=device_id, kind=kind, display_name=display_name or "Apprentice",
+    user = User(device_id=device_id, kind=kind, display_name=display_name or "Player",
                 timezone=tz, level=level or "A1", player_level=1, xp=0, xp_to_next=800, xp_total=0,
                 league_opt_in=True)
     db.add(user)

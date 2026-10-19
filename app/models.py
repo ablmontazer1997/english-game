@@ -10,6 +10,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from .db import Base
 
 TS = DateTime(timezone=True)
+# names that mean "the player never chose one" (admin 6062: the old default "Apprentice" became "Player")
+UNNAMED = ("Player", "Apprentice")
 
 
 def _now():
@@ -148,7 +150,8 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     device_id: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
     kind: Mapped[str] = mapped_column(String(10), default="guest")  # guest | registered
-    display_name: Mapped[str] = mapped_column(Text, default="Apprentice")
+    # admin 6062: no "apprentice" anywhere; the default name is "Player" (UNNAMED = never chosen, incl. the old default)
+    display_name: Mapped[str] = mapped_column(Text, default="Player")
     email: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     # admin 6018: lower-case login name for POST /v1/auth/login (scripts/make_accounts.py); null for guests

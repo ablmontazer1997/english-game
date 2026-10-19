@@ -15,8 +15,8 @@ _FREE = [  # the starter set (audit 5.3 D): default outfit, 3 hairs, 4 natural h
     ("haircolor_natural", "Natural", "haircolor"), ("haircolor_black", "Black", "haircolor"),
     ("haircolor_darkbrown", "Dark brown", "haircolor"), ("haircolor_blonde", "Blonde", "haircolor"),
     ("eyes_violet", "Violet eyes", "eyes"), ("eyes_brown", "Brown eyes", "eyes"),
-    ("hat", "Wizard hat", "hat"), ("hat_apprentice", "Apprentice cap", "hat"),
-    ("top_apprentice", "Apprentice tunic", "top"), ("coat", "Wizard coat", "coat"), ("pants", "Pants", "pants"),
+    ("hat", "Wizard hat", "hat"), ("hat_apprentice", "Starter cap", "hat"),
+    ("top_apprentice", "Starter tunic", "top"), ("coat", "Wizard coat", "coat"), ("pants", "Pants", "pants"),
     ("shoes", "Boots", "shoes"),
     ("wand_starter", "Starter wand", "wand"), ("wand_classic", "Classic wand", "wand"),   # admin 5725/5762: starter = default
 ]
