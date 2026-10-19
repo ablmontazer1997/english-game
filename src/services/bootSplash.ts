@@ -33,7 +33,6 @@ export function holdBootSplash() {
   if (!root || !sp) { tellNative(); return }
   document.body.appendChild(sp)                     // React replaces #root's content; the static splash stays on top
   sp.style.zIndex = '2147483000'
-  const t0 = performance.now()
   let gone = false
   const hide = () => {
     if (gone) return; gone = true
