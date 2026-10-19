@@ -3,11 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#070d24" />
+    <meta name="theme-color" content="#2b1166" />
     <title>English Spell</title>
+    <!-- admin 6041: startup splash. Shown by this static HTML at once (before the JS bundle), then the same markup is
+         rendered by React's <Splash/> (src/components/Splash.tsx) while the game loads, so the two look identical. -->
+    <link rel="preload" as="image" href="/runecast/splash/splash.webp" />
+    <link rel="preload" as="font" type="font/woff2" href="/runecast/fonts/Fredoka-var.woff2" crossorigin />
+    <style>
+      @font-face { font-family: "Fredoka"; font-style: normal; font-weight: 300 700; font-display: swap; src: url("/runecast/fonts/Fredoka-var.woff2") format("woff2"); }
+      html, body { background: #2b1166; }
+      .es-splash { position: fixed; inset: 0; z-index: 50; overflow: hidden; background: #2b1166; font-family: Fredoka, system-ui, sans-serif;
+        --st: var(--safe-top, env(safe-area-inset-top, 0px)); --sb: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); }
+      .es-sp-art { position: absolute; inset: 0; background: url("/runecast/splash/splash.webp") 15% 40% / cover no-repeat; animation: es-sp-in .6s ease-out both; }
+      .es-sp-art::after { content: ""; position: absolute; inset: 0;
+        background: linear-gradient(180deg, rgba(20,6,52,.45) 0%, rgba(20,6,52,0) 22%, rgba(20,6,52,0) 72%, rgba(20,6,52,.75) 100%); }
+      .es-sp-title { position: absolute; left: 50%; top: calc(var(--st) + max(22px, 4.5vh)); transform: translateX(-50%); width: min(86vw, 380px);
+        display: grid; place-items: center; filter: drop-shadow(0 6px 18px rgba(255, 190, 80, .45)); animation: es-sp-pop .7s .15s cubic-bezier(.3,1.4,.5,1) both; }
+      .es-sp-title img { width: 100%; height: auto; display: block; }
+      .es-sp-title span { position: absolute; top: 21%; font-weight: 700; font-size: min(10.2vw, 45px); color: #fff; white-space: nowrap; letter-spacing: .005em;
+        text-shadow: -3px -3px 0 #8a4b0c, 3px -3px 0 #8a4b0c, -3px 3px 0 #8a4b0c, 3px 3px 0 #8a4b0c, 0 -3px 0 #8a4b0c, 0 3px 0 #8a4b0c, -3px 0 0 #8a4b0c, 3px 0 0 #8a4b0c, 0 5px 0 #8a4b0c, 0 8px 10px rgba(90, 50, 0, .45); }
+      .es-sp-load { position: absolute; left: 0; right: 0; bottom: calc(var(--sb) + max(24px, 3.5vh)); display: grid; justify-items: center; gap: 8px; padding: 0 24px; text-align: center; }
+      .es-sp-ring { position: relative; width: 58px; height: 58px; border-radius: 50%; margin-bottom: 4px;
+        box-shadow: 0 0 22px 6px rgba(255, 190, 80, .35), inset 0 0 0 3px rgba(255, 255, 255, .18); }
+      .es-sp-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; padding: 4px;
+        background: conic-gradient(from 0deg, rgba(255, 214, 110, 0) 0deg, #ffd66e 220deg, #fff4cf 260deg, rgba(255, 214, 110, 0) 261deg);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+        animation: es-sp-spin 1.1s linear infinite; }
+      .es-sp-ring::after { content: "✦"; position: absolute; inset: 0; display: grid; place-items: center; color: #ffe7a8; font-size: 22px;
+        text-shadow: 0 0 10px #ffc04d; animation: es-sp-pulse 1.4s ease-in-out infinite; }
+      .es-sp-load b { font-weight: 700; font-size: 16px; color: #fff0c8; text-shadow: 0 2px 0 #2a0b5e, 0 0 10px rgba(30, 8, 70, .8); letter-spacing: .01em; }
+      .es-sp-tip { margin: 0; max-width: 320px; min-height: 2.6em; font-weight: 600; font-size: 13.5px; line-height: 1.3; color: #e6dcff;
+        text-shadow: 0 1px 2px rgba(20, 6, 52, .9); transition: opacity .35s; }
+      @keyframes es-sp-spin { to { transform: rotate(360deg); } }
+      @keyframes es-sp-pulse { 50% { transform: scale(1.18); opacity: .75; } }
+      @keyframes es-sp-in { from { opacity: 0; transform: scale(1.04); } }
+      @keyframes es-sp-pop { from { opacity: 0; transform: translateX(-50%) scale(.82); } }
+      @media (prefers-reduced-motion: reduce) { .es-sp-art, .es-sp-title { animation: none; } .es-sp-ring::before { animation-duration: 3s; } .es-sp-ring::after { animation: none; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="es-splash" role="img" aria-label="English Spell is loading">
+      <div class="es-sp-art"></div>
+      <div class="es-sp-title"><img src="/runecast/splash/ribbon.webp" alt="" draggable="false" /><span>English Spell</span></div>
+      <div class="es-sp-load"><div class="es-sp-ring"></div><b>Opening the portal…</b><p class="es-sp-tip" id="es-sp-tip">Tip: say new words out loud to remember them.</p></div>
+    </div></div>
+    <script>
+      // tips rotate in the static splash; React's <Splash/> takes over with the same list when the bundle runs
+      (function () { var T = window.ES_TIPS = ["Tip: say new words out loud to remember them.", "Tip: read the whole sentence before you choose.", "Tip: a few minutes every day beats one long session.", "Tip: a wrong answer is a clue, not a failure.", "Tip: use a new word in your own sentence today."];
+        var i = 0, el = document.getElementById('es-sp-tip'), t = setInterval(function () { if (!el.isConnected) return clearInterval(t); el.style.opacity = 0;
+          setTimeout(function () { i = (i + 1) % T.length; el.textContent = T[i]; el.style.opacity = 1; window.ES_TIP_I = i }, 350) }, 3200) })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

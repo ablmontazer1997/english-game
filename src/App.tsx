@@ -1,4 +1,5 @@
 import icSound from './assets/ui/v2/ic_sound.webp'
+import { Splash } from './components/Splash'
 import icMusic from './assets/ui/v2/ic_music.webp'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useGame } from './services/ServiceProvider'
@@ -216,17 +217,7 @@ export function App() {
 }
 
 function Loader() {
-  return (
-    <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', zIndex: 1 }}>
-      <div className="pop" style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--display)', fontWeight: 900, fontSize: 34, letterSpacing: '.12em',
-          background: 'linear-gradient(180deg,#fff,var(--gold))', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
-          ENGLISH SPELL
-        </div>
-        <div style={{ color: 'var(--ink-faint)', marginTop: 8, fontSize: 13 }}>Summoning the realm…</div>
-      </div>
-    </div>
-  )
+  return <Splash />   // admin 6041: the startup splash (same as the static one in index.html)
 }
 
 /** the first load failed: say so and offer a retry instead of a blank screen */
