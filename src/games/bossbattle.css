@@ -156,3 +156,16 @@
 .bb2-opt.k9 { min-height: 54px; border-radius: 0; box-shadow: none; background: none; color: #2a1f5c; }
 .bb2-opt.k9.ok, .bb2-opt.k9.right { background: none; box-shadow: none; color: #1f6a12; text-shadow: none; filter: drop-shadow(0 0 6px rgba(110, 220, 70, .95)) drop-shadow(0 0 12px rgba(110, 220, 70, .55)); }
 .bb2-opt.k9.bad { background: none; box-shadow: none; color: #a3261a; text-shadow: none; filter: drop-shadow(0 0 6px rgba(240, 80, 70, .95)); }
+
+/* admin 5929: the quick battle formats share the question panel and the painted answer tiles */
+.bb2-opts.n2, .bb2-opts.n3 { grid-template-columns: repeat(var(--bb-n, 2), 1fr); }
+.bb2-opts.n3 { --bb-n: 3; }
+.bb2-q p.bb2-tf .bb2-means { display: block; margin-top: 2px; font-size: clamp(19px, 6cqw, 25px); font-weight: 900; line-height: 1.15; color: #2a1f5c; overflow-wrap: anywhere; }
+.bb2-q p.bb2-tf .bb2-means.long { font-size: clamp(16px, 4.8cqw, 19px); }
+.bb2-q p.bb2-tf .bb2-means i { font-style: normal; color: #6d2fe6; margin-right: 2px; }
+.bb2-q p b.long { font-size: clamp(22px, 7cqw, 30px); }
+.bb2-q p.bb2-letter b { letter-spacing: .04em; }
+.bb2-q .bb2-slot { display: inline-block; min-width: .72em; margin: 0 .04em; text-decoration: none; color: #b07cff; border-bottom: 4px solid #b07cff; line-height: .95; }
+.bb2-q .bb2-slot.ok { color: #2f9a1c; border-color: #2f9a1c; }
+.bb2-q .bb2-slot.bad { color: #d23b2c; border-color: #d23b2c; }
+.bb2-k-letter .bb2-opt { font-size: clamp(26px, 8cqw, 32px); }

@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { use3dFallback } from '../components/use3dFallback'
 import { Task } from './Task'
 import type { MiniGameProps } from './types'
+import type { SrsItem } from '../types/game'
 import { burst, shake } from './fx'
 import w1Weapon from '../assets/games/bosses/w1/weapon.webp'
 import w4Weapon from '../assets/games/bosses/w4/weapon.webp'
@@ -128,7 +129,7 @@ import heroNormal from '../assets/games/boss2/hero.webp'
 import heroHurt from '../assets/games/boss2/hero_hurt.webp'
 import heroCheer from '../assets/games/boss2/hero_cheer.webp'
 import './bossbattle.css'
-import { useStageCtl, explain, payloadOf, bubbleMode } from './coach'
+import { useStageCtl, payloadOf, bubbleMode } from './coach'
 
 // Boss Battle: the player's mage against the Grammar Boss on the sky-island arena.
 // Every right answer is a spell (cast pose, a bolt flying to the boss, impact, damage number);
@@ -261,6 +262,22 @@ const inBox = (b: Box, inner: Box) => ({ left: `${((inner.x - b.x) / b.w) * 100}
   width: `${(inner.w / b.w) * 100}%`, height: `${(inner.h / b.h) * 100}%` })
 const shadowStyle = (at: { x: number; y: number }, w: number) => ({ left: `${((at.x - w / 2) / PW) * 100}%`, top: `${((at.y - w * 0.09) / PH) * 100}%`,
   width: `${(w / PW) * 100}%`, height: `${((w * 0.18) / PH) * 100}%` })
+
+// admin 5929: a boss stage is a fight, not a lesson: varied quick formats from the SAME items (no new content), and no
+// correction card on a wrong answer. mcq = the classic 4 choices; tf = "word = meaning?" true/false; letter = the word with one
+// letter missing, 3 letter chips; word = the meaning shown, pick the word among 3 (the other words come from this battle's items).
+// The server still gets the item's own answer: the right answer when correct, a wrong choice otherwise.
+type Kind = 'mcq' | 'tf' | 'letter' | 'word'
+const KINDS: Kind[] = ['mcq', 'tf', 'letter', 'word']
+const TASK: Record<Kind, { icon: 'tap' | 'fix' | 'find'; text: string; sub: string }> = {
+  mcq: { icon: 'tap', text: 'Pick the right answer', sub: 'Each right answer hits the boss' },
+  tf: { icon: 'tap', text: 'True or false?', sub: 'Each right answer hits the boss' },
+  letter: { icon: 'fix', text: 'Fix the broken spell', sub: 'Tap the missing letter' },
+  word: { icon: 'find', text: 'Pick the word', sub: 'Each right answer hits the boss' },
+}
+type Round = { item: SrsItem; kind: Kind; opts: string[]; right: string; shown?: string; gap?: number }
+const ONE_WORD = /^[A-Za-z]{3,14}$/
+const VOWELS = 'aeiou', CONS = 'rtnslcdmpbgh'
 
 function shuffle<T>(a: T[]): T[] {
   const b = [...a]
@@ -444,13 +461,44 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
   const bossFist = [BOSS_BOX.x + BOSS_IMG.fist[0] * BOSS_BOX.w, BOSS_BOX.y + BOSS_IMG.fist[1] * BOSS_BOX.h]
   const heroChest = [HERO_AT.x + 10, HERO_AT.y - HERO_AT.h * 0.45]
 
-  const round = useMemo(() => {
+  // the battle's format order starts at a random point, so two battles do not open the same way
+  const kindSeed = useMemo(() => (Math.random() * KINDS.length) | 0, [])
+  const round = useMemo((): Round | null => {
     const item = items[idx]
     if (!item) return null
-    const opts = shuffle([item.back, ...item.distractors]).slice(0, 4)
-    if (!opts.includes(item.back)) opts[0] = item.back
-    return { item, opts }
-  }, [idx, items])
+    const mcq = (): Round => {
+      const opts = shuffle([item.back, ...item.distractors]).slice(0, 4)
+      if (!opts.includes(item.back)) opts[0] = item.back
+      return { item, kind: 'mcq', opts, right: item.back }
+    }
+    // the tutorial's practice item stays the classic choice (its ghost-hand demo taps the right tile)
+    if (ctl.practice) return mcq()
+    const vocab = !item.ask && ONE_WORD.test(item.front)
+    for (let k = 0; k < KINDS.length; k++) {
+      const kind = KINDS[(idx + kindSeed + k) % KINDS.length]
+      if (kind === 'mcq' && item.distractors.length >= 1) return mcq()
+      if (kind === 'tf' && item.distractors.length) {
+        const yes = Math.random() < 0.5
+        return { item, kind, opts: ['True', 'False'], right: yes ? 'True' : 'False', shown: yes ? item.back : shuffle(item.distractors)[0] }
+      }
+      if (kind === 'letter' && vocab && item.front.length >= 4) {
+        const w = item.front.toLowerCase()
+        const at = shuffle([...w].map((_, i) => i).filter((i) => i > 0 && i < w.length - 1 && w[i] !== w[i - 1] && w[i] !== w[i + 1]))[0]
+        if (at == null) continue
+        const c = w[at], pool = VOWELS.includes(c) ? VOWELS : CONS
+        const wrong = shuffle([...pool].filter((x) => x !== c)).slice(0, 2)
+        return { item, kind, opts: shuffle([c, ...wrong]), right: c, gap: at }
+      }
+      if (kind === 'word' && vocab) {
+        const others = shuffle(items.filter((o) => o.id !== item.id && !o.ask && ONE_WORD.test(o.front) && o.front.toLowerCase() !== item.front.toLowerCase() && o.back !== item.back))
+          .map((o) => o.front).filter((f, i, a) => a.indexOf(f) === i).slice(0, 2)
+        if (others.length < 2) continue
+        return { item, kind, opts: shuffle([item.front, ...others]), right: item.front }
+      }
+    }
+    return mcq()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, items, kindSeed])
 
   const finish = () => {
     if (r.current.done) return
@@ -524,7 +572,7 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
   }
 
   // wrong answer: the boss winds up, lunges and throws a rune stone at the mage
-  const strike = (yours?: string) => {
+  const strike = () => {
     sfx('wrong'); setGolem('attack')
     golemEl.current?.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(3%) rotate(2deg)', offset: 0.35 },
       { transform: 'translateX(-7%) rotate(-3deg)', offset: 0.7 }, { transform: 'translateX(0)' }], { duration: 620, easing: 'ease-in-out' })
@@ -552,17 +600,15 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
           burst(heroEl.current?.querySelector('.bb2-core'), { color: ['#ffffff', '#ffb3b3', '#d9c7a8'], n: 10, dist: 70, size: 10 })
           number('-1 ♥', 'hero', HERO_AT.x, HERO_AT.y - HERO_AT.h - 10)
         }
-        // Phase C: after the hit lands, the shared card (right answer, rule, "Why?")
-        const it = round?.item
-        const card = () => it ? ctl.wrong({ answer: it.back, label: it.ask ? `${it.ask} ${it.front}` : bubbleMode(payloadOf(srv, it.id)) === 'syn' ? `A synonym of "${it.front}"` : `"${it.front}" means`, yours, ...explain(payloadOf(srv, it.id)) }, 600) : Promise.resolve()
+        // admin 5929: a boss stage shows no correction card (no right answer, rule or Why?): the hit, then the next question
         if (r.current.lives <= 0) {
           say('The monster wins…', 'bad', 1800); sfx('lose')
           if (hero3d) later(() => heroFrame.current?.contentWindow?.postMessage({ type: 'rc-cry' }, '*'), 700)
-          later(() => { card().then(finish) }, 1900)
+          later(finish, 1900)
         } else {
           say('Ouch!', 'bad')
           later(() => { setGolem(rest()); setHero('normal') }, 1000)
-          later(() => { card().then(next) }, 1100)
+          later(next, 1100)
         }
       })
     }, 230)
@@ -571,25 +617,28 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
   const pick = (i: number, ok: boolean) => {
     if (r.current.busy || r.current.done || !round) return
     r.current.busy = true
-    onAnswer?.(round.item.id, round.opts[i], ok)
+    // the server grades the item's own answer: its right answer, or (wrong) the picked choice / one of its wrong answers
+    const it = round.item
+    onAnswer?.(it.id, ok ? it.back : round.kind === 'mcq' ? round.opts[i] : (it.distractors[0] ?? round.opts[i]), ok)
     setPicked({ i, ok })
     if (ok) {
       r.current.combo += 1; r.current.maxCombo = Math.max(r.current.maxCombo, r.current.combo)
       cast()
     } else {
       r.current.combo = 0
-      strike(round.opts[i])
+      strike()
     }
   }
 
-  // hint: take away two wrong answers
+  // hint: take away wrong answers (two of four, one of three; nothing to take on true/false, so nothing is spent)
   useHint(() => {
-    if (!round || r.current.busy || gone.size) return false
-    const wrong = round.opts.map((o, i) => (o === round.item.back ? -1 : i)).filter((i) => i >= 0)
-    setGone(new Set(shuffle(wrong).slice(0, 2)))
+    if (!round || r.current.busy || gone.size || round.opts.length < 3) return false
+    const wrong = round.opts.map((o, i) => (o === round.right ? -1 : i)).filter((i) => i >= 0)
+    setGone(new Set(shuffle(wrong).slice(0, round.opts.length - 2)))
     return true
   })
 
+  const syn = round ? bubbleMode(payloadOf(srv, round.item.id)) === 'syn' : false
   const hpPct = total ? Math.max(0, 100 - (hits / total) * 100) : 0
   const HP = total * 100
 
@@ -652,15 +701,21 @@ export function BossBattle({ items, onFinish, onAnswer, world, srv }: MiniGamePr
       {round && (
         <div className="gs-ui bb2-bottom" ref={bottomEl}>
           <div className="gs-panel bb2-q" data-coach="q">
-            <Task className="gtask-row bb-task" icon="tap" text="Pick the right answer" sub="Each right answer hits the boss" first={idx === 0} />
+            <Task className="gtask-row bb-task" icon={TASK[round.kind].icon} text={TASK[round.kind].text} sub={TASK[round.kind].sub} first={idx === 0} />
             <span className="bb2-gem" aria-hidden />
-            <p><small>{round.item.ask ? round.item.ask : bubbleMode(payloadOf(srv, round.item.id)) === 'syn' ? 'Choose the synonym of:' : 'Choose the meaning of:'}</small> <b>{round.item.front}</b></p>
+            {round.kind === 'mcq' && <p><small>{round.item.ask ? round.item.ask : syn ? 'Choose the synonym of:' : 'Choose the meaning of:'}</small> <b>{round.item.front}</b></p>}
+            {round.kind === 'tf' && <p className="bb2-tf"><small>{round.item.ask ? round.item.ask : syn ? 'Is this a synonym?' : 'Is this the meaning?'}</small> <b>{round.item.front}</b>
+              <span className={`bb2-means${round.shown && round.shown.length > 26 ? ' long' : ''}`}><i aria-hidden>{round.item.ask ? '→' : '='}</i> {round.shown}</span></p>}
+            {round.kind === 'letter' && <p className="bb2-letter"><small>{syn ? 'A synonym of' : 'It means'} “{round.item.back}”</small>
+              <b>{[...round.item.front.toLowerCase()].map((c, i) => i === round.gap
+                ? <u key={i} className={`bb2-slot${picked ? (picked.ok ? ' ok' : ' bad') : ''}`}>{picked ? round.opts[picked.i] : '?'}</u> : <span key={i}>{c}</span>)}</b></p>}
+            {round.kind === 'word' && <p><small>{syn ? 'Which word is a synonym of:' : 'Which word means:'}</small> <b className={round.item.back.length > 18 ? 'long' : ''}>{round.item.back}</b></p>}
             <span className="bb2-count k9 k-chip-v">Question {idx + 1} / {total}</span>
           </div>
-          <div className="bb2-opts" data-coach="a" data-coach-parts=".bb2-opt">
+          <div className={`bb2-opts n${round.opts.length} bb2-k-${round.kind}`} data-coach="a" data-coach-parts=".bb2-opt">
             {round.opts.map((t, i) => {
-              const ok = t === round.item.back
-              const st = picked?.i === i ? (picked.ok ? ' ok' : ' bad') : picked && !picked.ok && ok ? ' right' : ''
+              const ok = t === round.right
+              const st = picked?.i === i ? (picked.ok ? ' ok' : ' bad') : ''   // admin 5929: the right answer is not revealed
               return (
                 <button key={t + i} className={`gs-pill bb2-opt k9 k-tile${st}${gone.has(i) ? ' gone' : ''}`}
                   disabled={!!picked || gone.has(i)} onClick={() => pick(i, ok)} data-demo={ctl.practice && ok ? 0 : undefined}>{t}</button>
