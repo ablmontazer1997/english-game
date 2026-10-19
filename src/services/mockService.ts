@@ -27,7 +27,7 @@ function defaultState(): SaveState {
   return {
     currencies: { hearts: 5, heartsMax: 5, heartsRefillAt: null, potion: 3, coins: 1250, gems: 40 },
     profile: {
-      id: 'me', name: 'Apprentice', level: 12, xp: 320, xpToNext: 800, streak: 4,
+      id: 'me', name: 'Player', level: 12, xp: 320, xpToNext: 800, streak: 4,
       leagueTier: 'gold',
       avatar: { base: 'wolf-hood', robeColor: 'amethyst', familiar: 'owl', staff: 'crystal', aura: 'none' },
     },

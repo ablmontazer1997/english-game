@@ -19,7 +19,7 @@ const MARKS: Mark[] = [
   { find: () => document.querySelector('.hud-avatar'), title: 'Your profile',
     text: 'Your look, your treasures and your achievements.' },
   { find: () => document.querySelectorAll('.bnav-item')[3] ?? null, title: 'The league',
-    text: 'Every week your name meets other apprentices. Climb to the top!' },
+    text: 'Every week your name meets other players. Climb to the top!' },
 ]
 
 type Box = { x: number; y: number; w: number; h: number }

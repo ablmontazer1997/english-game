@@ -99,3 +99,19 @@
 /* Phase C: the paper height snaps to whole strips, so on short phones the step's main button could fall below the fold
    (360x740 level step: ~117 px). The buttons stay pinned at the bottom of the scroll area instead. */
 .ob-actions { position: sticky; bottom: 0; }
+
+/* admin 6056/6062: the intro on the full-screen letter (ScrollSheet, mockup B); sizes in cqw = 1% of the paper width */
+.ob-b .ob-dots { flex: none; padding: 1.2cqw 2.6cqw; gap: 2cqw; background: rgba(255, 249, 232, .9); box-shadow: 0 .4cqw 1.2cqw rgba(120, 80, 30, .18); }
+.ob-b .ob-in { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2.2cqw; text-align: center; flex: none; }
+.ob-b .ob-in .sl-title { margin: 0; }
+.ob-b .ob-actions { width: 100%; margin-top: auto; padding-top: 2cqw; gap: 2.2cqw; }
+.ob-b .ui-btn.lg.ob-main { --h: max(48px, 15cqw); min-width: 0; width: 86%; font-family: Fredoka, var(--game), sans-serif; font-size: max(18px, 6.6cqw); }
+.ob-b .cb.ob-sec { min-height: max(44px, 12cqw); font-size: max(14px, 4.6cqw); }
+/* the step text scrolls inside the paper when it is long (level step on short phones); the buttons stay below it */
+.ob-b .ssh-body { overflow: hidden; }
+.ob-b .ssh-body > * { flex: none; }
+.ob-b .ssh-body > .ob-in { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding-bottom: 6cqw;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 6cqw), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 6cqw), transparent); }
+.ob-b .ssh-body > .ob-in::-webkit-scrollbar { display: none; }
+.ob-b .ob-actions { position: static; }
+.ob-b .ob-sign { padding-right: 2cqw; }

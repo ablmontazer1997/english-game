@@ -4,20 +4,14 @@
 // player is on is kept in flags.intro_step, so a reload resumes where they left. The guided first stage and the map
 // tour (MapTour.tsx) follow in App.
 
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useGame } from '../services/ServiceProvider'
-import { api, errorText } from '../services/api'
+import { api, errorText, unnamed } from '../services/api'
 import { lsToLook } from '../services/look'
-import { Btn, Panel } from '../components/PageArt'
+import { Btn } from '../components/PageArt'
+import { ScrollSheet } from '../components/ScrollSheet'
 import { NameField, nameOk } from '../components/NameSheet'
 import { ORACLE_BANK, LEVELS, type OracleQ } from '../games/oracleBank'
-import stageBg from '../assets/stage_bg.webp'
-import pTop from '../assets/spellbook/p_top.webp'
-import pMid from '../assets/spellbook/p_mid.webp'
-import pBot from '../assets/spellbook/p_bot.webp'
-import seal from '../assets/spellbook/seal.webp'
-import quill from '../assets/spellbook/quill.webp'
-import lavender from '../assets/spellbook/lavender.webp'
 import divider from '../assets/spellbook/divider.webp'
 import faceBoy from '../assets/character/portrait_default_m.webp'
 import faceGirl from '../assets/character/portrait_default_f.webp'
@@ -49,47 +43,6 @@ const GOALS = [
   { n: 3, t: 'Serious', s: '3 stages a day · about 15 minutes' },
 ]
 
-// paper art of the Spellbook letter: 853 px wide, caps 210 px, seamless middle strip 240 px (never stretched)
-const ART_W = 853, CAP = 210, STRIP = 240, TEXT_TOP = 0.5
-
-/** a parchment that grows by whole paper strips with its content (the Spellbook letter's paper) */
-export function Parchment({ children, tag, deco }: { children: ReactNode; tag?: string; deco?: boolean }) {
-  const box = useRef<HTMLDivElement>(null)
-  const body = useRef<HTMLDivElement>(null)
-  const [fit, setFit] = useState({ strips: 1, top: 40 })
-  useLayoutEffect(() => {
-    const measure = () => {
-      if (!box.current || !body.current) return
-      const k = box.current.clientWidth / ART_W
-      const cap = CAP * k, strip = STRIP * k
-      const need = body.current.offsetHeight - cap * TEXT_TOP * 2 + 28
-      const strips = Math.max(0, Math.ceil(need / strip))
-      const top = Math.round(cap * TEXT_TOP + (strips * strip - need) / 2)
-      setFit((f) => (f.strips === strips && f.top === top ? f : { strips, top }))
-    }
-    measure()
-    const ro = new ResizeObserver(measure)
-    if (box.current) ro.observe(box.current)
-    if (body.current) ro.observe(body.current)
-    return () => ro.disconnect()
-  }, [])
-  return (
-    <div className="sl ob-paper" ref={box}>
-      <div className="sl-paper">
-        <img src={pTop} alt="" draggable={false} />
-        {Array.from({ length: fit.strips }, (_, i) => <img key={i} src={pMid} alt="" draggable={false} />)}
-        <img src={pBot} alt="" draggable={false} />
-      </div>
-      <img className="sl-seal" src={seal} alt="" draggable={false} />
-      {deco && <><img className="sl-quill" src={quill} alt="" draggable={false} /><img className="sl-lav" src={lavender} alt="" draggable={false} /></>}
-      <div className="sl-body ob-body" ref={body} style={{ top: fit.top }}>
-        {tag && <Panel name="ribbon_gold" className="sl-tag" inner="lobby-tag-in">{tag}</Panel>}
-        {children}
-      </div>
-    </div>
-  )
-}
-
 /** the server's oracle-trial items (a few per level) merged with the local bank (it adds vocabulary and reading) */
 function toBank(items: Awaited<ReturnType<typeof api.placementItems>>): OracleQ[] {
   const srv: OracleQ[] = items.filter((q) => q.payload?.prompt && q.payload?.answer && Array.isArray(q.payload?.wrong)).map((q) => ({
@@ -114,7 +67,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
     return s === 'oracle' || s === 'spoken' ? 'level' : s
   })()
   const [step, setStep] = useState<Step>(startAt)
-  const [name, setName] = useState(account && account.display_name !== 'Apprentice' ? account.display_name : '')
+  const [name, setName] = useState(account && !unnamed(account.display_name) ? account.display_name : '')
   const [nameErr, setNameErr] = useState<string | null>(null)
   const [look, setLook] = useState<'boy' | 'girl' | null>(() => { try { return localStorage.getItem('girl') === '1' ? 'girl' : null } catch { return null } })
   const [goal, setGoal] = useState<number | null>(account?.daily_goal ?? null)
@@ -175,18 +128,17 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   }
 
   const dot = DOTS.indexOf(step === 'oracle' || step === 'spoken' ? 'level' : step)
-  const frame = (content: ReactNode, actions: ReactNode) => (
-    <div className="stage-host full ob">
-      <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
-      <div className="ob-scroll">
-        {dot >= 0 && (
-          <div className="ob-dots" aria-label={`Step ${dot + 1} of ${DOTS.length}`}>
-            {DOTS.map((d, i) => <i key={d} className={i < dot ? 'done' : i === dot ? 'on' : ''} />)}
-          </div>
-        )}
-        <div className="ob-card pop" key={step}>{content}</div>
+  // admin 6056/6062: every intro step is written on the full-screen letter (mockup B); the hero waves on the first one
+  const frame = (tag: string, content: ReactNode, actions: ReactNode) => (
+    <div className="stage-host full ob ob-b">
+      <ScrollSheet title={tag} hero={step === 'letter'} top={dot >= 0 ? (
+        <div className="ob-dots" aria-label={`Step ${dot + 1} of ${DOTS.length}`}>
+          {DOTS.map((d, i) => <i key={d} className={i < dot ? 'done' : i === dot ? 'on' : ''} />)}
+        </div>
+      ) : undefined}>
+        <div className="ob-in pop" key={step}>{content}</div>
         <div className="ob-actions">{actions}</div>
-      </div>
+      </ScrollSheet>
     </div>
   )
 
@@ -200,13 +152,13 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   )
 
   if (step === 'letter') return frame(
-    <Parchment tag="A letter" deco>
-      <h2 className="sl-title">Welcome, young apprentice</h2>
+    "A letter", <>
+      <h2 className="sl-title">Welcome to English Spell</h2>
       <img className="sl-div" src={divider} alt="" draggable={false} />
       <p className="sl-sum ob-letter">Your magic is written in <em>English</em>. Every word you master becomes a spell, and every spell opens a new world.</p>
       <p className="sl-sum ob-letter">Learn a little every day, and the realm will grow with you.</p>
       <p className="ob-sign">The Archmage</p>
-    </Parchment>,
+    </>,
     <>
       <Btn className="lg ob-main" onClick={() => go('name')}>Open the gates</Btn>
       <button className="cb cb-white ob-sec" onClick={skipAll} disabled={busy}>I have played before</button>
@@ -214,12 +166,12 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   )
 
   if (step === 'name') return frame(
-    <Parchment tag="Your name">
+    "Your name", <>
       <h2 className="sl-title sm">What shall we call you?</h2>
-      <p className="sl-sum">Other apprentices will see this name in the weekly league.</p>
+      <p className="sl-sum">Other players will see this name in the weekly league.</p>
       <NameField value={name} onChange={(v) => { setName(v); setNameErr(null) }} onEnter={saveName} />
       {nameErr && <p className="nm-err">{nameErr}</p>}
-    </Parchment>,
+    </>,
     <>
       <Btn className="lg ob-main" onClick={saveName} disabled={!nameOk(name) || busy}>{busy ? 'Signing…' : 'Sign the scroll'}</Btn>
       <button className="cb cb-white ob-sec" onClick={() => go('look')}>Skip</button>
@@ -227,7 +179,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   )
 
   if (step === 'look') return frame(
-    <Parchment tag="Your look">
+    "Your look", <>
       <h2 className="sl-title sm">Who walks the path?</h2>
       <div className="ob-looks">
         {([['boy', faceBoy, 'Boy'], ['girl', faceGirl, 'Girl']] as const).map(([id, src, label]) => (
@@ -238,7 +190,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
         ))}
       </div>
       <p className="sl-sum ob-small">Hair, robes, hats and colours wait in the wardrobe.</p>
-    </Parchment>,
+    </>,
     <>
       <Btn className="lg ob-main" onClick={saveLook} disabled={!look}>This is me</Btn>
       <div className="ob-row2">
@@ -249,7 +201,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   )
 
   if (step === 'goal') return frame(
-    <Parchment tag="Daily vow">
+    "Daily vow", <>
       <h2 className="sl-title sm">How much magic a day?</h2>
       <div className="ob-opts">
         {GOALS.map((g) => (
@@ -260,7 +212,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
         ))}
       </div>
       <p className="sl-sum ob-small">Your daily quest follows your vow. You can play more any time.</p>
-    </Parchment>,
+    </>,
     <>
       <Btn className="lg ob-main" onClick={() => saveGoal(goal)} disabled={!goal}>I vow it</Btn>
       <button className="cb cb-white ob-sec" onClick={() => saveGoal(null)}>Skip</button>
@@ -268,7 +220,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   )
 
   if (step === 'level') return frame(
-    <Parchment tag="The Oracle">
+    "The Oracle", <>
       <h2 className="sl-title sm">How well do you know English?</h2>
       <div className="ob-opts ob-lvopts">
         {LEVEL_CARDS.map((c, i) => (
@@ -283,7 +235,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
         <span><b>Not sure? Let the Oracle test you</b><small>12 questions · about 3 minutes</small></span>
       </button>
       <button className="ob-link" onClick={() => finish(0)} disabled={busy}>Skip: start at the very beginning</button>
-    </Parchment>,
+    </>,
     <>
       <Btn className="lg ob-main" onClick={() => level != null && finish(level)} disabled={level == null || busy}>
         {level == null ? 'Choose a level' : `Begin at ${LEVELS[level]}`}
@@ -295,13 +247,13 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   // 'spoken': the Oracle's verdict
   const lv = placed ?? 0
   return frame(
-    <Parchment tag="The verdict">
+    "The verdict", <>
       <img className="ob-oracle-face" src={oracleHappy} alt="" draggable={false} />
       <p className="ob-big">{LEVELS[lv]}</p>
       <h2 className="sl-title sm">{GRIMOIRE[lv]}</h2>
       <p className="sl-sum">{lv === 0 ? 'Your path begins at the very first page. Every great mage started here.'
         : `Your path begins in the ${GRIMOIRE[lv]}. The earlier grimoires stay open if you want to look back.`}</p>
-    </Parchment>,
+    </>,
     <>
       <Btn className="lg ob-main" onClick={() => finish(lv)} disabled={busy}>Begin at {LEVELS[lv]}</Btn>
       {lv > 0 && <button className="cb cb-white ob-sec" onClick={() => finish(lv - 1)} disabled={busy}>Start one level lower ({LEVELS[lv - 1]})</button>}

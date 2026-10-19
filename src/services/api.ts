@@ -164,7 +164,7 @@ async function guestLogin(): Promise<string> {
     authing = (async () => {
       let tz: string | undefined
       try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone } catch { /* default on the server */ }
-      const out = await raw<{ token: string }>('POST', '/v1/auth/guest', { device_id: deviceId(), display_name: 'Apprentice', ...(tz ? { timezone: tz } : {}) }, null, 3)
+      const out = await raw<{ token: string }>('POST', '/v1/auth/guest', { device_id: deviceId(), display_name: 'Player', ...(tz ? { timezone: tz } : {}) }, null, 3)
       ls.set(LS_TOKEN, out.token)
       return out.token
     })().finally(() => { authing = null })
@@ -229,6 +229,9 @@ const redeeming: Promise<void> | null = (() => {
 const PLAYER_KEYS = ['girl', 'skinTone2', 'blush', 'hairPick', 'hairColor', 'irisColor', 'hatOn', 'hatPick', 'outfit', 'rcVariant',
   'rcTintFx', 'tint', 'wand', 'rc.portrait', 'runecast.avatar', 'es.map.seen.v2', 'rc.tut', 'rc.repairSeen', 'es.ach.claimed', 'es.review.day']
 function forgetPlayer() { try { PLAYER_KEYS.forEach((k) => localStorage.removeItem(k)) } catch { /* private mode */ } }
+
+/** admin 6062: no "apprentice" in the game; a player who never chose a name is 'Player' (older accounts: 'Apprentice') */
+export const unnamed = (n?: string | null): boolean => !n || n === 'Player' || n === 'Apprentice'
 
 /** the signed-in username, or null for the device guest */
 export const signedInAs = (): string | null => ls.get(LS_ACCT)

@@ -34,7 +34,7 @@ const SCRIPT: Node[] = [
     { say: 'Is cheaper it can be?', ok: false, reply: 'Can it be cheaper? Let me think.', mood: 'think', next: 2 },
   ] },
   { line: 'Hmm. I could sell it for twelve coins.', mood: 'think', price: 12, choices: [
-    { say: "How about eight coins? I'm just a poor apprentice.", ok: true, next: 3 },
+    { say: "How about eight coins? I'm just a poor student.", ok: true, next: 3 },
     { say: 'Twelve is fine.', ok: false, reply: 'Still more than ten, my friend. Make me an offer!', mood: 'think', next: 'stay' },
     { say: 'I will paying eight.', ok: false, reply: "You'll pay eight? Hmm.", mood: 'think', next: 3 },
   ] },

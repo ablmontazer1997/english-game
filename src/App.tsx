@@ -32,7 +32,7 @@ import { NameSheet } from './components/NameSheet'
 import { Onboarding, firstStageOf, useIntroNeeded } from './screens/Onboarding'
 import { MapTour } from './screens/MapTour'
 import { SeasonPassScreen } from './screens/SeasonPassScreen'
-import { mockFx, signedInAs } from './services/api'
+import { mockFx, signedInAs, unnamed } from './services/api'
 import { LoginScreen } from './screens/LoginScreen'
 import { ReminderSheet } from './components/ReminderSheet'
 import { isOn as remindersOn, pushSupported, shouldOffer, turnOff as remindersOff, turnOn as remindersTurnOn } from './services/push'
@@ -263,7 +263,7 @@ function SettingsBody({ server, onRename, onAccount }: { server: boolean; onRena
       )}
       {server && (
         <div className="set-name">
-          <span><small>Your name</small><b>{name === 'Apprentice' ? 'Not chosen yet' : name}</b></span>
+          <span><small>Your name</small><b>{unnamed(name) ? 'Not chosen yet' : name}</b></span>
           <button className="cb cb-white set-name-btn" onClick={onRename}>Change</button>
         </div>
       )}

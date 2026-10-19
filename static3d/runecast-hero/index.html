@@ -1674,7 +1674,7 @@ function buildEditor(E){
   // wardrobe state -> which meshes are visible (hidden body pieces come back when the garment covering them is off)
   const st={hat:LS.get('hatOn','1')!=='0',hair:true,robe:true};
   // ---- hats v2 (10-07): 10 Hunyuan3D hat items; the hair under them is tucked at runtime (GW.hat, items/<hat>.tuck.json) ----
-  const HATS=[['Wizard hat',null],['Midnight hat','hat_midnight'],['Apprentice cap','hat_apprentice'],['Witch hat','hat_witch'],['Mushroom hat','hat_mushroom'],['Scholar cap','hat_scholar'],['Fire hat','hat_fire'],['Frost hat','hat_frost'],['Owl beret','hat_owl'],['Astronomer hat','hat_astronomer'],['Dragon cap','hat_dragon']];
+  const HATS=[['Wizard hat',null],['Midnight hat','hat_midnight'],['Starter cap','hat_apprentice'],['Witch hat','hat_witch'],['Mushroom hat','hat_mushroom'],['Scholar cap','hat_scholar'],['Fire hat','hat_fire'],['Frost hat','hat_frost'],['Owl beret','hat_owl'],['Astronomer hat','hat_astronomer'],['Dragon cap','hat_dragon']];
   const HATV='h5',hatProf={},hatItems={};let hatPick=+LS.get('hatPick',0)||0;if(!HATS[hatPick])hatPick=0;LOOK.hatPick=hatPick;
   const hatLoad=id=>hatItems[id]||(hatItems[id]=Promise.all([loadItem(LITE+'items/'+id+(HATTEX?'_'+HATTEX:'')+'.glb?v='+HATV),fetch(LITE+'items/'+id+'.tuck.json?v='+HATV).then(r=>r.json()).catch(()=>null)]).then(([o,p])=>{hatProf[id]=p;return o;}));
   let hatShown=null;const setHP=p=>{if(GW._hp!==p){GW._hp=p;GW.hat(p);}};LOOK.hat=st.hat;const PREV={noHat:false};
@@ -1711,7 +1711,7 @@ function buildEditor(E){
   // ---- /waist ----
   // ---- tops3d (09-30): 9 Hunyuan3D wizard tops (closed shells, design pixels projected) replace the old TRELLIS shirt + tops;
   //      the default (option 1) is the plain cream Apprentice tunic, the closest design to the old holey shirt ----
-  {const T=OUTFIT.find(o=>o[0]==='Top')[1];T.splice(1,T.length-1,['Apprentice tunic','top_apprentice'],['Alchemist vest','top_alchemist'],['Crystal tunic','top_crystal'],['Fire tunic','top_fire'],['Forest tunic','top_forest'],['Frost tunic','top_frost'],['Rune tunic','top_rune'],['Scholar tunic','top_scholar'],['Star tunic','top_star']);
+  {const T=OUTFIT.find(o=>o[0]==='Top')[1];T.splice(1,T.length-1,['Starter tunic','top_apprentice'],['Alchemist vest','top_alchemist'],['Crystal tunic','top_crystal'],['Fire tunic','top_fire'],['Forest tunic','top_forest'],['Frost tunic','top_frost'],['Rune tunic','top_rune'],['Scholar tunic','top_scholar'],['Star tunic','top_star']);
    Object.assign(IV,{top_alchemist:'t1',top_apprentice:'t1',top_crystal:'t1',top_fire:'t1',top_forest:'t1',top_frost:'t1',top_rune:'t1',top_scholar:'t1',top_star:'t1'});}
   // ---- /tops3d ----
   // ---- coatsD (09-30): the 7 live Hunyuan cloaks tapered at waist/hips (inner wall ~12 mm over the thickest top), hem flare kept ----
