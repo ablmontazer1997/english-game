@@ -227,3 +227,11 @@ class PushSubIn(BaseModel):
 
 class PushUnsubIn(BaseModel):
     endpoint: str | None = None
+
+
+class PushPrefsIn(BaseModel):
+    """reminder settings; minute = minutes after local midnight (None = auto: the usual play hour)"""
+    on: bool | None = None
+    events: bool | None = None
+    minute: int | None = Field(default=None, ge=0, le=1439)
+    auto: bool | None = None          # true = forget the chosen time (minute None)

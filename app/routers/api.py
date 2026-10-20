@@ -14,7 +14,7 @@ from ..errors import ApiError
 from ..models import GrammarTopic, LoginAttempt, LoginCode, Item, Level, Question, Streak, User, UserEquipment, UserItem, Wallet, WalletTx
 from ..schemas import (BuyIn, CheckoutIn, CompleteIn, ContinueIn, DyeIn, EquipIn, GuestIn, LedgerRow, LevelOut,
                        LookIn, MeOut, MePatch, ReviewIn, SetIn, StartOut, TokenOut, WalletOut, WardrobeBuyIn,
-                       ConfirmIn, PushSubIn, PushUnsubIn, SeasonClaimIn, RedeemIn, RedeemOut, LoginIn)
+                       ConfirmIn, PushPrefsIn, PushSubIn, PushUnsubIn, SeasonClaimIn, RedeemIn, RedeemOut, LoginIn)
 from ..passwords import verify_password
 from ..security import current_user, make_token
 from ..services import achievements as ach
@@ -376,6 +376,24 @@ async def push_unsubscribe(body: PushUnsubIn, user: User = Depends(current_user)
     out = await PUSH.unsubscribe(db, user, body.endpoint)
     await db.commit()
     return out
+
+
+@router.post("/push/prefs", tags=["engagement"], summary="Reminder settings: on, time (minute of the day or auto), events")
+async def push_prefs(body: PushPrefsIn, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    out = await PUSH.set_prefs(db, user, body.on, body.events, body.minute, body.auto)
+    await db.commit()
+    return out
+
+
+@router.get("/push/plan", tags=["engagement"],
+            summary="The reminder plan (day 1..30 ladder + events) the Android app schedules as local notifications")
+async def push_plan(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    from ..services import remind as R
+    from ..timeutil import utcnow
+    prefs = R.prefs_of(user)
+    items = R.plan(await R.gather(db, user), utcnow()) if prefs["on"] else []
+    await db.commit()
+    return {"on": prefs["on"], "events": prefs["events"], "items": R.plan_out(items)}
 
 
 # ---------------------------------------------------------------- inventory

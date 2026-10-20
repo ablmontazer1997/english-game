@@ -178,6 +178,8 @@ class User(Base):
     premium_until: Mapped[datetime | None] = mapped_column(TS, nullable=True)
     # Phase D Web Push: the local day the last reminder went out (at most one a day)
     last_reminder_day: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # 10-20 reminders (admin 6138): {"on": bool, "minute": int | None (None = auto), "events": bool}; see services/remind
+    notify_prefs: Mapped[dict] = mapped_column(JSONB, default=dict, server_default="{}")
     created_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
     last_seen_at: Mapped[datetime] = mapped_column(TS, server_default=_now())
 

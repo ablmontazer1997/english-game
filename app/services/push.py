@@ -3,12 +3,12 @@
 🔴 Independent of Bingual: own VAPID keys, own subscriptions table, own service worker on /runecast/.
 
 - The app asks for permission at a good moment (after a won stage, never on load) and posts the browser subscription.
-- The worker (app/push_worker.py, cron every 15 min) sends at most ONE reminder a local day, near the player's usual
-  play hour, and only when the player has not played today AND has a Hearthfire (streak) that would go out.
+- The worker (app/push_worker.py, cron every 15 min) sends at most ONE notification a local day; WHAT and WHEN come
+  from the reminder planner (services/remind.py, 10-20: Bingual-style ladder + ES events), the same plan the Android
+  app schedules locally (GET /v1/push/plan).
 - Settings can turn it off: the app unsubscribes the browser and deletes the server row.
 """
 import json
-import random
 import re
 import statistics
 from datetime import datetime, timedelta
@@ -21,7 +21,6 @@ from ..config import get_settings
 from ..errors import ApiError
 from ..models import UNNAMED, PushSubscription, StageSession, Streak, User
 from ..timeutil import local_day, tz_of, utcnow
-from . import engage
 
 # push services browsers really use; anything else is refused (the server must never POST to arbitrary URLs)
 PUSH_HOSTS = re.compile(r"(^|\.)(fcm\.googleapis\.com|android\.googleapis\.com|push\.services\.mozilla\.com|"
@@ -30,12 +29,6 @@ DEFAULT_HOUR = 18
 EARLIEST, LATEST = 9, 21          # never remind before 09:00 or after 21:59 local time
 MAX_FAILS = 5
 
-MESSAGES = [
-    ("Your Hearthfire is flickering", "{n}-day streak! One quick spell keeps it burning today."),
-    ("The Spellbook misses you, {name}", "A two-minute stage keeps your {n}-day Hearthfire alight."),
-    ("Embers need tending", "Cast one spell today and your {n}-day streak lives on."),
-    ("A wizard's work is never done", "Your {n}-day Hearthfire needs one stage before midnight."),
-]
 
 
 def configured() -> bool:
@@ -88,16 +81,29 @@ async def usual_hour(db: AsyncSession, user: User, now: datetime | None = None) 
 
 
 async def status(db: AsyncSession, user: User) -> dict:
+    from . import remind as R
     n = len((await db.execute(select(PushSubscription.id).where(PushSubscription.user_id == user.id))).all())
+    prefs = R.prefs_of(user)
+    auto = await usual_hour(db, user)
     return {"enabled": configured(), "subscribed": n > 0, "devices": n,
-            "public_key": get_settings().vapid_public_key or None, "reminder_hour": await usual_hour(db, user)}
+            "public_key": get_settings().vapid_public_key or None, "reminder_hour": auto,
+            "on": prefs["on"], "events": prefs["events"], "minute": prefs["minute"], "auto_minute": auto * 60}
 
 
-def message(user: User, streak: int) -> dict:
-    title, body = random.choice(MESSAGES)
-    name = user.display_name if user.display_name and user.display_name not in UNNAMED else "friend"
-    return {"title": title.format(n=streak, name=name), "body": body.format(n=streak, name=name),
-            "url": get_settings().app_url, "tag": "es-daily"}
+async def set_prefs(db: AsyncSession, user: User, on: bool | None, events: bool | None, minute: int | None,
+                    auto: bool | None) -> dict:
+    p = dict(user.notify_prefs or {})
+    if on is not None:
+        p["on"] = bool(on)
+    if events is not None:
+        p["events"] = bool(events)
+    if auto:
+        p["minute"] = None
+    elif minute is not None:
+        p["minute"] = int(minute)
+    user.notify_prefs = p
+    await db.flush()
+    return await status(db, user)
 
 
 def send_one(sub: dict, payload: dict, ttl: int = 6 * 3600) -> int:
@@ -115,19 +121,27 @@ def send_one(sub: dict, payload: dict, ttl: int = 6 * 3600) -> int:
         return 0
 
 
-async def due(db: AsyncSession, user: User, now: datetime | None = None) -> tuple[bool, str, int]:
-    """(send?, why, streak). Rules: local hour == usual hour, not reminded today, not played today, streak at risk"""
+async def due(db: AsyncSession, user: User, now: datetime | None = None) -> tuple[dict | None, str]:
+    """(the notification to send now or None, why). The reminder planner (services/remind.py) decides; here only:
+    reminders on, not reminded today, and the planned item for TODAY is due (at most 2 h late: cron runs every 15 min)."""
+    from . import remind as R
     now = now or utcnow()
+    if not R.prefs_of(user)["on"]:
+        return None, "off"
     today = local_day(user.timezone, now)
     if user.last_reminder_day == today:
-        return False, "already_today", 0
-    hour = now.astimezone(tz_of(user.timezone)).hour
-    if hour != await usual_hour(db, user, now):
-        return False, "not_the_hour", 0
-    st = await db.get(Streak, user.id)
-    if st is None or st.last_active_day == today:
-        return False, "played_today" if st else "no_streak", 0
-    n = engage.live_streak(st, today)
-    if n <= 0:
-        return False, "no_streak", 0
-    return True, "at_risk", n
+        return None, "already_today"
+    st = await R.gather(db, user, now)
+    items = R.plan(st, now - timedelta(hours=2))
+    it = next((i for i in items if i["day"] == today.isoformat()), None)
+    if it is None:
+        return None, "nothing_today"
+    if it["at"] > now:
+        return None, "not_yet"
+    return it, it["tier"]
+
+
+def payload(item: dict) -> dict:
+    base = get_settings().app_url.rstrip("/") + "/"
+    return {"title": item["title"], "body": item["body"], "url": f"{base}?go={item['route']}", "tag": "es-daily",
+            "image": f"{base}notif/{item['img']}.webp", "icon": f"{base}notif/{item['img']}_icon.png"}

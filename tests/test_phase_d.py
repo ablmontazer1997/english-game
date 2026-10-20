@@ -218,10 +218,14 @@ async def test_push_subscribe_and_turn_off(client, player):
 
 
 async def test_reminder_rules_and_worker(client, player, monkeypatch):
+    """10-20: the worker sends what the planner (services/remind.py) plans for today, once a day"""
     from app import push_worker
+    from app.timeutil import tz_of
     uid = uuid.UUID(player["id"])
     sub = {"endpoint": FCM + uuid.uuid4().hex, "keys": {"p256dh": "B" * 87, "auth": "a" * 22}}
     await client.post("/v1/push/subscribe", json=sub)
+    st = (await client.post("/v1/push/prefs", json={"minute": 18 * 60, "events": False})).json()
+    assert st["minute"] == 1080 and st["on"] and st["events"] is False
     s = get_settings()
     monkeypatch.setattr(s, "vapid_public_key", "pub")
     monkeypatch.setattr(s, "vapid_private_key", "priv")
@@ -229,35 +233,28 @@ async def test_reminder_rules_and_worker(client, player, monkeypatch):
     monkeypatch.setattr(PUSH, "send_one", lambda sub, payload, ttl=0: sent.append(payload) or 201)
     async with SessionLocal() as db:
         u = await db.get(User, uid)
-        hour = await PUSH.usual_hour(db, u)
-        from app.timeutil import tz_of
         tz = tz_of(u.timezone)
-        local_now = datetime.now(tz).replace(hour=hour, minute=5)
-        now = local_now.astimezone(timezone.utc)
+        now = datetime.now(tz).replace(hour=18, minute=5, second=0, microsecond=0).astimezone(timezone.utc)
         today = local_day(u.timezone, now)
         st = await db.get(Streak, uid)
-        # played today -> nothing
-        st.current, st.last_active_day = 4, today
+        st.current, st.freezes, st.last_active_day = 4, 0, today       # played today -> nothing today
         await db.commit()
-        assert (await PUSH.due(db, u, now))[1] == "played_today"
-        # yesterday -> at risk
-        st.last_active_day = today - timedelta(days=1)
+        assert (await PUSH.due(db, u, now))[1] == "nothing_today"
+        st.last_active_day = today - timedelta(days=1)                   # yesterday -> day 1, fire at risk
         await db.commit()
-        ok, why, n = await PUSH.due(db, u, now)
-        assert ok and why == "at_risk" and n == 4
-        # wrong hour -> wait
-        assert (await PUSH.due(db, u, now + timedelta(hours=2)))[1] == "not_the_hour"
-        # no streak -> nothing (only a Hearthfire at risk is worth a nudge)
-        st.current, st.last_active_day = 0, None
+        item, why = await PUSH.due(db, u, now)
+        assert item and why == "d1_streak" and "4" in item["title"] + item["body"]
+        assert (await PUSH.due(db, u, now - timedelta(hours=1)))[1] == "not_yet"
+        u.notify_prefs = {**u.notify_prefs, "on": False}
         await db.commit()
-        assert not (await PUSH.due(db, u, now))[0]
-        st.current, st.last_active_day = 4, today - timedelta(days=1)
+        assert (await PUSH.due(db, u, now))[1] == "off"
+        u.notify_prefs = {**u.notify_prefs, "on": True}
         u.last_reminder_day = None
         await db.commit()
     monkeypatch.setattr(push_worker, "utcnow", lambda: now)
     c = await push_worker.run()
-    assert c["sent"] >= 1 and sent and "4-day" in (sent[-1]["title"] + sent[-1]["body"])
-    assert sent[-1]["url"].endswith("/runecast/")
+    assert c["sent"] >= 1 and sent and "4" in (sent[-1]["title"] + sent[-1]["body"])
+    assert "/runecast/?go=map" in sent[-1]["url"] and sent[-1]["image"].endswith("/notif/hearth.webp")
     n_before = len(sent)
     c = await push_worker.run()          # once a day at most
     assert len(sent) == n_before
@@ -271,6 +268,10 @@ async def test_reminder_rules_and_worker(client, player, monkeypatch):
     async with SessionLocal() as db:
         left = (await db.execute(select(PushSubscription).where(PushSubscription.user_id == uid))).scalars().all()
         assert left == []
+    # the Android plan: the whole ladder, day 1..30
+    plan = (await client.get("/v1/push/plan")).json()
+    assert plan["on"] and len(plan["items"]) >= 6
+    assert plan["items"][-1]["tier"] == "d30"
 
 
 async def test_vapid_payload_round_trip():

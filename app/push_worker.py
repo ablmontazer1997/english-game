@@ -2,7 +2,7 @@
 
     docker exec runecast-api python -m app.push_worker
 
-At most one reminder per player per local day, near the usual play hour, only when the Hearthfire is at risk.
+At most one notification per player per local day; what and when come from services/remind.py (the planner).
 Dead endpoints (404/410) are deleted; others are dropped after MAX_FAILS failures in a row. Prints counts only
 (never keys or endpoints)."""
 import asyncio
@@ -29,12 +29,13 @@ async def run(dry: bool = False) -> Counter:
             user = await db.get(User, uid)
             if user is None:
                 continue
-            ok, why, n = await P.due(db, user, now)
+            item, why = await P.due(db, user, now)
             c[why] += 1
-            if not ok or dry:
+            if item is None or dry:
+                await db.commit()      # quest rows the planner may have made
                 continue
             subs = (await db.execute(select(PushSubscription).where(PushSubscription.user_id == uid))).scalars().all()
-            payload = P.message(user, n)
+            payload = P.payload(item)
             sent = False
             for s in subs:
                 code = await run_in_threadpool(P.send_one, {"endpoint": s.endpoint, "p256dh": s.p256dh, "auth": s.auth},
