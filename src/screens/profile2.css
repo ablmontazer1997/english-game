@@ -3,13 +3,14 @@
 .ph-es2 .ph-frame { --pod-b: 74px; border-radius: 0; background: none; box-shadow: none; animation: none; overflow: visible; }
 .ph-es2 .ph-frame::after { content: none; }
 /* the painted spotlight panel fills the arch's opening (its own top is arched) */
-.ph-es2 .ph-spotclip { position: absolute; inset: -6px -4px 30px; z-index: 0; pointer-events: none;
-  /* admin 6108: the violet stage used to be a rectangle (its border-radius never matched the arch) and its top corners stuck
-     out past the arch curve. It is now masked by the arch opening itself (arch_mask = the arch art inner hole + 5 px under
-     the gold), 9-sliced exactly like .ph-arch, so the curve follows the arch at every card size. */
-  -webkit-mask-box-image: url(../assets/es2/profile/arch_mask.webp) 113 79 40 79 / 58px 38px 22px stretch;
-  mask-border: url(../assets/es2/profile/arch_mask.webp) 113 79 40 79 / 58px 38px 22px stretch; }
-.ph-es2 .ph-spotbg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+.ph-es2 .ph-spotclip { position: absolute; inset: -6px -4px 30px; z-index: 0; pointer-events: none; box-sizing: border-box;
+  /* admin 6108: the violet stage used to be a rectangle whose top corners stuck out past the arch curve. It is masked by
+     the arch opening itself (arch_mask = the arch art inner hole + 5 px under the gold), 9-sliced exactly like .ph-arch.
+     -webkit-mask-box-image takes its slice widths from the border widths, so the box carries the arch border widths. */
+  border: solid transparent; border-width: 58px 38px 22px;
+  -webkit-mask-box-image: url(../assets/es2/profile/arch_mask.webp) 113 79 40 79 stretch; }
+.ph-es2 .ph-spotbg { position: absolute; top: -58px; left: -38px; width: calc(100% + 76px); height: calc(100% + 80px);
+  object-fit: cover; object-position: 50% 100%; }
 .ph-es2 .ph-rays, .ph-es2 .ph-ring, .ph-es2 .ph-glow { display: none; }
 .ph-es2 .ph-podium { filter: drop-shadow(0 8px 10px rgba(40, 20, 90, .4)); }
 /* the gold arch: 9-slice so the posts stretch with the card and the crown keeps its shape */
