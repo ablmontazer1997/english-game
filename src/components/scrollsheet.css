@@ -1,30 +1,35 @@
 /* ScrollSheet (prefix ssh-): see ScrollSheet.tsx. Picture 941 x 1672; all slots in cqw (1cqw = 9.41 mock px).
-   Slots measured on mock B: ribbon text y 450-550, content box x 150-790 y 630-1045, primary x 215-725 y 1055-1185,
-   "or" y 1210-1240, secondary x 255-685 y 1265-1375. The paper's printable area is x 100-840. */
+   Slots measured on mock B: ribbon text y 450-550; admin 6101 moved the buttons down to just above the compass/castle
+   line: content box x 150-790 y 630-1118, primary x 215-725 y 1125-1255, "or" y 1262-1292, secondary x 188-753 y 1301-1411. The paper's printable area is x 100-840. */
 .ssh { position: absolute; inset: 0; z-index: 2; overflow: hidden; background: #2b1166; font-family: Fredoka, var(--game), system-ui, sans-serif;
   --st: var(--safe-top, env(safe-area-inset-top, 0px)); --sb: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); }
 .ssh-bg { position: absolute; inset: -30px; background-position: 30% 30%; background-size: cover; background-repeat: no-repeat; filter: blur(14px) saturate(1.1); }
 .ssh-bg::after { content: ''; position: absolute; inset: 0; background: rgba(30, 10, 70, .25); }
 .ssh-stage { position: absolute; left: 0; right: 0; top: var(--st); bottom: var(--sb); display: grid; place-items: center; }
-.ssh-box { position: relative; container-type: inline-size; aspect-ratio: 941 / 1672;
-  width: min(100vw, calc((100dvh - var(--st) - var(--sb)) * 941 / 1672), 520px); }
-.ssh-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 3%, #000 97%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 3%, #000 97%, transparent 100%); }
+.ssh-box { position: relative; container-type: inline-size;
+  --w: min(100vw, 520px, calc((100dvh - var(--st) - var(--sb)) * 941 / 1672));
+  --ext: clamp(0px, calc(100dvh - var(--st) - var(--sb) - var(--w) * 1672 / 941 - 12px), calc(var(--w) * .75));
+  width: var(--w); height: calc(var(--w) * 1672 / 941 + var(--ext)); }
+.ssh-art { position: absolute; left: 0; width: 100%; height: auto; display: block; user-select: none; pointer-events: none; }
+.ssh-art-top { top: 0; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 5%); mask-image: linear-gradient(180deg, transparent 0, #000 5%); }
+.ssh-art-bot { bottom: 0; -webkit-mask-image: linear-gradient(0deg, transparent 0, #000 8%); mask-image: linear-gradient(0deg, transparent 0, #000 8%); }
+/* the plain paper strip between the two halves (picture rows 960..; 1 tile = 120 px = 12.75cqw) */
+.ssh-band { position: absolute; left: 0; width: 100%; top: 102.02cqw; height: var(--ext); background-repeat: repeat-y; background-size: 100cqw auto;
+  background-position: 0 0; pointer-events: none; }
 .ssh-title { position: absolute; left: 20.2cqw; width: 60.6cqw; top: 47.8cqw; height: 10.6cqw; display: grid; place-items: center; pointer-events: none; }
 .ssh-title span { font-weight: 700; font-size: 8cqw; line-height: 1; color: #fff; white-space: nowrap; text-transform: uppercase; letter-spacing: -.01em;
   --o: .7cqw; text-shadow: calc(-1 * var(--o)) calc(-1 * var(--o)) 0 #6e3a0a, var(--o) calc(-1 * var(--o)) 0 #6e3a0a, calc(-1 * var(--o)) var(--o) 0 #6e3a0a,
     var(--o) var(--o) 0 #6e3a0a, 0 calc(-1 * var(--o)) 0 #6e3a0a, 0 var(--o) 0 #6e3a0a, calc(-1 * var(--o)) 0 0 #6e3a0a, var(--o) 0 0 #6e3a0a,
     0 1.1cqw 0 #6e3a0a, 0 1.6cqw 2cqw rgba(90, 50, 0, .4); }
 /* the content box: clear of the paper edges and ornaments; long content scrolls inside with a soft fade */
-.ssh-body { position: absolute; left: 15.9cqw; width: 68.1cqw; top: 66.9cqw; height: 44.1cqw; display: flex; flex-direction: column; align-items: center;
-  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.ssh-body { position: absolute; left: 12cqw; width: 76cqw; top: 66.9cqw; height: calc(51.9cqw + var(--ext)); display: flex; flex-direction: column; align-items: center;
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; justify-content: safe center; }
 .ssh-body::-webkit-scrollbar { display: none; }
-.ssh-pri { position: absolute; left: 22.8cqw; width: 54.2cqw; top: 112.1cqw; height: 13.8cqw; display: grid; place-items: center; }
-.ssh-or { position: absolute; left: 31.9cqw; width: 36.2cqw; top: 128.6cqw; height: 3.2cqw; display: flex; align-items: center; gap: 3cqw;
+.ssh-pri { position: absolute; left: 22.8cqw; width: 54.2cqw; top: calc(119.6cqw + var(--ext)); height: 13.8cqw; display: grid; place-items: center; }
+.ssh-or { position: absolute; left: 31.9cqw; width: 36.2cqw; top: calc(134.1cqw + var(--ext)); height: 3.2cqw; display: flex; align-items: center; gap: 3cqw;
   font-weight: 600; font-size: 3.4cqw; color: #6b4426; }
 .ssh-or i { flex: 1; height: 0; border-top: .3cqw solid rgba(107, 68, 38, .5); }
-.ssh-sec { position: absolute; left: 20cqw; width: 60cqw; top: 134.4cqw; height: 11.7cqw; display: flex; align-items: center; justify-content: center; gap: 2.4cqw; }
+.ssh-sec { position: absolute; left: 20cqw; width: 60cqw; top: calc(138.3cqw + var(--ext)); height: 11.7cqw; display: flex; align-items: center; justify-content: center; gap: 2.4cqw; }
 /* kit buttons sized to the slots */
 .ssh .ssh-pri .ui-btn { --h: 13.8cqw; width: 100%; min-width: 0; height: 13.8cqw; font-family: Fredoka, var(--game), sans-serif; font-weight: 700;
   font-size: 7cqw; padding: 0 0 .6cqw; }
@@ -35,3 +40,7 @@
 .ssh-sec:has(.cb + .cb) { left: 12cqw; width: 76cqw; }
 .ssh .ssh-sec .cb { color: #2d1b70; }
 .ssh-top { position: absolute; left: 20cqw; width: 60cqw; top: 63.2cqw; height: 3.6cqw; display: grid; place-items: center; }
+.ssh-sec:has(.ob-oracle-btn) { left: 12cqw; width: 76cqw; }
+.ssh .ssh-pri .ui-btn { white-space: nowrap; }
+.ssh .ssh-sec .cb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; box-sizing: border-box; }
+.ssh .ssh-sec .cb { flex: 0 1 auto; }

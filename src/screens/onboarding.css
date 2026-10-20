@@ -148,3 +148,40 @@
 .ob-b .ob-in .ob-small { font-size: 2.8cqw; line-height: 1.25; }
 .ob-b .ssh-sec .ob-row2 .cb { font-size: 3.5cqw; }
 .ob-b .ob-in { padding-top: 1.2cqw; }
+/* admin 6101/6103: bigger text and cards in the taller, wider content box; all five levels visible (on shorter phones
+   only the chosen level shows its line); the Oracle offer sits in the secondary slot */
+.ob-b .ob-in { gap: 2.4cqw; }
+.ob-b .ob-in .sl-title { font-size: 7cqw; }
+.ob-b .ob-in .sl-title.sm { font-size: 6.4cqw; }
+.ob-b .ob-in .sl-sum { font-size: 4.2cqw; }
+.ob-b[data-step='A letter'] .sl-title { font-size: 6.2cqw; }
+.ob-b[data-step='A letter'] .ob-letter { font-size: 4.2cqw; line-height: 1.32; }
+.ob-b .ob-sign { font-size: 4.4cqw; }
+.ob-b .ob-in .ob-small { font-size: 3.6cqw; }
+.ob-b .nm-field { height: max(48px, 12.6cqw); width: 96%; }
+.ob-b .nm-field input { font-size: max(16px, 5.2cqw); }
+.ob-b .nm-err { font-size: 3.8cqw; }
+.ob-b .ob-opts { width: 100%; gap: 2cqw; }
+.ob-b .ob-opt { min-height: 12cqw; padding: 1.2cqw 3cqw 1.2cqw 2cqw; gap: 3cqw; }
+.ob-b .ob-opt-n { width: 8.6cqw; height: 8.6cqw; font-size: 4.6cqw; border-radius: 2.4cqw; }
+.ob-b .ob-opt-n.ob-lv { font-size: 3.8cqw; }
+.ob-b .ob-opt-tx b { font-size: 4.5cqw; }
+.ob-b .ob-opt-tx small { font-size: 3.4cqw; }
+.ob-b .ob-lvopts { gap: 1.6cqw; }
+.ob-b .ob-lvopts .ob-opt { min-height: 10.4cqw; padding-top: .9cqw; padding-bottom: .9cqw; }
+.ob-b .ob-lvopts .ob-opt:not(.on) .ob-opt-tx small { display: none; }
+.ob-b .ob-looks { width: 94%; }
+.ob-b .ob-look img { width: 25cqw; }
+.ob-b .ob-look b { font-size: 4.6cqw; }
+.ob-b .ob-link { font-size: 3.7cqw; }
+.ob-b .ssh-sec .ob-oracle-btn { width: 100%; height: 100%; margin: 0; padding: .8cqw 3cqw .8cqw 1.2cqw; gap: 2cqw; }
+.ob-b .ssh-sec .ob-oracle-btn img { width: 9.4cqw; height: 9.4cqw; }
+.ob-b .ssh-sec .ob-oracle-btn b { font-size: 3.9cqw; }
+.ob-b .ssh-sec .ob-oracle-btn small { font-size: 3.1cqw; }
+.ob-b[data-step='A letter'] .sl-title { white-space: normal; }
+/* level step: five one-line cards + the skip link fit the content box without scrolling (360-439 wide phones) */
+.ob-b[data-step='The Oracle'] .ob-in { gap: 1.6cqw; }
+.ob-b .ob-lvopts { gap: 1.2cqw; }
+.ob-b .ob-lvopts .ob-opt { min-height: 9.4cqw; }
+.ob-b[data-step='The Oracle'] .ssh-body { padding-bottom: 0; -webkit-mask-image: none; mask-image: none; }
+.ob-b[data-step='The Oracle'] .ob-in { padding-top: 0; }

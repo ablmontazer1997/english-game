@@ -24,3 +24,13 @@
 .lg-eye[aria-pressed='true'] svg { stroke: #5a2fc0; }
 .lg-field.bad { border-color: #d0485a; background: linear-gradient(180deg, #fff3ef, #fbe3dc); }
 .lg-err { margin: -.4cqw 0 0; height: 3.4cqw; color: #c3283c; font-weight: 700; font-size: max(11px, 2.9cqw); line-height: 3.4cqw; text-align: center; white-space: nowrap; }
+/* admin 6103: bigger, wider form in the wider content box (fields >= 48 px) */
+.lg-h { font-size: 7.6cqw; margin-top: 0; }
+.lg-sub { font-size: 4.2cqw; margin-top: 1.4cqw; }
+.lg-form { width: 96%; gap: 3cqw; margin-top: 4.4cqw; }
+.lg-field { height: max(48px, 12.6cqw); padding-left: 5cqw; gap: 3cqw; }
+.lg-field input { font-size: max(16px, 4.9cqw); }
+.lg-ic { width: 5.8cqw; height: 5.8cqw; }
+.lg-eye { width: max(44px, 10cqw); height: max(44px, 10cqw); padding: 2.2cqw; }
+.lg-err { height: 4cqw; line-height: 4cqw; font-size: max(12px, 3.4cqw); }
+.lg-note { font-size: 4.6cqw; }

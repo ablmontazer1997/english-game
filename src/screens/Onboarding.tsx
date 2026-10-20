@@ -235,16 +235,17 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
           </button>
         ))}
       </div>
-      <button className="ob-oracle-btn" onClick={() => go('oracle')}>
-        <img src={oracleIdle} alt="" draggable={false} />
-        <span><b>Not sure? Let the Oracle test you</b><small>12 questions · about 3 minutes</small></span>
-      </button>
       <button className="ob-link" onClick={() => finish(0)} disabled={busy}>Skip: start at the very beginning</button>
     </>,
     <>
       <Btn className="lg ob-main" onClick={() => level != null && finish(level)} disabled={level == null || busy}>
         {level == null ? 'Choose a level' : `Begin at ${LEVELS[level]}`}
       </Btn>
+      {/* admin 6101: the Oracle offer sits in the secondary slot, so all five levels fit in the content box */}
+      <button className="ob-oracle-btn" onClick={() => go('oracle')}>
+        <img src={oracleIdle} alt="" draggable={false} />
+        <span><b>Not sure? Let the Oracle test you</b><small>12 questions · about 3 minutes</small></span>
+      </button>
       {nameErr && <p className="nm-err">{nameErr}</p>}
     </>,
   )
@@ -261,7 +262,7 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
     </>,
     <>
       <Btn className="lg ob-main" onClick={() => finish(lv)} disabled={busy}>Begin at {LEVELS[lv]}</Btn>
-      {lv > 0 && <button className="cb cb-white ob-sec" onClick={() => finish(lv - 1)} disabled={busy}>Start one level lower ({LEVELS[lv - 1]})</button>}
+      {lv > 0 && <button className="cb cb-white ob-sec" onClick={() => finish(lv - 1)} disabled={busy}>Start at {LEVELS[lv - 1]}</button>}
       {nameErr && <p className="nm-err">{nameErr}</p>}
     </>,
   )
