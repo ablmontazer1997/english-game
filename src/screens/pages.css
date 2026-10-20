@@ -22,6 +22,9 @@
   padding: calc(var(--hud-h) + var(--safe-top) + 8px) var(--gutter)
            calc(var(--nav-h) + var(--safe-bottom) + 44px);
   display: grid; grid-template-columns: 100%; gap: var(--gap); align-content: start;
+  /* admin 6108 (10-20): rows are always as tall as their card. With plain auto rows a full page squeezed a card with a
+     min-height (Profile > My Items) down to that min-height: the chest stuck out and the title sat on the edge */
+  grid-auto-rows: max-content;
 }
 
 .pnl {
