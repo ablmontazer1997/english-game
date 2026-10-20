@@ -11,5 +11,11 @@
     "allowMixedContent": false,
     "webContentsDebuggingEnabled": false,
     "adjustMarginsForEdgeToEdge": "disable"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_es",
+      "iconColor": "#7B4FD8"
+    }
   }
 }

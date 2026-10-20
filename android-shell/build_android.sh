@@ -21,6 +21,7 @@ cp -a android-shell/index.html android-shell/offline.html android-shell/icon.png
 VITE_API_BASE=$API npx vite build --base /runecast/ --outDir $W/runecast --emptyOutDir 2>&1 | grep -E "built in|error|Error"
 [ -s $W/runecast/index.html ] || { echo "VITE BUILD FAILED"; exit 1; }
 rm -rf $W/runecast/fonts-test   # test-only font previews
+rm -rf $W/runecast/notif        # web push pictures only; the app uses res/drawable-nodpi/notif_* (10-20)
 for d in runecast-hero runecast-wardrobe; do cp -a static3d/$d $W/$d; done
 CDN=https://cdn.jsdelivr.net/npm/three@0.164.1/
 GF='https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800\&family=Nunito:wght@600;700;800;900\&display=swap'
