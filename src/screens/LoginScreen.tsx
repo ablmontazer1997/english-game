@@ -5,7 +5,7 @@
 // device id unchanged, so "Play as guest" always returns to the same guest.
 
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { ApiError, accountLogin, errorText, needsAuthChoice, playAsGuest, signedInAs } from '../services/api'
+import { ApiError, accountLogin, edgeTrim, errorText, needsAuthChoice, playAsGuest, signedInAs } from '../services/api'
 import { Btn } from '../components/PageArt'
 import { ScrollSheet } from '../components/ScrollSheet'
 import '../components/es2kit.css'
@@ -49,7 +49,7 @@ export function LoginScreen({ firstRun, onDone, onCancel }: {
   const [busy, setBusy] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const pwRef = useRef<HTMLInputElement>(null)
-  const ready = user.trim().length > 0 && pw.length > 0
+  const ready = edgeTrim(user).length > 0 && edgeTrim(pw).length > 0
 
   const doLogin = async () => {
     setBusy(true); setErr(null)

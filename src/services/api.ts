@@ -251,9 +251,15 @@ export function needsAuthChoice(): boolean {
   return !ls.get(LS_TOKEN) && !ls.get(LS_DEVICE) && !ls.get(LS_CHOSEN)
 }
 
+/** admin 6204: text copied from Telegram can bring spaces, line breaks or invisible marks (zero-width, LRM/RLM, BOM)
+ *  around the name or password; behind the password dots they made a pasted password look like it did not work */
+const EDGE = /^[\s\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]+|[\s\u200B-\u200F\u202A-\u202E\u2060-\u2064\uFEFF]+$/g
+export const edgeTrim = (v: string) => v.replace(EDGE, '')
+
 /** POST /v1/auth/login; on success this install plays as that account (the guest token is kept aside) */
 export async function accountLogin(username: string, password: string): Promise<void> {
-  const name = username.trim().toLowerCase()
+  const name = edgeTrim(username).toLowerCase()
+  password = edgeTrim(password)
   const out = await raw<{ token: string; user: Me }>('POST', '/v1/auth/login', { username: name, password }, null, 1)
   const cur = ls.get(LS_TOKEN)
   if (cur && !ls.get(LS_ACCT)) ls.set(LS_GUEST, cur)
