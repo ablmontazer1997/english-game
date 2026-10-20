@@ -1,7 +1,7 @@
 /* Boss Lab (admin 5915/5919): the real stage fills the screen; the lab controls are one small chip at the top centre
    (between the stage's hearts and its X) that opens a panel. Nothing here changes the game's own layout. */
 .bosslab .bl-stage { position: absolute; inset: 0; overflow: hidden; }
-.bosslab .bl-chip { position: absolute; top: calc(14px + var(--safe-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 2px;
+.bosslab .bl-chip { position: absolute; top: max(14px, calc(8px + var(--safe-top, 0px))); left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 2px;
   padding: 2px; border-radius: 999px; background: rgba(23, 18, 46, .82); box-shadow: 0 2px 8px rgba(0, 0, 0, .3); font: 700 13px/1 var(--sans, system-ui, sans-serif); color: #f3eaff; }
 .bosslab .bl-btn { flex: none; min-width: 30px; height: 30px; border: 0; border-radius: 999px; background: #3b2f6b; color: #fff; font: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 8px; }
 .bosslab .bl-btn:active { background: #5a4aa0; }

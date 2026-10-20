@@ -1,6 +1,6 @@
 .stage-host { position: absolute; inset: 0; z-index: 40; overflow: hidden; }
 .stage-close {
-  position: absolute; top: calc(12px + var(--safe-top)); inset-inline-end: 14px; z-index: 5;
+  position: absolute; top: max(12px, calc(6px + var(--safe-top))); inset-inline-end: 14px; z-index: 5;   /* admin 6209: just under the status bar */
   width: 42px; height: 42px; border: 0; border-radius: 999px; padding: 0;
   /* the app's painted close button (same as the sheets), not a bare glyph */
   background: url(../assets/ui/v2/close.webp) center / contain no-repeat;
@@ -28,7 +28,7 @@
 .gate-heart { color: var(--rose); filter: drop-shadow(0 0 16px rgba(255,93,108,.6)); }
 
 /* play view */
-.play-top { position: absolute; top: calc(14px + var(--safe-top)); inset-inline-start: 14px; inset-inline-end: 62px; z-index: 5;
+.play-top { position: absolute; top: max(14px, calc(8px + var(--safe-top))); inset-inline-start: 14px; inset-inline-end: 62px; z-index: 5;
   display: flex; align-items: center; gap: 10px; }
 .progress-track { flex: 1; height: 9px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
 .progress-track i { display: block; height: 100%; background: linear-gradient(90deg, var(--cyan), #a8e6ff); border-radius: 999px; transition: width var(--dur); }
@@ -75,9 +75,9 @@
   display: flex; flex-direction: column; min-height: 0;
 }
 .game-host > * { flex: 1; min-height: 0; }
-/* full-bleed games paint edge-to-edge, but inside the safe area: nothing under the status bar / notch,
-   the home indicator or the rounded side edges (the sky shows in those bands) */
-.game-host.bleed { padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); }
+/* full-bleed games paint edge-to-edge; the art runs up under the status bar / notch (admin 6209: no navy band there).
+   The games already offset their own top UI by var(--safe-top). Sides and bottom stay inside the safe area. */
+.game-host.bleed { padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left); }
 .game-wait { display: grid; place-items: center; color: var(--ink-faint); font-size: 28px; }
 .play-mg { color: #fff; font-weight: 800; font-size: 13px; letter-spacing: .02em; text-shadow: 0 1px 4px rgba(0,0,0,.55); }
 /* top scrim so the white HUD stays legible over bright sky scenes */
