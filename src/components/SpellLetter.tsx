@@ -41,7 +41,7 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
   const sub = m ? m[2] : ''
   const box = useRef<HTMLDivElement>(null)
   const body = useRef<HTMLDivElement>(null)
-  const [fit, setFit] = useState({ strips: 2, top: 0 })
+  const [fit, setFit] = useState({ strips: 2, top: 0, h: 0 })
   const [mode, setMode] = useState<'measure' | 'one' | 'two'>('measure')
   const [page, setPage] = useState(0)
   const guard = useRef(0)
@@ -56,15 +56,19 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
       const cap = CAP * k, strip = STRIP * k
       const need = body.current.offsetHeight - cap * (TEXT_TOP + TEXT_BOT)
       const strips = Math.max(1, Math.ceil(need / strip))
-      const top = Math.round(cap * TEXT_TOP + (strips * strip - need) * 0.3)
-      setFit((f) => (f.strips === strips && f.top === top ? f : { strips, top }))
+      // admin 6106 (10-20): the ES2 page is one painted 9-slice (the strips are hidden), so it no longer needs whole strips:
+      // the paper keeps at most 0.35 strip of air under the text, and page 2 + chips + Start fit a 360 x 800 phone
+      const extra = Math.min(strips * strip - need, strip * 0.35)
+      const h = Math.round(cap * 2 + need + extra)
+      const top = Math.round(cap * TEXT_TOP + extra * 0.3)
+      setFit((f) => (f.strips === strips && f.top === top && f.h === h ? f : { strips, top, h }))
       // one letter must fit with the seal above it and the Start button below it, without scrolling
       const host = box.current.parentElement
       if (host) setMode((md) => {
         if (md !== 'measure') return md
         const cs = getComputedStyle(host)
         const room = host.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 18 - 14 - 62 - (meta ? 62 : 0)
-        return cap * 2 + strips * strip <= room ? 'one' : 'two'
+        return h <= room ? 'one' : 'two'
       })
       // last guard (admin 3697): a one-letter page must never scroll; if it still overflows, split it
       // (checked once the layout has settled, so a transient frame mid-measure never splits a letter that fits)
@@ -88,7 +92,7 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
   return (
     <>
       <div className="sl" ref={box} style={mode === 'measure' ? { visibility: 'hidden' } : undefined}>
-        <div className="sl-paper">
+        <div className="sl-paper" style={fit.h ? { height: fit.h, overflow: 'hidden' } : undefined}>
           <img src={pTop} alt="" draggable={false} />
           {Array.from({ length: fit.strips }, (_, i) => <img key={i} src={pMid} alt="" draggable={false} />)}
           <img src={pBot} alt="" draggable={false} />

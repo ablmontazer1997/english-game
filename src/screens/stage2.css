@@ -124,3 +124,11 @@
   .rs3-card { min-height: 80px; } .rs3-card img { width: 36px; height: 36px; }
 }
 @media (prefers-reduced-motion: reduce) { .rs3-confetti, .rs2-art { animation: none; display: none; } .rs2-art { display: block; } }
+/* admin 6106 (10-20): on short phones (360 x 800) page 2 + chips + Focus + Start fit without the sticky Start bar
+   covering the chips: tighter gaps only, same pieces */
+@media (max-height: 860px) {
+  .sl-lobby { gap: 10px; }
+  .ss-chips { gap: 6px; }
+  .ss-gchip { min-height: 42px; }
+  .ss-gchip img { width: 30px; height: 30px; }
+}
