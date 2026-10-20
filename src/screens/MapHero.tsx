@@ -88,6 +88,9 @@ type Want = { anim: 'idle' | 'walk' | 'keep'; rate?: number; dir?: [number, numb
 function useHero3d() {
   const ifr = useRef<HTMLIFrameElement>(null)
   const [ready, setReady] = useState(false)
+  // a new look (Wear in the shop / My Items, a look loaded from the account) reloads the kept 3D hero, like ProfileHero
+  const [v, setV] = useState(0)
+  useEffect(() => { const on = () => { setReady(false); setV((x) => x + 1) }; addEventListener('rc-look', on); return () => removeEventListener('rc-look', on) }, [])
   const last = useRef<{ anim: string; rate: number; dir: string; pause: boolean | null; fps: number }>({ anim: '', rate: 0, dir: '', pause: null, fps: -1 })
   const post = (m: Record<string, unknown>) => ifr.current?.contentWindow?.postMessage(m, '*')
   useEffect(() => {
@@ -136,7 +139,7 @@ function useHero3d() {
     window.addEventListener('message', on)
     return () => window.removeEventListener('message', on)
   }, [])
-  return { ifr, ready, want, power, clap }
+  return { ifr, ready, want, power, clap, v }
 }
 
 /**
@@ -151,8 +154,11 @@ export function useMapAdvance(opts: {
   frame: RefObject<HTMLDivElement | null>
   geo: AdvanceGeo
   reduced: boolean
+  /** false while the map is kept hidden: the hero is paused and a new place waits until the map shows again */
+  active?: boolean
 }) {
   const { worlds, worldIdx, setWorldIdx, frame, geo, reduced } = opts
+  const active = opts.active !== false
   const [play, setPlay] = useState<Play | null>(null)
   const playRef = useRef(play); playRef.current = play
   const snap = useRef(false)
@@ -166,7 +172,7 @@ export function useMapAdvance(opts: {
   // the map opens on: the one the hero is in (or was in, while an advance is pending).
   const opened = useRef(false)
   useLayoutEffect(() => {
-    if (!cursor) return
+    if (!cursor || !active) return
     const seen = loadSeen(kv)
     saveSeen(kv, cursor)
     const plans = seen && cmpCursor(cursor, seen) > 0
@@ -181,7 +187,7 @@ export function useMapAdvance(opts: {
       setWorldIdx(cursor.world)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ckey])
+  }, [ckey, active])
 
   const plan = play ? play.plans[play.p] : null
   const beat: Beat | null = plan && play ? plan.beats[play.k] ?? null : null
@@ -194,7 +200,7 @@ export function useMapAdvance(opts: {
   }, [waited, !!play])
   const live = !!plan && plan.world === worldIdx && !!geo.tall
   /** the advance is on screen but holds at its first beat until the 3D hero is in */
-  const go = live && (h3.ready || waited)
+  const go = active && live && (h3.ready || waited)
   const beatStart = useRef(0)
   const walkRef = useRef<Walk | null>(null)
   const beatKey = useRef('')
@@ -338,7 +344,7 @@ export function useMapAdvance(opts: {
     const fe = frame.current, H = HERO_H * G.current.padPx
     const top = fe ? fe.scrollTop : 0, vh = G.current.box.h
     const onScreen = heroY.current > top - 0.2 * H && heroY.current - 1.3 * H < top + vh
-    h3.power(!showHero || (!live && !onScreen), live)
+    h3.power(!active || !showHero || (!live && !onScreen), live && active)
   }
   const powerRef = useRef(power); powerRef.current = power
   useEffect(() => {
@@ -363,6 +369,8 @@ export function useMapAdvance(opts: {
   }
 
   useLayoutEffect(() => { placeRef.current(performance.now()) })
+  // hidden / shown again: pause or wake the hero page (place() only runs on renders, scrolls and the advance loop)
+  useEffect(() => { powerRef.current() }, [active])
   // the 3D page reports in after the first placement: tell it what to do now
   useEffect(() => { if (h3.ready) placeRef.current(performance.now()) }, [h3.ready])
 
@@ -382,6 +390,7 @@ export function useMapAdvance(opts: {
     heroRef,
     hero3d: h3.ifr,
     hero3dReady: h3.ready,
+    hero3dV: h3.v,
     playing: !!play,
     showHero,
   }
@@ -495,11 +504,13 @@ const bounce = (f: number) => {
 
 // ---------------------------------------------------------------- the hero element
 
-export function MapHero({ heroRef, hero3d, ready, hidden }: {
+export function MapHero({ heroRef, hero3d, ready, hidden, reload = 0 }: {
   heroRef: RefObject<HTMLDivElement | null>
   hero3d: RefObject<HTMLIFrameElement | null>
   ready: boolean
   hidden?: boolean
+  /** bumped on a new look: a fresh hero page */
+  reload?: number
 }) {
   const fallback = use3dFallback(ready, NO3D)
   return (
@@ -512,7 +523,7 @@ export function MapHero({ heroRef, hero3d, ready, hidden }: {
           <img className="mhero-img mhero-cheer" src={heroCheer} alt="" draggable={false} />
           <img className="mhero-img mhero-back" src={heroBack} alt="" draggable={false} />
         </span>
-        {!NO3D && <iframe ref={hero3d} className="mhero-3d" src={HERO3D_SRC} title="hero" scrolling="no" tabIndex={-1} />}
+        {!NO3D && <iframe key={reload} ref={hero3d} className="mhero-3d" src={HERO3D_SRC} title="hero" scrolling="no" tabIndex={-1} />}
       </span>
     </div>
   )

@@ -163,6 +163,16 @@ export function App() {
     return () => { delete w.__esBack }
   }, [])
 
+  // admin 6225 (Home load): the map, and with it the 3D hero page, stays mounted (hidden and paused) while another tab,
+  // an overlay or a stage is open, so coming back to Home does not rebuild the hero from scratch. It is let go for
+  // Boss Battle and the wardrobe (both run their own 3D page) and for the sign-in / first-run screens.
+  const mapOn = ready && !signIn && !customizing && !intro && !achOpen && !seasonOpen && !cauldron && !playing && tab === 'map'
+  const bossPlaying = !!playing && (playing.kind === 'boss' || playing.serverKind === 'boss' || playing.miniGame === 'boss-battle')
+  const mapKept = useRef(false)
+  if (mapOn) mapKept.current = true
+  if (!ready || signIn || customizing || intro || bossPlaying) mapKept.current = false
+  const mapMounted = mapOn || mapKept.current
+
   const questBadge = ready && quests.some((q) => q.progress >= q.target && !q.done)
   const achBadge = ready && achievements.some((a) => a.progress >= a.target && !a.claimed)
 
@@ -197,6 +207,8 @@ export function App() {
     <div className="app-frame">
       <div className="sky" />
 
+      {mapMounted && <MapScreen active={mapOn} onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
+
       {signIn ? (
         <LoginScreen onDone={() => location.reload()} onCancel={() => setSignIn(false)} />
       ) : !ready ? (
@@ -225,7 +237,6 @@ export function App() {
         <>
           <HUD onBuy={setShop} onSettings={() => setSettings(true)} onProfile={toProfile} />
 
-          {tab === 'map' && <MapScreen onPlay={setPlaying} onCauldron={() => setCauldron(true)} onHearth={() => setHearth(true)} onQuests={() => setTab('quests')} />}
           {tab === 'quests' && <QuestsScreen onGo={(to) => { if (to === 'cauldron' && mode === 'http') setCauldron(true); else setTab('map') }}
             onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}
           {tab === 'shop' && <ShopScreen onSeason={mode === 'http' || mockFx('GET /v1/season') ? () => setSeasonOpen(true) : undefined} />}

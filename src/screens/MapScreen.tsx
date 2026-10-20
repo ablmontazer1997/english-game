@@ -37,7 +37,9 @@ const weatherLife = (l: LifeData) => {
 }
 const damp = (s: number) => 0.6 + 0.4 * s
 
-export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: (s: Stage) => void; onCauldron?: () => void; onHearth?: () => void; onQuests?: () => void }) {
+export function MapScreen({ onPlay, onCauldron, onHearth, onQuests, active = true }: { onPlay: (s: Stage) => void; onCauldron?: () => void; onHearth?: () => void; onQuests?: () => void
+  /** false: kept mounted but hidden (another tab, an overlay or a stage is open); the 3D hero is paused */
+  active?: boolean }) {
   const { worlds, quests, submitResult, mode, reviewDue, streak } = useGame()
   const [worldIdx, setWorldIdx] = useState(0)
   const [atlas, setAtlas] = useState(false)
@@ -55,7 +57,8 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: 
   useLayoutEffect(() => {
     const el = frame.current
     if (!el) return
-    const read = () => setBox({ w: el.clientWidth, h: el.clientHeight })
+    // hidden (display: none while another screen is open) reads 0 x 0: keep the last layout, so the hero stays mounted
+    const read = () => { if (el.clientWidth && el.clientHeight) setBox({ w: el.clientWidth, h: el.clientHeight }) }
     const ro = new ResizeObserver(read)
     ro.observe(el)
     read()
@@ -75,7 +78,7 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: 
   const reduced = useReducedMotion()
   const padPx = sceneW * padW * damp(1) * PAD_OVER
   const adv = useMapAdvance({ worlds, worldIdx: worldIdx % Math.max(1, worlds.length), setWorldIdx, frame,
-    geo: { tall, sceneW, sceneH, padPx, box }, reduced })
+    geo: { tall, sceneW, sceneH, padPx, box }, reduced, active })
   const look = (i: number): PadLook => padLook(i, stages[i].status, adv.plan?.beats ?? null, adv.beatIdx)
   const gateAt = adv.beat?.kind === 'portal' && tall ? pointAt(tall.walk.pts, tall.walk.total) : null
 
@@ -92,13 +95,27 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: 
     const n = nodes[cur >= 0 ? cur : stages.every((s) => s.status === 'done') ? nodes.length - 1 : 0]
     if (n) el.scrollTop = Math.max(0, Math.min(sceneH - box.h, n.y * sceneH - box.h * 0.58))
   })
+  // display: none drops the frame's scroll position: keep the last one and put it back when the map shows again
+  const keptTop = useRef(0)
+  useLayoutEffect(() => {
+    const el = frame.current
+    if (!el) return
+    if (active) { if (keptTop.current) el.scrollTop = keptTop.current; return }
+  }, [active])
+  useLayoutEffect(() => {
+    const el = frame.current
+    if (!el || !active) return
+    const on = () => { keptTop.current = el.scrollTop }
+    el.addEventListener('scroll', on, { passive: true })
+    return () => el.removeEventListener('scroll', on)
+  }, [active])
   const daily = quests.find((q) => q.period === 'daily')
   const dailies = quests.filter((q) => q.period === 'daily')
   const dailyAll = dailies.length || 4, dailyDone = dailies.filter((q) => q.done).length
   const dailyPct = daily ? Math.min(100, Math.round((daily.progress / daily.target) * 100)) : 0
 
   return (
-    <div className="screen map-screen full">
+    <div className="screen map-screen full" style={active ? undefined : { display: 'none' }}>
       <div className={`mw-frame${tall ? ' is-tall' : ''}${adv.playing ? ' is-playing' : ''}${reduced ? ' is-reduced' : ''}`} ref={frame}>
         <div className="mw-scene" style={tall ? { width: sceneW, height: sceneH, left: 0, top: 0 } : {
           width: sceneW, height: sceneH,
@@ -138,7 +155,7 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests }: { onPlay: 
                 width={sceneW * padW * damp(n.scale) * PAD_OVER} onPlay={onPlay} />
             )
           })}
-          {tall && <MapHero heroRef={adv.heroRef} hero3d={adv.hero3d} ready={adv.hero3dReady} hidden={!adv.showHero} />}
+          {tall && <MapHero heroRef={adv.heroRef} hero3d={adv.hero3d} ready={adv.hero3dReady} hidden={!adv.showHero} reload={adv.hero3dV} />}
           {gateAt && <span className="mgate-flash" style={{ left: gateAt.x, top: gateAt.y }} />}
         </div>
         {tall && scene.fx && box.h ? (
