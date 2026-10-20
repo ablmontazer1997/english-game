@@ -1468,7 +1468,101 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   const CDB=+(new URLSearchParams(location.search).get('cdb')??0.008);
 const coatDB=()=>{const on=!!(CDB&&window.RCNEW);if(!on&&!window.__cdbAny)return;root.traverse(o=>{if(!o.isMesh||!/^(coat|cloak)/i.test(o.name))return;const ms=Array.isArray(o.material)?o.material:[o.material];
   for(const m of ms){if(!m)continue;const has=!!(m.defines&&m.defines.COAT_DB!==undefined);if(on){if(has&&m.defines.COAT_DB===CDB.toFixed(5))continue;m.defines=Object.assign({},m.defines,{COAT_DB:CDB.toFixed(5)});m.needsUpdate=true;window.__cdbAny=1;}else if(has){const d=Object.assign({},m.defines);delete d.COAT_DB;m.defines=d;m.needsUpdate=true;}}});if(!on)window.__cdbAny=0;};
-const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),0.05);if(EDITOR)focusStep(dt);if(window.RCWSH)RCWSH.step(dt);unspread();mix.update(dt);if(eyes){root.updateMatrixWorld(true);eyes.update(dt,curName);}spread();if(spring){root.updateMatrixWorld(true);spring.update(dt);}coatDB();
+/*WARDWAND1020: admin 5976/5980/6094: the equipped wand held in the LEFT hand, hold C exactly as on the hero map/profile/result page
+   (runecast-hero MAPWAND1019): the body gets the "grip" shape key (fix/grip_1008 deltas; base_m has the same vertex order as
+   lite/base_m_grip), the right-hand part is zeroed, the hand5 fist prop sits on the left hand bone, the left arm is posed by IK
+   (diagonal hold) on top of the playing clip, the wand sits in the fist (slid 3% H through it). ?wih=0 = off. Portrait snaps: off. */
+const WIH=(()=>{const Q=new URLSearchParams(location.search);if(Q.get('wih')==='0'||PORTRAIT)return null;
+  const bH=bones.L_Hand,bF=bones.L_Forearm,bU=bones.L_Upperarm,oH=bones.R_Hand;if(!bH||!bF||!bU||!bones.Head||!bones.L_Foot)return null;
+  const v=()=>new THREE.Vector3(),q=()=>new THREE.Quaternion(),UP=new THREE.Vector3(0,1,0);
+  root.updateMatrixWorld(true);const _w=n=>bones[n].getWorldPosition(v());
+  const fy=Math.min(_w('L_Foot').y,(bones.R_Foot?_w('R_Foot'):_w('L_Foot')).y),HH=(_w('Head').y-fy)*1.35;
+  const RA=_w('L_Upperarm').distanceTo(_w('L_Forearm'))+_w('L_Forearm').distanceTo(_w('L_Hand'));
+  const _pq=q(),_iq=q(),_a=v(),_b=v(),_c=v(),_qa=q(),_id=q();
+  const rotW=(b,qw)=>{b.parent.getWorldQuaternion(_pq);_iq.copy(_pq).invert();b.quaternion.premultiply(_pq).premultiply(qw).premultiply(_iq);b.updateMatrixWorld(true);};
+  const aim=(b,childW,targetW,w)=>{b.getWorldPosition(_a);_b.copy(childW).sub(_a).normalize();_c.copy(targetW).sub(_a).normalize();
+    _qa.setFromUnitVectors(_b,_c);if(w<1)_qa.slerp(_id.set(0,0,0,1),1-w);rotW(b,_qa);};
+  const ik2=(A,B,C,T,pole,w)=>{if(!A||!B||!C||w<=0)return;A.updateMatrixWorld(true);
+    const S0=A.getWorldPosition(v()),E=B.getWorldPosition(v()),W=C.getWorldPosition(v());
+    const la=S0.distanceTo(E),lb=E.distanceTo(W),Tt=W.clone().lerp(T,w);
+    const dir=Tt.clone().sub(S0);const dd=Math.max(1e-5,Math.min(dir.length(),(la+lb)*.985));dir.normalize();
+    const cA=Math.max(-1,Math.min(1,(la*la+dd*dd-lb*lb)/(2*la*dd))),sA=Math.sqrt(1-cA*cA);
+    const p=pole.clone();p.addScaledVector(dir,-p.dot(dir)).normalize();
+    const Ed=S0.clone().addScaledVector(dir,la*cA).addScaledVector(p,la*sA);
+    aim(A,E,Ed,1);const W2=C.getWorldPosition(v());aim(B,W2,S0.clone().addScaledVector(dir,dd),1);};
+  // grip shape key: sparse deltas (u32 n, u32 idx[n], f32 dpos[n*3], f32 dnrm[n*3]); the right hand keeps its open mitten (as on the map)
+  let gripOn=false,body=null;root.traverse(o=>{if(!body&&o.isSkinnedMesh&&/^tripo_/.test(o.name))body=o;});
+  const GRIPC=new THREE.Vector3(-3.458229e-04,5.295371e-04,2.941596e-04),GRIPD=new THREE.Vector3(-0.164934,0.774846,-0.610255).normalize();
+  fetch('grip/grip_L.bin?v=1').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(b=>{const n=new Uint32Array(b,0,1)[0],I=new Uint32Array(b,4,n),DP=new Float32Array(b,4+n*4,n*3),DN=new Float32Array(b,4+n*16,n*3);
+    const done=new WeakSet();
+    root.traverse(o=>{if(!o.isSkinnedMesh||!(/^tripo_/.test(o.name)||o.name==='body_under'))return;const g=o.geometry,P=g.attributes.position;if(!P||P.count!==32091)return;
+      if(!done.has(g)){done.add(g);const SI=g.attributes.skinIndex,SW=g.attributes.skinWeight,sk=o.skeleton,RB=new Set();if(oH)oH.traverse(x=>{const j=sk.bones.indexOf(x);if(j>=0)RB.add(j);});
+        const ap=new Float32Array(P.count*3),an=new Float32Array(P.count*3);
+        for(let k=0;k<n;k++){const i=I[k];let r=0;if(SI&&SW)for(let c=0;c<4;c++){const j=c===0?SI.getX(i):c===1?SI.getY(i):c===2?SI.getZ(i):SI.getW(i),w=c===0?SW.getX(i):c===1?SW.getY(i):c===2?SW.getZ(i):SW.getW(i);if(w>0&&RB.has(j))r=1;}
+          if(r)continue;for(let c=0;c<3;c++){ap[i*3+c]=DP[k*3+c];an[i*3+c]=DN[k*3+c];}}
+        const A=new THREE.BufferAttribute(ap,3),N=new THREE.BufferAttribute(an,3);A.name=N.name='grip';
+        g.morphAttributes.position=[A];if(g.attributes.normal)g.morphAttributes.normal=[N];g.morphTargetsRelative=true;}
+      o.updateMorphTargets();if(o.morphTargetInfluences&&o.morphTargetInfluences.length){o.morphTargetInfluences[0]=1;gripOn=true;}
+      (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{if(m)m.needsUpdate=true;});});
+    window.RCWIHGRIP=gripOn;holder.visible=gripOn&&wglbOK;}).catch(e=>console.warn('wih grip',e));
+  // the hand5 fist prop (same file and code as the hero page): skin = the body material, attributes copied from a right-hand vertex
+  if(body)fetch('grip/hand5_L.bin?v=3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(b=>{const h=new Uint32Array(b,0,2),nV=h[0],nI=h[1],SH=new Float32Array(b,8+nV*24,nV);
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b,8,nV*3),3));
+    g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(b,8+nV*12,nV*3),3));g.setIndex(new THREE.BufferAttribute(new Uint16Array(b,8+nV*28,nI),1));
+    const bg=body.geometry,SI=bg.attributes.skinIndex,SW=bg.attributes.skinWeight,hi=body.skeleton.bones.indexOf(oH||bH),cand=[];
+    for(let i=0;i<SI.count;i++){const j=[SI.getX(i),SI.getY(i),SI.getZ(i),SI.getW(i)],w=[SW.getX(i),SW.getY(i),SW.getZ(i),SW.getW(i)],t=w[0]+w[1]+w[2]+w[3]||1;
+      let k=0;for(let qq=0;qq<4;qq++)if(j[qq]===hi)k+=w[qq]/t;if(k>.9)cand.push(i);}
+    const fill=()=>{const C=bg.attributes.color;let vi=cand[0];if(vi===undefined)return;
+      if(C&&cand.length){const lum=cand.map(i=>[C.getX(i)+C.getY(i)+C.getZ(i),i]).sort((a,b)=>a[0]-b[0]);vi=lum[Math.floor(lum.length*.85)][1];}
+      for(const nm in bg.attributes){if(/^(position|normal|skinIndex|skinWeight)$/.test(nm))continue;const A=bg.attributes[nm],sz=A.itemSize;
+        let G=g.attributes[nm];if(!G){G=new THREE.BufferAttribute(new Float32Array(nV*sz),sz);g.setAttribute(nm,G);}
+        const one=[];for(let c=0;c<sz;c++)one.push(c===0?A.getX(vi):c===1?A.getY(vi):c===2?A.getZ(vi):A.getW(vi));
+        for(let i=0;i<nV;i++)for(let c=0;c<sz;c++)G.array[i*sz+c]=(nm==='color'&&c<3)?one[c]*SH[i]:one[c];G.needsUpdate=true;}};
+    fill();let nf=0;const iv=setInterval(()=>{fill();if(++nf>12)clearInterval(iv);},500);   // the baked light arrives a little later
+    const m0=body.material,m=m0.clone();if(m0.onBeforeCompile)m.onBeforeCompile=m0.onBeforeCompile;
+    if(m0.customProgramCacheKey)m.customProgramCacheKey=()=>'fist|'+m0.customProgramCacheKey();
+    const fm=new THREE.Mesh(g,m);fm.name='fist_L';fm.frustumCulled=false;fm.castShadow=body.castShadow;bH.add(fm);window.RCFIST=fm;}).catch(e=>console.warn('wih fist',e));
+  // the wand: Hunyuan GLB in the fist, same per-wand grip (g) / tip (t) / glow colour as the hero page
+  const WANDS={wand_starter:{g:.17,t:.985,c:0xffb83d},wand_classic:{g:.12,t:.95,c:0x8a4dff},wand_frost:{g:.15,t:.87,c:0x8fd8ff},wand_fire:{g:.16,t:.89,c:0xff7a1a},wand_royal:{g:.15,t:.93,c:0xff4060},
+    wand_sea:{g:.16,t:.9,c:0x7fe8e0},wand_stars:{g:.15,t:.9,c:0xffd84a},wand_forest:{g:.17,t:.89,c:0x7dff9a},wand_sun:{g:.16,t:.88,c:0xffb020},wand_shadow:{g:.16,t:.88,c:0x9b5cff}};
+  const L=.47*HH,WLEN=1.22*L,MWS=+(Q.get('mws')??.03);
+  const holder=new THREE.Group();holder.name='wand_hold';holder.visible=false;sc.add(holder);const tip=new THREE.Object3D();holder.add(tip);
+  const gtx=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.25,'rgba(255,255,255,.75)');g.addColorStop(.6,'rgba(255,255,255,.18)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+  const spr=(col,op,add)=>{const s=new THREE.Sprite(new THREE.SpriteMaterial({map:gtx,color:col,transparent:true,depthWrite:false,opacity:op,toneMapped:false,blending:add?THREE.AdditiveBlending:THREE.NormalBlending}));tip.add(s);return s;};
+  const halo=spr(0x9b5cff,.3,false),glow=spr(0x8a4dff,.5,true),core=spr(0xd9c2ff,1,true);halo.renderOrder=9;glow.renderOrder=10;core.renderOrder=11;
+  const tintGlow=c=>{halo.material.color.setHex(c);glow.material.color.setHex(c);core.material.color.setHex(c).lerp(new THREE.Color(0xffffff),.65);};
+  const WLD=new THREE.GLTFLoader();if(window.MeshoptDecoder)WLD.setMeshoptDecoder(MeshoptDecoder);const wcache={};let wglb=null,wcur=null,wglbOK=false;
+  const setWand=id=>{if(!WANDS[id])id='wand_starter';if(id===wcur)return;wcur=id;window.RCWIHWAND=id;const W=WANDS[id];
+    tip.position.y=(W.t-W.g)*WLEN;tintGlow(W.c);
+    const put=s0=>{if(wcur!==id)return;if(wglb){holder.remove(wglb);wglb=null;}const o=s0.clone();o.scale.setScalar(WLEN);o.position.y=-W.g*WLEN;
+      o.traverse(m=>{if(m.isMesh){m.castShadow=false;m.frustumCulled=false;}});wglb=o;holder.add(o);wglbOK=true;holder.visible=gripOn;window.RCWIHOK=id;};
+    if(wcache[id])put(wcache[id]);else WLD.load('wands/'+id+'.glb?v=1',g=>{wcache[id]=g.scene;put(g.scene);},undefined,e=>{console.warn('wih wand',id,e);});};
+  setWand(WSH.get());
+  {const s0=WSH.set;WSH.set=id=>{s0(id);setWand(id);};}
+  addEventListener('storage',e=>{if(e.key==='wand'&&e.newValue)setWand(e.newValue);});
+  // the hold: diagonal pose 2 of the hero page (admin pick 6007): hand before the hip, wand angled out and a little up
+  const PH=[.15,-.55,.55],PD=[.70,.70,.20],PP=[.7,-.6,-.2],MLIM=+(Q.get('mlim')||.9);
+  const LAT=v(),FWD=v(),_s=v(),_l=v(),_r=v(),mt=v(),md=v(),mp=v(),AIMS=v(),WD=v();
+  const axes=()=>{bU.getWorldPosition(_l);(bones.R_Upperarm||bU).getWorldPosition(_r);LAT.copy(_l).sub(_r);LAT.y=0;LAT.normalize();FWD.crossVectors(LAT,UP).normalize();};
+  const hv=(a,o)=>o.set(0,0,0).addScaledVector(LAT,a[0]).addScaledVector(UP,a[1]).addScaledVector(FWD,a[2]);
+  const TB=[bU,bF,bH],PREQ=new Map(),LASTQ=new Map();
+  const restore=()=>{for(const b of TB){const l=LASTQ.get(b);if(l&&b.quaternion.equals(l))b.quaternion.copy(PREQ.get(b));PREQ.set(b,b.quaternion.clone());}};
+  const remember=()=>{for(const b of TB)LASTQ.set(b,b.quaternion.clone());};
+  let t=0;
+  return {setWand,holder,
+    pre:dt=>{if(!gripOn)return;restore();t+=dt;root.updateMatrixWorld(true);axes();
+      bU.getWorldPosition(_s);hv(PH,mt).multiplyScalar(RA).add(_s);ik2(bU,bF,bH,mt,hv(PP,mp),1);hv(PD,md).normalize();AIMS.copy(md);
+      const gs=.075*HH*(1+.1*Math.sin(t*2.2));glow.scale.set(gs,gs,1);core.scale.set(.016*HH,.016*HH,1);halo.scale.set(gs*.55,gs*.55,1);
+      remember();root.updateMatrixWorld(true);},
+    post:()=>{if(!gripOn)return;root.updateMatrixWorld(true);
+      bH.updateWorldMatrix(true,false);_c.copy(GRIPD).transformDirection(bH.matrixWorld);
+      const qa=q().setFromUnitVectors(_c,AIMS),ang=2*Math.acos(Math.min(1,Math.abs(qa.w)));if(ang>MLIM)qa.slerp(_id.set(0,0,0,1),1-MLIM/ang);
+      rotW(bH,qa);bH.updateMatrixWorld(true);LASTQ.set(bH,bH.quaternion.clone());
+      holder.position.copy(GRIPC).applyMatrix4(bH.matrixWorld);WD.copy(GRIPD).transformDirection(bH.matrixWorld);
+      holder.position.addScaledVector(WD,-MWS*HH);holder.quaternion.setFromUnitVectors(UP,WD);holder.updateMatrixWorld(true);}};})();
+window.RCWIH=WIH;
+const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),0.05);if(EDITOR)focusStep(dt);if(window.RCWSH)RCWSH.step(dt);unspread();mix.update(dt);if(WIH)WIH.pre(dt);if(eyes){root.updateMatrixWorld(true);eyes.update(dt,curName);}spread();if(WIH)WIH.post();if(spring){root.updateMatrixWorld(true);spring.update(dt);}coatDB();
     if(PORTRAIT&&eyes&&PEXPR&&!window.__pex){eyes.setMode(PEXPR);window.__pex=1;}if(PORTRAIT&&PQ.get('pt')!==null&&window.__edok&&!window.__pp){pose(PQ.get('a')||'idle',+PQ.get('pt'));window.__pp=1;}const __ph=PORTRAIT&&bones.Head&&PHEAD;if(PORTRAIT)for(const [b,ax,d] of PARM)if(bones[b])bones[b].rotateOnAxis(ax,d);if(__ph){bones.Head.rotateOnAxis(PHAX==='x'?new THREE.Vector3(1,0,0):PHAX==='y'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1),PHEAD);root.updateMatrixWorld(true);}
     if(PORTRAIT&&bones.Head){bones.Head.getWorldPosition(PV);
       // the eyes (mesh_2 / mesh_3) and the head bone (jaw level) give the face, whatever hat or hair is worn
