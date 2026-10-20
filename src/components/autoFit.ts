@@ -10,6 +10,10 @@ const SEL = [
 // the login / intro letter (ScrollSheet .ssh) runs its own label shrink (x0.94 steps, min 14 px): never touch it
 const SKIP = '.ssh'
 const MIN = 0.72        // never below 72% of the designed size
+// ribbons never wrap (a two-line ribbon breaks the art); they may go to 60%. Their own padding is a % of the PARENT
+// width, so their room is measured on the painted flat middle of the ribbon itself (72% of its width)
+const RIBBON = '.k-ribbon'
+const RIBBON_MIN = 0.6, RIBBON_FLAT = 0.72
 const MIN_PX = 10
 const RIM = 0.6         // share of a border-image width that is painted rim (text keeps clear of it)
 
@@ -20,6 +24,7 @@ let epoch = 0   // bumped when fonts finish loading or the window / text size ch
 let ro: ResizeObserver | null = null
 
 function inner(el: HTMLElement, cs: CSSStyleDeclaration) {
+  if (el.matches(RIBBON)) return el.clientWidth * RIBBON_FLAT - 4
   let l = parseFloat(cs.paddingLeft) || 0, r = parseFloat(cs.paddingRight) || 0
   if (cs.borderImageSource && cs.borderImageSource !== 'none') {
     // border-image-width as px (a bare number = multiples of the border width, which is 0 here: ignore)
@@ -48,13 +53,14 @@ export function fit(el: HTMLElement) {
   const have = inner(el, cs)
   let need = textWidth(el)
   if (have > 0 && need > have + 0.5) {
-    const min = Math.max(MIN_PX, base * MIN)
+    const rib = el.matches(RIBBON)
+    const min = Math.max(MIN_PX, base * (rib ? RIBBON_MIN : MIN))
     let f = Math.max(min, Math.floor(base * (have / need) * 4) / 4)
     el.style.setProperty('font-size', `${f}px`)
     for (let i = 0; i < 8 && f > min && (need = textWidth(el)) > have + 0.5; i++) {
       f = Math.max(min, f - 0.5); el.style.setProperty('font-size', `${f}px`)
     }
-    if (textWidth(el) > have + 0.5) el.classList.add('fit-wrap')   // still too long at MIN: wrap, balanced
+    if (!rib && textWidth(el) > have + 0.5) el.classList.add('fit-wrap')   // still too long at MIN: wrap, balanced
   }
   el.classList.remove('fit-1')
   last.set(el, `${el.textContent}|${el.parentElement?.clientWidth ?? 0}|${innerWidth}|${epoch}`)
