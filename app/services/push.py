@@ -142,6 +142,10 @@ async def due(db: AsyncSession, user: User, now: datetime | None = None) -> tupl
 
 
 def payload(item: dict) -> dict:
+    from . import remind as R
     base = get_settings().app_url.rstrip("/") + "/"
-    return {"title": item["title"], "body": item["body"], "url": f"{base}?go={item['route']}", "tag": "es-daily",
-            "image": f"{base}notif/{item['img']}.webp", "icon": f"{base}notif/{item['img']}_icon.png"}
+    out = {"title": item["title"], "body": item["body"], "url": f"{base}?go={item['route']}", "tag": "es-daily"}
+    if R.ART_READY:      # the scene pictures are published under /runecast/notif/
+        out["image"] = f"{base}notif/{item['img']}.webp"
+        out["icon"] = f"{base}notif/{item['img']}_icon.png"
+    return out

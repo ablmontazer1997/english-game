@@ -151,3 +151,9 @@ def test_prefs_defaults():
     assert R.prefs_of(U()) == {"on": True, "events": True, "minute": None}
     U.notify_prefs = {"on": False, "minute": 2000}
     assert R.prefs_of(U())["on"] is False and R.prefs_of(U())["minute"] is None
+
+
+def test_every_picture_exists_in_the_v2_set():
+    v2 = {"d1", "d2", "d5", "d7", "d14", "d30", "frost", "milestone", "league", "boss", "double_xp", "season",
+          "quests", "hearts"}
+    assert {t["img"] for t in R.TIERS.values()} <= v2

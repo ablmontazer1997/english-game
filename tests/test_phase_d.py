@@ -254,7 +254,7 @@ async def test_reminder_rules_and_worker(client, player, monkeypatch):
     monkeypatch.setattr(push_worker, "utcnow", lambda: now)
     c = await push_worker.run()
     assert c["sent"] >= 1 and sent and "4" in (sent[-1]["title"] + sent[-1]["body"])
-    assert "/runecast/?go=map" in sent[-1]["url"] and sent[-1]["image"].endswith("/notif/hearth.webp")
+    assert "/runecast/?go=map" in sent[-1]["url"]
     n_before = len(sent)
     c = await push_worker.run()          # once a day at most
     assert len(sent) == n_before

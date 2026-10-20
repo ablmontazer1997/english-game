@@ -46,23 +46,25 @@ NUDGE_AFTER = timedelta(hours=3)
 MILESTONES = (7, 14, 30, 50, 100, 200, 365)
 MILESTONE_HATS = {7: "Fire hat", 30: "Dragon cap"}   # catalog: hat_fire / hat_dragon for 7 and 30 days
 TITLE_MAX = 32
+ART_READY = True               # true once the scene pictures are live under /runecast/notif/ (web push image)
 REPLACEABLE = {"d1_streak", "d1_soft", "d2", "d3", "d5"}
 EVENT_PRIORITY = ("league_end", "season_end", "boss_rush", "double_xp")
 
-# img = the picture (Android drawable notif_<img>, web /runecast/notif/<img>.webp); route = what a tap opens.
+# img = the picture (Android drawable notif_<img>, web /runecast/notif/<img>.webp; 10-20 v2 story set: the four young
+# wizards + the guild owl, admin 6153); route = what a tap opens.
 # A variant is used only when every {var} in it has a value; "fallback" variants only when no other one fits.
 TIERS: dict[str, dict[str, Any]] = {
-    "d1_streak": {"img": "hearth", "route": "map", "v": [
+    "d1_streak": {"img": "d1", "route": "map", "v": [
         ("Your {streak}-day fire is waiting", "One short spell today keeps your Hearthfire burning."),
         ("{streak} days! Make it {next}?", "One stage today keeps the fire warm."),
         ("The owl looked at the clock", "Your {streak}-day Hearthfire needs one spell today."),
         ("Time for a spell, {name}?", "One stage today keeps your {streak}-day fire alive."),
     ]},
-    "d1_milestone": {"img": "hearth", "route": "map", "v": [
+    "d1_milestone": {"img": "milestone", "route": "map", "v": [
         ("Day {next} is a big one", "Play one stage today and your Hearthfire reaches {next} days."),
         ("Day {next} brings a {hat}", "One stage today and the {hat} is yours."),
     ]},
-    "d1_soft": {"img": "owl_ready", "route": "map", "v": [
+    "d1_soft": {"img": "d1", "route": "map", "v": [
         ("Ready for a spell, {name}?", "Your next stage is waiting on the map."),
         ("One small spell?", "A few minutes is enough. The owl is ready when you are."),
         ("The map is waiting", "Pick up where you stopped. One stage is enough today."),
@@ -71,38 +73,38 @@ TIERS: dict[str, dict[str, Any]] = {
         ("A Frost Ward saved your fire", "Your {streak}-day fire is safe. Play one stage today to keep it."),
         ("Your fire is safe", "A Frost Ward kept your {streak} days. One spell today keeps them."),
     ]},
-    "fire_out": {"img": "embers", "route": "hearth", "v": [
+    "fire_out": {"img": "d2", "route": "hearth", "v": [
         ("You can relight your fire", "Your {streak} days are not lost yet. Relight them for {gems} gems."),
         ("The embers are still warm", "Your {streak}-day Hearthfire can come back. You have {left} days."),
     ]},
-    "fire_last": {"img": "embers", "route": "hearth", "v": [
+    "fire_last": {"img": "d2", "route": "hearth", "v": [
         ("Last day to relight your fire", "Your {streak} days can come back today for {gems} gems."),
         ("The embers are still warm", "Relight your {streak}-day Hearthfire today. Tomorrow it is too late."),
     ]},
-    "d2": {"img": "owl_ready", "route": "map", "v": [
+    "d2": {"img": "d5", "route": "map", "v": [
         ("The owl missed you", "Two days without spells. Your place on the map is saved."),
         ("Hi {name}, the owl says hi", "One short stage gets you back on track."),
         ("Hi, the owl says hi", "One short stage gets you back on track.", "fallback"),
     ]},
-    "d3": {"img": "owl_tower", "route": "map", "v": [
+    "d3": {"img": "d5", "route": "map", "v": [
         ("The owl is waiting", "Three days on the tower. Come back for one quick spell?"),
         ("Come back for a spell?", "Your spellbook is open on the same page, {name}."),
         ("Come back for a spell?", "Your spellbook is open on the same page.", "fallback"),
     ]},
-    "d5": {"img": "owl_tower", "route": "map", "v": [
+    "d5": {"img": "d5", "route": "map", "v": [
         ("The owl practised alone", "Five days of spells alone. Join for five minutes?"),
         ("Your spellbook misses you", "Your progress is saved, and a new stage is ready."),
     ]},
-    "d7": {"img": "spellbook", "route": "map", "v": [
+    "d7": {"img": "d7", "route": "map", "v": [
         ("A week of quiet spells", "The owl counted seven days. One stage brings the magic back."),
         ("Level {level} is still yours", "A week away is OK. Pick up right where you stopped."),
     ]},
-    "d14": {"img": "letter", "route": "map", "v": [
+    "d14": {"img": "d14", "route": "map", "v": [
         ("A letter from the owl", "\"Two weeks now. I kept your spells safe. Come back soon?\""),
         ("Still here for you, {name}", "The owl keeps a candle on for you. One spell is enough."),
         ("Still here for you", "The owl keeps a candle on for you. One spell is enough.", "fallback"),
     ]},
-    "d30": {"img": "light_on", "route": "map", "v": [
+    "d30": {"img": "d30", "route": "map", "v": [
         ("One last hello", "We will stop the reminders now. Your progress is safe."),
         ("The door is always open", "Come back any time. Your hero is waiting for you."),
     ]},
