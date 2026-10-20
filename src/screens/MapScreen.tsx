@@ -36,6 +36,7 @@ const weatherLife = (l: LifeData) => {
   return w
 }
 const damp = (s: number) => 0.6 + 0.4 * s
+const HIDDEN = { visibility: 'hidden', contentVisibility: 'hidden' } as const
 
 export function MapScreen({ onPlay, onCauldron, onHearth, onQuests, active = true }: { onPlay: (s: Stage) => void; onCauldron?: () => void; onHearth?: () => void; onQuests?: () => void
   /** false: kept mounted but hidden (another tab, an overlay or a stage is open); the 3D hero is paused */
@@ -57,7 +58,7 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests, active = tru
   useLayoutEffect(() => {
     const el = frame.current
     if (!el) return
-    // hidden (display: none while another screen is open) reads 0 x 0: keep the last layout, so the hero stays mounted
+    // hidden (while another screen is open) may read 0 x 0: keep the last layout, so the hero stays mounted
     const read = () => { if (el.clientWidth && el.clientHeight) setBox({ w: el.clientWidth, h: el.clientHeight }) }
     const ro = new ResizeObserver(read)
     ro.observe(el)
@@ -95,7 +96,7 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests, active = tru
     const n = nodes[cur >= 0 ? cur : stages.every((s) => s.status === 'done') ? nodes.length - 1 : 0]
     if (n) el.scrollTop = Math.max(0, Math.min(sceneH - box.h, n.y * sceneH - box.h * 0.58))
   })
-  // display: none drops the frame's scroll position: keep the last one and put it back when the map shows again
+  // keep the frame's scroll position over a hide and put it back when the map shows again
   const keptTop = useRef(0)
   useLayoutEffect(() => {
     const el = frame.current
@@ -115,7 +116,9 @@ export function MapScreen({ onPlay, onCauldron, onHearth, onQuests, active = tru
   const dailyPct = daily ? Math.min(100, Math.round((daily.progress / daily.target) * 100)) : 0
 
   return (
-    <div className="screen map-screen full" style={active ? undefined : { display: 'none' }}>
+    // kept hidden: content-visibility keeps the layout, the decoded pictures and the hero frame's size (no re-layout or
+    // canvas resize when Home shows again) and skips their rendering; visibility takes the box itself out of paint and taps
+    <div className="screen map-screen full" style={active ? undefined : HIDDEN}>
       <div className={`mw-frame${tall ? ' is-tall' : ''}${adv.playing ? ' is-playing' : ''}${reduced ? ' is-reduced' : ''}`} ref={frame}>
         <div className="mw-scene" style={tall ? { width: sceneW, height: sceneH, left: 0, top: 0 } : {
           width: sceneW, height: sceneH,
