@@ -223,7 +223,6 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
         <div className="ot-ui">
           <div className="ot-q" data-coach="q">
             <Task className="gtask-row" icon="tap" text="Choose the right answer" sub="Then tap Check" first={n === 0} />
-            <span className="ot-skill k9 k-chip-v">{q.skill}</span>
             <p>{blankParts(q.prompt).map((t, i) => t === null
               ? <span key={i} className={`ot-blank${pick ? ' filled' : ''}`}>{pick ?? '\u00a0'}</span>
               : <span key={i}>{t}</span>)}</p>
