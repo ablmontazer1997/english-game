@@ -45,7 +45,7 @@ python3 $PK/hero_full_items.py $W/runecast-hero/index.html && rm -rf $W/runecast
 python3 $PK/hero_grip.py $W/runecast-hero/index.html
 python3 $PK/glb_all.py $W
 python3 $PK/texwebp_all.py $W
-python3 $PK/hero_tex1k.py $W   # admin 6225: 1024 px side copies of the hero item textures (+~6 MB), no full-size decode on the phone
+[ "${HERO_TEX1K:-0}" = 1 ] && python3 $PK/hero_tex1k.py $W   # opt-in (HERO_TEX1K=1): 1024 px side copies of the hero item textures, +5.8 MB, gain within noise (10-20)
 python3 $PK/webp_all.py $W 2>&1 | grep -v "libpng warning"
 python3 $PK/opus_all.py $W
 du -sh $W; du -sh $W/* | sort -rh
