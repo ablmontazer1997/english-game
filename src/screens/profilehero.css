@@ -108,3 +108,6 @@
   filter: drop-shadow(0 0 8px rgba(255, 214, 110, .85)); animation: ph-spin 1.1s linear infinite; pointer-events: none; }
 @keyframes ph-spin { to { transform: translateX(-50%) rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .ph-wait { animation-duration: 3s; } }
+/* admin 6225: the hero picture (no 3D on the profile); feet on the pedestal top, body centre on the pedestal centre (inline transform) */
+.ph-pic { position: absolute; left: 50%; z-index: 4; width: auto; max-width: none; margin-bottom: var(--pod-b, 0px); pointer-events: none; user-select: none;
+  filter: drop-shadow(0 6px 10px rgba(20, 30, 80, .28)); }

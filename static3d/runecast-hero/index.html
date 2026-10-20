@@ -125,8 +125,24 @@ const run=s=>new Promise(res=>{const e=document.createElement('script');if(s.dat
 for(const s of [...document.querySelectorAll('script[type="text/x-rc"]')])await run(s);
 </script>
 <script type="text/x-rc">
+/*RCGATE1020 (admin 6225): the hero is shown in one go. The canvas stays transparent (the loader / the app's rune stays) until the body,
+  every worn item, hair, hat and wand are in (three's DefaultLoadingManager + the page's own fetches all settled, the page's extra
+  checks true, 4 quiet frames drawn), then it fades in over 0.3 s. Cap 8 s after the base model (?gcap=ms), ?gate=0 = off. */
+window.RCGATE=(()=>{const M=THREE.DefaultLoadingManager;let n=0,t0=0,done=false,cv=null,ok=0;const cbs=[],conds=[];
+  const s0=M.itemStart,e0=M.itemEnd;M.itemStart=function(u){n++;return s0.call(this,u);};M.itemEnd=function(u){n=Math.max(0,n-1);return e0.call(this,u);};
+  const F=window.fetch;window.fetch=function(u){const url=String(u&&u.url||u);if(/runecast-api|\/v1\//.test(url))return F.apply(this,arguments);n++;const p=F.apply(this,arguments);
+    const d=()=>setTimeout(()=>{n=Math.max(0,n-1);},150);p.then(d,d);return p;};
+  const Q=new URLSearchParams(location.search),CAP=+(Q.get('gcap')||8000),OFF=Q.get('gate')==='0';
+  const reveal=why=>{if(done)return;done=true;window.RCGATED=why+' '+Math.round(performance.now()-t0);
+    if(cv){cv.style.transition='opacity .3s ease-out';cv.style.opacity='1';}const ld=document.getElementById('ld');if(ld)ld.remove();cbs.splice(0).forEach(f=>{try{f();}catch(e){}});};
+  const tick=()=>{if(done)return;const ready=n===0&&conds.every(c=>{try{return !!c();}catch(e){return true;}});ok=ready?ok+1:0;
+    if(ok>=4)reveal('ready');else if(performance.now()-t0>CAP)reveal('cap');else requestAnimationFrame(tick);};
+  return {pending:()=>n,hide:c=>{cv=c;if(!OFF)c.style.opacity='0';},
+    start:(promise,...cs)=>{if(t0)return;t0=performance.now();if(OFF){reveal('off');return;}let pr=false;conds.push(()=>pr,...cs);
+      Promise.resolve(promise).then(()=>{pr=true;},()=>{pr=true;});requestAnimationFrame(tick);},
+    when:f=>{if(done)f();else cbs.push(f);},done:()=>done};})();
 const CEL=document.getElementById('c');const W=()=>CEL.clientWidth||innerWidth,H=()=>CEL.clientHeight||innerHeight;
-const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(W(),H());
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(devicePixelRatio,2));r.setSize(W(),H());RCGATE.hide(r.domElement);
 /* ?perf=1 (preview only; ?fps= is the app frame cap here): on-screen FPS + frame ms + renderer.info, for testing on a real phone */
 if(new URLSearchParams(location.search).get('perf')){(()=>{const d=document.createElement('div');d.style.cssText='position:fixed;left:6px;top:6px;z-index:99999;background:rgba(0,0,0,.72);color:#7f7;font:11px/1.35 monospace;padding:5px 7px;border-radius:6px;pointer-events:none;white-space:pre';document.body.appendChild(d);
   let n=0,t0=performance.now(),last=t0,worst=0;const ts=[];(function f(now){requestAnimationFrame(f);const dt=now-last;last=now;ts.push(dt);if(ts.length>120)ts.shift();n++;
@@ -827,7 +843,7 @@ function buildEditor(E){
   show(t0);window.EDUI={show,sync};
 }
 (()=>{const L=new THREE.GLTFLoader();if(window.MeshoptDecoder)L.setMeshoptDecoder(MeshoptDecoder);return L;})().load(new URLSearchParams(location.search).get('f')||LITE+(BATTLE&&BKQ.get('grip')!=='0'?'base_m_grip.glb?v=g7o':(window.RCH5?'base_m5.glb?v=1':'base_m.glb?v=6r')),g=>{
-  document.getElementById('ld').remove();
+  /*RCGATE1020: #ld goes at the reveal*/
   const root=g.scene;sc.add(root);const by={};
   root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;by[o.name]=o;if(o.material)o.material.metalness=0;}});
   root.traverse(o=>{if(o.isMesh&&/^tripo_|^body_under|^scalp/.test(o.name)&&o.material&&!o.material.userData.soft){o.material.userData.soft=1;softSkin(o.material);}});
@@ -1667,7 +1683,7 @@ function buildEditor(E){
     window.RCMAPINFO=info();window.RCM={root,cam,box,c,s,mix,g,boneBy,setYaw,P0,AW,RT};
     // shown: the worn items are in and two frames are drawn
     const shown=()=>{const go=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{try{parent.postMessage({type:'rc-shown'},'*')}catch(e){}window.RCSHOWN=1;}));
-      if(window.ED&&ED.ready)ED.ready.then(go,go);else setTimeout(shown,50);};shown();
+      const g2=()=>RCGATE.when(go);if(window.ED&&ED.ready)ED.ready.then(g2,g2);else setTimeout(shown,50);};shown();
   }
     const clips={};g.animations.forEach(a=>clips[a.name]=+a.duration.toFixed(2));
     try{parent.postMessage(Object.assign({type:'rc-ready',clips},where(),window.RCMAPINFO||{}),'*')}catch(e){}}
@@ -1762,6 +1778,7 @@ function buildEditor(E){
     LOOK.tint={};LS.set('tint','{}');Object.keys(TINTS).forEach(id=>applyTint(id,'original'));OUTFIT.forEach(([slot])=>wear(slot,1));setExpr('auto');play('idle');};
   window.ED={root,LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,hatProf,tones,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,setExpr,play,pose,focus,previewNoHat,randomize,reset,
     ready:Promise.all(outfitReady),clips:g.animations.map(a=>[a.name,a.duration]),frames:FRAMES,tintDominant};
+  RCGATE.start(window.ED.ready);
   if(EDITOR)buildEditor({LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,tones,eyes,order,nice,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,LS,setExpr,play,focus,previewNoHat,randomize,reset,getAnim:()=>curName});
   // hold the arms a little away from the body so the hands don't sink into the robe
   const bones={};root.traverse(o=>{if(o.isBone||o.type==='Bone'||/Upperarm$/.test(o.name))bones[o.name]=o;});

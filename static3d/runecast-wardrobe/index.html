@@ -162,7 +162,7 @@ html.editor .tab i svg{display:none}
 html.editor .tab[data-t=body] i{background-image:url(ui2/tab_body.webp)}html.editor .tab[data-t=eyes] i{background-image:url(ui2/tab_eyes.webp)}
 html.editor .tab[data-t=hair] i{background-image:url(ui2/tab_hair.webp)}html.editor .tab[data-t=hat] i{background-image:url(ui2/tab_hat.webp)}
 html.editor .tab[data-t=top] i{background-image:url(ui2/tab_top.webp)}html.editor .tab[data-t=coat] i{background-image:url(ui2/tab_coat.webp)}
-html.editor .tab[data-t=pants] i{background-image:url(ui2/tab_pants.webp)}html.editor .tab[data-t=shoes] i{background-image:url(ui2/tab_shoes.webp)}
+html.editor .tab[data-t=pants] i{background-image:url(ui2/tab_pants.webp)}html.editor .tab[data-t=shoes] i{background-image:url(ui2/tab_shoes.webp)}html.editor .tab[data-t=wand] i{background-image:url(ui2/tab_wand.webp?v=1)}
 html.editor .tab:not(.on) i{filter:saturate(.8) brightness(.97)}
 html.editor .tab.on i{background-color:transparent;box-shadow:none;transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 0 4px rgba(255,214,90,1)) drop-shadow(0 0 9px rgba(255,190,60,.7))}
 html.editor .tab span{font-size:min(12px,3vw);font-weight:800;color:#4a2590}
@@ -250,8 +250,24 @@ const run=s=>new Promise(res=>{const e=document.createElement('script');if(s.dat
 for(const s of [...document.querySelectorAll('script[type="text/x-rc"]')])await run(s);
 </script>
 <script type="text/x-rc">
+/*RCGATE1020 (admin 6225): the hero is shown in one go. The canvas stays transparent (the loader / the app's rune stays) until the body,
+  every worn item, hair, hat and wand are in (three's DefaultLoadingManager + the page's own fetches all settled, the page's extra
+  checks true, 4 quiet frames drawn), then it fades in over 0.3 s. Cap 8 s after the base model (?gcap=ms), ?gate=0 = off. */
+window.RCGATE=(()=>{const M=THREE.DefaultLoadingManager;let n=0,t0=0,done=false,cv=null,ok=0;const cbs=[],conds=[];
+  const s0=M.itemStart,e0=M.itemEnd;M.itemStart=function(u){n++;return s0.call(this,u);};M.itemEnd=function(u){n=Math.max(0,n-1);return e0.call(this,u);};
+  const F=window.fetch;window.fetch=function(u){const url=String(u&&u.url||u);if(/runecast-api|\/v1\//.test(url))return F.apply(this,arguments);n++;const p=F.apply(this,arguments);
+    const d=()=>setTimeout(()=>{n=Math.max(0,n-1);},150);p.then(d,d);return p;};
+  const Q=new URLSearchParams(location.search),CAP=+(Q.get('gcap')||8000),OFF=Q.get('gate')==='0';
+  const reveal=why=>{if(done)return;done=true;window.RCGATED=why+' '+Math.round(performance.now()-t0);
+    if(cv){cv.style.transition='opacity .3s ease-out';cv.style.opacity='1';}const ld=document.getElementById('ld');if(ld)ld.remove();cbs.splice(0).forEach(f=>{try{f();}catch(e){}});};
+  const tick=()=>{if(done)return;const ready=n===0&&conds.every(c=>{try{return !!c();}catch(e){return true;}});ok=ready?ok+1:0;
+    if(ok>=4)reveal('ready');else if(performance.now()-t0>CAP)reveal('cap');else requestAnimationFrame(tick);};
+  return {pending:()=>n,hide:c=>{cv=c;if(!OFF)c.style.opacity='0';},
+    start:(promise,...cs)=>{if(t0)return;t0=performance.now();if(OFF){reveal('off');return;}let pr=false;conds.push(()=>pr,...cs);
+      Promise.resolve(promise).then(()=>{pr=true;},()=>{pr=true;});requestAnimationFrame(tick);},
+    when:f=>{if(done)f();else cbs.push(f);},done:()=>done};})();
 const CEL=document.getElementById('c');const W=()=>CEL.clientWidth||innerWidth,H=()=>CEL.clientHeight||innerHeight;
-const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(new URLSearchParams(location.search).get('portrait')?+(new URLSearchParams(location.search).get('pss')||2.5):Math.min(devicePixelRatio,2));r.setSize(W(),H());
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(new URLSearchParams(location.search).get('portrait')?+(new URLSearchParams(location.search).get('pss')||2.5):Math.min(devicePixelRatio,2));r.setSize(W(),H());RCGATE.hide(r.domElement);
 r.outputEncoding=THREE.sRGBEncoding;document.getElementById('c').appendChild(r.domElement);if(!window.R2&&!window.RB)r.useLegacyLights=true;
 const sc=new THREE.Scene();window.__SC=sc;
 // soft studio reflections for the vinyl look
@@ -933,7 +949,7 @@ function buildEditor(E){
     ['wand_sea','Coral wand'],['wand_stars','Starry wand'],['wand_sun','Sun wand'],['wand_shadow','Shadow wand'],['wand_royal','Royal wand']];
   const wandTab={id:'wand',label:'Wand',part:'wand',sections:()=>{const s0=sec('Wand',null,grid(WANDS_WD.map(([id,n])=>({label:n,th:'item_'+id,item:id,slot:'wand',
       on:()=>E.wandId()===id,pick:()=>{E.setWand(id);E.focus('wand');}}))));
-    const b=el('button','wbk','See hero');b.type='button';b.onclick=()=>{const w=FOCW();E.focus(w?'full':'wand');b.textContent=w?'See wand':'See hero';};s0.querySelector('.sh').appendChild(b);return [s0];}};
+    return [s0];}};
   const FOCW=()=>!!(window.RCWSH&&RCWSH.g.visible);
   const TABS=[
     {id:'body',label:'Body',part:'full',sections:()=>{const sl=el('label','sld');sl.innerHTML='<span>Blush</span><input type="range" min="0" max="100">';const inp=sl.querySelector('input');inp.value=E.LOOK.blush;
@@ -963,7 +979,7 @@ function buildEditor(E){
   function sync(){for(const [b,on] of bound)b.classList.toggle('on',!!on());if(curTab&&curTab.sig&&curTab.sig()!==stripSig)renderStrip();
     for(const [b,on,name,nm] of stripBound){const o=!!on();b.classList.toggle('on',o);if(o)nm.textContent=name;}if(window.OWN)OWN.changed();}
   $('btnX').onclick=()=>{let same=false;try{same=!!document.referrer&&new URL(document.referrer).origin===location.origin;}catch(e){}if(same&&history.length>1)history.back();else location.href='/runecast/';};
-  $('btnDone').onclick=async()=>{if(window.OWN)await OWN.beforeDone();try{parent.postMessage({type:'rc-wd-done'},'*')}catch(e){}};
+  $('btnDone').onclick=async()=>{if(window.OWN)await OWN.beforeDone();if(window.RCFULLSETTLE)await Promise.race([RCFULLSETTLE(),new Promise(r=>setTimeout(r,2500))]);try{parent.postMessage({type:'rc-wd-done'},'*')}catch(e){}};
   try{parent.postMessage({type:'rc-wd-hello',done:1},'*')}catch(e){}
   $('btnRand').onclick=()=>{if(window.OWN&&OWN.on())OWN.randomize();else E.randomize();show(curTab.id);setTimeout(sync,400);};
   $('btnReset').onclick=()=>{E.reset();if(window.OWN)OWN.afterReset();show(curTab.id);setTimeout(sync,400);};
@@ -971,7 +987,7 @@ function buildEditor(E){
   show(t0);window.EDUI={show,sync,cur:()=>curTab?curTab.id:'body'};
 }
 new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base_m.glb?v=6r',g=>{
-  document.getElementById('ld').remove();
+  /*RCGATE1020: #ld goes at the reveal*/
   const root=g.scene;sc.add(root);const by={};
   root.traverse(o=>{if(o.isMesh){o.frustumCulled=false;by[o.name]=o;if(o.material)o.material.metalness=0;}});
   root.traverse(o=>{if(o.isMesh&&/^tripo_|^body_under|^scalp/.test(o.name)&&o.material&&!o.material.userData.soft){o.material.userData.soft=1;softSkin(o.material);}});
@@ -1009,15 +1025,19 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   window.RC_YB={YB,s:s.toArray(),c:c.toArray()};
   const DIR0=new THREE.Vector3(3.1,0.12,1.1).normalize(),FOC={part:'full',goal:null};
   // the editor's top bar covers the upper strip of the stage: frame the band in the space below it
-  const frameOf=part=>{if(part==='wand'&&window.RCWSH)return RCWSH.frame();const [y0,y1,wz]=FRAMES[part]||FRAMES.full,t=Math.tan(cam.fov*Math.PI/360),Hs=H(),inset=EDITOR?Math.min(64,Hs*0.14):0,fr=(Hs-inset)/Hs;
+  /*WANDZOOM1020 (admin 6225): the Wand tab frames the left hand + the held wand (WARDWAND1020), no wand beside the hero */
+  const handFrame=()=>{const W=window.RCWIH;if(!W||!W.tipW||!window.RCWIHGRIP||!window.RCWIHOK)return null;root.updateMatrixWorld(true);const hb=root.getObjectByName('L_Hand');if(!hb)return null;
+    const hp=hb.getWorldPosition(new THREE.Vector3()),tp=W.tipW(),ctr=hp.clone().lerp(tp,0.4),span=Math.max(hp.distanceTo(tp)*1.8,s.y*0.33),t=Math.tan(cam.fov*Math.PI/360),Hs=H(),inset=EDITOR?Math.min(64,Hs*0.14):0,fr=(Hs-inset)/Hs;
+    const d=Math.max(span/2/(t*fr),span/2/(t*cam.aspect))*(cam.aspect>1.2?1.3:1.05);return {tgt:new THREE.Vector3(ctr.x,ctr.y+d*t*inset/Hs,ctr.z),d};};window.RCHANDFRAME=handFrame;
+  const frameOf=part=>{if(part==='wand'){const h=handFrame();if(h)return h;part='torso';}const [y0,y1,wz]=FRAMES[part]||FRAMES.full,t=Math.tan(cam.fov*Math.PI/360),Hs=H(),inset=EDITOR?Math.min(64,Hs*0.14):0,fr=(Hs-inset)/Hs;
     const d=Math.max((y1-y0)/2/(t*fr),wz/2/(t*cam.aspect))*(cam.aspect>1.2?1.4:1.08);/* wide stages: a little more air */return {tgt:new THREE.Vector3(c.x,(y0+y1)/2+d*t*inset/Hs,c.z),d};};
-  const focus=(part,instant)=>{FOC.part=part;if(window.RCWSH)RCWSH.show(part==='wand');const g=frameOf(part);FOC.goal=g;/* ES2 10-13: head tabs turn the hero back to the front */FOC.turn=EDITOR&&/^(face|hair|head)$/.test(part);if(!instant)return;
+  const focus=(part,instant)=>{FOC.part=part;if(window.RCWSH)RCWSH.show(false);FOC.wpend=part==='wand'&&!handFrame();const g=frameOf(part);FOC.goal=g;/* ES2 10-13: head tabs turn the hero back to the front */FOC.turn=EDITOR&&/^(face|hair|head|wand)$/.test(part);if(!instant)return;
     const dir=cam.position.clone().sub(ctl.target);if(dir.lengthSq()<1e-8)dir.copy(DIR0);dir.normalize();
     ctl.target.copy(g.tgt);cam.position.copy(g.tgt).addScaledVector(dir,g.d);FOC.goal=null;ctl.update();};
   // ES2 10-13 (coordinator): on the head tabs (Eyes / Hair / Hat) the camera's azimuth eases back to the front view (~300 ms) while it frames,
   // so a hero turned round by a drag is never framed from behind; the elevation stays (it is locked for the painted pedestal)
   const SPH0=new THREE.Spherical().setFromVector3(DIR0),_sp=new THREE.Spherical();
-  const focusStep=dt=>{const g=FOC.goal;if(!g&&!FOC.turn)return;const k=1-Math.exp(-dt*7),off=cam.position.clone().sub(ctl.target),d=off.length();
+  const focusStep=dt=>{if(FOC.wpend&&FOC.part==='wand'&&handFrame()){FOC.wpend=false;FOC.goal=frameOf('wand');FOC.turn=true;}const g=FOC.goal;if(!g&&!FOC.turn)return;const k=1-Math.exp(-dt*7),off=cam.position.clone().sub(ctl.target),d=off.length();
     if(FOC.turn){_sp.setFromVector3(off);let da=SPH0.theta-_sp.theta;da=Math.atan2(Math.sin(da),Math.cos(da));_sp.theta+=da*Math.min(1,k*1.4);off.setFromSpherical(_sp);if(Math.abs(da)<2e-3)FOC.turn=false;}
     if(!g){cam.position.copy(ctl.target).add(off);return;}
     ctl.target.lerp(g.tgt,k);const nd=d+(g.d-d)*k;cam.position.copy(ctl.target).addScaledVector(off.normalize(),nd);
@@ -1443,6 +1463,32 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   window.RCWSH=WSH;
   window.ED={root,LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,hatProf,tones,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,setExpr,play,pose,focus,previewNoHat,randomize,reset,setWand:id=>WSH.set(id),wandId:()=>WSH.get(),
     ready:Promise.all(outfitReady),clips:g.animations.map(a=>[a.name,a.duration]),frames:FRAMES,tintDominant};
+  RCGATE.start(window.ED.ready,()=>!window.RCWIH||(window.RCWIHGRIP!==undefined&&!!window.RCWIHOK&&!!window.RCFIST));
+/*FULLSNAP1020 (admin 6225): a full-body picture of the player's own hero for the profile (no 3D there until "Edit look").
+  RCFULL() renders one extra frame with the camera on the whole body (default editor angle, pedestal + shadow hidden, transparent),
+  crops it to the hero, stores it as localStorage rc.fullbody (+ rc.fullbody.look = FULLVER) and posts {type:'rc-fullbody',data}.
+  The editor shoots it on Save look / close (after the try-ons are put back); ?embed=1&fullsnap=1 (hidden iframe in the app) shoots once after the reveal. */
+const FULLVER='fb1';
+window.RCFULL=()=>new Promise(res=>{const st0=window.PORTRAIT_STILL;window.PORTRAIT_STILL=1;/* eyes open, no blink / glance for the shot */let nf=0;const arm=()=>{if(++nf<10){requestAnimationFrame(arm);return;}window.__wantFull=()=>{window.PORTRAIT_STILL=st0;let d=null,cx=0.5;try{const o=fullShot();if(o){d=o.d;cx=o.cx;}}catch(e){console.warn('fullsnap',e);}
+  if(d){try{localStorage.setItem('rc.fullbody',d);localStorage.setItem('rc.fullbody.cx',cx.toFixed(4));localStorage.setItem('rc.fullbody.look',FULLVER);}catch(e){}try{parent.postMessage({type:'rc-fullbody',data:d,cx,final:1},'*');}catch(e){}window.RCFULLDONE=(window.RCFULLDONE||0)+1;}res(d);};};requestAnimationFrame(arm);});
+// wait until nothing is loading (4 quiet frames, cap 3 s), then shoot
+window.RCFULLSETTLE=()=>new Promise(res=>{const t0=performance.now();let ok=0;const f=()=>{ok=(window.RCGATE&&RCGATE.pending()>0)?0:ok+1;
+  if(ok>=4||performance.now()-t0>3000)RCFULL().then(res,res);else requestAnimationFrame(f);};requestAnimationFrame(f);});
+const fullShot=()=>{const el=r.domElement,P0=cam.position.clone(),Q0=cam.quaternion.clone(),hid=[];
+  const hide=o=>{if(o&&o.visible){o.visible=false;hid.push(o);}};hide(window.RC_PED);if(window.RCWSH)hide(RCWSH.g);
+  sc.traverse(o=>{if(o.isMesh&&o.material&&o.material.isShadowMaterial)hide(o);});
+  const y0=YB.foot-s.y*0.03,y1=YB.top+s.y*0.16,t=Math.tan(cam.fov*Math.PI/360),tgt=new THREE.Vector3(c.x,(y0+y1)/2,c.z);
+  const d=Math.max((y1-y0)/2/t,s.y*0.95/2/(t*cam.aspect))*1.02;cam.position.copy(tgt).addScaledVector(DIR0,d);cam.lookAt(tgt);cam.updateMatrixWorld();
+  r.render(sc,cam);const FP=new THREE.Vector3(c.x,YB.foot,c.z).project(cam);
+  const W0=el.width,H0=el.height,cv=document.createElement('canvas');cv.width=W0;cv.height=H0;const g=cv.getContext('2d',{willReadFrequently:true});g.drawImage(el,0,0);
+  cam.position.copy(P0);cam.quaternion.copy(Q0);cam.updateMatrixWorld();hid.forEach(o=>o.visible=true);r.render(sc,cam);
+  const A=g.getImageData(0,0,W0,H0).data;let x0=W0,x1=-1,yA=H0,yB=-1;
+  for(let y=0;y<H0;y++)for(let x=0;x<W0;x++)if(A[(y*W0+x)*4+3]>24){if(x<x0)x0=x;if(x>x1)x1=x;if(y<yA)yA=y;if(y>yB)yB=y;}
+  if(x1<0)return null;const pad=Math.round((yB-yA)*0.01);x0=Math.max(0,x0-pad);x1=Math.min(W0-1,x1+pad);yA=Math.max(0,yA-pad);yB=Math.min(H0-1,yB+1);
+  const w=x1-x0+1,h=yB-yA+1,k=Math.min(1,720/h),o=document.createElement('canvas');o.width=Math.round(w*k);o.height=Math.round(h*k);
+  const og=o.getContext('2d');og.imageSmoothingQuality='high';og.drawImage(cv,x0,yA,w,h,0,0,o.width,o.height);return {d:o.toDataURL('image/webp',0.9),cx:Math.max(0,Math.min(1,((FP.x+1)/2*W0-x0)/w))};};
+if(EMBED&&Q.get('fullsnap'))RCGATE.when(()=>setTimeout(()=>RCFULL(),900));
+
   if(EDITOR)buildEditor({LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,tones,eyes,order,nice,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,LS,setExpr,play,focus,previewNoHat,randomize,reset,getAnim:()=>curName,setWand:id=>WSH.set(id),wandId:()=>WSH.get()});
   // hold the arms a little away from the body so the hands don't sink into the robe
   const bones={};root.traverse(o=>{if(o.isBone||o.type==='Bone'||/Upperarm$/.test(o.name))bones[o.name]=o;});
@@ -1550,7 +1596,7 @@ const WIH=(()=>{const Q=new URLSearchParams(location.search);if(Q.get('wih')==='
   const restore=()=>{for(const b of TB){const l=LASTQ.get(b);if(l&&b.quaternion.equals(l))b.quaternion.copy(PREQ.get(b));PREQ.set(b,b.quaternion.clone());}};
   const remember=()=>{for(const b of TB)LASTQ.set(b,b.quaternion.clone());};
   let t=0;
-  return {setWand,holder,
+  return {setWand,holder,tipW:()=>{holder.updateMatrixWorld(true);return tip.getWorldPosition(v());},
     pre:dt=>{if(!gripOn)return;restore();t+=dt;root.updateMatrixWorld(true);axes();
       bU.getWorldPosition(_s);hv(PH,mt).multiplyScalar(RA).add(_s);ik2(bU,bF,bH,mt,hv(PP,mp),1);hv(PD,md).normalize();AIMS.copy(md);
       const gs=.075*HH*(1+.1*Math.sin(t*2.2));glow.scale.set(gs,gs,1);core.scale.set(.016*HH,.016*HH,1);halo.scale.set(gs*.55,gs*.55,1);
@@ -1570,7 +1616,7 @@ const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const d
       if(!ey||!(ey.y>PV.y))ey=PV.clone().setY(PV.y+s.y*0.118);
       const F=Math.max(0.03,ey.y-PV.y),Hf=F*FH,dd=Hf/(2*Math.tan(cam.fov*Math.PI/360));
       PT.set(PV.x,ey.y-Hf*(0.5-EYEP),PV.z);cam.position.set(PV.x+dd,ey.y+Hf*PLIFT,PV.z+dd*PSIDE);cam.lookAt(PT);}else ctl.update();
-    if(PORTRAIT&&PQ.get('pasp')){const ra=r.domElement.width/r.domElement.height;if(Math.abs(cam.aspect-ra)>1e-3){cam.aspect=ra;cam.updateProjectionMatrix();}}r.render(sc,cam);if(window.__wantExport){const f=window.__wantExport;window.__wantExport=null;try{f()}catch(e){window.__expErr=String(e)}}if(PORTRAIT)for(const [b,ax,d] of [...PARM].reverse())if(bones[b])bones[b].rotateOnAxis(ax,-d);if(__ph)bones.Head.rotateOnAxis(PHAX==='x'?new THREE.Vector3(1,0,0):PHAX==='y'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1),-PHEAD);
+    if(PORTRAIT&&PQ.get('pasp')){const ra=r.domElement.width/r.domElement.height;if(Math.abs(cam.aspect-ra)>1e-3){cam.aspect=ra;cam.updateProjectionMatrix();}}r.render(sc,cam);if(window.__wantFull){const f=window.__wantFull;window.__wantFull=null;f();}if(window.__wantExport){const f=window.__wantExport;window.__wantExport=null;try{f()}catch(e){window.__expErr=String(e)}}if(PORTRAIT)for(const [b,ax,d] of [...PARM].reverse())if(bones[b])bones[b].rotateOnAxis(ax,-d);if(__ph)bones.Head.rotateOnAxis(PHAX==='x'?new THREE.Vector3(1,0,0):PHAX==='y'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1),-PHEAD);
     if(PORTRAIT&&!window.__edw&&window.ED&&ED.ready){window.__edw=1;ED.ready.then(()=>{window.__edok=1},()=>{window.__edok=1});}
     if(PORTRAIT&&window.__edok){snapT+=clk.elapsedTime-(window.__pt||clk.elapsedTime);window.__pt=clk.elapsedTime;window.__pf=(window.__pf||0)+1;if(window.__pf>12&&((snaps===0&&snapT>2.5)||(snaps===1&&snapT>7))){snaps++;const PSZ=+(PQ.get('psize')||256);const cv=document.createElement('canvas');cv.width=cv.height=PSZ;const el=r.domElement,m=Math.min(el.width,el.height);
       {const g2=cv.getContext('2d');g2.imageSmoothingQuality='high';g2.drawImage(el,(el.width-m)/2,(el.height-m)/2,m,m,0,0,PSZ,PSZ);const PB=+(PQ.get('pbloom')||0);if(PB>0){const bc=document.createElement('canvas');bc.width=bc.height=PSZ;const bx=bc.getContext('2d');bx.filter='brightness(0.9) contrast(2.4) saturate(1.3) blur('+Math.round(PSZ/40)+'px)';bx.drawImage(cv,0,0);g2.save();g2.globalCompositeOperation='source-atop';g2.globalAlpha=1;g2.restore();g2.save();g2.globalCompositeOperation='screen';g2.globalAlpha=PB;g2.drawImage(bc,0,0);g2.restore();}}/* PREVIEW 10-12 fix1+2: supersampled + optional bloom */const d=cv.toDataURL('image/webp',0.9);

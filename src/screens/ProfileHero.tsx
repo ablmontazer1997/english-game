@@ -1,8 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { use3dFallback } from '../components/use3dFallback'
-import hero2d from '../assets/games/boss2/hero.webp'
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { art } from '../components/PageArt'
-import { hero3dPage } from './MapHero'
+import { useFullbody } from '../components/Portrait'
 import pedestalArt from '../assets/es2/k/wd/pedestal.webp'
 import './profilehero.css'
 import './profile2.css'
@@ -11,90 +9,36 @@ import spotArt from '../assets/es2/profile/stage.webp'   // the cleaned violet s
 import tileArt from '../assets/es2/profile/tile.webp'
 
 /*
- * The profile's hero showcase: the player's own 3D character (the same small
- * hero page the map uses, lite models, transparent) standing on the gold
- * podium, big, in a spotlight. The page reports where the feet and the hat tip
- * land in its frame (rc-ready), so the frame is sized and placed to put the
- * feet exactly on the podium's top face. The painted hero stands in until the
- * 3D has drawn. Tapping the hero plays a short gesture.
+ * The profile's hero showcase (admin 6225): a full-body PICTURE of the player's own hero standing on the gold pedestal in the
+ * arch, in a spotlight. The 3D character loads only in the wardrobe ("Edit look"), which shoots this picture.
  *
  *   variant 'stage': full-width spotlight stage, name ribbon under the podium
  *   variant 'card' : a framed night-sky hero card, stats in a column beside it
  */
-const SRC = hero3dPage('&el=6&fps=40')
 /** the ES2 perspective pedestal (GPT art, admin 5334): its top-ellipse centre as a fraction of its height, and its aspect */
 const PODIUM_TOP = 0.31
 const PODIUM_AR = 1024 / 365
-const GESTURES = ['clap', 'fold_arms', 'cast_a_spell'] as const
-
-type Frame = { gnd: number; top: number }
-
-function useShowcase3d() {
-  const ref = useRef<HTMLIFrameElement>(null)
-  const [ready, setReady] = useState(false)
-  const [frame, setFrame] = useState<Frame>({ gnd: 0.7578, top: 0.2231 })
-  const post = (m: Record<string, unknown>) => ref.current?.contentWindow?.postMessage(m, '*')
-  // Phase B: a new look (Wear in the shop / My Items, or loaded from the account) reloads the 3D hero
-  const [v, setV] = useState(0)
-  useEffect(() => { const on = () => { setReady(false); setV((x) => x + 1) }; addEventListener('rc-look', on); return () => removeEventListener('rc-look', on) }, [])
-  useEffect(() => {
-    const on = (e: MessageEvent) => {
-      if (!ref.current || e.source !== ref.current.contentWindow) return
-      const d = e.data || {}
-      if (d.type === 'rc-ready' && Array.isArray(d.gnd)) setFrame({ gnd: d.gnd[1], top: d.top[1] })
-      if (d.type === 'rc-shown') {
-        // face the viewer, turned a little to the light (no greeting bow: its 6 s hide the face behind the hat)
-        post({ type: 'rc-map', yaw: 'cam', off: 0.32, snap: 1, fps: 40 })
-        setReady(true)
-      }
-    }
-    addEventListener('message', on)
-    return () => removeEventListener('message', on)
-  }, [])
-  // a tap plays the next gesture (one at a time: taps during a gesture only sparkle) and bursts a few sparks
-  const g = useRef(0)
-  const busy = useRef(false)
-  const [burst, setBurst] = useState(0)
-  useEffect(() => {
-    const on = (e: MessageEvent) => { if (e.source === ref.current?.contentWindow && e.data?.type === 'rc-anim-done') busy.current = false }
-    addEventListener('message', on)
-    return () => removeEventListener('message', on)
-  }, [])
-  const gesture = () => {
-    setBurst((b) => b + 1)
-    if (!ready || busy.current) return
-    busy.current = true
-    post({ type: 'rc-anim', name: GESTURES[g.current++ % GESTURES.length], once: 1, fade: 0.2 })
-    setTimeout(() => { busy.current = false }, 6000) // never stuck if a done message is missed
-  }
-  return { ref, ready, frame, gesture, burst, v }
-}
-
 /** heroH: the model's height (feet to hat tip) in px; podiumW: the podium's width in px */
 type Ped = { src: string; aspect: number; top: number }
-function Hero3d({ heroH, podiumW, h3, ped }: { heroH: number; podiumW: number; h3: ReturnType<typeof useShowcase3d>; ped?: Ped }) {
-  const { frame } = h3
-  const fb = use3dFallback(h3.ready)
-  const fh = Math.round(heroH / Math.max(0.2, frame.gnd - frame.top))
-  const fw = Math.round(fh * 0.8)
+/** admin 6225: no 3D on the profile until "Edit look". The player's own hero as a full-body picture (shot by the wardrobe after every
+ *  look change, the default look's picture before that), standing on the same pedestal; a tap bursts a few sparks. */
+function HeroPic({ heroH, podiumW, ped }: { heroH: number; podiumW: number; ped?: Ped }) {
+  const pic = useFullbody()
+  const [burst, setBurst] = useState(0)
   const podiumH = podiumW / (ped?.aspect ?? PODIUM_AR)
-  const feetY = podiumH * (1 - (ped?.top ?? PODIUM_TOP)) // feet above the bottom of the podium box
+  const feetY = podiumH * (1 - (ped?.top ?? PODIUM_TOP))
   return (
     <>
       <img className="ph-podium" src={ped?.src ?? pedestalArt} alt="" draggable={false} style={{ width: podiumW }} />
-      {/* admin 6108: while the 3D hero loads, a turning rune on the pedestal says so (no painted stand-in, admin 4371) */}
-      {!h3.ready && !fb && <span className="ph-wait" aria-hidden style={{ bottom: feetY + heroH * 0.3 }} />}
-      <img className={`ph-2d${h3.ready || !fb ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
-        style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
-      <iframe key={h3.v} ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
-        style={{ width: fw, height: fh, bottom: feetY - fh * (1 - frame.gnd) }} />
+      <img className="ph-pic" src={pic.src} alt="" draggable={false}
+        style={{ height: heroH, bottom: feetY - heroH * 0.012, transform: `translateX(${(-pic.cx * 100).toFixed(1)}%)` }} />
       <span className="ph-shadow" style={{ width: podiumW * 1.08, bottom: `calc(var(--pod-b) - ${Math.round(podiumW * 0.05)}px)` }} />
-      {h3.burst > 0 && (
-        <span key={h3.burst} className="ph-burst" aria-hidden style={{ bottom: feetY + heroH * 0.55 }}>
+      {burst > 0 && (
+        <span key={burst} className="ph-burst" aria-hidden style={{ bottom: feetY + heroH * 0.55 }}>
           {Array.from({ length: 8 }, (_, i) => <i key={i} style={{ ['--k' as string]: i }} />)}
         </span>
       )}
-      <button className="ph-tap" aria-label="Your hero: tap for a gesture" onClick={h3.gesture}
+      <button className="ph-tap" aria-label="Your hero" onClick={() => setBurst((b) => b + 1)}
         style={{ height: heroH, bottom: feetY, width: heroH * 0.55 }} />
     </>
   )
@@ -114,12 +58,11 @@ function Spotlight({ ringY, ringW }: { ringY: number; ringW: number }) {
 export function ProfileHeroStage({ name, level, onEdit, children }: {
   name: string; level: number; onEdit: () => void; children?: ReactNode
 }) {
-  const h3 = useShowcase3d()
   return (
     <section className="ph ph-stage reveal">
       <div className="ph-show">
         <Spotlight ringY={62} ringW={300} />
-        <Hero3d heroH={282} podiumW={200} h3={h3} />
+        <HeroPic heroH={282} podiumW={200} />
         <button className="sk sk-edit ui-btn ph-edit" onClick={onEdit}>Edit look</button>
       </div>
       <div className="ph-plate">
@@ -136,7 +79,6 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
   name: string; level: number; onEdit: () => void
   stats: { icon: string; value: ReactNode; label: string }[]
 }) {
-  const h3 = useShowcase3d()
   // everything in the card scales with the card's width (210 px on a 360 phone, 264 px at 414)
   const box = useRef<HTMLDivElement>(null)
   const [w, setW] = useState(240)
@@ -153,11 +95,11 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
   // the live perspective pedestal, the name plate with the level disc, the stat tiles and the cream "Edit look" beside it
   return (
     <section className="ph ph-card ph-es2 reveal">
-      <div className={`ph-frame${h3.ready ? '' : ' is-loading'}`} ref={box} style={{ height: Math.round(Math.max(330, Math.min(390, w * 1.52))) }}>
+      <div className="ph-frame" ref={box} style={{ height: Math.round(Math.max(330, Math.min(390, w * 1.52))) }}>
         {/* admin 6108: the violet stage is clipped to the arch opening itself (the arch 9-slice, same slices), never a rectangle */}
         <span className="ph-spotclip" aria-hidden style={{ backgroundImage: `url(${spotArt})` }} />
         <Spotlight ringY={Math.round(podiumW * 0.36)} ringW={Math.round(w * 0.92)} />
-        <Hero3d heroH={heroH} podiumW={podiumW} h3={h3} />
+        <HeroPic heroH={heroH} podiumW={podiumW} />
         <span className="ph-arch" aria-hidden />
         <div className="ph-foot">
           <span className="ph-lvl"><small>LV</small>{level}</span>
