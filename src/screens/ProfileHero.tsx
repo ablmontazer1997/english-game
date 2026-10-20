@@ -155,7 +155,7 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
     <section className="ph ph-card ph-es2 reveal">
       <div className={`ph-frame${h3.ready ? '' : ' is-loading'}`} ref={box} style={{ height: Math.round(Math.max(330, Math.min(390, w * 1.52))) }}>
         {/* admin 6108: the violet stage is clipped to the arch opening itself (the arch 9-slice, same slices), never a rectangle */}
-        <span className="ph-spotclip" aria-hidden><img className="ph-spotbg" src={spotArt} alt="" draggable={false} /></span>
+        <span className="ph-spotclip" aria-hidden style={{ backgroundImage: `url(${spotArt})` }} />
         <Spotlight ringY={Math.round(podiumW * 0.36)} ringW={Math.round(w * 0.92)} />
         <Hero3d heroH={heroH} podiumW={podiumW} h3={h3} />
         <span className="ph-arch" aria-hidden />

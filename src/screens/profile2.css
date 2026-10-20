@@ -3,12 +3,13 @@
 .ph-es2 .ph-frame { --pod-b: 74px; border-radius: 0; background: none; box-shadow: none; animation: none; overflow: visible; }
 .ph-es2 .ph-frame::after { content: none; }
 /* the painted spotlight panel fills the arch's opening (its own top is arched) */
-.ph-es2 .ph-spotclip { position: absolute; top: 20px; left: 16px; right: 16px; bottom: 50px; z-index: 0; pointer-events: none;
+.ph-es2 .ph-spotclip { position: absolute; top: 27px; left: 25px; right: 25px; bottom: 50px; z-index: 0; pointer-events: none;
   /* admin 6108: the violet stage was a rectangle whose top corners stuck out past the arch curve. It now sits in a box
      with the arch's own round top, a little larger than the opening (its edge stays under the gold band, z 6) and
      smaller than the arch's outer edge, so nothing shows outside the arch at any card size. */
-  overflow: hidden; border-radius: 50% 50% 0 0 / 110px 110px 0 0; }
-.ph-es2 .ph-spotbg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+  border-radius: 50% 50% 0 0 / 120px 120px 0 0;   /* the 9-sliced arch has small see-through notches inside its two stars (where the corner and top pieces meet): the curve stays clear of them, so they show the sky, never the violet */
+  /* painted as the box background: a background always follows the border-radius (a clipped <img> child rendered square) */
+  background: #5a3cc0 50% 100% / cover no-repeat; }
 .ph-es2 .ph-rays, .ph-es2 .ph-ring, .ph-es2 .ph-glow { display: none; }
 .ph-es2 .ph-podium { filter: drop-shadow(0 8px 10px rgba(40, 20, 90, .4)); }
 /* the gold arch: 9-slice so the posts stretch with the card and the crown keeps its shape */
