@@ -1,8 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Runecast Wardrobe</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800;900&display=swap">
+<link rel="stylesheet" href="/vendor/fonts/gfonts.css">
 <style>
 /* ---- soft Runecast look: cream card, lavender/violet accents, gold highlights (light theme only, like the game's soft screens) */
 :root{--bg1:#f7f0ff;--bg2:#ffeee9;--ink:#2a2550;--ink2:#6b7192;--cream:#fffdf6;--cream2:#fbf5ea;--line:#efe4cf;
@@ -104,7 +103,7 @@ html.inapp #pane{padding-bottom:64px} /* the app's floating Done button sits ove
   <button class="ib gold" id="btnRand" title="Surprise me" aria-label="Surprise me"></button><button class="ib" id="btnReset" title="Reset" aria-label="Reset"></button></div></header>
 <section id="ed" aria-label="Character editor"><nav id="tabs" role="tablist"></nav><div class="rule"></div>
   <div id="pane" role="tabpanel"></div><div id="strip" hidden></div></section>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}</script>
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 <script type="module">
 /* PREVIEW B (10-12, admin 5106): three r164 (ES modules) behind a window.THREE shim so the page logic stays as it is.
    ?r=pbr = the new physically based path (see R2 block); without it the old look runs on r164 with legacy lights + no colour management. */
@@ -944,13 +943,13 @@ function buildEditor(E){
     mk([1.0,0.86,0.68],K,[-1.0,0.9,1.0],true);mk([0.75,0.82,1.0],K/3*NUM('fill',1.3),[1.0,-0.1,1.2]);
     {const RS=!!Q2.get('rimsh');const r1=mk([0.7,0.82,1.0],K*1.4*0.55*NUM('rim',1),[-0.8,0.6,-0.9],RS);const r2=mk([1.0,0.9,0.75],K*1.1*0.55*NUM('rim',1),[0.8,0.6,-0.9],RS);if(RS)for(const l of [r1,r2]){l.shadow.mapSize.set(NUM('rimsz',1024),NUM('rimsz',1024));l.shadow.radius=NUM('rimsr',4);}}   /* ?rimsh=1: the rims cast shadows like in Cycles (the head blocks them on the eyes / under the chin) */
     const box=new THREE.Box3(),ctr=new THREE.Vector3(),e=new THREE.Euler();
-    (function follow(){requestAnimationFrame(follow);box.setFromObject(root);if(!box.isEmpty()){box.getCenter(ctr);ctr.y=box.min.y+(box.max.y-box.min.y)*0.6;}
+    (function follow(){requestAnimationFrame(follow);if(window.RCHELD&&RCHELD())return;box.setFromObject(root);if(!box.isEmpty()){box.getCenter(ctr);ctr.y=box.min.y+(box.max.y-box.min.y)*0.6;}
       rig.position.copy(ctr);LT.position.copy(ctr);e.setFromQuaternion(cam.quaternion,'YXZ');rig.rotation.set(0,e.y,0);
       const d=Math.max(1.5,(box.max.y-box.min.y)*2);rig.children.forEach(l=>{l.position.setLength(d);});})();
     /* hat-only key shadow map: the HAIR alone receives it (the face/neck get the soft baked hat occ instead), so the hair under a brim darkens like in Cycles without a hard brim edge across the face */
     const HSZ=NUM('hssz',1024),HS={rt:new THREE.WebGLRenderTarget(HSZ,HSZ),cam:new THREE.OrthographicCamera(-0.9,0.9,0.9,-0.9,0.1,10),M:{value:new THREE.Matrix4()},on:{value:0},rad:{value:NUM('hsr',0.012)},any:false};
     HS.rt.depthTexture=new THREE.DepthTexture(HSZ,HSZ);HS.tex={value:HS.rt.depthTexture};HS.cam.layers.set(7);window.R2HS=HS;
-    (function hatPass(){requestAnimationFrame(hatPass);if(!HS.any||Q2.get('nohatsh')){HS.on.value=0;return;}const kl=rig.children[0];kl.updateMatrixWorld();LT.updateMatrixWorld();
+    (function hatPass(){requestAnimationFrame(hatPass);if(window.RCHELD&&RCHELD())return;if(!HS.any||Q2.get('nohatsh')){HS.on.value=0;return;}const kl=rig.children[0];kl.updateMatrixWorld();LT.updateMatrixWorld();
       HS.cam.position.setFromMatrixPosition(kl.matrixWorld);HS.cam.lookAt(LT.position);HS.cam.updateMatrixWorld();HS.M.value.multiplyMatrices(HS.cam.projectionMatrix,HS.cam.matrixWorldInverse);
       const au=r.shadowMap.autoUpdate,bg=sc.background,ov=sc.overrideMaterial,rt0=r.getRenderTarget();r.shadowMap.autoUpdate=false;sc.background=null;sc.overrideMaterial=HS.dm||(HS.dm=new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
       r.setRenderTarget(HS.rt);r.clear();r.render(sc,HS.cam);r.setRenderTarget(rt0);r.shadowMap.autoUpdate=au;sc.background=bg;sc.overrideMaterial=ov;HS.on.value=1;})();
@@ -1643,7 +1642,7 @@ function buildEditor(E){
     const AW=cd.clone(),RT=new THREE.Vector3(-cd.z,0,cd.x); // away from the camera / screen right, on the ground
     const yawOf=(x,z)=>Math.atan2(-z,x); // model faces local +X
     const YCAM=yawOf(-AW.x,-AW.z);
-    let yaw=YCAM+(+(BKQ.get('yaw0')||0)),yawT=yaw,turn=9,paused=false,fpsCap=+(BKQ.get('fps')||0),lastT=0,gel=+(BKQ.get('gel')||32);
+    let yaw=YCAM+(+(BKQ.get('yaw0')||0)),yawT=yaw,turn=9,paused=false,fpsCap=+(BKQ.get('fps')||0),lastT=0,gel=+(BKQ.get('gel')||32);window.RCHELD=()=>paused;   /*HLPAUSE1020: the app's pause (map kept hidden) also holds the light-follow and hat-shadow passes*/
     const setYaw=y=>{yaw=y;root.rotation.y=y;const cs=Math.cos(y),sn=Math.sin(y);root.position.set(P0.x-(cs*P0.x+sn*P0.z),0,P0.z-(-sn*P0.x+cs*P0.z));};
     setYaw(yaw);
     window.RCCLAMP=dt=>{let d=yawT-yaw;d=Math.atan2(Math.sin(d),Math.cos(d));const st=Math.sign(d)*Math.min(Math.abs(d),turn*dt*Math.min(1,Math.abs(d)*2.5+0.15));if(Math.abs(d)>1e-4)setYaw(yaw+st);};
