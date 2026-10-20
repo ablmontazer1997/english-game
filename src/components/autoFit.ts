@@ -8,6 +8,8 @@ const SEL = [
   '.pf2-more', '.pf2-t', '.sl-mis-t', '.ui-chip', '.shp-tabs [role=tab]',
   // round 2 (games): the violet task label, the Bubble Pop prompt word, the boss name tab
   '.gtask .gtask-t b', '.bp2-q b', '.bb2-tab',
+  // admin 6211: the TitleMark titles that replaced the gold ribbons (shrink, then wrap balanced)
+  '.tmark-t',
 ].join(',')
 // the login / intro letter (ScrollSheet .ssh) runs its own label shrink (x0.94 steps, min 14 px): never touch it
 const SKIP = '.ssh'

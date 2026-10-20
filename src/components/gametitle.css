@@ -1,11 +1,4 @@
 .gt { position: relative; z-index: 3; display: grid; justify-items: center; gap: 4px; flex: none; }
-.gt-ribbon { position: relative; width: min(74vw, 300px); display: grid; place-items: center; }
-.gt-ribbon img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(120, 70, 0, .3)); }
-.gt-ribbon span {
-  position: absolute; top: 22%; font-family: var(--sans); font-weight: 900; font-size: clamp(21px, 6.6vw, 29px);
-  color: #fff; white-space: nowrap; letter-spacing: 0;
-  text-shadow: -2px -2px 0 #8a4b0c, 2px -2px 0 #8a4b0c, -2px 2px 0 #8a4b0c, 2px 2px 0 #8a4b0c, 0 -2px 0 #8a4b0c, 0 2px 0 #8a4b0c, -2px 0 0 #8a4b0c, 2px 0 0 #8a4b0c, 0 4px 0 #8a4b0c, 0 6px 8px rgba(90, 50, 0, .45);
-}
 .gt-count {
   margin-top: -6px; padding: 4px 14px; border-radius: 999px;
   background: linear-gradient(180deg, #a978ff, #7b3ff0); color: #fff; font-weight: 800; font-size: 13px;
@@ -45,7 +38,7 @@
 
 /* game-name intro (admin 4602): overlay, out of the layout flow; scale-in, hold, 400 ms fade, then unmounted */
 .gt-intro { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none; }
-.gt-intro .gt-ribbon { width: min(80vw, 340px); will-change: transform; }   /* scale-in + fade driven by GameTitle.tsx (rAF) */
+.gt-intro .gt-mark { width: min(86vw, 360px); will-change: transform; }   /* scale-in + fade driven by GameTitle.tsx (rAF) */
 @media (prefers-reduced-motion: reduce) { .gt-intro { display: none; } }
 /* what stays in the layout: only the round counter */
 .gt-slim { gap: 0; }

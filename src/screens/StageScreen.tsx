@@ -20,6 +20,7 @@ import '../components/gametitle.css'
 import type { MiniGameOutcome } from '../games/types'
 import './stage.css'
 import { sfx, enterScene, leaveScene, quietStage, VOICE_GAMES } from '../services/audio'
+import { TitleMark } from '../components/TitleMark'
 
 type Phase = 'gate' | 'intro' | 'play' | 'rescue' | 'result'
 // the placement test must be fair: no boosters, no rescue
@@ -128,9 +129,7 @@ function LocalStage({ stage, onExit, onNeedHearts, previewPhase }: { stage: Stag
       <div className="stage-bg" style={{ backgroundImage: `url(${stageBg})` }} />
       <button className="stage-close" onClick={onExit} aria-label="Close">✕</button>
       <div className="lobby pop">
-        <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">
-          {MG_LABEL[stage.miniGame] ?? stage.miniGame.replace(/-/g, ' ')}
-        </Panel>
+        <TitleMark tone="light" size="sm" className="lobby-tag">{MG_LABEL[stage.miniGame] ?? stage.miniGame.replace(/-/g, ' ')}</TitleMark>
         <h2 className="lobby-title">{stage.title}</h2>
         <p className="lobby-sub">Learn 3 runes, then cast them</p>
         <div className="lobby-cards">

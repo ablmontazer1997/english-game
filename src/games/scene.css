@@ -40,10 +40,5 @@
 @keyframes gs-no { 20% { translate: -6px 0 } 40% { translate: 6px 0 } 60% { translate: -3px 0 } 80% { translate: 3px 0 } }
 @keyframes gs-float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
 /* the title crest as big and bold as in the mockups */
-.gs-title .gt-ribbon { width: min(70cqw, 330px); }
-.gs-title .gt-ribbon span { top: 22%; font-family: var(--sans); font-weight: 900; font-variant: normal; text-transform: none; letter-spacing: 0; font-size: clamp(22px, 7.2cqw, 32px); color: #fff; -webkit-text-stroke: 1.2px #9a5a10; paint-order: stroke fill;
-  text-shadow: 0 3px 0 #9a5a10, 0 4px 8px rgba(120, 70, 0, .45); }
-.gs-title .gt-ribbon span { -webkit-text-stroke: 0; color: #fff;
-  text-shadow: -2px -2px 0 #8a4b0c, 2px -2px 0 #8a4b0c, -2px 2px 0 #8a4b0c, 2px 2px 0 #8a4b0c, 0 -2px 0 #8a4b0c, 0 2px 0 #8a4b0c, -2px 0 0 #8a4b0c, 2px 0 0 #8a4b0c, 0 4px 0 #8a4b0c, 0 6px 8px rgba(90, 50, 0, .45); }
 /* the round counter tucks under the ribbon's right tail so it never covers a panel */
 .gs-title .gt-count { position: absolute; top: 74%; right: calc(50% - min(35cqw, 165px) + 6px); margin: 0; padding: 2px 10px; font-size: 12px; }

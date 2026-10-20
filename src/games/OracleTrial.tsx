@@ -7,7 +7,6 @@ import pedestalImg from '../assets/games/oracle/pedestal.webp'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
 import oracleHappy from '../assets/games/oracle/oracle_happy.webp'
 import oracleSurprised from '../assets/games/oracle/oracle_surprised.webp'
-import ribbon from '../assets/pages/ribbon_gold.png'
 import { TitleIntro, GameProgress } from '../components/GameTitle'
 import { ORACLE_BANK, LEVELS, type OracleQ } from './oracleBank'
 import './oracletrial.css'
@@ -190,7 +189,7 @@ export function OracleTrial({ onFinish, srv, onAnswer, level: lvProp, placement 
 
       {placement?.onExit && <button className="stage-close ot-exit" onClick={placement.onExit} aria-label="Leave the test">✕</button>}
       <div className="ot-head">
-        <TitleIntro title={srvQs ? 'Oracle' : 'Oracle Trial'} src={ribbon} className="ot-ribbon" />
+        <TitleIntro title={srvQs ? 'Oracle' : 'Oracle Trial'} />
         <div className="ot-count gt gt-slim">{done != null ? <GameProgress count="Complete" /> : <GameProgress count={`Question ${n + 1} / ${TOTAL}`} />}</div>
         {/* ES2 concept 08: the painted level ladder (gold rail, a gem per level: passed / current / locked) */}
         <div className="ot-gauge" aria-label={`Level ${LEVELS[shownLevel]}`}>

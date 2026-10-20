@@ -9,6 +9,7 @@ import lavender from '../assets/spellbook/lavender.webp'
 import divider from '../assets/spellbook/divider.webp'
 import '../components/es2kit.css'
 import './spellletter.css'
+import { TitleMark } from './TitleMark'
 
 const ICONS = import.meta.glob('../assets/spellbook/icons/*.webp', { eager: true, import: 'default' }) as Record<string, string>
 const icon = (id: string) => ICONS[`../assets/spellbook/icons/${id}.webp`]
@@ -102,7 +103,7 @@ export function SpellLetter({ topicId, level, children, onStart, startLabel = 'S
         <img className="sl-lav" src={lavender} alt="" draggable={false} />
         {two && <span className="sl-pg">{page + 1} / 2</span>}
         <div className="sl-body" ref={body} style={{ top: fit.top }}>
-          <span className="k-ribbon sl-tag2">Spellbook · {level}</span>
+          <TitleMark size="sm" className="sl-tag2">Spellbook · {level}</TitleMark>
           <h2 className={`sl-title${head ? '' : ' sm'}`}>{main}</h2>
           {head && sub && <p className="sl-subt">{sub}</p>}
           {head && <p className="sl-sum"><Ink text={pg.s} /></p>}

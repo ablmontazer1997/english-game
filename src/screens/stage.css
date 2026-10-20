@@ -101,7 +101,7 @@
   display: flex; flex-direction: column; align-items: center; gap: 12px;
   text-align: center;
 }
-.lobby-tag { width: 200px; }
+.lobby-tag { width: min(100%, 260px); }
 .pnl-in.lobby-tag-in {
   font-family: var(--game); font-weight: 800; font-size: 14px; letter-spacing: .06em;
   color: #6a3d10; text-transform: uppercase; padding-bottom: 6px;

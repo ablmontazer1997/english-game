@@ -20,12 +20,6 @@
 
 /* ---------- head: ribbon, counter, CEFR gauge ---------- */
 .ot-head { position: relative; z-index: 3; display: grid; justify-items: center; gap: 4px; flex: none; }
-.ot-ribbon { position: relative; width: 230px; display: grid; place-items: center; }
-.ot-ribbon img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(120, 70, 0, .3)); }
-.ot-ribbon span {
-  position: absolute; top: 27%; font-family: var(--display, var(--sans)); font-weight: 900; font-size: 20px;
-  color: #fff; text-shadow: 0 2px 0 #b8741a, 0 3px 6px rgba(120, 70, 0, .45);
-}
 .ot-count {
   margin-top: -6px; padding: 4px 14px; border-radius: 999px;
   background: linear-gradient(180deg, #a978ff, #7b3ff0); color: #fff; font-weight: 800; font-size: 13px;

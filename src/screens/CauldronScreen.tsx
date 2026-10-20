@@ -19,6 +19,7 @@ import { sfx } from '../services/audio'
 import './stage.css'
 import './serverstage.css'
 import '../components/progression.css'
+import { TitleMark } from '../components/TitleMark'
 
 const SEEN_KEY = 'es.review.day'
 /** the Cauldron opens by itself once a day, before the map */
@@ -87,14 +88,14 @@ export function CauldronScreen({ onClose, level }: { onClose: () => void; level:
   </>)
   if (phase === 'empty') return frame(<>
     <img className="cd-pot" src={art('qi_potion')} alt="" draggable={false} />
-    <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">Overnight Cauldron</Panel>
+    <TitleMark size="sm" className="lobby-tag">Overnight Cauldron</TitleMark>
     <h2 className="lobby-title ss-title">Nothing to brew today</h2>
     <Card className="ss-card ss-card-c"><p className="ss-card-p">Every spell you learn comes back here on the day you are about to forget it.{today?.new_tomorrow ? ` ${today.new_tomorrow} will be ready tomorrow.` : ''}</p></Card>
     <Panel name="btn_gold" className="lobby-start" inner="lobby-start-in" onClick={onClose}>To the map</Panel>
   </>)
   if (phase === 'intro' && today) return frame(<>
     <img className="cd-pot" src={art('qi_potion')} alt="" draggable={false} />
-    <Panel name="ribbon_gold" className="lobby-tag" inner="lobby-tag-in">Overnight Cauldron</Panel>
+    <TitleMark size="sm" className="lobby-tag">Overnight Cauldron</TitleMark>
     <h2 className="lobby-title ss-title">{today.due_count} spell{today.due_count === 1 ? '' : 's'} to remember</h2>
     <Card className="ss-card ss-card-c">
       <p className="ss-card-p">First, today's review: the spells you are about to forget. Every 10 right answers brew a heart{streak && !streak.today_done ? ', and one round lights your Hearthfire' : ''}.</p>

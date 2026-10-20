@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import ribbon from '../assets/pages/ribbon_title.png'
+import { TitleMark } from './TitleMark'
 import './gametitle.css'
 
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -7,7 +7,7 @@ const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia
 /** The game's gold ribbon title as a short intro (admin 4602): centred over the board for ~1.5 s with a gentle
  *  scale-in, then a 400 ms fade, then gone for the rest of the game. It is out of the layout flow from the start
  *  (fixed overlay), so nothing moves when it leaves. Reduced motion: no intro at all. */
-export function TitleIntro({ title, src = ribbon, className = '' }: { title: string; src?: string; className?: string }) {
+export function TitleIntro({ title, className = '' }: { title: string; className?: string }) {
   const [on, setOn] = useState(() => !reducedMotion())
   const el = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -30,7 +30,7 @@ export function TitleIntro({ title, src = ribbon, className = '' }: { title: str
   if (!on) return null
   return (
     <div className="gt-intro" ref={el} style={{ opacity: 0 }} aria-hidden>
-      <div className={`gt-ribbon ${className}`}><img src={src} alt="" draggable={false} /><span>{title}</span></div>
+      <div className={`gt-mark ${className}`}><TitleMark tone="light" size="xl">{title}</TitleMark></div>
     </div>
   )
 }

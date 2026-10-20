@@ -43,21 +43,14 @@
 .sheet-scrim-light { background: rgba(30, 50, 110, 0.38); backdrop-filter: blur(4px); }
 .lsheet {
   position: relative; width: min(calc(100vw - 2 * var(--gutter)), 360px);
-  padding: 56px var(--gutter) var(--gutter);
+  padding: 20px var(--gutter) var(--gutter);
   border-radius: 30px; border: 4px solid #fff;
   background: linear-gradient(180deg, #ffffff 0%, #f6f2ff 100%);
   box-shadow: 0 7px 0 #b9c3dd, 0 22px 44px rgba(20, 40, 100, .35);
   animation: pop 300ms var(--ease-magic) both;
 }
-.lsheet-title {
-  position: absolute; left: 50%; top: -34px; transform: translateX(-50%);
-  width: 230px; display: grid; place-items: center; pointer-events: none;
-}
-.lsheet-title img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(120, 70, 0, .3)); }
-.lsheet-title span {
-  position: absolute; top: 30%; font-family: var(--display, var(--sans)); font-weight: 900; font-size: 19px;
-  color: #fff; letter-spacing: .02em; text-shadow: 0 2px 0 #b8741a, 0 3px 6px rgba(120, 70, 0, .45);
-}
+/* admin 6211: the title is a TitleMark (violet title + gold star rule) in the sheet's flow, clear of the close button */
+.lsheet-tm { padding: 0 30px; margin-bottom: 14px; }
 .lsheet-close {
   position: absolute; top: -16px; right: -12px; width: 44px; height: 44px; padding: 0;
   background: none; border: 0; z-index: 2;

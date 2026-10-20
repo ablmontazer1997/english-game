@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { ImgIcon } from './ImgIcon'
 import closeV2 from '../assets/ui/v2/close.webp'
-import ribbon from '../assets/pages/ribbon_gold.png'
+import { TitleMark } from './TitleMark'
 import './sheet.css'
 
 export function Sheet({ open, title, onClose, children, variant }: {
@@ -18,7 +18,7 @@ export function Sheet({ open, title, onClose, children, variant }: {
   if (variant === 'light') return (
     <div className="sheet-scrim sheet-scrim-light" onClick={onClose}>
       <div className="lsheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
-        {title && <div className="lsheet-title"><img src={ribbon} alt="" draggable={false} /><span>{title}</span></div>}
+        {title && <TitleMark as="h2" className="lsheet-tm">{title}</TitleMark>}
         <button className="lsheet-close" aria-label="Close" onClick={onClose}><img src={closeV2} alt="" draggable={false} /></button>
         <div className="lsheet-body">{children}</div>
       </div>

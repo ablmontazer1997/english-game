@@ -14,6 +14,7 @@ import bardIdle from '../assets/games/bard/bt_bard_idle.webp'
 import bardHappy from '../assets/games/bard/bt_bard_happy.webp'
 import './scene.css'
 import './bardstale.css'
+import { TitleMark } from '../components/TitleMark'
 
 // Bard's Tale — reading for order and linking words. The bard dropped the
 // pages of his tale. Tap them in the order the story happens; time words,
@@ -88,7 +89,7 @@ export function BardsTale({ onFinish, level, srv, onAnswer }: MiniGameProps) {
 
       <div className="gs-ui gs-panel bdt-panel k9 k-panel" data-coach="a">
         <Task className="gtask-row k-scroll" icon="order" text="Put the story in order" sub="Tap the lines from first to last" first={round === 0} />
-        <p className="bdt-title k-ribbon">“{t.title}”</p>
+        <TitleMark as="p" className="bdt-tm">“{t.title}”</TitleMark>
         {cards.map((c) => {
           const n = order.indexOf(c.id)
           return (

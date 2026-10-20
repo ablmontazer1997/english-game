@@ -49,6 +49,7 @@ import cfV from '../assets/es2/k/p13/confetti_violet.webp'
 import cfG from '../assets/es2/k/p13/confetti_gold.webp'
 import cfP from '../assets/es2/k/p13/confetti_pink.webp'
 import cfB from '../assets/es2/k/p13/confetti_blue.webp'
+import { TitleMark } from '../components/TitleMark'
 const CONFETTI = [cfV, cfG, cfP, cfB, cfG, cfV, cfB, cfP, cfG, cfV]
 
 type Phase = 'loading' | 'error' | 'gate' | 'intro' | 'play' | 'between' | 'sending' | 'rescue' | 'result'
@@ -223,7 +224,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
       {/* ES2 concept 14: the painted card with the empty heart over a gold ribbon; green Get Hearts, cream Back to Map */}
       <div className="rescue-wrap"><div className="rescue rs2 pop">
         <img className="rs2-art rs2-heart" src={heartEmptyArt} alt="" draggable={false} />
-        <div className="rs2-ribbon"><h2>Out of Hearts</h2></div>
+        <TitleMark as="h2" size="lg" className="rs2-tm">Out of Hearts</TitleMark>
         <p>Trials, bosses and treasure vaults need a heart. Review in the Overnight Cauldron (10 right answers brew a heart), wait for one to recharge, or get more.</p>
         <NextHeart at={currencies?.heartsRefillAt ?? 0} />
         <button className="k-btn k-green" onClick={onNeedHearts}>Get Hearts</button>
@@ -275,7 +276,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
           {/* ES2 concept 12: the same painted spellbook page as the lesson letter, wax seal, gold ribbon, game chips with each game's art */}
           <div className="ss-page">
           <img className="ss-seal" src={waxSeal} alt="" draggable={false} />
-          <span className="k-ribbon lobby-tag2">{KIND_LABEL[stage.serverKind ?? ''] ?? 'Stage'} · {stage.cefr}</span>
+          <TitleMark size="sm" className="lobby-tag2">{KIND_LABEL[stage.serverKind ?? ''] ?? 'Stage'} · {stage.cefr}</TitleMark>
           <h2 className="lobby-title ss-title">{stage.title.replace(/^(Spellbook|Practice|Echoes|Trial): /, '')}</h2>
           <div className="ss-card">
           {topic ? (
@@ -313,7 +314,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
         {/* ES2 concept 14: the elixir over a gold ribbon on the painted card; green Continue, cream Keep / Give up */}
         <div className="rescue-wrap"><div className="rescue rs2 pop">
           <img className="rs2-art" src={elixirArt} alt="" draggable={false} />
-          <div className="rs2-ribbon"><h2>The {what} holds</h2></div>
+          <TitleMark as="h2" size="lg" className="rs2-tm">The {what} holds</TitleMark>
           <p>{contLeft > 0 ? 'Half the runes must land to win. Try 3 more questions?' : `Drink an elixir to keep your heart. You have ${potion}.`}</p>
           {contLeft > 0 && (potion > 0
             ? <button className="k-btn k-green rs-btn" onClick={() => doContinue('elixir')}>Continue: +3 questions<span className="rs-cost"><img src={flaskIc} alt="" />1</span></button>
@@ -341,7 +342,7 @@ export function ServerStage({ stage, onExit, onNeedHearts, guided }: { stage: St
             </span>
           ))}
         </div>
-        <div className="rs3-ribbon"><h2 className="result-title">{out.stars === 3 ? 'Perfect!' : out.stars >= 1 ? 'Nice!' : 'Try again'}</h2></div>
+        <TitleMark as="h2" size="xl" className="rs3-tm">{out.stars === 3 ? 'Perfect!' : out.stars >= 1 ? 'Nice!' : 'Try again'}</TitleMark>
         <ResultHero win={out.stars > 0} />
         <p className="rs3-sum">{out.correct} of {out.total} runes cast{out.first_clear ? ' · first clear' : ''}</p>
         <div className="rs3-cards">
