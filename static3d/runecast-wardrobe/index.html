@@ -938,7 +938,7 @@ function buildEditor(E){
   const TABS=[
     {id:'body',label:'Body',part:'full',sections:()=>{const sl=el('label','sld');sl.innerHTML='<span>Blush</span><input type="range" min="0" max="100">';const inp=sl.querySelector('input');inp.value=E.LOOK.blush;
         inp.oninput=()=>{E.setBlush(+inp.value);E.LS.set('blush',inp.value);if(window.OWN)OWN.changed();};bound.push([inp,()=>{inp.value=E.LOOK.blush;return false;}]);
-        return [sec('Body type',null,grid([{label:'Boy',th:'body_boy',on:()=>!E.LOOK.girl,pick:()=>E.setGirl(false,true)},{label:'Girl',th:'body_girl',on:()=>E.LOOK.girl,pick:()=>E.setGirl(true,true)}])),sec('Cheeks',null,sl)];},
+        return [sec('Body type',null,grid([{label:'Boy',th:'body_boy',on:()=>!E.LOOK.girl,pick:()=>E.setGirl(false,true)},{label:'Girl',th:'body_girl',on:()=>E.LOOK.girl,pick:()=>E.setGirl(true,true)}]))];},
       strip:()=>({title:'Skin tone',items:E.tones.map(([n,c],i)=>({name:n,color:`rgb(${c})`,on:()=>E.LOOK.tone===i,pick:()=>E.setTone(i)}))})},
     {id:'eyes',label:'Eyes',part:'face',noHat:true,sections:()=>{const g=el('div','eyegrid');
         IRIS_COLORS.forEach(([n,k,c],i)=>{const b=el('button','ecol');b.type='button';b.setAttribute('aria-label',n);
@@ -1419,7 +1419,7 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
     SKIN.tone.value.set(...t.map((v,k)=>Math.pow(v/255,2.2)/Math.pow(SRC[k]/255,2.2)*cc[k]));if(by.blush){const d=Math.min(1,Math.max(0,(0.42-lt)/0.3));by.blush.material.color.setRGB(1-0.25*d,1-0.62*d,1-0.48*d);}LOOK.tone=i;LS.set('skinTone2',i);};
   {const v=LS.get('skinTone2',null);setTone(v!==null?Math.min(+v||0,tones.length-1):1);}
   const setBlush=v=>{LOOK.blush=v;if(by.blush)by.blush.material.opacity=v/100;};
-  if(by.blush){by.blush.material.transparent=true;let b0=+LS.get('blush',80);if(!(b0>=0&&b0<=100))b0=80;setBlush(b0);}
+  if(by.blush){by.blush.material.transparent=true;setBlush(80);LOOK.blush=80;/* 10-20 admin 6117: blush fixed at default, no user control */}
   const setExpr=m=>{if(eyes)eyes.setMode(m);};
   const rnd=n=>Math.floor(Math.random()*n),SW=PALETTE.slice(1).map(p=>p[0]);
   const randomize=()=>{setGirl(Math.random()<0.5,false);setHair(HAIR_OK[rnd(HAIR_OK.length)]);pickHairColor(rnd(HAIR_COLORS.length));pickIris(rnd(IRIS_COLORS.length));setTone(rnd(tones.length));
