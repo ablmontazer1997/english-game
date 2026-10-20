@@ -75,7 +75,19 @@ export class HttpGameService implements GameService {
   // ---------------------------------------------------------------- reads
   async getProfile(): Promise<PlayerProfile> {
     this.me = await api.me()
+    await this.syncTimezone()
     return this.profileOf(this.me)
+  }
+  /** The server plans streak days, league weeks, events and reminders in the player's local time. The zone was sent
+   *  only when a guest was created, so logins and moved phones stayed on UTC: re-check it once per app start. */
+  private tzSynced = false
+  private async syncTimezone() {
+    if (this.tzSynced || !this.me) return
+    this.tzSynced = true
+    let tz: string | undefined
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone } catch { return }
+    if (!tz || tz === this.me.timezone) return
+    try { this.me = await api.patchMe({ timezone: tz }) } catch { /* unknown zone or offline: next start */ }
   }
   profileOf(me: Me): PlayerProfile {
     this.me = me

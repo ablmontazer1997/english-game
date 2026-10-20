@@ -109,7 +109,14 @@ export interface SeasonOut {
   rules: { stage_win: number; per_star: number; stage_lost: number; focus_max: number; quest: { daily: number; weekly: number } }
   tiers: SeasonTier[]
 }
-export interface PushStatus { enabled: boolean; subscribed: boolean; devices: number; public_key: string | null; reminder_hour: number }
+export interface PushStatus {
+  enabled: boolean; subscribed: boolean; devices: number; public_key: string | null; reminder_hour: number
+  /** 10-20 reminder settings: on, Event news, the chosen minute of the day (null = auto = auto_minute) */
+  on?: boolean; events?: boolean; minute?: number | null; auto_minute?: number
+}
+/** 10-20: one planned notification (the server planner, services/remind.py); at = UTC ms */
+export interface PlanItem { id: string; at: number; day: string; tier: string; title: string; body: string; img: string; route: string }
+export interface PushPlan { on: boolean; events: boolean; items: PlanItem[] }
 /** Phase B: one wardrobe catalogue for the 3D wardrobe, the shop and the merchant */
 export type Tier = 'free' | 'boss' | 'earned' | 'coin' | 'gem' | 'premium'
 export interface WardrobeItem {
@@ -342,6 +349,8 @@ export const api = {
   pushStatus: () => call<PushStatus>('GET', '/v1/push/status'),
   pushSubscribe: (sub: PushSubscriptionJSON) => call<PushStatus>('POST', '/v1/push/subscribe', { endpoint: sub.endpoint, keys: sub.keys, user_agent: navigator.userAgent.slice(0, 200) }),
   pushUnsubscribe: (endpoint?: string) => call<PushStatus>('POST', '/v1/push/unsubscribe', { endpoint: endpoint ?? null }),
+  pushPrefs: (b: { on?: boolean; events?: boolean; minute?: number; auto?: boolean }) => call<PushStatus>('POST', '/v1/push/prefs', b),
+  pushPlan: () => call<PushPlan>('GET', '/v1/push/plan'),
 }
 
 /** a short line for the player from any error */

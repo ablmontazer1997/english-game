@@ -35,7 +35,8 @@ import { SeasonPassScreen } from './screens/SeasonPassScreen'
 import { mockFx, signedInAs, unnamed } from './services/api'
 import { LoginScreen } from './screens/LoginScreen'
 import { ReminderSheet } from './components/ReminderSheet'
-import { isOn as remindersOn, pushSupported, shouldOffer, turnOff as remindersOff, turnOn as remindersTurnOn } from './services/push'
+import { hookTaps, isBlocked as remindersBlocked, isNative, isOn as remindersOn, pushSupported, resync as remindersResync, savePrefs, shouldOffer, turnOff as remindersOff, turnOn as remindersTurnOn } from './services/push'
+import { api } from './services/api'
 import { setMusic as playMusic } from './services/audio'
 import type { CurrencyId, Stage, MiniGameId } from './types/game'
 
@@ -62,12 +63,47 @@ export function App() {
   const [seasonOpen, setSeasonOpen] = useState(false)
   const [wonPending, setWonPending] = useState(false)
   const [remind, setRemind] = useState(false)
+  // audit preview (mock only, ?remindpreview=1|sheet): the reminder rows in Settings / the soft ask, never on live data
+  const remindPreview = mode === 'mock' && typeof location !== 'undefined' ? new URLSearchParams(location.search).get('remindpreview') : null
+  useEffect(() => { if (ready && remindPreview === 'sheet') setRemind(true) }, [ready, remindPreview])
   useEffect(() => { const on = () => setWonPending(true); addEventListener('es-stage-won', on); return () => removeEventListener('es-stage-won', on) }, [])
   useEffect(() => {
     if (!wonPending || playing || mode !== 'http' || !account?.onboarded) return
     setWonPending(false)
-    if (shouldOffer()) setTimeout(() => setRemind(true), 900)   // no cleanup: clearing wonPending re-runs this effect
+    remindersResync().catch(() => {})        // Android: the plan restarts from today's fire
+    shouldOffer(streak?.current ?? 0).then((y) => { if (y) setTimeout(() => setRemind(true), 900) }).catch(() => {})
   }, [wonPending, playing, mode, account?.onboarded])
+  // 10-20 reminders: Android reschedules the plan on start and on every return to the app; a tapped notification
+  // (Android 'es-go' event, the web service worker's message or ?go=) opens its place
+  useEffect(() => {
+    if (!ready || mode !== 'http') return
+    hookTaps(); remindersResync().catch(() => {})
+    const vis = () => { if (document.visibilityState === 'visible') remindersResync().catch(() => {}) }
+    document.addEventListener('visibilitychange', vis)
+    return () => document.removeEventListener('visibilitychange', vis)
+  }, [ready, mode])
+  const goRef = useRef<(r: string) => void>(() => {})
+  goRef.current = (r: string) => {
+    if (playing) return                     // never pull the player out of a stage
+    setShop(null); setSettings(false); setAchOpen(false); setCauldron(false)
+    if (r === 'hearth') { setTab('map'); setHearth(true) }
+    else if (r === 'season') setSeasonOpen(true)
+    else if (r === 'league' || r === 'quests') { setSeasonOpen(false); setTab(r) }
+    else { setSeasonOpen(false); setTab('map') }
+  }
+  useEffect(() => {
+    if (!ready) return
+    const on = (e: Event) => goRef.current(String((e as CustomEvent).detail ?? 'map'))
+    addEventListener('es-go', on)
+    const sw = (e: MessageEvent) => { if (e.data?.type === 'es-go') goRef.current(String(e.data.route ?? 'map')) }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', sw)
+    const first = new URLSearchParams(location.search).get('go')
+    if (first) {
+      goRef.current(first)
+      const u = new URL(location.href); u.searchParams.delete('go'); history.replaceState(null, '', u.toString())
+    }
+    return () => { removeEventListener('es-go', on); if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', sw) }
+  }, [ready])
   useEffect(() => {
     if (!guideLevel || !worlds.length) return
     const st = firstStageOf(worlds, guideLevel)
@@ -208,10 +244,10 @@ export function App() {
       {ready && portraitV > 0 && !customizing && !playing && <PortraitCapture version={portraitV} />}
 
       <Sheet open={settings} title="Settings" variant="light" onClose={() => setSettings(false)}>
-        <SettingsBody server={mode === 'http'} onRename={() => { setSettings(false); setNaming(true) }} onAccount={() => { setSettings(false); setSignIn(true) }} />
+        <SettingsBody server={mode === 'http'} remindPreview={!!remindPreview} onRename={() => { setSettings(false); setNaming(true) }} onAccount={() => { setSettings(false); setSignIn(true) }} />
       </Sheet>
       {mode === 'http' && <NameSheet open={naming} onClose={() => setNaming(false)} />}
-      {mode === 'http' && <ReminderSheet open={remind} onClose={() => setRemind(false)} />}
+      {(mode === 'http' || remindPreview) && <ReminderSheet open={remind} onClose={() => setRemind(false)} />}
     </div>
   )
 }
@@ -237,7 +273,7 @@ export function Offline({ message, onRetry }: { message: string; onRetry: () => 
   )
 }
 
-function SettingsBody({ server, onRename, onAccount }: { server: boolean; onRename: () => void; onAccount: () => void }) {
+function SettingsBody({ server, remindPreview, onRename, onAccount }: { server: boolean; remindPreview?: boolean; onRename: () => void; onAccount: () => void }) {
   const { account, profile, patchMe } = useGame()
   // Phase C (audit §2 Settings): daily goal, Focus mode and the game tutorials live here too
   const [focusOn, setFocusOn] = useFocusPref(account?.flags, server ? (on) => { patchMe({ flags: { focus: on ? 'on' : 'off' } }).catch(() => {}) } : null)
@@ -285,7 +321,7 @@ function SettingsBody({ server, onRename, onAccount }: { server: boolean; onRena
           }}>Show again</button>
         </div>
       )}
-      {server && <ReminderRow />}
+      {(server || remindPreview) && <ReminderRow preview={!!remindPreview && !server} />}
       <Checkbox label="Focus mode: no timers, calm screen" on={focusOn} onChange={setFocusOn} />
       <Toggle label="Sound effects" icon={icSound} on={sound} onChange={set('sound', setSound)} />
       <Toggle label="Music" icon={icMusic} on={music} onChange={(v) => { set('music', setMusic)(v); playMusic(v) }} />
@@ -295,29 +331,72 @@ function SettingsBody({ server, onRename, onAccount }: { server: boolean; onRena
   )
 }
 
-/** Phase D: the daily reminder (English Spell's own Web Push). On = ask + subscribe; off = unsubscribe everywhere */
-function ReminderRow() {
-  const [on, setOn] = useState<boolean | null>(null)
+/** The daily reminder (English Spell's own: Web Push on the web, local notifications in the Android app) with its
+ *  time and Event news (10-20, admin 6138). On = ask + subscribe/schedule; off = nothing more is sent here. */
+function ReminderRow({ preview = false }: { preview?: boolean }) {
+  const [on, setOn] = useState<boolean | null>(preview ? true : null)
+  const [blocked, setBlocked] = useState(false)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
-  useEffect(() => { remindersOn().then(setOn).catch(() => setOn(false)) }, [])
+  const [minute, setMinute] = useState<number | null>(null)       // null = auto
+  const [auto, setAuto] = useState(18 * 60)
+  const [events, setEvents] = useState(true)
+  useEffect(() => {
+    if (preview) return
+    remindersOn().then(setOn).catch(() => setOn(false))
+    remindersBlocked().then(setBlocked).catch(() => {})
+    api.pushStatus().then((st) => {
+      setMinute(st.minute ?? null); setAuto(st.auto_minute ?? (st.reminder_hour ?? 18) * 60); setEvents(st.events !== false)
+    }).catch(() => {})
+  }, [])
   if (!pushSupported()) return (
-    <div className="set-name"><span><small>Daily reminder</small><b>Not available in this browser</b></span></div>
+    <div className="set-name"><span><small>Daily reminder</small><b>{isNative() ? 'Needs the new app version' : 'Not in this browser'}</b></span></div>
   )
-  const blocked = typeof Notification !== 'undefined' && Notification.permission === 'denied'
+  const where = isNative() ? 'phone' : 'browser'
   const flip = async () => {
     if (busy || on == null) return
     setBusy(true); setMsg(null)
     try {
       if (on) { await remindersOff(); setOn(false) }
-      else { const ok = await remindersTurnOn(); setOn(ok); if (!ok) setMsg('Your browser blocked it. Allow notifications for this site, then try again.') }
-    } catch { setMsg('Could not change it right now. Try again later.') }
+      else {
+        const ok = await remindersTurnOn(); setOn(ok)
+        if (!ok) { setBlocked(await remindersBlocked()); setMsg(`Allow notifications in your ${where} settings`) }
+      }
+    } catch { setMsg('Try again later') }
     setBusy(false)
   }
+  const pickTime = (v: string) => {
+    const m = v === 'auto' ? null : Number(v)
+    setMinute(m)
+    savePrefs(m == null ? { auto: true } : { minute: m }).catch(() => setMsg('Try again later'))
+  }
+  const flipEvents = (v: boolean) => { setEvents(v); savePrefs({ events: v }).catch(() => setMsg('Try again later')) }
+  const times: number[] = []
+  for (let m = 7 * 60; m <= 22 * 60; m += 30) times.push(m)
   return (
-    <div className="set-name">
-      <span><small>Daily reminder</small><b>{msg ?? (blocked ? 'Blocked in your browser' : on ? 'On, near your play time' : 'Off')}</b></span>
-      <button className="cb cb-white set-name-btn" disabled={busy || on == null} onClick={flip}>{busy ? '…' : on ? 'Turn off' : 'Turn on'}</button>
-    </div>
+    <>
+      <div className="set-name">
+        <span><small>Daily reminder</small><b>{msg ?? (blocked && !on ? `Blocked in your ${where}` : on ? 'On' : 'Off')}</b></span>
+        <button className="cb cb-white set-name-btn" disabled={busy || on == null} onClick={flip}>{busy ? '…' : on ? 'Turn off' : 'Turn on'}</button>
+      </div>
+      {on && (
+        <label className="set-name set-time">
+          <span><small>{minute == null ? 'Reminder time (auto)' : 'Reminder time'}</small><b>{clock(minute ?? auto)}</b></span>
+          <span className="cb cb-white set-name-btn set-time-btn">Change
+            <select aria-label="Reminder time" value={minute == null ? 'auto' : String(minute)} onChange={(e) => pickTime(e.target.value)}>
+              <option value="auto">Auto (your usual play time)</option>
+              {times.map((m) => <option key={m} value={m}>{clock(m)}</option>)}
+            </select>
+          </span>
+        </label>
+      )}
+      {on && <Checkbox label="Event news (league, bosses)" on={events} onChange={flipEvents} />}
+    </>
   )
+}
+
+/** minutes after midnight → the phone's own clock style (18:30 or 6:30 PM) */
+function clock(m: number) {
+  const d = new Date(2026, 0, 1, Math.floor(m / 60), m % 60)
+  try { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) } catch { return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}` }
 }

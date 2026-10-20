@@ -86,3 +86,6 @@
 .set-goal-b { width: 38px; height: 38px; border-radius: 12px; font-size: 17px; font-weight: 800; color: #5a2fc0;
   background: #fff; border: 2px solid #d9cdf5; box-shadow: 0 3px 0 #d9cdf5; }
 .set-goal-b.on { background: #7d4ff0; border-color: #7d4ff0; color: #fff; box-shadow: 0 3px 0 #5a24c0; }
+/* 10-20 reminders: the time row opens the phone's own picker (an invisible <select> over the Change button) */
+.set-name .set-time-btn { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; }
+.set-time-btn select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
