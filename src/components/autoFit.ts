@@ -14,6 +14,9 @@ const SKIP = '.ssh'
 const MIN = 0.72        // never below 72% of the designed size
 // ribbons never wrap (a two-line ribbon breaks the art); they may go to 60%. Their own padding is a % of the PARENT
 // width, so their room is measured on the painted flat middle of the ribbon itself (72% of its width)
+// labels whose own box grows with their text (flex/grid items): their room is the painted frame around them,
+// from the label column's left edge to the frame's inner right edge
+const FRAMES: [string, string][] = [['.gtask .gtask-t b', '.gtask'], ['.bp2-q b', '.bp2-card']]
 const RIBBON = '.k-ribbon'
 const RIBBON_MIN = 0.55, RIBBON_FLAT = 0.58   // flat middle only: the curled tails take ~21% each side
 const MIN_PX = 10
@@ -52,7 +55,14 @@ export function fit(el: HTMLElement) {
   el.style.removeProperty('font-size'); el.classList.remove('fit-wrap'); el.classList.add('fit-1')
   const cs = getComputedStyle(el)
   const base = parseFloat(cs.fontSize)
-  const have = inner(el, cs)
+  let have = inner(el, cs)
+  for (const [sel, fsel] of FRAMES) {
+    const fr = el.matches(sel) ? el.closest<HTMLElement>(fsel) : null
+    if (!fr) continue
+    const fw = inner(fr, getComputedStyle(fr)), r = fr.getBoundingClientRect()
+    const right = r.left + (r.width + fw) / 2, col = (el.parentElement ?? el).getBoundingClientRect()
+    have = Math.min(fw, right - Math.max(col.left, r.right - right + r.left))
+  }
   let need = textWidth(el)
   if (have > 0 && need > have + 0.5) {
     const rib = el.matches(RIBBON)
