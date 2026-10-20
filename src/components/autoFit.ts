@@ -7,6 +7,8 @@ const SEL = [
   '[data-fit]', '.k-ribbon', '.k-btn', '.ui-btn', '.ss-gchip b', '.ph-edit2', '.ph-sstat small', '.ph-sstat b',
   '.pf2-more', '.pf2-t', '.sl-mis-t', '.ui-chip', '.shp-tabs [role=tab]',
 ].join(',')
+// the login / intro letter (ScrollSheet .ssh) runs its own label shrink (x0.94 steps, min 14 px): never touch it
+const SKIP = '.ssh'
 const MIN = 0.72        // never below 72% of the designed size
 const MIN_PX = 10
 const RIM = 0.6         // share of a border-image width that is painted rim (text keeps clear of it)
@@ -34,7 +36,7 @@ function textWidth(el: HTMLElement) {
 }
 
 export function fit(el: HTMLElement) {
-  if (!el.isConnected || !el.textContent?.trim()) return
+  if (!el.isConnected || !el.textContent?.trim() || el.closest(SKIP)) return
   const key = `${el.textContent}|${el.parentElement?.clientWidth ?? 0}|${innerWidth}`
   if (last.get(el) === key) return
   const n = runs.get(el) ?? 0
