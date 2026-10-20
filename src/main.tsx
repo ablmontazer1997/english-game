@@ -9,6 +9,7 @@ import { SpellLetter } from './components/SpellLetter'
 import stageBg from './assets/stage_bg.webp'
 import './screens/stage.css'
 import { holdBootSplash } from './services/bootSplash'
+import { installAutoFit } from './components/autoFit'
 
 initAudio()
 
@@ -31,6 +32,7 @@ if (fontSet) {
 const letterId = import.meta.env.BASE_URL.includes('-test') ? new URLSearchParams(location.search).get('letter') : null
 
 holdBootSplash()
+installAutoFit()   // admin 6106-6108: one-line labels shrink to fit their painted frames
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {letterId ? (

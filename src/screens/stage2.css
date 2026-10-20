@@ -20,19 +20,21 @@
   border: 0 solid transparent; border-image: url(../assets/es2/k/p12/example_row.webp) 21 20 24 135 fill / 11px 10px 12px 68px stretch; }
 .sl .sl-row img { width: 46px; height: 46px; margin-left: 4px; }
 .sl .sl-row em, .sl .sl-sum em { color: #7b2fe0; }
-.sl .sl-mis { position: relative; margin-top: 12px; padding: 22px 14px 10px; border-image: url(../assets/es2/k/p12/mistake_plate.webp) 39 105 27 103 fill / 20px 52px 14px 52px stretch; }
+.sl .sl-mis { position: relative; margin-top: 12px; padding: 30px 14px 10px; border-image: url(../assets/es2/k/p12/mistake_plate.webp) 39 105 27 103 fill / 20px 52px 14px 52px stretch; }
 .sl .sl-mis-t { position: absolute; top: 0; left: 0; right: 0; height: 21px; display: grid; place-items: center; font-size: 12.5px; font-weight: 900; color: #fff;
   text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
 .sl .sl-mis s { color: #b0303e; }
 .sl .sl-mis.col .sl-mis-t { position: absolute; }
 
+/* admin 6106 (10-20): the mistake banner gets 30 px of room (the wrong line sat under it), chip labels keep clear of the
+   painted rim and shrink to fit (components/autoFit.ts) */
 /* the game chips under the page (each game's own art), then the Focus switch beside the green Start */
 .ss-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: min(100%, 390px); flex: none; }
-.ss-gchip { display: flex; align-items: center; gap: 6px; min-height: 46px; max-width: 46%; padding: 4px 12px 6px 6px; box-sizing: border-box;
+.ss-gchip { display: flex; align-items: center; gap: 6px; min-height: 46px; max-width: 46%; padding: 4px 16px 6px 6px; box-sizing: border-box;
   border: 0 solid transparent; border-image: url(../assets/es2/k/p12/game_chip.webp) 32 32 31 32 fill / 14px 14px 14px 14px stretch;
   filter: drop-shadow(0 4px 6px rgba(40, 20, 80, .25)); }
 .ss-gchip img { width: 34px; height: 34px; object-fit: contain; flex: none; }
-.ss-gchip b { font-family: var(--sans); font-size: 13.5px; line-height: 1.1; font-weight: 900; color: #2a1f5c; }
+.ss-gchip b { min-width: 0; font-family: var(--sans); font-size: 13.5px; line-height: 1.1; font-weight: 900; color: #2a1f5c; }
 .ss-gchip.ss-hchip b { font-size: 20px; }
 .sl-btns { align-items: center; }
 .sl-btns .sl-go { flex: 1; max-width: 250px; min-height: 60px; font-size: 26px; }

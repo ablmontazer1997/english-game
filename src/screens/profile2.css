@@ -3,8 +3,13 @@
 .ph-es2 .ph-frame { --pod-b: 74px; border-radius: 0; background: none; box-shadow: none; animation: none; overflow: visible; }
 .ph-es2 .ph-frame::after { content: none; }
 /* the painted spotlight panel fills the arch's opening (its own top is arched) */
-.ph-es2 .ph-spotbg { position: absolute; left: 7%; top: 3%; width: 86%; height: calc(97% - 34px); object-fit: cover; object-position: 50% 100%; z-index: 0;
-  border-radius: 50% 50% 0 0 / 34% 34% 0 0; }   /* the cleaned violet stage (no rays) filling the arch opening, not stretched */
+.ph-es2 .ph-spotclip { position: absolute; inset: -6px -4px 30px; z-index: 0; pointer-events: none;
+  /* admin 6108: the violet stage used to be a rectangle (its border-radius never matched the arch) and its top corners stuck
+     out past the arch curve. It is now masked by the arch opening itself (arch_mask = the arch art inner hole + 5 px under
+     the gold), 9-sliced exactly like .ph-arch, so the curve follows the arch at every card size. */
+  -webkit-mask-box-image: url(../assets/es2/profile/arch_mask.webp) 113 79 40 79 / 58px 38px 22px stretch;
+  mask-border: url(../assets/es2/profile/arch_mask.webp) 113 79 40 79 / 58px 38px 22px stretch; }
+.ph-es2 .ph-spotbg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
 .ph-es2 .ph-rays, .ph-es2 .ph-ring, .ph-es2 .ph-glow { display: none; }
 .ph-es2 .ph-podium { filter: drop-shadow(0 8px 10px rgba(40, 20, 90, .4)); }
 /* the gold arch: 9-slice so the posts stretch with the card and the crown keeps its shape */
@@ -15,13 +20,13 @@
 .ph-es2 .ph-foot { left: 0; right: 0; bottom: 0; height: 56px; padding: 0 6px 0 6px; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; border-radius: 18px;
   background: linear-gradient(180deg, #fffaf0, #f3e6cf); border: 2.5px solid #e7b64a; box-shadow: 0 3px 0 #b07a22, 0 8px 14px rgba(30, 10, 70, .3); z-index: 7; }
 .ph-es2 .ph-foot .ph-lvl { width: 40px; height: 40px; }
-.ph-es2 .ph-side .ph-edit2 { min-height: 46px; width: 100%; min-width: 0; padding: 2px 6px 6px; font-size: 14px; color: #4a2590; white-space: nowrap; }   /* kit cream = secondary (gold is claim-only) */
+.ph-es2 .ph-side .ph-edit2 { min-height: 46px; width: 100%; min-width: 0; padding: 2px 14px 6px; font-size: 14px; color: #4a2590; white-space: nowrap; }   /* kit cream = secondary (gold is claim-only) */
 /* stat tiles on the b1 cream tile */
 .ph-es2 .ph-side { grid-template-rows: repeat(3, minmax(0, 1fr)) auto; gap: 8px; }
 .ph-es2 .ph-sstat { background: center / 100% 100% no-repeat; padding: 8px 4px 12px; border-radius: 18px; filter: drop-shadow(0 4px 6px rgba(40, 20, 90, .28)); }
 .ph-es2 .ph-sstat img { width: 46px; height: 46px; }
-.ph-es2 .ph-sstat b { font-size: 21px; line-height: 23px; color: #2a1d5a; }
-.ph-es2 .ph-sstat small { color: #5a4a80; font-weight: 800; }
+.ph-es2 .ph-sstat b { font-size: 21px; line-height: 1.1; color: #2a1d5a; }
+.ph-es2 .ph-sstat small { color: #5a4a80; font-weight: 800; line-height: 1.2; }   /* admin 6108: no fixed px line boxes (larger text overlapped) */
 
 /* ---- the cards under the hero ---- */
 .pf2-card { border: 13px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 44 fill / 13px stretch;

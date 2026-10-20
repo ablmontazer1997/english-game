@@ -15,7 +15,8 @@ import card from '../assets/games/mb_card_gold.png'
 import cback from '../assets/es2/k/p25/card_back.webp'
 import gate from '../assets/gate.webp'
 import bubble from '../assets/es2/games/bub_violet.webp'
-import rune from '../assets/games/runeorder/ro_tile.webp'
+// admin 6106: the blank rune tile read as a white bar; the chip shows the Rune Order gate
+import rune from '../assets/games/runeorder/ro_gate_closed.webp'
 
 export const GAME_ICON: Record<string, string> = {
   'oracle-trial': orb, 'curse-breaker': mirror, 'spell-weaver': rope, 'boss-battle': golem, 'whisper-scroll': scroll,

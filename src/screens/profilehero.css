@@ -100,3 +100,11 @@
 @media (prefers-reduced-motion: reduce) { .ph-frame, .ph-frame.is-loading .ph-2d, .ph-burst i { animation: none; } .ph-burst { display: none; } }
 .ph-3d { transition: opacity 250ms ease; }
 .ph-frame.is-loading .ph-2d.off { animation: none; }
+
+/* admin 6108 (10-20): the gate was empty while the 3D hero loaded (slow phones / the APK). A turning golden rune on the
+   pedestal shows it is coming (no painted stand-in, admin 4371); it goes when the 3D hero is in, or the fallback shows. */
+.ph-wait { position: absolute; left: 50%; z-index: 3; width: 52px; height: 52px; margin-bottom: var(--pod-b, 0px); border-radius: 50%;
+  border: 4px solid rgba(255, 226, 150, .28); border-top-color: #ffe08a; transform: translateX(-50%);
+  filter: drop-shadow(0 0 8px rgba(255, 214, 110, .85)); animation: ph-spin 1.1s linear infinite; pointer-events: none; }
+@keyframes ph-spin { to { transform: translateX(-50%) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ph-wait { animation-duration: 3s; } }

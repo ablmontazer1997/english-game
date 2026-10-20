@@ -82,6 +82,8 @@ function Hero3d({ heroH, podiumW, h3, ped }: { heroH: number; podiumW: number; h
   return (
     <>
       <img className="ph-podium" src={ped?.src ?? pedestalArt} alt="" draggable={false} style={{ width: podiumW }} />
+      {/* admin 6108: while the 3D hero loads, a turning rune on the pedestal says so (no painted stand-in, admin 4371) */}
+      {!h3.ready && !fb && <span className="ph-wait" aria-hidden style={{ bottom: feetY + heroH * 0.3 }} />}
       <img className={`ph-2d${h3.ready || !fb ? ' off' : ''}`} src={hero2d} alt="" draggable={false}
         style={{ height: heroH * 1.02, bottom: feetY - heroH * 0.035 }} />
       <iframe key={h3.v} ref={h3.ref} className={`ph-3d${h3.ready ? ' on' : ''}`} src={SRC} title="your hero" scrolling="no" tabIndex={-1}
@@ -152,7 +154,8 @@ export function ProfileHeroCard({ name, level, onEdit, stats }: {
   return (
     <section className="ph ph-card ph-es2 reveal">
       <div className={`ph-frame${h3.ready ? '' : ' is-loading'}`} ref={box} style={{ height: Math.round(Math.max(330, Math.min(390, w * 1.52))) }}>
-        <img className="ph-spotbg" src={spotArt} alt="" draggable={false} />
+        {/* admin 6108: the violet stage is clipped to the arch opening itself (the arch 9-slice, same slices), never a rectangle */}
+        <span className="ph-spotclip" aria-hidden><img className="ph-spotbg" src={spotArt} alt="" draggable={false} /></span>
         <Spotlight ringY={Math.round(podiumW * 0.36)} ringW={Math.round(w * 0.92)} />
         <Hero3d heroH={heroH} podiumW={podiumW} h3={h3} />
         <span className="ph-arch" aria-hidden />
