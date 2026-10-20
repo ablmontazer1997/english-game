@@ -14,7 +14,9 @@ const MIN_PX = 10
 const RIM = 0.6         // share of a border-image width that is painted rim (text keeps clear of it)
 
 const last = new WeakMap<Element, string>()
-const runs = new WeakMap<Element, number>()   // a label whose box follows its own text could ping-pong: 4 fits, then it stays
+// a label whose box follows its own text could ping-pong between two widths: a repeat of the key from two fits ago stops it
+const prev = new WeakMap<Element, string>()
+let epoch = 0   // bumped when fonts finish loading or the window / text size changes: every label is measured again
 let ro: ResizeObserver | null = null
 
 function inner(el: HTMLElement, cs: CSSStyleDeclaration) {
@@ -37,11 +39,9 @@ function textWidth(el: HTMLElement) {
 
 export function fit(el: HTMLElement) {
   if (!el.isConnected || !el.textContent?.trim() || el.closest(SKIP)) return
-  const key = `${el.textContent}|${el.parentElement?.clientWidth ?? 0}|${innerWidth}`
-  if (last.get(el) === key) return
-  const n = runs.get(el) ?? 0
-  if (n >= 4) return
-  runs.set(el, n + 1)
+  const key = `${el.textContent}|${el.parentElement?.clientWidth ?? 0}|${innerWidth}|${epoch}`
+  if (last.get(el) === key || prev.get(el) === key) return
+  prev.set(el, last.get(el) ?? '')
   el.style.removeProperty('font-size'); el.classList.remove('fit-wrap'); el.classList.add('fit-1')
   const cs = getComputedStyle(el)
   const base = parseFloat(cs.fontSize)
@@ -57,13 +57,13 @@ export function fit(el: HTMLElement) {
     if (textWidth(el) > have + 0.5) el.classList.add('fit-wrap')   // still too long at MIN: wrap, balanced
   }
   el.classList.remove('fit-1')
-  last.set(el, `${el.textContent}|${el.parentElement?.clientWidth ?? 0}|${innerWidth}`)
+  last.set(el, `${el.textContent}|${el.parentElement?.clientWidth ?? 0}|${innerWidth}|${epoch}`)
 }
 
 function scan(root: ParentNode) {
   const els = root instanceof HTMLElement && root.matches(SEL) ? [root] : []
   root.querySelectorAll?.<HTMLElement>(SEL).forEach((e) => els.push(e))
-  for (const e of els) { fit(e); ro?.observe(e); if (e.parentElement) ro?.observe(e.parentElement) }
+  for (const e of els) { fit(e); if (e.parentElement) ro?.observe(e.parentElement) }
 }
 
 export function installAutoFit() {
@@ -76,7 +76,10 @@ export function installAutoFit() {
   const later = () => { if (!queued) { queued = true; requestAnimationFrame(all) } }
   ro = new ResizeObserver(later)
   new MutationObserver(later).observe(document.body, { childList: true, subtree: true, characterData: true })
-  document.fonts?.ready.then(() => { for (const e of document.querySelectorAll<HTMLElement>(SEL)) { last.delete(e); runs.delete(e) } later() })
-  addEventListener('resize', () => { for (const e of document.querySelectorAll<HTMLElement>(SEL)) runs.delete(e); later() })
+  const again = () => { epoch++; later() }
+  // fonts.ready can resolve before the web font even starts loading (nothing pending at boot): also refit on loadingdone
+  document.fonts?.ready.then(again)
+  document.fonts?.addEventListener?.('loadingdone', again)
+  addEventListener('resize', again)
   later()
 }
