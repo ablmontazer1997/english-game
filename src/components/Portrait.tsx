@@ -16,7 +16,12 @@ const KEY = 'rc.portrait'
 const WARDROBE_BASE = import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-wardrobe-ui/' : '/runecast-wardrobe/'
 // bump when the wardrobe's look changes, so saved portraits are retaken once in the new lighting
 export const LOOK_VER = 'look3f' // 10-08 admin msg 4294: framed on the face (eye level, eyes at 46%, face ~2/3 of the circle)
-export const portraitStale = () => { try { return !localStorage.getItem(KEY) || localStorage.getItem(KEY + '.look') !== LOOK_VER || !readFull() } catch { return true } }
+// perf (10-20): the hidden capture loads the whole 3D wardrobe, so it runs only when the look differs from the one last shot
+// (hash of the wardrobe's localStorage look keys), or a picture is missing / from an older look version. Never on a plain start.
+const LOOK_KEYS = ['girl', 'skinTone2', 'blush', 'hairPick', 'hairColor', 'irisColor', 'hatOn', 'hatPick', 'outfit', 'rcVariant', 'rcTintFx', 'tint', 'wand']
+const HASH_KEY = KEY + '.hash'
+const lookHash = () => { try { return LOOK_KEYS.map((k) => localStorage.getItem(k) ?? '').join('|') } catch { return '' } }
+export const portraitStale = () => { try { return !localStorage.getItem(KEY) || localStorage.getItem(KEY + '.look') !== LOOK_VER || !readFull() || localStorage.getItem(HASH_KEY) !== lookHash() } catch { return true } }
 // a picture taken under an older look (other camera / light) is not shown: the new default stands in until the retake lands
 const read = () => { try { return localStorage.getItem(KEY + '.look') === LOOK_VER ? localStorage.getItem(KEY) : null } catch { return null } }
 // the wardrobe stores the body type as localStorage girl=1
@@ -82,6 +87,7 @@ export function PortraitCapture({ version }: { version: number }) {
       if (e.data?.type !== 'rc-fullbody' || typeof e.data.data !== 'string') return
       try { localStorage.setItem(FULL_KEY, e.data.data); if (typeof e.data.cx === 'number') localStorage.setItem(FULL_KEY + '.cx', e.data.cx.toFixed(4)); localStorage.setItem(FULL_KEY + '.look', FULL_VER) } catch { /* full storage */ }
       dispatchEvent(new Event('rc-fullbody'))
+      try { localStorage.setItem(HASH_KEY, lookHash()) } catch { /* */ }
       setOn(false)
     }
     addEventListener('message', onMsg)
@@ -90,6 +96,7 @@ export function PortraitCapture({ version }: { version: number }) {
   }, [version, go, phase])
   useEffect(() => {
     if (!go || phase !== 'head') return
+    if (!portraitStale()) { setOn(false); return }   // nothing changed since the last shot: no 3D page at all
     setOn(true)
     const onMsg = (e: MessageEvent) => {
       if (e.data?.type !== 'rc-portrait' || typeof e.data.data !== 'string') return
