@@ -6,6 +6,8 @@
 const SEL = [
   '[data-fit]', '.k-ribbon', '.k-btn', '.ui-btn', '.ss-gchip b', '.ph-edit2', '.ph-sstat small', '.ph-sstat b',
   '.pf2-more', '.pf2-t', '.sl-mis-t', '.ui-chip', '.shp-tabs [role=tab]',
+  // round 2 (games): the violet task label, the Bubble Pop prompt word, the boss name tab
+  '.gtask .gtask-t b', '.bp2-q b', '.bb2-tab',
 ].join(',')
 // the login / intro letter (ScrollSheet .ssh) runs its own label shrink (x0.94 steps, min 14 px): never touch it
 const SKIP = '.ssh'
@@ -13,7 +15,7 @@ const MIN = 0.72        // never below 72% of the designed size
 // ribbons never wrap (a two-line ribbon breaks the art); they may go to 60%. Their own padding is a % of the PARENT
 // width, so their room is measured on the painted flat middle of the ribbon itself (72% of its width)
 const RIBBON = '.k-ribbon'
-const RIBBON_MIN = 0.6, RIBBON_FLAT = 0.72
+const RIBBON_MIN = 0.55, RIBBON_FLAT = 0.58   // flat middle only: the curled tails take ~21% each side
 const MIN_PX = 10
 const RIM = 0.6         // share of a border-image width that is painted rim (text keeps clear of it)
 

@@ -49,7 +49,7 @@
   left: -10px; top: -2px; width: 20px; height: 20px; border-radius: 4px; transform: rotate(45deg);
   background: linear-gradient(135deg, #d9b8ff, #8a4dff); box-shadow: 0 0 10px rgba(160, 110, 255, .9);
 }
-.ot-node b { position: absolute; top: 17px; left: -12px; width: 24px; text-align: center; font-size: 10px; font-weight: 900; color: #6b7192; }
+.ot-node b { position: absolute; top: 17px; left: -15px; width: 30px; text-align: center; font-size: 10px; font-weight: 900; color: #6b7192; }
 
 /* ---------- stage: oracle, pedestal, orb ---------- */
 .ot-stage {
@@ -154,7 +154,7 @@
 .ot-node.on i { background-image: url(../assets/es2/k/p08/level_gem_done.webp); }
 .ot-node.cur i { width: 30px; height: 34px; margin-top: -4px; background-image: url(../assets/es2/k/p08/level_gem_current.webp); filter: var(--k-glow-v); animation: ot-gem 2.4s ease-in-out infinite; }
 @keyframes ot-gem { 50% { transform: scale(1.08); } }
-.ot-node b { position: static; width: auto; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(30, 6, 70, .8), 0 0 3px rgba(30, 6, 70, .6); }
+.ot-node b { position: static; width: auto; font-size: 10px; white-space: nowrap; font-weight: 900; color: #fff; text-shadow: 0 1px 2px rgba(30, 6, 70, .8), 0 0 3px rgba(30, 6, 70, .6); }
 .ot-node.cur b { color: #ffe08a; }
 
 .ot-stage { top: 22%; height: 36%; }

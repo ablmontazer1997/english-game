@@ -20,7 +20,7 @@
   border: 0 solid transparent; border-image: url(../assets/es2/k/p12/example_row.webp) 21 20 24 135 fill / 11px 10px 12px 68px stretch; }
 .sl .sl-row img { width: 46px; height: 46px; margin-left: 4px; }
 .sl .sl-row em, .sl .sl-sum em { color: #7b2fe0; }
-.sl .sl-mis { position: relative; margin-top: 12px; padding: 30px 14px 10px; border-image: url(../assets/es2/k/p12/mistake_plate.webp) 39 105 27 103 fill / 20px 52px 14px 52px stretch; }
+.sl .sl-mis { position: relative; margin-top: 12px; padding: 40px 14px 10px; border-image: url(../assets/es2/k/p12/mistake_plate.webp) 39 105 27 103 fill / 20px 52px 14px 52px stretch; }
 .sl .sl-mis-t { position: absolute; top: 0; left: 0; right: 0; height: 21px; display: grid; place-items: center; font-size: 12.5px; font-weight: 900; color: #fff;
   text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
 .sl .sl-mis s { color: #b0303e; }

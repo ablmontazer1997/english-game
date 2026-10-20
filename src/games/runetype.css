@@ -52,7 +52,8 @@
 .rt .rt-slot.bad { color: #fff; background: url(../assets/es2/k/p09/word_tile_wrong.webp) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(120, 10, 10, .5); }
 .rt.rt-ok .rt-slot { color: #fff; background: url(../assets/es2/k/p09/word_tile_fixed.webp) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(20, 80, 10, .5); }
 .rt.rt-reveal .rt-slot { color: #fff; background: url(../assets/es2/k/p16/gap_slot_glow.webp) center / 100% 100% no-repeat; text-shadow: 0 1px 0 rgba(40, 10, 90, .6); }
-.rt .rt-key { border: 0; border-radius: 0; box-shadow: none; background: url(../assets/es2/k/p23/key.webp) center / 100% 100% no-repeat; color: #2a1f5c;
+.rt .rt-key { font-size: min(5.4cqw, 24px);   /* round 2: letters kept 4 px clear of the key rim at larger text */
+  border: 0; border-radius: 0; box-shadow: none; background: url(../assets/es2/k/p23/key.webp) center / 100% 100% no-repeat; color: #2a1f5c;
   filter: drop-shadow(0 3px 3px rgba(60, 40, 20, .25)); }
 .rt .rt-key:active { transform: translateY(2px); box-shadow: none; background-image: url(../assets/es2/k/p23/key_pressed.webp); }
 .rt .rt-back { aspect-ratio: 82 / 57; height: auto; align-self: center; color: transparent; background-image: url(../assets/es2/k/p23/key_backspace.webp); }

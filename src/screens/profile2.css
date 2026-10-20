@@ -14,7 +14,9 @@
 .ph-es2 .ph-podium { filter: drop-shadow(0 8px 10px rgba(40, 20, 90, .4)); }
 /* the gold arch: 9-slice so the posts stretch with the card and the crown keeps its shape */
 .ph-es2 .ph-arch { position: absolute; inset: -6px -4px 30px; z-index: 6; pointer-events: none;
-  border: solid transparent; border-width: 58px 38px 22px; border-image: url(../assets/es2/profile/arch.webp) 113 79 40 79 / 58px 38px 22px stretch;
+  border: solid transparent; border-width: 105px 38px 22px; border-image: url(../assets/es2/profile/arch.webp) 205 79 40 79 / 105px 38px 22px stretch;
+  /* round 2: the top slice now ends below the arch shoulders (row 205, was 113). With 113 the shoulders of the curve fell in
+     the centre slice, which a border-image without fill never paints: two see-through notches inside the stars */
   filter: drop-shadow(0 4px 8px rgba(40, 20, 90, .35)); }
 /* the name plate: level disc, name, gold "Edit look" inside */
 .ph-es2 .ph-foot { left: 0; right: 0; bottom: 0; height: 56px; padding: 0 6px 0 6px; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; border-radius: 18px;
