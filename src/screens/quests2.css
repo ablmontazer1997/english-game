@@ -67,7 +67,7 @@
   background: linear-gradient(180deg, #9b63ff, #6a2be0); border: 2px solid #ffd45a; box-shadow: inset 0 2px 0 rgba(255, 255, 255, .35);
   transition: transform 220ms cubic-bezier(.3, 1.3, .5, 1); }
 .qs2-seg button { position: relative; z-index: 1; border: 0; background: none; font: inherit; font-family: Fredoka, var(--sans);
-  font-size: 17px; font-weight: 800; color: #4a3a7a; cursor: pointer; min-height: 40px; }
+  font-size: 17px; font-weight: 800; color: #4a3a7a; cursor: pointer; min-height: 0; line-height: 1; padding: 0; }   /* admin 6357: rows fill the 4px-inset track like the pill, so the label centres on it */
 .qs2-seg button.on { color: #fff; text-shadow: 0 1px 2px rgba(40, 10, 100, .5); }
 
 
