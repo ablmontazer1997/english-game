@@ -50,7 +50,8 @@ public class MainActivity extends BridgeActivity {
 
     /** admin 6082: the S2 splash (picture + title ribbon) stays on top as a native view, placed exactly like the web
      *  splash (cover, focus 15% 40%; ribbon min(86vw, 380dp) wide at safe-top + max(22dp, 4.5vh)), until the page calls
-     *  window.ESNative.ready() (first screen painted, images decoded) or 10 s pass; then it fades out in 200 ms. */
+     *  window.ESNative.splashUp() (0.2.6: the identical web splash is painted) or ready() (first screen painted, images
+     *  decoded) or 25 s pass; then it fades out in 200 ms. */
     private FrameLayout boot;
     private ImageView bootArt, bootTitle;
     private boolean bootGone = false;
@@ -70,8 +71,12 @@ public class MainActivity extends BridgeActivity {
         addContentView(boot, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         wv.addJavascriptInterface(new Object() {
             @JavascriptInterface public void ready() { runOnUiThread(() -> hideBoot()); }
+            /** admin 6264 (0.2.6): the identical web splash (same picture + ribbon, plus the ring, progress bar and tips)
+             *  is painted; it now holds until Home's 3D hero is fully shown, so the native picture hands over to it. */
+            @JavascriptInterface public void splashUp() { runOnUiThread(() -> hideBoot()); }
         }, "ESNative");
-        new Handler(Looper.getMainLooper()).postDelayed(this::hideBoot, 10000);
+        // safety only: the web splash goes by itself after 20 s at most; the native picture must never drop before it
+        new Handler(Looper.getMainLooper()).postDelayed(this::hideBoot, 25000);
     }
 
     private void placeBoot() {

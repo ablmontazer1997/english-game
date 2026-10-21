@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { splashUp } from '../services/bootSplash'
 // default avatar until the player's own portrait exists (fresh player, capture not done or failed):
 // the wardrobe's ?portrait=1 frame of the DEFAULT 3D character (look face1), boy and girl body type
 import defBoy from '../assets/character/portrait_default_m.webp'
@@ -73,11 +74,16 @@ export function PortraitCapture({ version }: { version: number }) {
   useEffect(() => {
     setGo(false)
     let t = 0
-    const start = () => { clearTimeout(t); t = window.setTimeout(() => setGo(true), 1500) }
+    // admin 6264: and only once the boot splash is gone (it holds for the Home hero; the wardrobe page would slow its last steps)
+    const start = () => {
+      clearTimeout(t)
+      if (splashUp()) { addEventListener('es-splash-gone', start, { once: true }); return }
+      t = window.setTimeout(() => setGo(true), 1500)
+    }
     const onMsg = (e: MessageEvent) => { if (e.data?.type === 'rc-shown') start() }
     addEventListener('message', onMsg)
     const t0 = setTimeout(() => setGo(true), 20000)
-    return () => { removeEventListener('message', onMsg); clearTimeout(t); clearTimeout(t0) }
+    return () => { removeEventListener('message', onMsg); removeEventListener('es-splash-gone', start); clearTimeout(t); clearTimeout(t0) }
   }, [version])
   const [phase, setPhase] = useState<'head' | 'full'>('head')
   useEffect(() => { setPhase('head') }, [version])

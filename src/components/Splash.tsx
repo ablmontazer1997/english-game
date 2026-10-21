@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 /** admin 6041: the startup splash (key art + gold ribbon title + rune-ring loader + rotating tips). Its CSS and a static
  *  copy of the same markup live in index.html, so the splash shows before the bundle loads and this component simply
  *  carries on with it (same image, same classes) until the game is ready. */
-const TIPS: string[] = (window as any).ES_TIPS ?? ['Tip: say new words out loud to remember them.']
+const TIPS: string[] = (window as any).ES_TIPS ?? ['Tip: say new words out loud.']
 const BASE = import.meta.env.BASE_URL
 
 export function Splash() {

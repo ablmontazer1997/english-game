@@ -34,6 +34,10 @@
       .es-sp-load b { font-weight: 700; font-size: 16px; color: #fff0c8; text-shadow: 0 2px 0 #2a0b5e, 0 0 10px rgba(30, 8, 70, .8); letter-spacing: .01em; }
       .es-sp-tip { margin: 0; max-width: 320px; min-height: 2.6em; font-weight: 600; font-size: 13.5px; line-height: 1.3; color: #e6dcff;
         text-shadow: 0 1px 2px rgba(20, 6, 52, .9); transition: opacity .35s; }
+      .es-sp-bar { width: min(220px, 58vw); height: 6px; border-radius: 3px; overflow: hidden; background: rgba(20, 6, 52, .55);
+        box-shadow: 0 0 0 1px rgba(255, 214, 110, .35), 0 0 10px rgba(255, 190, 80, .25); }
+      .es-sp-bar i { display: block; height: 100%; transform-origin: 0 50%; transform: scaleX(.04); border-radius: 3px;
+        background: linear-gradient(90deg, #ffb84d, #ffd66e 60%, #fff4cf); }
       @keyframes es-sp-spin { to { transform: rotate(360deg); } }
       @keyframes es-sp-pulse { 50% { transform: scale(1.18); opacity: .75; } }
       @media (prefers-reduced-motion: reduce) { .es-sp-ring::before { animation-duration: 3s; } .es-sp-ring::after { animation: none; } }
@@ -43,13 +47,16 @@
     <div id="root"><div class="es-splash" role="img" aria-label="English Spell is loading">
       <div class="es-sp-art"></div>
       <div class="es-sp-title"><img src="/runecast/splash/ribbon.webp" alt="" draggable="false" /><span>English Spell</span></div>
-      <div class="es-sp-load"><div class="es-sp-ring"></div><b>Opening the portal…</b><p class="es-sp-tip" id="es-sp-tip">Tip: say new words out loud to remember them.</p></div>
+      <div class="es-sp-load"><div class="es-sp-ring"></div><b>Opening the portal…</b><div class="es-sp-bar"><i id="es-sp-bar"></i></div><p class="es-sp-tip" id="es-sp-tip">Tip: say new words out loud.</p></div>
     </div></div>
     <script>
       // tips rotate in the static splash; React's <Splash/> takes over with the same list when the bundle runs
-      (function () { var T = window.ES_TIPS = ["Tip: say new words out loud to remember them.", "Tip: read the whole sentence before you choose.", "Tip: a few minutes every day beats one long session.", "Tip: a wrong answer is a clue, not a failure.", "Tip: use a new word in your own sentence today."];
+      (function () { var T = window.ES_TIPS = ["Tip: say new words out loud.", "Tip: read the whole sentence first.", "Tip: a little every day helps.", "Tip: mistakes help you learn.", "Tip: use a new word today.", "Tip: listen, then say it again."];
         var i = 0, el = document.getElementById('es-sp-tip'), t = setInterval(function () { if (!el.isConnected) return clearInterval(t); el.style.opacity = 0;
           setTimeout(function () { i = (i + 1) % T.length; el.textContent = T[i]; el.style.opacity = 1; window.ES_TIP_I = i }, 350) }, 3200) })();
+      // admin 6264: the bar moves from the first paint; bootSplash.ts takes it over with real milestones
+      (function () { var b = document.getElementById('es-sp-bar'), p = 0.04, t = setInterval(function () { if (!b.isConnected || b.dataset.own) return clearInterval(t);
+          p += (0.13 - p) * 0.05; b.dataset.p = p; b.style.transform = 'scaleX(' + p.toFixed(4) + ')' }, 100) })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
