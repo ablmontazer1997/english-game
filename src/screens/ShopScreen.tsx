@@ -21,7 +21,7 @@ import bgShop2 from '../assets/es2/shop/bg_shop_dusk.webp'   // admin 5419/5425:
 import signArt from '../assets/es2/shop/sign.webp'
 import tabOn from '../assets/es2/shop/tab_on.webp'
 import tabOff from '../assets/es2/shop/tab_off.webp'
-import ribFeatured from '../assets/es2/shop/rib_featured.webp'
+import { TitleMark } from '../components/TitleMark'
 import ribRed from '../assets/es2/shop/rib_red.webp'
 import { RibbonH } from '../components/RibbonH'
 import dyePink from '../assets/es2/shop/dye_pink.webp'
@@ -146,10 +146,8 @@ export function ShopScreen({ onSeason }: { onSeason?: () => void } = {}) {
         {tab === 'featured' && <>
           <div className="shp-feat esk-enter">
             <div className="shp-feat-in">
-              <div className="esk-rays shp-feat-rays" />
-              <i className="esk-spark" style={{ left: '62%', top: '12%' }} /><i className="esk-spark" style={{ left: '92%', top: '34%', animationDelay: '-1s' }} /><i className="esk-spark" style={{ left: '70%', top: '74%', animationDelay: '-.5s' }} />
               <div className="shp-feat-l">
-                <span className="shp-rib-f"><img src={ribFeatured} alt="" draggable={false} /><b className="esk-title">Featured</b></span>
+                <TitleMark size="sm" className="shp-feat-k">Featured</TitleMark>
                 <b className="shp-feat-t">{deal.title}</b>
                 <span className="shp-feat-row">
                   {saving > 0 && <span className="shp-rib-r"><img src={ribRed} alt="" draggable={false} /><b className="esk-title">-{saving}%</b></span>}

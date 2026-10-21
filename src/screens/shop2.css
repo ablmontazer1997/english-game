@@ -24,23 +24,26 @@
 .shp-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
 .shp-tab { position: relative; height: 44px; padding: 0; background: none; display: grid; place-items: center; }
 .shp-tab img { position: absolute; left: 0; right: 0; top: 50%; width: 100%; aspect-ratio: 260 / 88; height: auto; transform: translateY(-50%); }
+/* admin 6352: the tabs sit on the Featured card (folder tabs): the plate rests on the button bottom (tap height stays 44 px,
+   padding-top % = the tab width, so the label stays centred on the plate) and the card overlaps the plate rims by 4 px */
+.shp-tabs:has(+ .shp-feat) .shp-tab { padding-top: calc(44px - 33.85%); }
+.shp-tabs:has(+ .shp-feat) .shp-tab img { top: auto; bottom: 0; transform: none; }
+.shp-tabs + .shp-feat { margin-top: -16px; }
 .shp-tab span { position: relative; font-size: clamp(12px, 3.5vw, 14px); font-weight: 800; color: #3d2c5c; white-space: nowrap; }
 .shp-tab.on span { color: #4a2800; }
 
 /* the Featured card: painted frame (9-slice, no fill) over the painted interior (cover); everything inside it */
 .shp-feat-in { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 40%; align-items: center; column-gap: 8px;
-  padding: 2px 2px 4px 4px; border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card.webp) 71 71 72 77 / 21.5px 21.5px 22px 23.5px stretch;
-  background: url(../assets/es2/shop/featured_card.webp) 50% 45% / 118% auto no-repeat; background-origin: border-box; background-clip: padding-box;
+  padding: 2px 2px 4px 4px; border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card_plain.webp) 71 71 72 77 fill / 21.5px 21.5px 22px 23.5px stretch;
+  /* admin 6352: the painted sky/sunburst interior is gone; the frame art now has the cream card face (same as .shp-rc) */
   border-radius: 26px; box-shadow: 0 6px 0 rgba(70, 30, 110, .30), 0 14px 26px rgba(20, 8, 40, .30); }
-.shp-feat-rays { left: 45%; right: -30%; inset-block: -40%; opacity: .32; }
 .shp-feat-l { position: relative; z-index: 2; display: grid; justify-items: start; gap: 6px; min-width: 0; }
-.shp-rib-f, .shp-rib-r { position: relative; display: block; flex: none; }
-.shp-rib-f { width: 118px; }
+.shp-rib-r { position: relative; display: block; flex: none; }
+.shp-feat-k { justify-self: start; }
 .shp-rib-r { width: 84px; }
-.shp-rib-f img, .shp-rib-r img { display: block; width: 100%; height: auto; }
+.shp-rib-r img { display: block; width: 100%; height: auto; }
 /* label areas: the ribbons' flat middle band (18%..82% x; the folded tails stay clear) */
-.shp-rib-f b, .shp-rib-r b { position: absolute; left: 18%; right: 18%; top: 10%; bottom: 26%; display: grid; place-items: center; text-transform: uppercase; }
-.shp-rib-f b { font-size: 13px; }
+.shp-rib-r b { position: absolute; left: 18%; right: 18%; top: 10%; bottom: 26%; display: grid; place-items: center; text-transform: uppercase; }
 .shp-rib-r b { font-size: 14px; }
 .shp-feat-t { font-size: 24px; line-height: 28px; font-weight: 900; color: #2b1f55; max-width: 100%; }
 .shp-feat-row { display: flex; align-items: center; gap: 6px; }
@@ -66,7 +69,8 @@
 .shp-merch { position: relative; display: grid; }
 .shp-awn { position: relative; z-index: 2; }
 .shp-awn img { display: block; width: 100%; height: auto; }
-.shp-awn h2 { position: absolute; left: 29%; right: 29%; top: 30%; bottom: 16%; margin: 0; display: grid; place-items: center; font-size: clamp(13px, 3.9vw, 16px); }
+/* admin 6359: the box is the violet face of the plaque (41..86 of 132 px in awning2.webp), 1 px up for the drop shadow and descenders */
+.shp-awn h2 { position: absolute; left: 29%; right: 29%; top: 30%; bottom: 36%; margin: 0; display: grid; place-items: center; font-size: clamp(13px, 3.9vw, 16px); }
 /* admin 4966: painted lantern posts (arm points inward) stand behind the board's sides, lanterns hanging beside the awning */
 .shp-post { position: absolute; top: 40px; width: 40px; height: auto; z-index: 3; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(20, 8, 40, .35)); }
 .shp-post.l { left: -2px; }
