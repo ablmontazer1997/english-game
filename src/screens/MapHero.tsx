@@ -504,6 +504,8 @@ const bounce = (f: number) => {
 
 // ---------------------------------------------------------------- the hero element
 
+let firstMount = true
+
 export function MapHero({ heroRef, hero3d, ready, hidden, reload = 0 }: {
   heroRef: RefObject<HTMLDivElement | null>
   hero3d: RefObject<HTMLIFrameElement | null>
@@ -513,8 +515,11 @@ export function MapHero({ heroRef, hero3d, ready, hidden, reload = 0 }: {
   reload?: number
 }) {
   const fallback = use3dFallback(ready, NO3D)
+  // the CSS stand-in timer (maphero.css mh-late): 15 s from page start on the first mount, 15 s from mount after that
+  const [late] = useState(() => { const ms = firstMount ? Math.max(0, 15000 - performance.now()) : 15000; firstMount = false; return Math.round(ms) })
   return (
-    <div className={`mhero${ready ? ' is-3d' : ''}${!ready && !fallback ? ' wait3d' : ''}`} ref={heroRef} aria-hidden data-view="front" style={hidden ? { visibility: 'hidden' } : undefined}>
+    <div className={`mhero${ready ? ' is-3d' : ''}${!ready && !fallback ? ' wait3d' : ''}`} ref={heroRef} aria-hidden data-view="front"
+      style={{ ['--late' as string]: `${late}ms`, ...(hidden ? { visibility: 'hidden' } : {}) }}>
       <span className="mhero-shadow" />
       <span className="mhero-body">
         {/* the painted hero only if the 3D never comes (admin 4371: nothing while it loads) */}

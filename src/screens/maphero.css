@@ -157,4 +157,8 @@
 .is-reduced .pbreak.is-crack .pbreak-crack { animation: none; }
 /* admin 4371: nothing in the hero spot while the 3D loads, then a quick fade in */
 .mhero.wait3d .mhero-sprites, .mhero.wait3d .mhero-shadow { opacity: 0; transition: none; }
+/* 10-21: the painted stand-in fades in at --late (15 s from page start) as an opacity animation on its own layer, so the
+   compositor shows it even while the 3D page blocks the JS thread; is-3d drops wait3d and with it this animation */
+.mhero.wait3d .mhero-sprites { will-change: opacity; animation: mh-late .3s linear var(--late, 15s) both; }
+@keyframes mh-late { from { opacity: 0; } to { opacity: 1; } }
 .mhero-3d { transition: opacity 250ms ease; }

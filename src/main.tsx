@@ -31,6 +31,8 @@ if (fontSet) {
 // TEST BUILDS ONLY: ?letter=<topic id>&lv=B2 shows one Spellbook letter on its own (layout checks for all 116 topics)
 const letterId = import.meta.env.BASE_URL.includes('-test') ? new URLSearchParams(location.search).get('letter') : null
 
+// ?perf=1 only (10-21): start-up numbers overlay + beacon; without it the module is never loaded
+if (new URLSearchParams(location.search).get('perf') === '1') void import('./services/perf').then((m) => m.installPerf())
 holdBootSplash()
 installAutoFit()   // admin 6106-6108: one-line labels shrink to fit their painted frames
 createRoot(document.getElementById('root')!).render(
