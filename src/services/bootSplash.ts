@@ -63,6 +63,10 @@ export function holdBootSplash() {
   const sp = root?.querySelector(':scope > .es-splash') as HTMLElement | null
   if (!root || !sp) { tellNative(); return }
   document.body.appendChild(sp)                     // React replaces #root's content; the static splash stays on top
+  // moving the node restarts its CSS cap animation (index.html .es-sp-boot, 20 s from first paint): keep the original
+  // deadline by giving the restarted animation only the time that is left
+  const left = Math.max(0, Math.round(FIRST_MS - performance.now()))
+  sp.style.animationDelay = `${left}ms, ${left + 250}ms`
   sp.style.zIndex = '2147483000'
   const bar = progressBar(sp)
   // Android 0.2.6+: the native S2 picture hands over to this identical web splash (which has the ring, bar and tips)

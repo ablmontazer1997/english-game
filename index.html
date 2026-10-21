@@ -14,6 +14,13 @@
       html, body { background: #2b1166; }
       .es-splash { position: fixed; inset: 0; z-index: 50; overflow: hidden; background: #2b1166; font-family: Fredoka, system-ui, sans-serif;
         --st: var(--safe-top, env(safe-area-inset-top, 0px)); --sb: var(--safe-bottom, env(safe-area-inset-bottom, 0px)); }
+      /* admin 6264 fix (10-21): the 20 s total cap must not depend on the JS thread (a loading 3D hero in the same-origin
+         iframe can block it for many seconds on a slow phone). An opacity animation on its own layer runs on the compositor
+         thread, so the boot splash fades at 20 s from its first paint even when JS is busy; bootSplash.ts removes it later.
+         Only the static boot splash (es-sp-boot), never the React loading Splash. */
+      .es-sp-boot { will-change: opacity; animation: es-sp-cap .25s linear 20s forwards, es-sp-off 1ms linear 20.25s forwards; }
+      @keyframes es-sp-cap { to { opacity: 0; } }   /* opacity only: compositor thread */
+      @keyframes es-sp-off { to { visibility: hidden; pointer-events: none; } }   /* main thread, once it is free */
       .es-sp-art { position: absolute; inset: 0; background: url("/runecast/splash/splash.webp") 15% 40% / cover no-repeat; }
       .es-sp-art::after { content: ""; position: absolute; inset: 0;
         background: linear-gradient(180deg, rgba(20,6,52,.45) 0%, rgba(20,6,52,0) 22%, rgba(20,6,52,0) 72%, rgba(20,6,52,.75) 100%); }
@@ -44,7 +51,7 @@
     </style>
   </head>
   <body>
-    <div id="root"><div class="es-splash" role="img" aria-label="English Spell is loading">
+    <div id="root"><div class="es-splash es-sp-boot" role="img" aria-label="English Spell is loading">
       <div class="es-sp-art"></div>
       <div class="es-sp-title"><img src="/runecast/splash/ribbon.webp" alt="" draggable="false" /><span>English Spell</span></div>
       <div class="es-sp-load"><div class="es-sp-ring"></div><b>Opening the portal…</b><div class="es-sp-bar"><i id="es-sp-bar"></i></div><p class="es-sp-tip" id="es-sp-tip">Tip: say new words out loud.</p></div>
