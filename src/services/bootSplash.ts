@@ -5,6 +5,8 @@
 // admin 6264: when the first screen is Home (the map), the splash also waits for the 3D hero to be fully shown
 // (the map's .mhero leaves `wait3d`: is-3d after rc-shown, or the painted fallback), so Home appears complete in one go.
 // A thin progress bar at the bottom follows real milestones (screen, pictures, 3D engine, body, items, shown).
+import { skySrc, type SkyName } from '../components/SkyIcon'
+
 const CAP_MS = 8000          // never hold longer than this after the first real screen appears (screens without a hero)
 const FIRST_MS = 20000       // nor this long in total from app start (slow network / a hero that never comes: the app shows anyway)
 const HERO_FADE_MS = 350     // the hero canvas (0.3 s) and the map's .mhero-3d (250 ms) fade in: let them finish under the splash
@@ -29,6 +31,15 @@ function screenImages(root: Element): string[] {
 
 const decode = (src: string) => new Promise<void>((res) => {
   const im = new Image(); im.src = src
+  const done = () => res()
+  if (im.decode) im.decode().then(done, done); else { im.onload = done; im.onerror = done }
+})
+// 10-21: the Home HUD + tab-bar icons are decoded at boot and kept referenced, so Home never shows blank icon slots
+// (after login they used to paint up to a minute late while the 3D page held the main thread); the splash also waits for them
+const CHROME_ICONS: SkyName[] = ['ic_heart', 'ic_coin', 'ic_gem', 'btn_gear', 'nav2_home', 'nav2_quests', 'nav2_shop', 'nav2_league', 'nav2_profile']
+const keep: HTMLImageElement[] = []
+const decodeKeep = (src: string) => new Promise<void>((res) => {
+  const im = new Image(); im.src = src; keep.push(im)
   const done = () => res()
   if (im.decode) im.decode().then(done, done); else { im.onload = done; im.onerror = done }
 })
@@ -59,6 +70,7 @@ function progressBar(sp: HTMLElement) {
 export const splashUp = () => !!document.querySelector('body > .es-splash')
 
 export function holdBootSplash() {
+  const chrome = Promise.all(CHROME_ICONS.map((n) => decodeKeep(skySrc(n))))   // started first, before anything else loads
   const root = document.getElementById('root')
   const sp = root?.querySelector(':scope > .es-splash') as HTMLElement | null
   if (!root || !sp) { tellNative(); return }
@@ -93,7 +105,7 @@ export function holdBootSplash() {
     const cap = setTimeout(hide, CAP_MS)
     // two passes: images can bring in more images (lazy children, late state); then two frames so they are painted
     const pass = () => Promise.all(screenImages(root).map(decode))
-    Promise.all([fonts, pass()]).then(() => { bar.at(0.3, 0.42); return new Promise((r) => setTimeout(r, 150)) }).then(pass)
+    Promise.all([fonts, chrome, pass()]).then(() => { bar.at(0.3, 0.42); return new Promise((r) => setTimeout(r, 150)) }).then(pass)
       .then(frames2)
       .then(() => {
         // Home first: wait for the 3D hero (the overall FIRST_MS cap still applies)
