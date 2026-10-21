@@ -5,7 +5,7 @@
 // device id unchanged, so "Play as guest" always returns to the same guest.
 
 import { useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { ApiError, accountLogin, edgeTrim, errorText, needsAuthChoice, playAsGuest, signedInAs } from '../services/api'
+import { ApiError, accountLogin, edgeTrim, errorText, needsAuthChoice, signedInAs } from '../services/api'
 import { Btn } from '../components/PageArt'
 import { ScrollSheet } from '../components/ScrollSheet'
 import '../components/es2kit.css'
@@ -66,7 +66,6 @@ export function LoginScreen({ firstRun, onDone, onCancel }: {
     if (!firstRun && !current) { setConfirm(true); return }
     doLogin()
   }
-  const guest = () => { playAsGuest(); onDone() }
   const sheet = (body: ReactNode, primary: ReactNode, secondary: ReactNode, or = false) => (
     <div className="stage-host full lg-screen"><ScrollSheet primary={primary} secondary={secondary} or={or}>{body}</ScrollSheet></div>
   )
@@ -74,7 +73,7 @@ export function LoginScreen({ firstRun, onDone, onCancel }: {
   if (confirm) return sheet(
     <>
       <h1 className="lg-h">Switch account?</h1>
-      <p className="lg-sub lg-note">Your guest progress stays on this phone. Tap <b>Play as guest</b> here any time to go back to it.</p>
+      <p className="lg-sub lg-note">Your guest progress stays on this phone.</p>
     </>,
     <Btn className="lg" onClick={doLogin} disabled={busy}>{busy ? 'Opening…' : 'Log in'}</Btn>,
     <button className="cb cb-white" onClick={() => setConfirm(false)} disabled={busy}>Go back</button>,
@@ -105,11 +104,8 @@ export function LoginScreen({ firstRun, onDone, onCancel }: {
       </form>
     </>,
     <Btn className="lg" onClick={() => submit()} disabled={busy}>{busy ? 'Opening…' : 'Log in'}</Btn>,
-    <>
-      <button className="cb cb-white" onClick={guest} disabled={busy}>Play as guest</button>
-      {onCancel && <button className="cb cb-white" onClick={onCancel} disabled={busy}>Cancel</button>}
-    </>,
-    true,
+    // admin 6293/6303: testing only, nobody signs up: no Play as guest and no "or" (the /auth/guest route stays on the server)
+    onCancel ? <button className="cb cb-white" onClick={onCancel} disabled={busy}>Cancel</button> : undefined,
   )
 }
 
