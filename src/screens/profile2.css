@@ -31,7 +31,7 @@
 .ph-es2 .ph-sstat small { color: #5a4a80; font-weight: 800; line-height: 1.2; }   /* admin 6108: no fixed px line boxes (larger text overlapped) */
 
 /* ---- the cards under the hero ---- */
-.pf2-card { border: 13px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 44 fill / 13px stretch;
+.pf2-card { border: 13px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 61 69 64 68 fill / 18px 20.5px 19px 20px stretch;
   filter: drop-shadow(0 4px 0 rgba(70, 30, 110, .28)) drop-shadow(0 8px 14px rgba(20, 8, 40, .25)); cursor: pointer; text-align: left; font: inherit; background: none; padding: 0; width: 100%; }
 .pf2-items { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 56px; }
 .pf2-items img { width: 72px; height: auto; margin: 0;   /* fully inside the card (admin 5402: nothing sticks out) */ filter: drop-shadow(0 4px 4px rgba(40, 20, 90, .35)); }

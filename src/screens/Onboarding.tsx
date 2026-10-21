@@ -12,7 +12,6 @@ import { Btn } from '../components/PageArt'
 import { ScrollSheet } from '../components/ScrollSheet'
 import { NameField, nameOk } from '../components/NameSheet'
 import { ORACLE_BANK, LEVELS, type OracleQ } from '../games/oracleBank'
-import divider from '../assets/spellbook/divider.webp'
 import faceBoy from '../assets/character/portrait_default_m.webp'
 import faceGirl from '../assets/character/portrait_default_f.webp'
 import oracleIdle from '../assets/games/oracle/oracle_idle.webp'
@@ -63,8 +62,9 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
   const { account, patchMe, mode } = useGame()
   const startAt = (() => {
     const i = Number(account?.flags?.intro_step ?? 0)
-    const s = ORDER[i] ?? 'letter'
-    return s === 'oracle' || s === 'spoken' ? 'level' : s
+    const s = ORDER[i] ?? 'name'
+    // admin 6288: the welcome letter is gone (login already asks new vs returning); a saved 'letter' step opens the name step
+    return s === 'oracle' || s === 'spoken' ? 'level' : s === 'letter' ? 'name' : s
   })()
   const [step, setStep] = useState<Step>(startAt)
   const [name, setName] = useState(account && !unnamed(account.display_name) ? account.display_name : '')
@@ -121,11 +121,6 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
       setNameErr(errorText(e)); setBusy(false)
     }
   }
-  const skipAll = async () => {
-    setBusy(true)
-    try { await patchMe({ onboarded: true, flags: { tour: 'done', guided: 'done', intro_step: ORDER.length } }) } catch { /* the map opens anyway */ }
-    onDone('')
-  }
 
   const dot = DOTS.indexOf(step === 'oracle' || step === 'spoken' ? 'level' : step)
   // admin 6056/6062: every intro step is written on the full-screen letter (mockup B); the hero waves on the first one
@@ -154,20 +149,6 @@ export function Onboarding({ onDone, onWardrobe, onLook }: {
         <OracleTrial items={[]} onFinish={() => {}} placement={{ bank: bank ?? ORACLE_BANK, onPlaced: (lv) => { setPlaced(lv); go('spoken') }, onExit: () => go('level') }} />
       </Suspense>
     </div>
-  )
-
-  if (step === 'letter') return frame(
-    "A letter", <>
-      <h2 className="sl-title">Welcome to English Spell</h2>
-      <img className="sl-div" src={divider} alt="" draggable={false} />
-      <p className="sl-sum ob-letter">Your magic is written in <em>English</em>. Every word you master becomes a spell, and every spell opens a new world.</p>
-      <p className="sl-sum ob-letter">Learn a little every day, and the realm will grow with you.</p>
-      <p className="ob-sign">The Archmage</p>
-    </>,
-    <>
-      <Btn className="lg ob-main" onClick={() => go('name')}>Open the gates</Btn>
-      <button className="cb cb-white ob-sec" onClick={skipAll} disabled={busy}>I have played before</button>
-    </>,
   )
 
   if (step === 'name') return frame(

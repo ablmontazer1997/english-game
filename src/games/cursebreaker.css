@@ -58,11 +58,11 @@
 .cbk .cbk-card .cbk-task { margin: -14px -10px 4px; }
 .cbk .cbk-w.k9 { min-height: 44px; padding: 2px 13px 5px; border-radius: 0; box-shadow: none; background: none; font-size: clamp(16px, 4.8cqw, 19px); font-weight: 900; color: #3a2a6e; }
 .cbk .cbk-w.k9:active { transform: translateY(2px); }
-.cbk .cbk-w.k9.cursed { border-image-source: url(../assets/es2/k/p09/word_tile_selected.webp); border-image-slice: 40 40 40 40 fill; border-image-width: 18px 18px 18px 18px;
+.cbk .cbk-w.k9.cursed { border-image-source: url(../assets/es2/k/p09/word_tile_selected.webp); border-image-slice: 40 42 40 43 fill; border-image-width: 18px 19px 18px 19.5px;
   color: #fff; background: none; box-shadow: none; filter: var(--k-glow-v); text-shadow: 0 1px 0 rgba(30, 6, 70, .5); animation: cbk-wobble 2.2s ease-in-out infinite; }
-.cbk .cbk-w.k9.miss { border-image-source: url(../assets/es2/k/p09/word_tile_wrong.webp); border-image-slice: 31 33 37 33 fill; border-image-width: 16px 16px 18px 16px;
+.cbk .cbk-w.k9.miss { border-image-source: url(../assets/es2/k/p09/word_tile_wrong.webp); border-image-slice: 43 38 41 40 fill; border-image-width: 21px 18.5px 20px 19.5px;
   color: #fff; background: none; text-shadow: 0 1px 0 rgba(90, 10, 10, .5); animation: gs-no .35s; }
-.cbk .cbk-w.k9.fixed { border-image-source: url(../assets/es2/k/p09/word_tile_fixed.webp); border-image-slice: 29 28 29 29 fill; border-image-width: 14px 14px 14px 14px;
+.cbk .cbk-w.k9.fixed { border-image-source: url(../assets/es2/k/p09/word_tile_fixed.webp); border-image-slice: 42 42 42 42 fill; border-image-width: 20.5px 20.5px 20.5px 20.5px;
   color: #fff; background: none; box-shadow: none; filter: drop-shadow(0 0 8px rgba(120, 220, 80, .9)); text-shadow: 0 1px 0 rgba(20, 80, 10, .5); animation: cbk-flip .5s ease-out both; }
 
 .cbk .cbk-fixes { margin: 0; opacity: 1; gap: 8px; min-height: 58px; }
@@ -71,7 +71,7 @@
 .cbk .cbk-lock { width: 26px; height: 33px; background: url(../assets/es2/k/p09/padlock.webp) center / contain no-repeat; flex: none; }
 .cbk .cbk-locked b { font-size: 15px; font-weight: 800; color: #efe6ff; text-shadow: 0 1px 2px rgba(20, 6, 50, .6); }
 .cbk .cbk-fix { min-height: 52px; padding: 2px 8px 5px; border: 0 solid transparent; border-radius: 0; box-shadow: none; background: none;
-  border-image: url(../assets/es2/k/p09/fix_tile_active.webp) 44 44 44 44 fill / 20px 20px 20px 20px stretch;
+  border-image: url(../assets/es2/k/p09/fix_tile_active.webp) 52 52 51 55 fill / 23.5px 23.5px 23px 25px stretch;
   font: inherit; font-family: var(--sans); font-size: clamp(15px, 4.4cqw, 19px); font-weight: 900; color: #fff; text-shadow: 0 1px 0 rgba(30, 6, 70, .6); filter: drop-shadow(0 4px 8px rgba(20, 6, 50, .35)); }
 .cbk .cbk-fix:active { transform: translateY(2px); }
 .cbk .cbk-fix.right { background: none; box-shadow: none; border-color: transparent; filter: drop-shadow(0 0 7px rgba(120, 230, 80, 1)) drop-shadow(0 0 14px rgba(120, 230, 80, .6)); }

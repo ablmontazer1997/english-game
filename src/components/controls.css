@@ -3,7 +3,7 @@
   display: flex; align-items: center; gap: var(--pad);
   width: 100%; min-height: 56px; padding: 0 4px 0 0;
   border-style: solid; border-width: 14px 22px;
-  border-image: url(../assets/ui/v2/row_cream.webp) 60 90 fill / 14px 22px stretch;
+  border-image: url(../assets/ui/v2/row_cream.webp) 62 90 63 90 fill / 15px 22px 15.5px 22px stretch;
   background: none; margin: 0 0 8px;
   color: var(--ink-d); font-family: var(--sans); font-size: 15px; line-height: 20px; font-weight: 800;
 }

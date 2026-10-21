@@ -110,7 +110,7 @@
   display: flex; align-items: center; gap: 12px; min-height: 56px;
   padding: 8px 26px; margin-bottom: 10px; border-radius: 30px;
   border: 9px solid transparent;
-  border-image: url(../assets/ui/panels/panel_03.webp) 18 62 21 62 fill / 9px 26px 10px 26px;
+  border-image: url(../assets/ui/panels/panel_03.webp) 47 62 41 62 fill / 19.5px 26px 17px 26px;
 }
 .rc-lrow.promote { box-shadow: 0 0 15px 1px rgba(67, 214, 160, .55); }
 .rc-lrow.demote { box-shadow: 0 0 15px 1px rgba(255, 93, 108, .5); }

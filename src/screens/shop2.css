@@ -29,7 +29,7 @@
 
 /* the Featured card: painted frame (9-slice, no fill) over the painted interior (cover); everything inside it */
 .shp-feat-in { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 40%; align-items: center; column-gap: 8px;
-  padding: 2px 2px 4px 4px; border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card.webp) 56 / 17px stretch;
+  padding: 2px 2px 4px 4px; border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card.webp) 71 71 72 77 / 21.5px 21.5px 22px 23.5px stretch;
   background: url(../assets/es2/shop/featured_card.webp) 50% 45% / 118% auto no-repeat; background-origin: border-box; background-clip: padding-box;
   border-radius: 26px; box-shadow: 0 6px 0 rgba(70, 30, 110, .30), 0 14px 26px rgba(20, 8, 40, .30); }
 .shp-feat-rays { left: 45%; right: -30%; inset-block: -40%; opacity: .32; }
@@ -86,7 +86,7 @@
 .shp-grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .shp-rc { position: relative; display: grid; grid-template-rows: auto 1fr; border-radius: 16px; border: 3px solid #e7b64a; overflow: hidden;
   background: linear-gradient(180deg, #fff8e8, #f3e2bf); box-shadow: 0 4px 0 rgba(70, 30, 110, .28), 0 10px 18px rgba(20, 8, 40, .26); }
-.shp-rc-top { position: relative; height: 98px; border: 10px solid transparent; border-image: url(../assets/es2/shop/top_common.webp) 30 fill / 10px stretch; }
+.shp-rc-top { position: relative; height: 98px; border: 10px solid transparent; border-image: url(../assets/es2/shop/top_common.webp) 49 50 46 47 fill / 16.5px 16.5px 15.5px 15.5px stretch; }
 .shp-rc.r-rare .shp-rc-top { border-image-source: url(../assets/es2/shop/top_rare.webp); }
 .shp-rc.r-epic .shp-rc-top { border-image-source: url(../assets/es2/shop/top_epic.webp); }
 .shp-grid3 .shp-rc-top { height: 100px; }

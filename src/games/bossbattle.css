@@ -129,7 +129,7 @@
 .bb2-hp { position: relative; padding: 0; border-radius: 0; background: none; box-shadow: none; }
 .bb2-hp .bb2-tab { position: absolute; display: grid; place-items: center; font-size: clamp(13px, 3.9cqw, 16px); font-weight: 900; line-height: 1; color: #fff;
   text-shadow: 0 1.5px 0 #2e0a6e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bb2-you { min-height: 70px; border: 0 solid transparent; border-image: url(../assets/es2/k/p11/hp_plate_you.webp) 46 58 30 61 fill / 23px 29px 15px 30px stretch;
+.bb2-you { min-height: 70px; border: 0 solid transparent; border-image: url(../assets/es2/k/p11/hp_plate_you.webp) 51 60 34 64 fill / 25.5px 30px 17px 31.5px stretch;
   filter: drop-shadow(0 6px 10px rgba(20, 6, 50, .3)); }
 .bb2-you .bb2-tab { left: 20%; right: 20%; top: 3px; height: 27px; }
 .bb2-you .bb2-row { position: absolute; left: 0; right: 0; top: 34px; margin: 0; }
@@ -144,7 +144,7 @@
 .bb2-bossp .bb2-track span { line-height: normal; height: 100%; display: grid; place-items: center; font-size: clamp(10.5px, 3.2cqw, 13px); }
 
 .bb2-q.gs-panel { padding: 0 14px 22px; gap: 4px; background: none; box-shadow: none; border-radius: 0;
-  border: 0 solid transparent; border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+  border: 0 solid transparent; border-image: var(--k-panel) 43 49 54 48 fill / 21px 24px 26.5px 23.5px stretch; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
 .bb2-q .gtask { margin: -16px -12px 6px; }
 .bb2-gem { top: -46px; z-index: 3; }
 .bb2-q p { display: grid; justify-items: center; gap: 0; color: #2a1f5c; }

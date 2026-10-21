@@ -12,8 +12,8 @@
 .sk-card   { border-image: url(../assets/pages/pnl_card4.png) 60 60 64 60 fill / 25px 25px 27px 25px; }
 .sk-wide   { border-image: url(../assets/pages/panel_wide.png) 46 46 50 46 fill / 28px 28px 30px 28px; }
 .sk-stat   { border-image: url(../assets/pages/card_stat.png) 66 66 72 66 fill / 23px 23px 25px 23px; }
-.sk-square { border-image: url(../assets/pages/card_square.png) 64 64 70 64 fill / 23px 23px 25px 23px; }
-.sk-banner { border-image: url(../assets/pages/panel_banner.png) 54 54 58 54 fill / 24px 24px 26px 24px; }
+.sk-square { border-image: url(../assets/pages/card_square.png) 78 64 78 64 fill / 28px 23px 28px 23px; }
+.sk-banner { border-image: url(../assets/pages/panel_banner.png) 74 54 70 54 fill / 33px 24px 31px 24px; }
 /* pills: the round caps are half the height (--r), the middle stretches */
 .sk-row, .sk-row-me, .sk-green, .sk-gold, .sk-edit, .sk-chip, .sk-pill32 { --r: calc(var(--h, var(--row-h)) / 2); }
 .sk-row    { border-image: url(../assets/pages/pnl_row6.png) 92 fill / 50% var(--r); }

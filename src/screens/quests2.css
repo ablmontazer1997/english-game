@@ -4,7 +4,7 @@
 
 /* the cream card with the gold rim (a5 panel), shared by the events card, the quest cards and the Season strip */
 .qs2 .qs2-row, .qs2 .evc2, .qs2 .ssn-entry {
-  border: 14px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 44 fill / 14px stretch;
+  border: 14px solid transparent; border-image: url(../assets/es2/quests/panel_plain.webp) 61 69 64 68 fill / 19.5px 22px 20.5px 21.5px stretch;
   filter: drop-shadow(0 4px 0 rgba(70, 30, 110, .28)) drop-shadow(0 8px 14px rgba(20, 8, 40, .25)); }
 
 /* ---- header: our hero beside the parchment banner ---- */

@@ -32,10 +32,10 @@
 .ssh-sec { position: absolute; left: 20cqw; width: 60cqw; top: calc(138.3cqw + var(--ext)); height: 11.7cqw; display: flex; align-items: center; justify-content: center; gap: 2.4cqw; }
 /* kit buttons sized to the slots */
 .ssh .ssh-pri .ui-btn { --h: 13.8cqw; width: 100%; min-width: 0; height: 13.8cqw; font-family: Fredoka, var(--game), sans-serif; font-weight: 700;
-  font-size: 7cqw; padding: 0 0 .6cqw; }
-.ssh .ssh-sec .cb { min-height: 0; height: 11.7cqw; padding: 0 4cqw; min-width: 45.7cqw; font-family: Fredoka, var(--game), sans-serif; font-weight: 700;
-  font-size: 4.9cqw; white-space: nowrap; }
-.ssh .ssh-sec .cb + .cb, .ssh .ssh-sec .cb:has(+ .cb) { min-width: 0; flex: 1; font-size: 4.2cqw; padding: 0 2.4cqw; }
+  font-size: 6cqw; padding: 0 0 .6cqw; }   /* admin 6285: labels ~15% smaller, clear of the painted caps */
+.ssh .ssh-sec .cb { min-height: 0; height: 11.7cqw; padding: 0 6.4cqw; min-width: 45.7cqw; font-family: Fredoka, var(--game), sans-serif; font-weight: 700;
+  font-size: 4.1cqw; white-space: nowrap; }
+.ssh .ssh-sec .cb + .cb, .ssh .ssh-sec .cb:has(+ .cb) { min-width: 0; flex: 1; font-size: 3.6cqw; padding: 0 5.2cqw; }
 /* two secondary buttons (Play as guest + Cancel, the intro look step) use the paper's full printable width */
 .ssh-sec:has(.cb + .cb) { left: 12cqw; width: 76cqw; }
 .ssh .ssh-sec .cb { color: #2d1b70; }

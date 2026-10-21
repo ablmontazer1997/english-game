@@ -61,7 +61,7 @@
 .btn-candy-red {
   display: grid; place-items: center; width: 100%; min-height: 56px; margin-top: var(--gap);
   border-style: solid; border-width: 14px 28px;
-  border-image: url(../assets/ui/v2/btn_red.webp) 60 100 fill / 14px 28px stretch;
+  border-image: url(../assets/ui/v2/btn_red.webp) 88 100 89 100 fill / 24.5px 28px 25px 28px stretch;
   background: none; color: #fff; font-family: var(--sans); font-weight: 900; font-size: 15px;
   text-shadow: 0 2px 0 rgba(150, 40, 30, .55);
 }

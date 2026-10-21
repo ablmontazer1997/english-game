@@ -66,7 +66,7 @@
   border: 0 solid transparent; border-image: url(../assets/es2/k/p19/speech_bubble_up.webp) 79 40 34 137 fill / 24px 14px 12px 40px stretch; filter: drop-shadow(0 4px 8px rgba(20, 6, 50, .25)); }
 .tt .tt-msg.me { border: 2px solid #f3c652; box-shadow: 0 0 0 1.5px #8a5a10; }
 .tt .tt-choice { min-height: 46px; padding: 4px 16px 6px; border-radius: 0; background: none; box-shadow: none; color: #2a1f5c;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p19/reply_card.webp) 33 33 31 35 fill / 14px 14px 13px 15px stretch; filter: drop-shadow(0 3px 5px rgba(20, 6, 50, .2)); }
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p19/reply_card.webp) 33 38 40 46 fill / 14px 16px 17px 19.5px stretch; filter: drop-shadow(0 3px 5px rgba(20, 6, 50, .2)); }
 .tt .tt-choice:active { transform: translateY(2px); box-shadow: none; }
 .tt .tt-choice.hinted { background: none; box-shadow: none; filter: drop-shadow(0 0 8px rgba(255, 210, 80, 1)); animation: none; }
 .tt .tt-mic { width: 62px; border-radius: 0; box-shadow: none; background: none; border: 0 solid transparent;

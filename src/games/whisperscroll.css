@@ -71,9 +71,9 @@
 @keyframes ws2-gap { 50% { filter: drop-shadow(0 0 11px rgba(170, 120, 255, 1)); } }
 .ws .ws-gap.filled { padding: 0 12px 2px; color: #fff; text-shadow: 0 1px 0 rgba(40, 10, 90, .6); animation: none; }
 .ws.ws-ok .ws-gap.filled, .ws.ws-reveal .ws-gap.filled { background: none; box-shadow: none; filter: drop-shadow(0 0 8px rgba(110, 220, 70, 1));
-  border-image: url(../assets/es2/k/p09/word_tile_fixed.webp) 29 28 29 29 fill / 14px 14px 14px 14px stretch; }
+  border-image: url(../assets/es2/k/p09/word_tile_fixed.webp) 42 42 42 42 fill / 20.5px 20.5px 20.5px 20.5px stretch; }
 .ws.ws-bad .ws-gap.filled { background: none; filter: drop-shadow(0 0 8px rgba(255, 80, 70, 1));
-  border-image: url(../assets/es2/k/p09/word_tile_wrong.webp) 31 33 37 33 fill / 14px 15px 16px 15px stretch; }
+  border-image: url(../assets/es2/k/p09/word_tile_wrong.webp) 43 38 41 40 fill / 19.5px 17.5px 18.5px 18px stretch; }
 .ws .ws-playbtn { width: 88px; height: 88px; border: 0; border-radius: 50%; box-shadow: none; background: url(../assets/es2/k/p16/btn_play_big.webp) center / contain no-repeat;
   filter: drop-shadow(0 6px 10px rgba(60, 20, 140, .4)); }
 .ws .ws-playbtn:active { transform: scale(.94); box-shadow: none; }
@@ -82,7 +82,7 @@
 .ws-talking .ws-wave2 { animation: ws2-wave .6s ease-in-out infinite alternate; }
 @keyframes ws2-wave { to { opacity: 1; transform: scale(1.12); } }
 .ws .ws-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 3px 18px 6px; font: inherit; font-size: 15px; font-weight: 900; color: #2a1f5c; background: none;
-  border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 16px 16px 16px 17px stretch; }
+  border: 0 solid transparent; border-image: var(--k-chip-c) 37 38 38 38 fill / 18.5px 19px 19px 19px stretch; }
 .ws .ws-chip img { width: 26px; height: 21px; object-fit: contain; }
 .ws .ws-chip:active { transform: translateY(2px); }
 .ws .ws-opts.k9 { padding: 14px 12px 16px; gap: 8px; border-radius: 0; background: none; box-shadow: none; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .3)); }

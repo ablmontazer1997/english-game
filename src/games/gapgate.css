@@ -146,9 +146,9 @@
 .gg-opt.k9 { border-radius: 0; background: none; box-shadow: none; color: #2a1f5c; filter: drop-shadow(0 6px 8px rgba(20, 6, 50, .25)); }
 .gg-opt.k9:active { box-shadow: none; }
 .gg-opt.k9.ok, .gg-opt.k9.right { color: #fff; text-shadow: 0 1px 0 rgba(20, 80, 10, .55); filter: drop-shadow(0 0 10px rgba(110, 220, 70, .9));
-  border-image-source: url(../assets/es2/k/p09/word_tile_fixed.webp); border-image-slice: 29 28 29 29 fill; border-image-width: 14px 14px 14px 14px; }
-.gg-opt.k9.bad { color: #fff; border-image-source: url(../assets/es2/k/p09/word_tile_wrong.webp); border-image-slice: 31 33 37 33 fill; border-image-width: 14px 15px 16px 15px; }
+  border-image-source: url(../assets/es2/k/p09/word_tile_fixed.webp); border-image-slice: 42 42 42 42 fill; border-image-width: 20.5px 20.5px 20.5px 20.5px; }
+.gg-opt.k9.bad { color: #fff; border-image-source: url(../assets/es2/k/p09/word_tile_wrong.webp); border-image-slice: 43 38 41 40 fill; border-image-width: 19.5px 17.5px 18.5px 18px; }
 /* the game's own border shorthands reset border-image: the kit pieces are restated with the game's specificity */
-.gg-tablet.k9 { border: 0 solid transparent; border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; }
-.gg-opt.k9:not(.ok):not(.right):not(.bad) { border: 0 solid transparent; border-image: var(--k-tile) 30 28 29 30 fill / 15px 14px 14px 15px stretch; }
+.gg-tablet.k9 { border: 0 solid transparent; border-image: var(--k-panel) 43 49 54 48 fill / 21px 24px 26.5px 23.5px stretch; }
+.gg-opt.k9:not(.ok):not(.right):not(.bad) { border: 0 solid transparent; border-image: var(--k-tile) 34 35 36 38 fill / 17px 17.5px 18px 19px stretch; }
 .gg-opt.k9.ok, .gg-opt.k9.right, .gg-opt.k9.bad { border-width: 0; border-style: solid; border-color: transparent; }

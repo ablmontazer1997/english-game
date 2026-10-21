@@ -127,15 +127,15 @@
    player's answer, green-rimmed answer block, violet rule plate with the book, Why? chip, green Got it) and the tutorial coach
    (the coach in a gold portrait ring, a speech bubble, cream Skip + green next, the painted glove hand and tap ripple). ===== */
 .wfb { gap: 9px; padding: 14px 14px 16px; background: none; border: 0 solid transparent; border-radius: 0; box-shadow: none;
-  border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 12px 22px rgba(30, 20, 80, .35)); }
+  border-image: var(--k-panel) 43 49 54 48 fill / 21px 24px 26.5px 23.5px stretch; filter: drop-shadow(0 12px 22px rgba(30, 20, 80, .35)); }
 .wfb .wfb-head { min-height: 54px; padding: 0 16px 4px 64px; border: 0 solid transparent; border-image: url(../assets/es2/k/p15/wrong_header.webp) 51 53 55 134 fill / 18px 19px 20px 49px stretch; }
 .wfb .wfb-x { display: none; }
 .wfb .wfb-head > b { font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 #8a1420; }
 .wfb .wfb-yours { margin: 0; max-width: none; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 2px 16px 4px; text-align: center;
   font-size: 19px; font-weight: 900; color: #b0303e; -webkit-line-clamp: unset; border: 0 solid transparent;
-  border-image: url(../assets/es2/k/p15/struck_plate.webp) 36 36 36 36 fill / 16px 16px 16px 16px stretch; }
+  border-image: url(../assets/es2/k/p15/struck_plate.webp) 36 40 36 40 fill / 16px 18px 16px 18px stretch; }
 .wfb .wfb-ans { justify-items: center; text-align: center; padding: 8px 16px 12px; background: none; border: 0 solid transparent; border-radius: 0;
-  border-image: url(../assets/es2/k/p15/answer_block.webp) 54 51 62 53 fill / 22px 22px 26px 22px stretch; }
+  border-image: url(../assets/es2/k/p15/answer_block.webp) 54 55 62 57 fill / 23px 23.5px 26px 24px stretch; }
 .wfb .wfb-ans small { font-size: 12.5px; color: #2f6a1c; text-transform: none; letter-spacing: 0; }
 .wfb .wfb-ans b { font-size: 26px; font-weight: 900; color: #2a1f5c; }
 .wfb .wfb-ans.long b { font-size: 16px; font-weight: 800; }
@@ -143,7 +143,7 @@
   border-image: url(../assets/es2/k/p15/rule_plate.webp) 43 45 53 131 fill / 20px 20px 24px 64px stretch; }
 .wfb .wfb-rule > span { display: none; }
 .wfb .wfb-whybtn { justify-self: center; min-height: 40px; padding: 0 22px 3px; border-radius: 0; background: none; box-shadow: none; color: #5a2fc0;
-  border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 16px 16px 16px 17px stretch; }
+  border: 0 solid transparent; border-image: var(--k-chip-c) 37 38 38 38 fill / 18.5px 19px 19px 19px stretch; }
 .wfb .wfb-go { width: 100%; min-height: 58px; font-size: 24px; margin-top: 2px; }
 
 .tut-coach { gap: 12px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
@@ -151,7 +151,7 @@
 .tut-line img { width: 74px; height: 82px; padding: 10px 9px 12px; box-sizing: border-box; object-fit: cover; object-position: 50% 12%; border-radius: 50%;
   background: url(../assets/es2/k/p15/portrait_frame.webp) center / 100% 100% no-repeat, radial-gradient(circle at 50% 45%, #fff6e0 0 55%, transparent 56%); position: relative; z-index: 1; }
 .tut-line p { flex: 1; min-height: 64px; display: flex; align-items: center; padding: 8px 14px 10px 30px; margin-left: -10px; color: #2a1f5c; font-size: 16px; font-weight: 800;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p15/coach_bubble.webp) 35 51 84 91 fill / 16px 22px 30px 34px stretch; filter: drop-shadow(0 6px 12px rgba(20, 10, 60, .35)); }
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p15/coach_bubble.webp) 49 51 90 91 fill / 19.5px 20.5px 36px 36.5px stretch; filter: drop-shadow(0 6px 12px rgba(20, 10, 60, .35)); }
 .tut-btns .k-btn { min-height: 52px; font-size: 19px; }
 .tut-btns .tut-skip { flex: 0 0 38%; padding: 4px 12px 8px; }
 .tut-ready { padding: 0; }

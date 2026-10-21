@@ -49,11 +49,11 @@
 .ec .ec-line > span.on { color: #2a1f5c; text-shadow: none; animation: ec2-show .35s ease-out; }
 @keyframes ec2-show { from { transform: scale(.7); opacity: 0; } }
 .ec .ec-line > span.ec-hid i { color: transparent; display: inline-block; min-width: 28px; padding: 0 4px;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p17/hidden_word_block.webp) 43 34 44 36 fill / 12px 10px 12px 10px stretch; }
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p17/hidden_word_block.webp) 43 38 44 38 fill / 12.5px 11px 12.5px 11px stretch; }
 .ec .ec-line i { font-style: normal; }
 .ec .ec-say { width: 56px; height: 56px; padding: 0; border: 0; border-radius: 50%; background: url(../assets/es2/k/p17/btn_speaker.webp) center / contain no-repeat; filter: drop-shadow(0 4px 6px rgba(60, 20, 140, .35)); }
 .ec .ec-say:active { transform: scale(.93); }
-.ec .ec-slow { width: 44px; height: 44px; display: grid; place-items: center; border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 16px 16px 16px 17px stretch; }
+.ec .ec-slow { width: 44px; height: 44px; display: grid; place-items: center; border: 0 solid transparent; border-image: var(--k-chip-c) 37 38 38 38 fill / 18.5px 19px 19px 19px stretch; }
 .ec .ec-slow img { width: 26px; height: 21px; object-fit: contain; }
 .ec .ec-act { top: auto; bottom: calc(5% + var(--safe-bottom, 0px)); }
 .ec .ec-mic { position: relative; width: min(32cqw, 128px); height: min(32cqw, 128px); padding: 0; border: 0; border-radius: 50%; box-shadow: none;

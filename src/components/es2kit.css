@@ -29,31 +29,31 @@
 /* ---------- 9-slice skins (two classes on purpose: a game's own `border:` shorthand resets border-image, so the skin must win on specificity; class = skin; sizes in CSS px = image px / 2) ---------- */
 .k9 { border: 0 solid transparent; border-image-repeat: stretch; background: none; box-shadow: none; }
 .k9.k-plate { border-image-source: var(--k-plate); border-image-slice: 68 87 66 93 fill; border-image-width: 34px 44px 33px 46px; }
-.k9.k-panel { border-image-source: var(--k-panel); border-image-slice: 38 30 37 41 fill; border-image-width: 19px 15px 18px 20px; }
-.k9.k-tile { border-image-source: var(--k-tile); border-image-slice: 30 28 29 30 fill; border-image-width: 15px 14px 14px 15px; }
-.k9.k-tile.sel, .k9.k-tile-sel { border-image-source: var(--k-tile-sel); border-image-slice: 60 50 60 50 fill; border-image-width: 30px 25px 30px 25px; filter: var(--k-glow-v); }
-.k9.k-chip-v { border-image-source: var(--k-chip-v); border-image-slice: 32 31 28 30 fill; border-image-width: 16px 15px 14px 15px; }
-.k9.k-chip-c { border-image-source: var(--k-chip-c); border-image-slice: 33 32 33 34 fill; border-image-width: 16px 16px 16px 17px; }
-.k9.k-chip-g { border-image-source: var(--k-chip-g); border-image-slice: 30 31 28 32 fill; border-image-width: 15px 15px 14px 16px; }
-.k9.k-hud { border-image-source: var(--k-hud); border-image-slice: 42 45 40 49 fill; border-image-width: 21px 22px 20px 24px; }
+.k9.k-panel { border-image-source: var(--k-panel); border-image-slice: 43 49 54 48 fill; border-image-width: 21px 24px 26.5px 23.5px; }
+.k9.k-tile { border-image-source: var(--k-tile); border-image-slice: 34 35 36 38 fill; border-image-width: 17px 17.5px 18px 19px; }
+.k9.k-tile.sel, .k9.k-tile-sel { border-image-source: var(--k-tile-sel); border-image-slice: 60 54 59 54 fill; border-image-width: 30px 27px 29.5px 27px; filter: var(--k-glow-v); }
+.k9.k-chip-v { border-image-source: var(--k-chip-v); border-image-slice: 39 37 37 39 fill; border-image-width: 19px 18px 18px 19px; }
+.k9.k-chip-c { border-image-source: var(--k-chip-c); border-image-slice: 37 38 38 38 fill; border-image-width: 18.5px 19px 19px 19px; }
+.k9.k-chip-g { border-image-source: var(--k-chip-g); border-image-slice: 40 40 39 49 fill; border-image-width: 19.5px 19.5px 19px 24px; }
+.k9.k-hud { border-image-source: var(--k-hud); border-image-slice: 49 51 49 54 fill; border-image-width: 24px 25px 24px 26.5px; }
 
 /* buttons: green = primary, gold = claim only, cream = secondary (admin rule); pressed = the painted pressed piece */
 .k-btn { border: 0 solid transparent; border-image-repeat: stretch; background: none; box-shadow: none; border-radius: 0;
   min-height: 54px; padding: 4px 22px 8px; font: inherit; font-family: var(--sans); font-weight: 900; font-size: 21px; color: #fff;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: filter .15s; }
-.k-btn.k-green { border-image-source: var(--k-green); border-image-slice: 43 45 44 48 fill; border-image-width: 22px 22px 22px 24px;
+.k-btn.k-green { border-image-source: var(--k-green); border-image-slice: 55 56 53 59 fill; border-image-width: 27px 27.5px 26px 29px;
   text-shadow: 0 2px 0 #23731a, 0 0 2px #23731a; }
-.k-btn.k-gold { border-image-source: var(--k-gold); border-image-slice: 43 39 44 43 fill; border-image-width: 22px 20px 22px 22px;
+.k-btn.k-gold { border-image-source: var(--k-gold); border-image-slice: 54 64 54 77 fill; border-image-width: 27.5px 33px 27.5px 39.5px;
   text-shadow: 0 2px 0 #9a5a0c, 0 0 2px #9a5a0c; }
-.k-btn.k-cream { border-image-source: var(--k-cream); border-image-slice: 43 38 42 42 fill; border-image-width: 22px 19px 21px 21px;
+.k-btn.k-cream { border-image-source: var(--k-cream); border-image-slice: 50 52 51 52 fill; border-image-width: 25px 26px 25.5px 26px;
   color: #5a2fc0; text-shadow: none; font-size: 18px; }
-.k-btn.k-green:active:not(:disabled) { border-image-source: var(--k-green-p); border-image-slice: 35 38 31 35 fill; border-image-width: 18px 19px 16px 18px; padding-top: 10px; }
-.k-btn.k-gold:active:not(:disabled) { border-image-source: var(--k-gold-p); border-image-slice: 35 38 32 39 fill; border-image-width: 18px 19px 16px 20px; padding-top: 10px; }
-.k-btn.k-cream:active:not(:disabled) { border-image-source: var(--k-cream-p); border-image-slice: 30 47 34 46 fill; border-image-width: 15px 24px 17px 23px; padding-top: 10px; }
+.k-btn.k-green:active:not(:disabled) { border-image-source: var(--k-green-p); border-image-slice: 44 51 43 52 fill; border-image-width: 22.5px 26px 22px 26.5px; padding-top: 10px; }
+.k-btn.k-gold:active:not(:disabled) { border-image-source: var(--k-gold-p); border-image-slice: 44 68 43 54 fill; border-image-width: 22.5px 34.5px 22px 27.5px; padding-top: 10px; }
+.k-btn.k-cream:active:not(:disabled) { border-image-source: var(--k-cream-p); border-image-slice: 38 47 41 46 fill; border-image-width: 19px 23.5px 20.5px 23px; padding-top: 10px; }
 .k-btn:disabled { filter: saturate(.35) brightness(1.05); opacity: .8; cursor: default; }
 
 /* ---------- HUD (every stage screen): hearts pill, close, round pips ---------- */
-.stage-host .play-hearts { border: 0 solid transparent; border-image: var(--k-hud) 42 45 40 49 fill / 21px 22px 20px 24px stretch;
+.stage-host .play-hearts { border: 0 solid transparent; border-image: var(--k-hud) 49 51 49 54 fill / 24px 25px 24px 26.5px stretch;
   min-height: 40px; padding: 2px 16px 4px 13px; gap: 5px; font-family: var(--sans); font-size: 18px; font-weight: 900; text-shadow: 0 1px 0 rgba(30, 6, 70, .6); }
 .stage-host .play-hearts img { width: 23px; height: 23px; flex: none;   /* admin 5541: the heart sits inside the painted rim */ content: url(../assets/es2/k/kit/icon_heart.webp); object-fit: contain; filter: none; }
 .stage-host .stage-close { width: 44px; height: 44px; background-image: url(../assets/es2/k/kit/btn_close.webp); filter: drop-shadow(0 3px 5px rgba(20, 6, 50, .3)); }
@@ -108,11 +108,11 @@
 
 /* ---------- shared candy buttons and panels inside a stage take the painted kit ---------- */
 .stage-host .cb-green, .stage-host .cb-white, .stage-host .cb-violet { border: 0 solid transparent; border-image-repeat: stretch; background: none; box-shadow: none; border-radius: 0; }
-.stage-host .cb-green { border-image-source: var(--k-green); border-image-slice: 43 45 44 48 fill; border-image-width: 22px 22px 22px 24px; text-shadow: 0 2px 0 #23731a, 0 0 2px #23731a; }
-.stage-host .cb-white, .stage-host .cb-violet { border-image-source: var(--k-cream); border-image-slice: 43 38 42 42 fill; border-image-width: 22px 19px 21px 21px; color: #5a2fc0; text-shadow: none; min-height: 48px; }
-.stage-host .cb-green:active { border-image-source: var(--k-green-p); border-image-slice: 35 38 31 35 fill; border-image-width: 18px 19px 16px 18px; transform: none; padding-top: 6px; box-shadow: none; }
-.stage-host .cb-white:active, .stage-host .cb-violet:active { border-image-source: var(--k-cream-p); border-image-slice: 30 47 34 46 fill; border-image-width: 15px 24px 17px 23px; transform: none; padding-top: 6px; box-shadow: none; }
-.stage-host .lp { border: 0 solid transparent; border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; background: none; box-shadow: none; border-radius: 0; filter: var(--k-lift); }
+.stage-host .cb-green { border-image-source: var(--k-green); border-image-slice: 55 56 53 59 fill; border-image-width: 27px 27.5px 26px 29px; text-shadow: 0 2px 0 #23731a, 0 0 2px #23731a; }
+.stage-host .cb-white, .stage-host .cb-violet { border-image-source: var(--k-cream); border-image-slice: 50 52 51 52 fill; border-image-width: 25px 26px 25.5px 26px; color: #5a2fc0; text-shadow: none; min-height: 48px; }
+.stage-host .cb-green:active { border-image-source: var(--k-green-p); border-image-slice: 44 51 43 52 fill; border-image-width: 22.5px 26px 22px 26.5px; transform: none; padding-top: 6px; box-shadow: none; }
+.stage-host .cb-white:active, .stage-host .cb-violet:active { border-image-source: var(--k-cream-p); border-image-slice: 38 47 41 46 fill; border-image-width: 19px 23.5px 20.5px 23px; transform: none; padding-top: 6px; box-shadow: none; }
+.stage-host .lp { border: 0 solid transparent; border-image: var(--k-panel) 43 49 54 48 fill / 21px 24px 26.5px 23.5px stretch; background: none; box-shadow: none; border-radius: 0; filter: var(--k-lift); }
 
 @media (prefers-reduced-motion: reduce) { .gtask-b.first { animation: none; } }
 

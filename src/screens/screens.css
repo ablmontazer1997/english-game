@@ -13,7 +13,7 @@
   display: flex; align-items: center; gap: 12px; padding: 12px 32px; margin-bottom: 12px;
   background: none; box-shadow: none;
   border: 9px solid transparent;
-  border-image: url(../assets/ui/frames/row_tile.webp) 27 88 30 88 fill / 9px 30px 10px 30px;
+  border-image: url(../assets/ui/frames/row_tile.webp) 110 108 107 109 fill / 37.5px 37px 36.5px 37px;
 }
 .tile-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none;
   background: rgba(154,107,255,.12); border: 1px solid var(--line); color: var(--amethyst-soft); }

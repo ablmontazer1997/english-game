@@ -14,10 +14,10 @@
 .sl .sl-tag2 { width: min(80%, 260px); }
 .sl .sl-title { color: #2a1f5c; }
 .sl .sl-subt { margin: -2px 0 0; padding: 3px 26px 5px; min-height: 26px; box-sizing: border-box; color: #fff; font-size: 13.5px; font-weight: 900;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/title_plate.webp) 30 62 16 62 fill / 13px 26px 7px 26px stretch; }
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/title_plate.webp) 33 63 16 63 fill / 14px 26.5px 6.5px 26.5px stretch; }
 .sl .sl-sum { color: #3d2f5a; }
 .sl .sl-row { min-height: 54px; padding: 6px 12px 6px 4px; gap: 12px; border-radius: 0; background: none; box-shadow: none; color: #2a1f5c;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/example_row.webp) 21 20 24 135 fill / 11px 10px 12px 68px stretch; }
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/example_row.webp) 25 22 24 135 fill / 12.5px 11px 12px 67.5px stretch; }
 .sl .sl-row img { width: 46px; height: 46px; margin-left: 4px; }
 .sl .sl-row em, .sl .sl-sum em { color: #7b2fe0; }
 .sl .sl-mis { position: relative; margin-top: 12px; padding: 40px 14px 10px; border-image: url(../assets/es2/k/p12/mistake_plate.webp) 39 105 27 103 fill / 20px 52px 14px 52px stretch; }
@@ -31,7 +31,7 @@
 /* the game chips under the page (each game's own art), then the Focus switch beside the green Start */
 .ss-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: min(100%, 390px); flex: none; }
 .ss-gchip { display: flex; align-items: center; gap: 6px; min-height: 46px; max-width: 46%; padding: 4px 16px 6px 6px; box-sizing: border-box;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/game_chip.webp) 32 32 31 32 fill / 14px 14px 14px 14px stretch;
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p12/game_chip.webp) 35 38 36 37 fill / 15.5px 16.5px 16px 16px stretch;
   filter: drop-shadow(0 4px 6px rgba(40, 20, 80, .25)); }
 .ss-gchip img { width: 34px; height: 34px; object-fit: contain; flex: none; }
 .ss-gchip b { min-width: 0; font-family: var(--sans); font-size: 13.5px; line-height: 1.1; font-weight: 900; color: #2a1f5c; }
@@ -63,7 +63,7 @@
 
 /* ---------- rescue + Out of Hearts: the art over a gold ribbon on the cream panel ---------- */
 .rescue.rs2 { width: min(88vw, 340px); padding: 112px 18px 18px; margin-top: 80px; gap: 10px; border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
-  border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 14px 26px rgba(20, 10, 60, .35)); color: #2a1f5c; }
+  border-image: var(--k-panel) 43 49 54 48 fill / 21px 24px 26.5px 23.5px stretch; filter: drop-shadow(0 14px 26px rgba(20, 10, 60, .35)); color: #2a1f5c; }
 .rs2-art { position: absolute; left: 50%; top: -92px; width: 140px; transform: translateX(-50%); filter: drop-shadow(0 8px 14px rgba(60, 20, 120, .35)); animation: rs2-float 3s ease-in-out infinite; }
 .rs2-art.rs2-heart { top: -64px; width: 124px; }
 @keyframes rs2-float { 50% { translate: 0 -5px; } }
@@ -98,7 +98,7 @@
 .rs3-sum { margin: 2px 0 0; font-family: var(--sans); font-size: 16px; font-weight: 900; color: #fff; text-shadow: 0 1px 0 rgba(40, 10, 90, .7), 0 2px 8px rgba(40, 10, 90, .5); }
 .rs3-cards { display: flex; justify-content: center; gap: 8px; width: min(100%, 380px); }
 .rs3-card { flex: 1 1 0; max-width: 118px; min-height: 92px; display: grid; grid-template-rows: 1fr auto; justify-items: center; align-items: center; padding: 6px 4px 6px;
-  box-sizing: border-box; border-image: url(../assets/es2/k/kit/card_twopart.webp) 48 36 59 30 fill / 24px 18px 30px 15px stretch; }
+  box-sizing: border-box; border-image: url(../assets/es2/k/kit/card_twopart.webp) 48 36 59 37 fill / 24px 18px 29.5px 18.5px stretch; }
 .rs3-card img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(20, 6, 50, .4)); }
 .rs3-card b { font-family: var(--sans); font-size: 14px; font-weight: 900; color: #2a1f5c; white-space: nowrap; padding-bottom: 2px; }
 .rs3-chip { display: flex; align-items: center; gap: 6px; margin: 0; padding: 3px 16px 5px 10px; min-height: 36px; box-sizing: border-box; font-family: var(--sans); font-size: 15px; font-weight: 900; color: #2a1f5c; }
@@ -107,7 +107,7 @@
 .rs3-drop { position: relative; display: flex; align-items: center; gap: 10px; width: min(92%, 340px); box-sizing: border-box; padding: 18px 14px 10px; margin-top: 10px; }
 .rs3-droptab { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); min-width: 150px; height: 26px; display: grid; place-items: center; padding: 0 22px 2px;
   font-size: 13px; font-weight: 900; color: #fff; white-space: nowrap; border: 0 solid transparent;
-  border-image: url(../assets/es2/k/p13/stage_drop_tab.webp) 22 37 14 37 fill / 11px 18px 7px 18px stretch; }
+  border-image: url(../assets/es2/k/p13/stage_drop_tab.webp) 26 38 15 38 fill / 12.5px 18.5px 7.5px 18.5px stretch; }
 .rs3-drop img, .rs3-drop .item-thumb { width: 64px; height: 64px; object-fit: contain; flex: none; }
 .rs3-drop b { font-size: 15px; font-weight: 900; color: #2a1f5c; }
 .result .rs3-go { width: min(66%, 260px); min-height: 60px; font-size: 26px; margin-top: 6px; }

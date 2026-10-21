@@ -104,7 +104,7 @@
 .pm .pm-mix { top: 30.5%; gap: 8px; flex-wrap: nowrap; }
 .pm .pm-plus { display: none; }
 .pm .pm-slot, .pm .pm-tag { display: grid; place-items: center; width: clamp(64px, 19cqw, 84px); height: clamp(52px, 15.5cqw, 70px); padding: 0 6px 2px; border-radius: 0; background: none; box-shadow: none;
-  border: 0 solid transparent; border-image: url(../assets/es2/k/p22/ingredient_slot.webp) 34 34 34 34 fill / 17px 17px 17px 17px stretch; }
+  border: 0 solid transparent; border-image: url(../assets/es2/k/p22/ingredient_slot.webp) 34 36 35 35 fill / 17px 18px 17.5px 17.5px stretch; }
 .pm .pm-slot { opacity: .92; filter: drop-shadow(0 4px 6px rgba(20, 6, 50, .25)); animation: pm2-slot 2s ease-in-out infinite; }
 @keyframes pm2-slot { 50% { filter: drop-shadow(0 0 8px rgba(190, 140, 255, .9)); } }
 .pm .pm-tag { font-size: clamp(14px, 4.4cqw, 19px); color: #2a1f5c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; filter: drop-shadow(0 0 7px var(--liq)); }

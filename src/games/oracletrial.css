@@ -154,7 +154,7 @@
 .ot-stage { top: 22%; height: 36%; }
 .ot-ui { gap: 9px; }
 .ot .ot-q { position: relative; padding: 0 14px 14px; border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
-  border-image: var(--k-panel) 38 30 37 41 fill / 19px 15px 18px 20px stretch; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
+  border-image: var(--k-panel) 43 49 54 48 fill / 21px 24px 26.5px 23.5px stretch; filter: drop-shadow(0 8px 14px rgba(20, 6, 50, .35)); }
 .ot .ot-q .gtask { margin: -14px -12px 6px; }
 .ot .ot-skill { min-height: 24px; padding: 2px 14px 4px; margin: 0 0 4px; font-size: 11px; color: #fff; letter-spacing: .08em; }
 .ot .ot-q p { font-size: clamp(17px, 5vw, 20px); font-weight: 800; line-height: 1.4; color: #2a1f5c; }

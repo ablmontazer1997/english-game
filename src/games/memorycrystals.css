@@ -184,7 +184,7 @@
 .mc-back, .mc-front { filter: drop-shadow(0 4px 6px rgba(20, 6, 50, .3)); }
 .mc-label { max-width: 80%; color: #2a1f5c; font-family: var(--sans); font-weight: 900; }
 .mc-card.is-matched .mc-front { background-image: url(../assets/es2/k/p25/card_matched.webp) !important; filter: drop-shadow(0 0 10px rgba(255, 210, 80, .9)); }
-.mc-stat.k9 { border: 0 solid transparent; border-image: var(--k-chip-c) 33 32 33 34 fill / 14px 14px 14px 15px stretch; }
+.mc-stat.k9 { border: 0 solid transparent; border-image: var(--k-chip-c) 37 38 38 38 fill / 16.5px 16.5px 16.5px 16.5px stretch; }
 /* coordinator 10-12: the cards sit low (near the thumbs), so the scene band above them takes the upright booster capsule */
 .mc-grid { align-content: end; padding-bottom: 6px; }
 /* coordinator 10-12: the word sits in the middle of the card face (the painted base lip takes the bottom ~9%) and
