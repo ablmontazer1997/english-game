@@ -2,7 +2,7 @@ import hashlib
 import uuid
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Response
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -568,3 +568,11 @@ async def game_samples(game: str, level: str = Query("A1", pattern="^(A1|A2|B1|B
         rows += (await db.execute(q.where(Question.id.notin_(have) if have else True)
                                   .order_by(func.random()).limit(n - len(rows)))).scalars().all()
     return [{**play.question_out(r), "game": game} for r in rows]
+
+
+# ?perf=1 start-up beacon from the app (10-21): log line only, no table, no auth; body capped at 8 kB
+@router.post("/perf", status_code=204, include_in_schema=False)
+async def perf_beacon(request: Request):
+    body = (await request.body())[:8000].decode("utf-8", "replace").replace("\n", " ")
+    print("ES_PERF", body, flush=True)
+    return Response(status_code=204)
