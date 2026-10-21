@@ -57,6 +57,8 @@
 .ss-lobby .lobby-tag2 { width: min(80%, 260px); }
 .ss-lobby .lobby-title { color: #2a1f5c; text-shadow: none; }
 .ss-lobby .ss-card { width: 100%; background: none; box-shadow: none; padding: 0; }
+/* a card straight on the lobby (Cauldron, result) still paints the pnl_card4 art: keep its text inside the painted face (emulator 10-21: first line sat above the card top) */
+.ss-lobby > .ss-card { padding: calc(var(--skin-in) + 12px) calc(var(--skin-in) + 14px) calc(var(--skin-in) + 14px); }
 .ss-foot { display: flex; align-items: center; justify-content: center; gap: 10px; width: min(100%, 390px); }
 .ss-foot .lobby-go, .lobby .lobby-go { flex: 1; max-width: 250px; min-height: 60px; font-size: 26px; }
 .lobby .k-btn.ss-sec { min-height: 50px; padding: 4px 22px 8px; }
