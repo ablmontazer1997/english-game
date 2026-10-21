@@ -252,13 +252,15 @@ for(const s of [...document.querySelectorAll('script[type="text/x-rc"]')])await 
 <script type="text/x-rc">
 /*RCGATE1020 (admin 6225): the hero is shown in one go. The canvas stays transparent (the loader / the app's rune stays) until the body,
   every worn item, hair, hat and wand are in (three's DefaultLoadingManager + the page's own fetches all settled, the page's extra
-  checks true, 4 quiet frames drawn), then it fades in over 0.3 s. Cap 8 s after the base model (?gcap=ms), ?gate=0 = off. */
+  checks true, 4 quiet frames drawn), then it fades in over 0.3 s. Cap 45 s after the base model (?gcap=ms), ?gate=0 = off.
+  GATE45 1021 (admin: full load, not piecemeal): the old 8 s cap showed the bare body on slow phones; the loader now stays
+  until the garments are in, and only past 45 s is whatever exists shown. */
 window.RCGATE=(()=>{const M=THREE.DefaultLoadingManager;let n=0,t0=0,done=false,cv=null,ok=0;const cbs=[],conds=[];
   const s0=M.itemStart,e0=M.itemEnd;M.itemStart=function(u){n++;return s0.call(this,u);};M.itemEnd=function(u){n=Math.max(0,n-1);return e0.call(this,u);};
   const fq=new Set(),fn=()=>{const now=performance.now();let k=0;for(const f of fq){if(f.t&&now-f.t>150)fq.delete(f);else k++;}return k;};const F=window.fetch;window.fetch=function(u){const url=String(u&&u.url||u);if(/runecast-api|\/v1\//.test(url))return F.apply(this,arguments);const f={t:0};fq.add(f);let p;try{p=F.apply(this,arguments);}catch(e){fq.delete(f);throw e;}
     const d=()=>{f.t=performance.now();};p.then(d,d);return p;};
   /*GATEFIX1021: a settled fetch stays pending 150 ms by its settle time, read in the rAF tick (a setTimeout here fired seconds late in the map iframe, so the gate always opened on the cap)*/
-  const Q=new URLSearchParams(location.search),CAP=+(Q.get('gcap')||8000),OFF=Q.get('gate')==='0';
+  const Q=new URLSearchParams(location.search),CAP=+(Q.get('gcap')||45000),OFF=Q.get('gate')==='0';
   const reveal=why=>{if(done)return;done=true;window.RCGATED=why+' '+Math.round(performance.now()-t0);
     if(cv){cv.style.transition='opacity .3s ease-out';cv.style.opacity='1';}const ld=document.getElementById('ld');if(ld)ld.remove();cbs.splice(0).forEach(f=>{try{f();}catch(e){}});};
   const tick=()=>{if(done)return;const ready=n===0&&fn()===0&&conds.every(c=>{try{return !!c();}catch(e){return true;}});ok=ready?ok+1:0;
@@ -1469,9 +1471,9 @@ new THREE.GLTFLoader().load(new URLSearchParams(location.search).get('f')||'base
   RCFULL() renders one extra frame with the camera on the whole body (default editor angle, pedestal + shadow hidden, transparent),
   crops it to the hero, stores it as localStorage rc.fullbody (+ rc.fullbody.look = FULLVER) and posts {type:'rc-fullbody',data}.
   The editor shoots it on Save look / close (after the try-ons are put back); ?embed=1&fullsnap=1 (hidden iframe in the app) shoots once after the reveal. */
-const FULLVER='fb1';
+const FULLVER='fb2';/*CAPGATE1021: retake every picture shot before the gate fix (some were naked)*/
 window.RCFULL=()=>new Promise(res=>{const st0=window.PORTRAIT_STILL;window.PORTRAIT_STILL=1;/* eyes open, no blink / glance for the shot */let nf=0;const arm=()=>{if(++nf<10){requestAnimationFrame(arm);return;}window.__wantFull=()=>{window.PORTRAIT_STILL=st0;let d=null,cx=0.5;try{const o=fullShot();if(o){d=o.d;cx=o.cx;}}catch(e){console.warn('fullsnap',e);}
-  if(d){try{localStorage.setItem('rc.fullbody',d);localStorage.setItem('rc.fullbody.cx',cx.toFixed(4));localStorage.setItem('rc.fullbody.look',FULLVER);}catch(e){}try{parent.postMessage({type:'rc-fullbody',data:d,cx,final:1},'*');}catch(e){}window.RCFULLDONE=(window.RCFULLDONE||0)+1;}res(d);};};requestAnimationFrame(arm);});
+  if(d){try{localStorage.setItem('rc.fullbody',d);localStorage.setItem('rc.fullbody.cx',cx.toFixed(4));localStorage.setItem('rc.fullbody.look',FULLVER);}catch(e){}try{parent.postMessage({type:'rc-fullbody',data:d,cx,final:1,gate:window.RCGATEOK&&RCGATEOK()?'ok':''},'*');}catch(e){}window.RCFULLDONE=(window.RCFULLDONE||0)+1;}res(d);};};requestAnimationFrame(arm);});
 // wait until nothing is loading (4 quiet frames, cap 3 s), then shoot
 window.RCFULLSETTLE=()=>new Promise(res=>{const t0=performance.now();let ok=0;const f=()=>{ok=(window.RCGATE&&RCGATE.pending()>0)?0:ok+1;
   if(ok>=4||performance.now()-t0>3000)RCFULL().then(res,res);else requestAnimationFrame(f);};requestAnimationFrame(f);});
@@ -1488,7 +1490,9 @@ const fullShot=()=>{const el=r.domElement,P0=cam.position.clone(),Q0=cam.quatern
   if(x1<0)return null;const pad=Math.round((yB-yA)*0.01);x0=Math.max(0,x0-pad);x1=Math.min(W0-1,x1+pad);yA=Math.max(0,yA-pad);yB=Math.min(H0-1,yB+1);
   const w=x1-x0+1,h=yB-yA+1,k=Math.min(1,720/h),o=document.createElement('canvas');o.width=Math.round(w*k);o.height=Math.round(h*k);
   const og=o.getContext('2d');og.imageSmoothingQuality='high';og.drawImage(cv,x0,yA,w,h,0,0,o.width,o.height);return {d:o.toDataURL('image/webp',0.9),cx:Math.max(0,Math.min(1,((FP.x+1)/2*W0-x0)/w))};};
-if(EMBED&&Q.get('fullsnap'))RCGATE.when(()=>setTimeout(()=>RCFULL(),900));
+/*CAPGATE1021: the hidden capture shoots only a FULL reveal (all items in); on the gate cap it shoots nothing and tells the app*/
+window.RCGATEOK=()=>!!(window.RCGATE&&RCGATE.done()&&/^(ready|off)/.test(window.RCGATED||''));
+if(EMBED&&Q.get('fullsnap'))RCGATE.when(()=>{if(!RCGATEOK()){try{parent.postMessage({type:'rc-capfail',why:window.RCGATED||''},'*')}catch(e){}return;}setTimeout(()=>RCFULL(),900);});
 
   if(EDITOR)buildEditor({LOOK,worn,OUTFIT,HAIRS,HAIR_RETIRED,HATS,pickHat,tones,eyes,order,nice,setGirl,setHair,pickHairColor,pickIris,setTone,setHat,wear,setTint,setBlush,LS,setExpr,play,focus,previewNoHat,randomize,reset,getAnim:()=>curName,setWand:id=>WSH.set(id),wandId:()=>WSH.get()});
   // hold the arms a little away from the body so the hands don't sink into the robe
@@ -1619,9 +1623,10 @@ const clk=new THREE.Clock();(function loop(){requestAnimationFrame(loop);const d
       PT.set(PV.x,ey.y-Hf*(0.5-EYEP),PV.z);cam.position.set(PV.x+dd,ey.y+Hf*PLIFT,PV.z+dd*PSIDE);cam.lookAt(PT);}else ctl.update();
     if(PORTRAIT&&PQ.get('pasp')){const ra=r.domElement.width/r.domElement.height;if(Math.abs(cam.aspect-ra)>1e-3){cam.aspect=ra;cam.updateProjectionMatrix();}}r.render(sc,cam);if(window.__wantFull){const f=window.__wantFull;window.__wantFull=null;f();}if(window.__wantExport){const f=window.__wantExport;window.__wantExport=null;try{f()}catch(e){window.__expErr=String(e)}}if(PORTRAIT)for(const [b,ax,d] of [...PARM].reverse())if(bones[b])bones[b].rotateOnAxis(ax,-d);if(__ph)bones.Head.rotateOnAxis(PHAX==='x'?new THREE.Vector3(1,0,0):PHAX==='y'?new THREE.Vector3(0,1,0):new THREE.Vector3(0,0,1),-PHEAD);
     if(PORTRAIT&&!window.__edw&&window.ED&&ED.ready){window.__edw=1;ED.ready.then(()=>{window.__edok=1},()=>{window.__edok=1});}
-    if(PORTRAIT&&window.__edok){snapT+=clk.elapsedTime-(window.__pt||clk.elapsedTime);window.__pt=clk.elapsedTime;window.__pf=(window.__pf||0)+1;if(window.__pf>12&&((snaps===0&&snapT>2.5)||(snaps===1&&snapT>7))){snaps++;const PSZ=+(PQ.get('psize')||256);const cv=document.createElement('canvas');cv.width=cv.height=PSZ;const el=r.domElement,m=Math.min(el.width,el.height);
+    if(PORTRAIT&&window.__edok&&window.RCGATEOK&&RCGATE.done()&&!RCGATEOK()&&!window.__pfail){window.__pfail=1;try{parent.postMessage({type:'rc-capfail',why:window.RCGATED||''},'*')}catch(e){}}
+    if(PORTRAIT&&window.__edok&&window.RCGATEOK&&RCGATEOK()){snapT+=clk.elapsedTime-(window.__pt||clk.elapsedTime);window.__pt=clk.elapsedTime;window.__pf=(window.__pf||0)+1;if(window.__pf>12&&((snaps===0&&snapT>2.5)||(snaps===1&&snapT>7))){snaps++;const PSZ=+(PQ.get('psize')||256);const cv=document.createElement('canvas');cv.width=cv.height=PSZ;const el=r.domElement,m=Math.min(el.width,el.height);
       {const g2=cv.getContext('2d');g2.imageSmoothingQuality='high';g2.drawImage(el,(el.width-m)/2,(el.height-m)/2,m,m,0,0,PSZ,PSZ);const PB=+(PQ.get('pbloom')||0);if(PB>0){const bc=document.createElement('canvas');bc.width=bc.height=PSZ;const bx=bc.getContext('2d');bx.filter='brightness(0.9) contrast(2.4) saturate(1.3) blur('+Math.round(PSZ/40)+'px)';bx.drawImage(cv,0,0);g2.save();g2.globalCompositeOperation='source-atop';g2.globalAlpha=1;g2.restore();g2.save();g2.globalCompositeOperation='screen';g2.globalAlpha=PB;g2.drawImage(bc,0,0);g2.restore();}}/* PREVIEW 10-12 fix1+2: supersampled + optional bloom */const d=cv.toDataURL('image/webp',0.9);
-      try{localStorage.setItem('rc.portrait',d)}catch(e){}try{parent.postMessage({type:'rc-portrait',data:d,final:snaps===2},'*')}catch(e){}window.PORTRAIT_DONE=snaps;}}})();
+      try{localStorage.setItem('rc.portrait',d)}catch(e){}try{parent.postMessage({type:'rc-portrait',data:d,final:snaps===2,gate:'ok'},'*')}catch(e){}window.PORTRAIT_DONE=snaps;}}})();
 });
 </script>
 <script type="text/x-rc" data-src="own.js?v=2"></script></body></html>

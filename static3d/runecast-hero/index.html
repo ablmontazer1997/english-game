@@ -126,13 +126,15 @@ for(const s of [...document.querySelectorAll('script[type="text/x-rc"]')])await 
 <script type="text/x-rc">
 /*RCGATE1020 (admin 6225): the hero is shown in one go. The canvas stays transparent (the loader / the app's rune stays) until the body,
   every worn item, hair, hat and wand are in (three's DefaultLoadingManager + the page's own fetches all settled, the page's extra
-  checks true, 4 quiet frames drawn), then it fades in over 0.3 s. Cap 8 s after the base model (?gcap=ms), ?gate=0 = off. */
+  checks true, 4 quiet frames drawn), then it fades in over 0.3 s. Cap 45 s after the base model (?gcap=ms), ?gate=0 = off.
+  GATE45 1021 (admin: full load, not piecemeal): the old 8 s cap showed the bare body on slow phones; the loader now stays
+  until the garments are in, and only past 45 s is whatever exists shown. */
 window.RCGATE=(()=>{const M=THREE.DefaultLoadingManager;let n=0,t0=0,done=false,cv=null,ok=0;const cbs=[],conds=[];
   const s0=M.itemStart,e0=M.itemEnd;M.itemStart=function(u){n++;return s0.call(this,u);};M.itemEnd=function(u){n=Math.max(0,n-1);return e0.call(this,u);};
   const fq=new Set(),fn=()=>{const now=performance.now();let k=0;for(const f of fq){if(f.t&&now-f.t>150)fq.delete(f);else k++;}return k;};const F=window.fetch;window.fetch=function(u){const url=String(u&&u.url||u);if(/runecast-api|\/v1\//.test(url))return F.apply(this,arguments);const f={t:0};fq.add(f);let p;try{p=F.apply(this,arguments);}catch(e){fq.delete(f);throw e;}
     const d=()=>{f.t=performance.now();};p.then(d,d);return p;};
   /*GATEFIX1021: a settled fetch stays pending 150 ms by its settle time, read in the rAF tick (a setTimeout here fired seconds late in the map iframe, so the gate always opened on the cap)*/
-  const Q=new URLSearchParams(location.search),CAP=+(Q.get('gcap')||8000),OFF=Q.get('gate')==='0';
+  const Q=new URLSearchParams(location.search),CAP=+(Q.get('gcap')||45000),OFF=Q.get('gate')==='0';
   const reveal=why=>{if(done)return;done=true;window.RCGATED=why+' '+Math.round(performance.now()-t0);
     if(cv){cv.style.transition='opacity .3s ease-out';cv.style.opacity='1';}const ld=document.getElementById('ld');if(ld)ld.remove();cbs.splice(0).forEach(f=>{try{f();}catch(e){}});};
   const tick=()=>{if(done)return;const ready=n===0&&fn()===0&&conds.every(c=>{try{return !!c();}catch(e){return true;}});ok=ready?ok+1:0;

@@ -16,7 +16,8 @@ const KEY = 'rc.portrait'
 // test builds shoot from the test wardrobe (the integrated page that goes live next)
 const WARDROBE_BASE = import.meta.env.BASE_URL.includes('-test') ? '/runecast-test-wardrobe-ui/' : '/runecast-wardrobe/'
 // bump when the wardrobe's look changes, so saved portraits are retaken once in the new lighting
-export const LOOK_VER = 'look3f' // 10-08 admin msg 4294: framed on the face (eye level, eyes at 46%, face ~2/3 of the circle)
+export const LOOK_VER = 'look3g' // 10-21: retake after the capture gate fix (pictures shot on the gate cap were naked)
+// was 'look3f' // 10-08 admin msg 4294: framed on the face (eye level, eyes at 46%, face ~2/3 of the circle)
 // perf (10-20): the hidden capture loads the whole 3D wardrobe, so it runs only when the look differs from the one last shot
 // (hash of the wardrobe's localStorage look keys), or a picture is missing / from an older look version. Never on a plain start.
 const LOOK_KEYS = ['girl', 'skinTone2', 'blush', 'hairPick', 'hairColor', 'irisColor', 'hatOn', 'hatPick', 'outfit', 'rcVariant', 'rcTintFx', 'tint', 'wand']
@@ -31,7 +32,7 @@ const fallback = () => { try { return localStorage.getItem('girl') === '1' ? def
 // admin 6225: the profile shows a full-body PICTURE of the player's own hero (no 3D there until "Edit look"). The wardrobe shoots it
 // (rc.fullbody, transparent WebP cropped to the hero: feet = bottom edge) on Save look, and the hidden capture below after every look change.
 const FULL_KEY = 'rc.fullbody'
-export const FULL_VER = 'fb1'
+export const FULL_VER = 'fb2' // = FULLVER in the wardrobe page
 function readFull() { try { return localStorage.getItem(FULL_KEY + '.look') === FULL_VER ? localStorage.getItem(FULL_KEY) : null } catch { return null } }
 // cx = where the body centre (feet) sits across the picture (the wand makes it lopsided); measured on the default pictures
 const FB_CX = { m: 0.3912, f: 0.3912 }
@@ -73,24 +74,31 @@ export function PortraitCapture({ version }: { version: number }) {
   const [go, setGo] = useState(false)
   useEffect(() => {
     setGo(false)
-    let t = 0
+    let t = 0, idle = 0
+    // 10-21: start only once the Home hero is shown and the splash is gone, then when the main thread is idle (never in parallel
+    // with the hero load: that starved the main thread on slow phones). No hero on screen: a late fallback (past the 45 s gate cap).
+    const ric = (f: () => void) => { const w = window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }; if (w.requestIdleCallback) idle = w.requestIdleCallback(f, { timeout: 10000 }); else t = window.setTimeout(f, 1500) }
     // admin 6264: and only once the boot splash is gone (it holds for the Home hero; the wardrobe page would slow its last steps)
     const start = () => {
       clearTimeout(t)
       if (splashUp()) { addEventListener('es-splash-gone', start, { once: true }); return }
-      t = window.setTimeout(() => setGo(true), 1500)
+      t = window.setTimeout(() => ric(() => setGo(true)), 1500)
     }
     const onMsg = (e: MessageEvent) => { if (e.data?.type === 'rc-shown') start() }
     addEventListener('message', onMsg)
-    const t0 = setTimeout(() => setGo(true), 20000)
-    return () => { removeEventListener('message', onMsg); removeEventListener('es-splash-gone', start); clearTimeout(t); clearTimeout(t0) }
+    const t0 = setTimeout(() => ric(() => setGo(true)), 60000)
+    return () => {
+      removeEventListener('message', onMsg); removeEventListener('es-splash-gone', start); clearTimeout(t); clearTimeout(t0)
+      const w = window as unknown as { cancelIdleCallback?: (n: number) => void }; if (idle && w.cancelIdleCallback) w.cancelIdleCallback(idle)
+    }
   }, [version])
   const [phase, setPhase] = useState<'head' | 'full'>('head')
   useEffect(() => { setPhase('head') }, [version])
   useEffect(() => {
     if (!go || phase !== 'full') return
     const onMsg = (e: MessageEvent) => {
-      if (e.data?.type !== 'rc-fullbody' || typeof e.data.data !== 'string') return
+      if (e.data?.type === 'rc-capfail') { setOn(false); return }   // items did not all load: keep the old picture, retry next start
+      if (e.data?.type !== 'rc-fullbody' || typeof e.data.data !== 'string' || e.data.gate !== 'ok') return
       try { localStorage.setItem(FULL_KEY, e.data.data); if (typeof e.data.cx === 'number') localStorage.setItem(FULL_KEY + '.cx', e.data.cx.toFixed(4)); localStorage.setItem(FULL_KEY + '.look', FULL_VER) } catch { /* full storage */ }
       dispatchEvent(new Event('rc-fullbody'))
       try { localStorage.setItem(HASH_KEY, lookHash()) } catch { /* */ }
@@ -105,13 +113,14 @@ export function PortraitCapture({ version }: { version: number }) {
     if (!portraitStale()) { setOn(false); return }   // nothing changed since the last shot: no 3D page at all
     setOn(true)
     const onMsg = (e: MessageEvent) => {
-      if (e.data?.type !== 'rc-portrait' || typeof e.data.data !== 'string') return
+      if (e.data?.type === 'rc-capfail') { setOn(false); return }   // items did not all load: keep the old picture, retry next start
+      if (e.data?.type !== 'rc-portrait' || typeof e.data.data !== 'string' || e.data.gate !== 'ok') return
       try { localStorage.setItem(KEY, e.data.data); localStorage.setItem(KEY + '.look', LOOK_VER) } catch { /* full storage: keep it in memory only */ }
       dispatchEvent(new Event('rc-portrait'))
       if (e.data.final) setPhase('full')
     }
     addEventListener('message', onMsg)
-    const t = setTimeout(() => setPhase('full'), 90000)                // never keep the 3D view alive for long (slow phones need > 45 s for the first load)
+    const t = setTimeout(() => setOn(false), 90000)                  // never keep the 3D view alive for long; a timeout saves nothing (retry next start)
     return () => { removeEventListener('message', onMsg); clearTimeout(t) }
   }, [version, go, phase])
   if (!go || !on) return null
