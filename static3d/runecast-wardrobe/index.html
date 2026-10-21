@@ -935,7 +935,7 @@ const ICON={
   star:SVG('<path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/>')};
 function buildEditor(E){
   const $=id=>document.getElementById(id),TH=n=>'thumbs/'+n+'.png?v=6',el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
-  document.querySelector('.ttl i').innerHTML=ICON.star;
+  {const tti=document.querySelector('.ttl:not(.tmark) i');if(tti)tti.innerHTML=ICON.star;}
   $('btnRand').innerHTML=ICON.wand+'<span>Surprise</span>';$('btnReset').innerHTML=ICON.reset+'<span>Reset</span>';
   const ITEM_LABEL={shirt:'Shirt',top_tabard:'Knight',top_elf:'Elf tunic',top_doublet:'Doublet',top_blouse:'Blouse',coat:'Wizard coat',pants:'Pants',shoes:'Boots',shoes_alch:'Alchemist boots',shoes_crystal:'Crystal boots',shoes_curl:'Curled-toe slippers',shoes_fire:'Fire boots',shoes_forest:'Forest boots',shoes_frost:'Frost boots',shoes_royal:'Royal boots',shoes_star:'Star boots',shoes_wing:'Winged boots'};
   const SLOTK={Top:'top',Outer:'coat',Legs:'pants',Feet:'shoes'};   // Phase B: OUTFIT row -> catalogue slot
