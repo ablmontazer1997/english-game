@@ -220,12 +220,20 @@ html.editor #btnX svg{width:20px;height:20px;color:#6d2fe6}
   html.editor:not(.inapp) #edTop .ib:not(#btnX){padding:0 12px 3px 12px}html.editor:not(.inapp) #edTop .ib:not(#btnX) span{display:none}}
 html.editor #btnDone:active{border-image-source:url(ui2/btn_green_pressed.webp);border-image-slice:44 51 43 52 fill;border-image-width:22.5px 26px 22px 26.5px;transform:none;box-shadow:none}
 @media (min-width:820px) and (min-aspect-ratio:1/1){html.editor #ed{border-image-width:21px 24px 26.5px 23.5px}}
+/* admin 6361: the app TitleMark (option B) instead of the gold ribbon: live title + thin gold rule with a small star */
+html.editor .ttl.tmark{aspect-ratio:auto;height:auto;display:grid;justify-items:center;gap:.2em;padding:0;background:none;filter:none;font-family:var(--game);font-size:clamp(20px,5.6vw,24px);text-align:center}
+html.editor .ttl.tmark .tmark-t{display:block;width:100%;font-size:1em;font-weight:900;line-height:1.12;letter-spacing:.01em;white-space:nowrap;color:#fff;text-shadow:0 2px 0 rgba(58,22,120,.55),0 2px 10px rgba(24,8,60,.55),0 0 2px rgba(24,8,60,.4)}
+html.editor .ttl.tmark .tmark-rule{display:flex;align-items:center;gap:.32em;width:min(100%,7.6em)}
+html.editor .ttl.tmark .tmark-rule i{display:block;flex:1;height:2.5px;border-radius:2px;background:linear-gradient(90deg,rgba(255,214,102,0),#ffd666 75%,#ffe08a);box-shadow:0 1px 2px rgba(24,8,60,.35)}
+html.editor .ttl.tmark .tmark-rule i:last-child{transform:scaleX(-1)}
+html.editor .ttl.tmark .tmark-rule svg{flex:none;width:.82em;height:.82em;display:block;filter:drop-shadow(0 1px 2px rgba(24,8,60,.5))}
+@media (max-width:440px){html.editor:not(.inapp) #edTop .ttl.tmark{font-size:clamp(18px,5vw,21px)}}
 </style>
 <script>{const Q=new URLSearchParams(location.search);const d=document.documentElement;
   if(Q.get('embed')||Q.get('battle'))d.classList.add('embed');else d.classList.add('editor');
   try{if(window.parent!==window)d.classList.add('inapp')}catch(e){d.classList.add('inapp')}}</script></head><body>
 <div id="c"></div><div id="ld">Summoning your wizard…</div>
-<header id="edTop"><button class="ib" id="btnX" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button><div class="ttl"><i></i><b>Wardrobe</b></div><div class="acts">
+<header id="edTop"><button class="ib" id="btnX" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button><div class="ttl tmark tm-light"><span class="tmark-t">Wardrobe</span><span class="tmark-rule" aria-hidden="true"><i></i><svg viewBox="0 0 24 24" width="24" height="24"><defs><linearGradient id="tmgw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe48a"/><stop offset=".55" stop-color="#f5bf35"/><stop offset="1" stop-color="#e09a17"/></linearGradient></defs><path d="M12 2.4l2.8 6 6.5.7-4.85 4.45 1.35 6.4L12 16.75 6.2 19.95l1.35-6.4L2.7 9.1l6.5-.7z" fill="url(#tmgw)" stroke="#c88717" stroke-width="1.3" stroke-linejoin="round"/></svg><i></i></span></div><div class="acts">
   <button class="ib gold" id="btnRand" title="Surprise me" aria-label="Surprise me"></button><button class="ib" id="btnReset" title="Reset" aria-label="Reset"></button></div></header>
 <section id="ed" aria-label="Character editor"><nav id="tabs" role="tablist"></nav>
   <div id="pane" role="tabpanel"></div><div id="bar"><div id="strip" hidden></div><button id="btnDone" type="button">Save look</button></div></section>

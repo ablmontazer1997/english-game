@@ -172,7 +172,7 @@
       return { name: (g ? g.name : 'Garment') + ': ' + ((PALETTE.find((p) => p[0] === o.swatch) || [])[1] || o.swatch) + ' dye', tier: 'coin', price_coins: S.dyePrice, buyable: true, thumb: 'item_' + o.garment, dye: o };
     }
     const it = S.items[o.item] || {};
-    const th = it.recolour ? 'item_' + it.recolour.base : (o.th || ('item_' + o.item));
+    const th = o.th || (it.recolour ? 'item_' + it.recolour.base : ('item_' + o.item));   // admin 6364: the card's own thumb first (recolours had no item_<base> picture)
     return Object.assign({}, it, { thumb: th });
   }
   function line(it) {
@@ -189,7 +189,7 @@
     if (!offerEl) { offerEl = document.createElement('div'); offerEl.id = 'ownOffer'; offerEl.setAttribute('role', 'dialog'); document.body.appendChild(offerEl) }
     const canBuy = (it.tier === 'coin' || it.tier === 'gem') && it.buyable !== false;
     const price = it.tier === 'coin' ? COIN + fmt(it.price_coins) : GEM + fmt(it.price_gems);
-    const thumb = it.dye ? '<span class="oo-sw" style="background:' + sw(it.dye.swatch) + '"></span>' : '<img src="thumbs/' + it.thumb + '.png?v=4" alt="" onerror="this.remove()">';
+    const thumb = it.dye ? '<span class="oo-sw" style="background:' + sw(it.dye.swatch) + '"></span>' : '<img src="thumbs/' + it.thumb + '.png?v=6" alt="" onerror="this.remove()">';
     const dot = it.recolour ? '<span class="own-dot" style="background:' + sw(it.recolour.swatch) + '"></span>' : '';
     offerEl.innerHTML = '<span class="oo-th">' + thumb + dot + '</span><span class="oo-main"><b></b><small></small></span>'
       + (canBuy ? '<button type="button" class="oo-buy">' + price + '</button>' : '<button type="button" class="oo-keep">Keep mine</button>')
@@ -320,6 +320,9 @@
 .oc-coin,.oc-gem{display:inline-block;width:12px;height:12px;margin-right:3px;vertical-align:-1px;flex:0 0 auto}
 .oc-coin{border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b8,#f5c451 45%,#c8963a);box-shadow:inset 0 0 0 1.5px #b07c22}
 .oc-gem{background:linear-gradient(135deg,#d6b4ff,#8a4fd8 55%,#5a2fb0);clip-path:polygon(50% 0,100% 38%,50% 100%,0 38%)}
+#ownOffer .oc-coin,#ownOffer .oc-gem{width:18px;height:18px;margin-right:4px;vertical-align:-4px;border-radius:0;box-shadow:none;clip-path:none;background:center/contain no-repeat}
+#ownOffer .oc-coin{background-image:url(ui2/ic_coin.webp)}
+#ownOffer .oc-gem{background-image:url(ui2/ic_gem.webp)}
 .card.own-lk .th img{filter:saturate(.55) brightness(.97)}
 .own-pc{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:flex;align-items:center;gap:1px;height:20px;padding:0 7px;border-radius:999px;
   font-size:11px;font-weight:800;line-height:1;white-space:nowrap;background:rgba(255,253,246,.96);color:#5a3a00;box-shadow:0 1px 4px rgba(60,40,120,.22);z-index:1}
