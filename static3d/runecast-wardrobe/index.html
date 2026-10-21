@@ -142,12 +142,12 @@ html.editor .ttl i{display:none}
 html.editor .ttl b{font-size:clamp(17px,4.8vw,21px);font-weight:800;color:#5a3204;text-shadow:0 1px 0 rgba(255,246,200,.85)}
 html.editor .acts{gap:6px}
 html.editor .ib,html.editor .ib.gold{height:44px;padding:0 14px 3px 10px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;
-  border-image:url(ui2/btn_cream.webp) 43 38 42 42 fill/16px 14px 16px 15px stretch;color:#4a2590;font-size:13.5px;filter:drop-shadow(0 3px 5px rgba(40,10,90,.3))}
-html.editor .ib:active{border-image-source:url(ui2/btn_cream_pressed.webp);transform:none}
+  border-image:url(ui2/btn_cream.webp) 50 52 51 52 fill/18px 19px 18.5px 19px stretch;color:#4a2590;font-size:13.5px;filter:drop-shadow(0 3px 5px rgba(40,10,90,.3))}
+html.editor .ib:active{border-image-source:url(ui2/btn_cream_pressed.webp);border-image-slice:38 47 41 46 fill;border-image-width:14px 17px 15px 17px;transform:none}
 html.editor .ib svg{width:18px;height:18px;color:#6d2fe6}
 /* the bottom sheet: the kit's cream panel with its gold rim (no bottom rim, it runs off the screen) */
 html.editor #ed{border-radius:0;background:none;box-shadow:none;overflow:visible;border:0 solid transparent;
-  border-image:url(ui2/panel_cream.webp) 38 30 37 41 fill/19px 15px 0 20px stretch;filter:drop-shadow(0 -6px 14px rgba(30,8,80,.35))}
+  border-image:url(ui2/panel_cream.webp) 43 49 54 48 fill/21px 24px 26.5px 23.5px stretch;filter:drop-shadow(0 -6px 14px rgba(30,8,80,.35))}
 html.editor #ed::before{top:9px;background:#e2cf9f;z-index:1}
 /* order like the concept: tabs, colours, items, Save look */
 html.editor #tabs{order:0;padding:20px 8px 4px;border-top:0;background:none;overflow:visible}
@@ -193,17 +193,17 @@ html.editor .card.own-lk{border-image-source:url(ui2/card_lk.webp)}
 html.editor .card.own-lk.on{border-image-source:url(ui2/card_on.webp)}
 /* price / earn chips: buyable = small green kit chip, earned / premium = cream chip with the painted padlock */
 html.editor .card .own-pc{bottom:36px;height:24px;padding:0 9px 2px;border-radius:0;box-shadow:none;background:none;font-size:12px;color:#fff;text-shadow:0 1px 0 rgba(20,80,10,.6);
-  border:0 solid transparent;border-image:url(ui2/btn_green.webp) 43 45 44 48 fill/12px 12px 12px 13px stretch}
+  border:0 solid transparent;border-image:url(ui2/btn_green.webp) 55 56 53 59 fill/14.5px 14.5px 14px 15.5px stretch}
 html.editor .card .own-pc.own-boss,html.editor .card .own-pc.own-earned,html.editor .card .own-pc.own-premium{color:#4a2590;text-shadow:none;
-  border-image:url(ui2/btn_cream.webp) 43 38 42 42 fill/12px 11px 12px 11px stretch}
+  border-image:url(ui2/btn_cream.webp) 50 52 51 52 fill/14px 15px 14.5px 15px stretch}
 html.editor .card .own-pc svg{color:#b07c22}
 html.editor .card .own-pc.own-boss svg,html.editor .card .own-pc.own-earned svg,html.editor .card .own-pc.own-premium svg{display:none}
 html.editor .card .own-pc.own-boss::before,html.editor .card .own-pc.own-earned::before,html.editor .card .own-pc.own-premium::before{content:"";width:12px;height:15px;margin-right:4px;background:url(ui2/padlock.webp) center/contain no-repeat}
 /* sliders and the eye colours keep their look on the cream panel */
 html.editor .sld{background:#fbf3e3;border-color:#ecd9a8}
 /* Save look: the green kit button, clear of the grid */
-html.editor #btnDone{height:auto;min-height:50px;margin:2px 16px max(8px,env(safe-area-inset-bottom));padding:4px 22px 8px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
-  border-image:url(ui2/btn_green.webp) 43 45 44 48 fill/22px 22px 22px 24px stretch;font-size:21px;text-shadow:0 2px 0 rgba(20,90,10,.55);filter:drop-shadow(0 4px 6px rgba(20,60,10,.25))}
+html.editor #btnDone{height:auto;min-height:50px;margin:2px 16px max(20px,calc(env(safe-area-inset-bottom) + 12px));padding:4px 22px 8px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(ui2/btn_green.webp) 55 56 53 59 fill/27px 27.5px 26px 29px stretch;font-size:21px;text-shadow:0 2px 0 rgba(20,90,10,.55);filter:drop-shadow(0 4px 6px rgba(20,60,10,.25))}
 html.editor #strip[hidden]+#btnDone{margin-left:16px}
 /* ui3: colour rows stay inside the cream panel (the gold frame no longer cuts the last swatch); a deliberate scroller with a fade */
 html.editor #strip .sws{margin:0 16px 0 18px;padding:5px 26px 7px 4px;gap:8px;scroll-snap-type:x proximity;
@@ -218,8 +218,8 @@ html.editor:not(.inapp) #btnX{display:flex;justify-content:center;flex:0 0 auto;
 html.editor #btnX svg{width:20px;height:20px;color:#6d2fe6}
 @media (max-width:440px){html.editor:not(.inapp) #edTop .ttl{width:min(36vw,150px)}html.editor:not(.inapp) #edTop .ttl b{font-size:clamp(15px,4.2vw,18px)}
   html.editor:not(.inapp) #edTop .ib:not(#btnX){padding:0 12px 3px 12px}html.editor:not(.inapp) #edTop .ib:not(#btnX) span{display:none}}
-html.editor #btnDone:active{border-image-source:url(ui2/btn_green_pressed.webp);transform:none;box-shadow:none}
-@media (min-width:820px) and (min-aspect-ratio:1/1){html.editor #ed{border-image-width:19px 15px 18px 20px}}
+html.editor #btnDone:active{border-image-source:url(ui2/btn_green_pressed.webp);border-image-slice:44 51 43 52 fill;border-image-width:22.5px 26px 22px 26.5px;transform:none;box-shadow:none}
+@media (min-width:820px) and (min-aspect-ratio:1/1){html.editor #ed{border-image-width:21px 24px 26.5px 23.5px}}
 </style>
 <script>{const Q=new URLSearchParams(location.search);const d=document.documentElement;
   if(Q.get('embed')||Q.get('battle'))d.classList.add('embed');else d.classList.add('editor');
