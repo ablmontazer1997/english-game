@@ -29,14 +29,20 @@
 .shp-tabs:has(+ .shp-feat) .shp-tab { padding-top: calc(44px - 33.85%); }
 .shp-tabs:has(+ .shp-feat) .shp-tab img { top: auto; bottom: 0; transform: none; }
 .shp-tabs + .shp-feat { margin-top: -16px; }
+/* admin 6372: the outer tabs stay inside the card, clear of its rounded corners */
+.shp-tabs:has(+ .shp-feat) { padding-inline: 16px; }
 .shp-tab span { position: relative; font-size: clamp(12px, 3.5vw, 14px); font-weight: 800; color: #3d2c5c; white-space: nowrap; }
 .shp-tab.on span { color: #4a2800; }
 
 /* the Featured card: painted frame (9-slice, no fill) over the painted interior (cover); everything inside it */
 .shp-feat-in { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 40%; align-items: center; column-gap: 8px;
-  padding: 2px 2px 4px 4px; border: 17px solid transparent; border-image: url(../assets/es2/shop/featured_card_plain.webp) 71 71 72 77 fill / 21.5px 21.5px 22px 23.5px stretch;
-  /* admin 6352: the painted sky/sunburst interior is gone; the frame art now has the cream card face (same as .shp-rc) */
-  border-radius: 26px; box-shadow: 0 6px 0 rgba(70, 30, 110, .30), 0 14px 26px rgba(20, 8, 40, .30); }
+  padding: 2px 2px 4px 4px; border: 17px solid transparent; /* admin 6372: ONE painted background = the original sky/sunburst interior (cut out of featured_card.webp, cover); the gold
+     frame (same art, interior made transparent) is drawn on top by .shp-feat::after, so the two layers no longer double up */
+  background: url(../assets/es2/shop/featured_inner.webp) 50% 45% / cover no-repeat; background-origin: border-box; background-clip: border-box;
+  border-radius: 28px; box-shadow: 0 6px 0 rgba(70, 30, 110, .30), 0 14px 26px rgba(20, 8, 40, .30); }
+.shp-feat { position: relative; }
+.shp-feat::after { content: ''; position: absolute; inset: -2px; /* the art has ~1.5 px clear margin: cover the painted edge */ z-index: 3; pointer-events: none; border: 17px solid transparent;
+  border-image: url(../assets/es2/shop/featured_frame.webp) 71 71 72 77 / 21.5px 21.5px 22px 23.5px stretch; }
 .shp-feat-l { position: relative; z-index: 2; display: grid; justify-items: start; gap: 6px; min-width: 0; }
 .shp-rib-r { position: relative; display: block; flex: none; }
 .shp-feat-k { justify-self: start; }
